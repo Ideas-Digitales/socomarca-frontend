@@ -20,7 +20,7 @@ const links = [
   { name: 'Preguntas Frecuentes', href: '/preguntas-frecuentes' },
 ];
 
-export default function Navbar() {
+export default function NavbarTest() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
