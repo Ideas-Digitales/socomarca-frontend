@@ -1,6 +1,7 @@
+import Footer from "../components/global/Footer";
 import Navbar from "../components/global/Navbar";
 
-export default function AuthLayout({
+export default function PrivateLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -12,9 +13,7 @@ export default function AuthLayout({
         <Navbar />
         <main className="flex-grow relative w-full ">{children}</main>
         {/* Footer */}
-        <footer className=" py-4 text-center">
-          <p>© 2025 Socomarca. Todos los derechos reservados.</p>
-        </footer>
+        <Footer />
       </div>
     </>
   );
