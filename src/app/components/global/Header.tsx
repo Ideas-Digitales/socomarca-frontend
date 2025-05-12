@@ -8,7 +8,7 @@ import HearthIcon from '../icons/HearthIcon';
 import OrderIcon from '../icons/OrderIcon';
 import UserIcon from '../icons/UserIcon';
 import CartIcon from '../icons/CartIcon';
-const logoImageUrl = '/assets/footer/logo.png';
+const logoImageUrl = '/assets/global/logo.png';
 
 interface Props {
   carro: Product[];

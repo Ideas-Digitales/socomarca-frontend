@@ -1,15 +1,54 @@
+'use client';
+
+import AuthView from '@/app/components/auth/AuthView';
+import RutInput from '@/app/components/global/RutInputVisualIndicators';
+import Link from 'next/link';
+import { useState } from 'react';
+
 export default function LoginPage() {
+  const [rut, setRut] = useState('');
+  const [isValid, setIsValid] = useState(false);
+
   return (
-    <div
-      className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center px-2 md:px-0"
-      style={{
-        backgroundImage:
-          "linear-gradient(0deg,rgba(0,0,0,.52) 0%,rgba(0,0,0,.52) 100%),url('/assets/login/login-bg.jpg')",
-      }}
-    >
-      <div className="flex max-w-[704px] w-full py-[36px] px-[128px] flex-col justify-center items-center gap-6 rounded-[24px] bg-white">
-        En desarrollo 👷‍♂️
+    <AuthView title="Iniciar sesión" text="Ingresa tus datos a continuación">
+      {/* Inputs */}
+      <div className="flex flex-col items-start gap-5 w-full">
+        <div className="flex flex-col items-start gap-[9px] w-full">
+          <label htmlFor="" className="font-[14px]">
+            Rut
+          </label>
+          <RutInput
+            value={rut}
+            onChange={setRut}
+            onValidationChange={setIsValid}
+            errorMessage="El RUT ingresado no es válido"
+          />
+        </div>
+        <div className="flex flex-col items-start gap-[9px] w-full">
+          <label htmlFor="" className="font-[14px]">
+            Password
+          </label>
+          <input
+            type="password"
+            className="w-full border bg-[#EBEFF7] border-[#EBEFF7] p-[10px] h-[40px] focus:outline-none focus:ring-1 focus:ring-[#EBEFF7] focus:border-[#EBEFF7]"
+          />
+        </div>
       </div>
-    </div>
+      {/* Buttons */}
+      <div className="flex px-[1px] justify-between items-center w-full">
+        <button
+          disabled={!isValid}
+          className="w-[174px] p-3 rounded-[6px] bg-lime-500 hover:bg-lime-600 transition-colors ease-in-out cursor-pointer text-white text-[12px] font-medium"
+        >
+          Ingresar
+        </button>
+        <Link
+          className="text-[12px] font-medium recover-link"
+          href={'/recuperar'}
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </div>
+    </AuthView>
   );
 }

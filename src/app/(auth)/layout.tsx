@@ -1,4 +1,3 @@
-
 export default function AuthLayout({
   children,
 }: {
@@ -7,9 +6,7 @@ export default function AuthLayout({
   return (
     <>
       <div>
-
         <main className="">{children}</main>
-
       </div>
     </>
   );

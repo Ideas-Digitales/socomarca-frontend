@@ -11,7 +11,7 @@ const masterCardImageUrl = '/assets/footer/mastercard.png';
 const americanExpressImageUrl = '/assets/footer/american-express.png';
 const paypalImageUrl = '/assets/footer/paypal.png';
 const visaImageUrl = '/assets/footer/visa.png';
-const logoImageUrl = '/assets/footer/logo.png';
+const logoImageUrl = '/assets/global/logo.png';
 
 // Icon RRSS
 
@@ -59,8 +59,8 @@ export default function Footer() {
         </div>
 
         {/* Categoría */}
-        <div>
-          <h3 className="text-gray-500 font-bold mb-3">Categoría</h3>
+        <div className="space-y-1">
+          <h3 className="text-gray-500 font-bold">Categoría</h3>
           <ul className="space-y-1">
             <li>Despensa</li>
             <li>Hogar y limpieza</li>
@@ -72,8 +72,8 @@ export default function Footer() {
         </div>
 
         {/* Atención al cliente */}
-        <div>
-          <h3 className="text-gray-500 font-bold mb-3">Atención al cliente</h3>
+        <div className="space-y-1">
+          <h3 className="text-gray-500 font-bold">Atención al cliente</h3>
           <ul className="space-y-1">
             <li>
               <Link href="/preguntas-frecuentes" className="">
