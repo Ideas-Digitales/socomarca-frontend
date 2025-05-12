@@ -1,17 +1,46 @@
+import { Product } from '@/interfaces/product.interface';
+import { fetchGetProducts } from '@/services/actions/products.actions';
 import { create } from 'zustand';
 
-// Define la interfaz para el estado
 interface StoreState {
-  counter: number;
-  increment: () => void;
-  decrement: () => void;
+  products: Product[];
+  filteredProducts: Product[];
+  isLoading: boolean;
+  searchTerm: string;
+  setProducts: (products: Product[]) => void;
+  setLoading: (loading: boolean) => void;
+  setSearchTerm: (term: string) => void;
+  fetchProducts: () => Promise<void>;
 }
 
-// Crea el store
-const useStore = create<StoreState>((set) => ({
-  counter: 0,
-  increment: () => set((state) => ({ counter: state.counter + 1 })),
-  decrement: () => set((state) => ({ counter: state.counter - 1 })),
+const useStore = create<StoreState>((set, get) => ({
+  isLoading: false,
+  products: [],
+  filteredProducts: [],
+  searchTerm: '',
+  setProducts: (products: Product[]) => set({ products }),
+  setLoading: (loading: boolean) => set({ isLoading: loading }),
+  setSearchTerm: (term: string) => {
+    const { products } = get();
+    set({
+      searchTerm: term,
+      filteredProducts: term
+        ? products.filter((product) =>
+            product.name.toLowerCase().includes(term.toLowerCase())
+          )
+        : products,
+    });
+  },
+  fetchProducts: async () => {
+    try {
+      set({ isLoading: true });
+      const { data } = await fetchGetProducts();
+      set({ products: data, isLoading: false });
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      set({ isLoading: false });
+    }
+  },
 }));
 
 export default useStore;

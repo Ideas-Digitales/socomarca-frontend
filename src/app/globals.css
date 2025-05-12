@@ -14,3 +14,14 @@
   text-underline-offset: auto;
   text-underline-position: from-font;
 }
+
+.input-search {
+  border-radius: var(--Border-Radius-rounded-md, 6px 0px 0px 6px);
+  border: 0.5px solid var(--Lime-500, #84CC16);
+  background: var(--Slate-50, #F8FAFC);
+}
+
+.button-search {
+  border-radius: 0px var(--Border-Radius-rounded-md, 6px) var(--Border-Radius-rounded-md, 6px) 0px;
+  background: var(--Lime-500, #84CC16);
+}
