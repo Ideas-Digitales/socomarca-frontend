@@ -30,8 +30,8 @@ export default function Search() {
 
   return (
     <div className="max-w-7xl mx-auto w-full">
-      <div className="flex py-4 px-4 sm:py-[28px] sm:px-[48px] flex-col w-full">
-        <label htmlFor="search" className="text-base sm:text-[18px] font-medium leading-6 sm:leading-7 mb-2">
+      <div className="flex py-4 px-4 sm:py-[28px] flex-col w-full">
+        <label htmlFor="search" className="hidden sm:block text-base sm:text-[18px] font-medium leading-6 sm:leading-7 mb-2">
           Encuentra justo lo que necesitas con solo un clic en nuestro buscador
         </label>
         <div className="flex relative">

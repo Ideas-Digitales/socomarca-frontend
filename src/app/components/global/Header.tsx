@@ -8,20 +8,25 @@ import HearthIcon from '../icons/HearthIcon';
 import OrderIcon from '../icons/OrderIcon';
 import UserIcon from '../icons/UserIcon';
 import CartIcon from '../icons/CartIcon';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
+import useStore, { useInitMobileDetection } from '@/stores/useStore';
 const logoImageUrl = '/assets/global/logo.png';
+const imagoLogoUrl = '/assets/global/imagotipo.png';
 
 interface Props {
   carro: Product[];
 }
 
 export default function Header({ carro }: Props) {
+  const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [menuMobileOpen, setMenuMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  useInitMobileDetection();
+
+  const isMobile = useStore((state) => state.isMobile);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -30,7 +35,8 @@ export default function Header({ carro }: Props) {
       }
       if (
         mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(event.target as Node)
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        (event.target as HTMLElement).id !== 'menu-toggle-btn'
       ) {
         setMenuMobileOpen(false);
       }
@@ -40,176 +46,129 @@ export default function Header({ carro }: Props) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Efecto para cerrar el menú móvil cuando cambie de móvil a desktop
+  useEffect(() => {
+    if (!isMobile && menuMobileOpen) {
+      setMenuMobileOpen(false);
+    }
+  }, [isMobile, menuMobileOpen]);
+
   const toggleMobileMenu = () => {
     setMenuMobileOpen(!menuMobileOpen);
   };
 
+  // Lista de enlaces del menú móvil
+  const menuItems = [
+    { name: 'Inicio', href: '/' },
+    { name: 'Productos', href: '/productos' },
+    { name: 'Ofertas', href: '/ofertas' },
+    { name: 'Historial de compra', href: '/mis-compras' },
+    { name: 'Favoritos', href: '/favoritos' },
+    { name: 'Datos personales', href: '/datos-personales' },
+    { name: 'Carrito', href: '/carro-de-compra' },
+  ];
+
   return (
-    <div className="bg-white text-black py-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs">
-      <div className="max-w-7xl flex justify-between items-center mx-auto px-4">
-        {/* Teléfono (solo visible en desktop) */}
-        <div className="hidden sm:flex flex-row gap-2 sm:gap-4">
-          <div>
-            <PhoneIcon width={24} height={24} />
-          </div>
-          <div>
-            <p className="font-bold">Teléfono </p>
-            <p>+56 2 0000 0000</p>
-          </div>
-        </div>
-
-        {/* Botón de menú móvil usando Lucide React */}
-        <div className="block sm:hidden">
-          <button
-            onClick={toggleMobileMenu}
-            className="p-1 focus:outline-none"
-            aria-label="Menú"
-          >
-            <Menu size={24} />
-          </button>
-        </div>
-
-        {/* Logo (centrado en móvil) */}
-        <div className="flex justify-center">
-          <Image
-            src={logoImageUrl}
-            alt="Logo de Socomarca"
-            width={180}
-            height={32}
-            className="h-8 sm:h-10 w-auto"
-          />
-        </div>
-
-        {/* Íconos para desktop */}
-        <div className="hidden sm:flex flex-row gap-3 sm:gap-6 items-center">
-          <Link href="/mis-compras">
-            <div className="flex flex-row gap-2 items-center">
-              <div>
-                <OrderIcon width={24} height={24} />
-              </div>
-              <div>
-                <p className="font-bold">
-                  Historial <br />
-                  de compra
-                </p>
-              </div>
-            </div>
-          </Link>
-
-          <span>
-            <HearthIcon width={24} height={24} />
-          </span>
-          <div className="relative" ref={menuRef}>
-            <span
-              onClick={() => setAbierto(!abierto)}
+    <>
+      <div className="bg-white text-black py-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs">
+        <div className="max-w-7xl px-3 flex justify-between items-center mx-auto">
+          <div className="flex gap-3 items-center">
+            <button
+              id="menu-toggle-btn"
+              onClick={toggleMobileMenu}
               className="cursor-pointer"
+              aria-label="Toggle menu"
             >
-              <UserIcon width={24} height={24} />
-            </span>
-
-            {abierto && (
-              <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg border-gray-200 border-2 border-t-[#6cb409] z-50">
-                <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
-                  onClick={() => {
-                    setAbierto(false);
-                    router.push('/datos-personales');
-                  }}
-                >
-                  Mi cuenta
-                </button>
-                <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
-                  onClick={() => {
-                    setAbierto(false);
-                    router.push('/login');
-                  }}
-                >
-                  Cerrar sesión
-                </button>
-              </div>
+              <Menu />
+            </button>
+            {isMobile && (
+              <Image
+                src={imagoLogoUrl}
+                width={28}
+                height={34}
+                alt="Imagologo"
+              />
             )}
           </div>
-          <div className="relative">
-            <CartIcon width={24} height={24} />
-            {carro?.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-[#6cb409] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                {carro.length}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Solo ícono de carrito visible en móvil */}
-        <div className="block sm:hidden relative">
-          <CartIcon width={24} height={24} />
-          {carro?.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-[#6cb409] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-              {carro.length}
-            </span>
+          {!isMobile && (
+            <Image
+              src={logoImageUrl}
+              width={isMobile ? 100 : 150}
+              height={isMobile ? 34 : 50}
+              alt="Logo"
+              className="hidden sm:block"
+            />
           )}
+          <div className="flex items-end gap-4">
+            <div className="flex flex-row gap-2 sm:gap-4">
+              <Link href="/mis-compras" className="flex items-center gap-2">
+                <OrderIcon width={24} height={24} />
+                <span className="font-bold hidden sm:block">
+                  Historial de compra
+                </span>
+              </Link>
+              <Link href="/favoritos">
+                <HearthIcon width={24} height={24} />
+              </Link>
+              <Link href="/datos-personales">
+                <UserIcon width={24} height={24} />
+              </Link>
+              <Link href="/carro-de-compra">
+                <div className="relative">
+                  <CartIcon width={24} height={24} />
+                  {carro?.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                      {carro.length}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Menú móvil */}
       {menuMobileOpen && (
         <div
-          ref={mobileMenuRef}
-          className="fixed top-[4.5rem] left-0 right-0 bg-white shadow-lg z-50 border-t border-[#6CB409]"
-        >
-          <div className="flex flex-col divide-y divide-gray-100">
-            <div className="flex items-center gap-3 p-4">
-              <PhoneIcon width={20} height={20} />
-              <div>
-                <p className="font-bold">Teléfono </p>
-                <p>+56 2 0000 0000</p>
-              </div>
-            </div>
-
-            <div
-              className="flex items-center gap-3 p-4"
-              onClick={() => {
-                setMenuMobileOpen(false);
-              }}
-            >
-              <OrderIcon width={20} height={20} />
-              <p className="font-bold">Historial de compra</p>
-            </div>
-
-            <div
-              className="flex items-center gap-3 p-4"
-              onClick={() => {
-                setMenuMobileOpen(false);
-              }}
-            >
-              <HearthIcon width={20} height={20} />
-              <p>Favoritos</p>
-            </div>
-
-            <div
-              className="flex items-center gap-3 p-4"
-              onClick={() => {
-                setMenuMobileOpen(false);
-                router.push('/datos-personales');
-              }}
-            >
-              <UserIcon width={20} height={20} />
-              <p>Mi cuenta</p>
-            </div>
-
-            <button
-              className="flex items-center gap-3 p-4 w-full text-left"
-              onClick={() => {
-                setMenuMobileOpen(false);
-                router.push('/login');
-              }}
-            >
-              <UserIcon width={20} height={20} />
-              <p>Cerrar sesión</p>
-            </button>
-          </div>
-        </div>
+          className="fixed inset-0 z-40 transition-opacity duration-300"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }}
+          aria-hidden="true"
+        />
       )}
-    </div>
+
+      {/* Menú móvil lateral */}
+      <div
+        ref={mobileMenuRef}
+        className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out shadow-lg ${
+          menuMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+          <Image src={imagoLogoUrl} width={28} height={34} alt="Imagologo" />
+          <button
+            onClick={toggleMobileMenu}
+            className="text-gray-500 hover:text-gray-700"
+            aria-label="Close menu"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <nav className="mt-4">
+          <ul>
+            {menuItems.map((item, index) => (
+              <li key={index}>
+                <Link
+                  href={item.href}
+                  className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b border-gray-100"
+                  onClick={() => setMenuMobileOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </>
   );
 }
