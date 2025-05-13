@@ -11,7 +11,7 @@ export default function ProductsContainer({ products }: Props) {
   const { isMobile } = useStore();
 
   return (
-    <div className="flex items-start gap-4 flex-1-0-0 max-w-7xl mx-auto">
+    <div className="flex items-start gap-4 flex-1-0-0 max-w-7xl mx-auto px-4">
       {!isMobile && <CategoryFilterDesktop />}
       <div className="flex flex-col flex-1-0-0  w-full sm:max-w-[582px] sm:mr-auto">
         {!isMobile && (
