@@ -6,4 +6,5 @@ export interface Product {
   sku: string;
   imagen: string;
   description: string;
+  brand: string;
 }

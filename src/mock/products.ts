@@ -9,8 +9,8 @@ export const productos = <Product[]>[
     sku: 'ARZ001',
     description:
       'El arroz G2 Largo Selección Tucapel es un producto de alta calidad, ideal para acompañar tus comidas. Su grano largo y su textura suave lo hacen perfecto para preparar deliciosos platos.',
-    imagen:
-      'https://dipy.cl/cdn/shop/products/CL_Z382428-ARROZ-GRADO2-1KG-LARGO-GRAN-SELECCION-TUCAPEL.jpg?v=1661833314',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Tucapel',
   },
   {
     id: 2,
@@ -20,8 +20,8 @@ export const productos = <Product[]>[
     sku: 'ARZ002',
     description:
       'El arroz Miraflores G2 Largo es un producto de alta calidad, ideal para acompañar tus comidas. Su grano largo y su textura suave lo hacen perfecto para preparar deliciosos platos.',
-    imagen:
-      'https://bicomfiles.s3-sa-east-1.amazonaws.com/ecommerce/1690/169022562.jpeg',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Miraflores',
   },
   {
     id: 3,
@@ -31,8 +31,8 @@ export const productos = <Product[]>[
     sku: 'ARZ003',
     description:
       'El arroz El País Largo Fino es un producto de alta calidad, ideal para acompañar tus comidas. Su grano largo y su textura suave lo hacen perfecto para preparar deliciosos platos.',
-    imagen:
-      'https://images.lider.cl/wmtcl?source=url[file:/productos/4671137a.jpg]&scale=size[449x449]&sink',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'El País',
   },
   {
     id: 4,
@@ -42,8 +42,8 @@ export const productos = <Product[]>[
     sku: 'PST001',
     description:
       'Los tallarines Lucchetti son ideales para preparar deliciosos platos de pasta. Su textura y sabor los hacen perfectos para acompañar tus salsas favoritas.',
-    imagen:
-      'https://i.bolder.run/r/czoyMzA1MyxnOjEwMDB4/8b172622/868848-spaghetti_5_lucchetti.JPG',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Lucchetti',
   },
   {
     id: 5,
@@ -53,8 +53,8 @@ export const productos = <Product[]>[
     sku: 'ACE001',
     description:
       'El aceite Maravilla es ideal para cocinar y freír. Su sabor neutro y su alta calidad lo hacen perfecto para todo tipo de preparaciones.',
-    imagen:
-      'https://unimarc.vtexassets.com/arquivos/ids/238069/000000000000654777-UN-01.jpg?v=638459464342930000',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Maravilla',
   },
   {
     id: 6,
@@ -64,8 +64,8 @@ export const productos = <Product[]>[
     sku: 'AZC001',
     description:
       'El azúcar Iansa es ideal para endulzar tus comidas y bebidas. Su calidad y pureza lo hacen perfecto para todo tipo de preparaciones.',
-    imagen:
-      'https://conveniomarco.mercadopublico.cl/media/catalog/product/1/8/1808472.jpg?quality=80&fit=bounds&height=700&width=700&canvas=700:700',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Iansa',
   },
   {
     id: 7,
@@ -75,8 +75,8 @@ export const productos = <Product[]>[
     sku: 'AVN001',
     description:
       'La avena instantánea Quaker es ideal para preparar desayunos saludables y nutritivos. Su sabor y textura la hacen perfecta para acompañar tus frutas y yogures favoritos.',
-    imagen:
-      'https://http2.mlstatic.com/D_NQ_NP_661031-MLU72999040858_112023-O.webp',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Quaker',
   },
   {
     id: 8,
@@ -86,8 +86,8 @@ export const productos = <Product[]>[
     sku: 'HRN001',
     description:
       'La harina Selecta sin polvos es ideal para preparar todo tipo de masas y panes. Su calidad y pureza la hacen perfecta para todo tipo de preparaciones.',
-    imagen:
-      'https://www.harinaselecta.cl/img/productos/harina-sin-polvos-hornear.webp',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Selecta',
   },
   {
     id: 9,
@@ -97,8 +97,8 @@ export const productos = <Product[]>[
     sku: 'SAL001',
     description:
       'La sal Lobos yodada fina es ideal para sazonar tus comidas. Su calidad y pureza la hacen perfecta para todo tipo de preparaciones.',
-    imagen:
-      'https://www.spl-latam.com/wp-content/uploads/sites/3/2020/12/Lobos-Bolsa-Cocina-azul-700x700.png',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Lobos',
   },
   {
     id: 10,
@@ -108,8 +108,8 @@ export const productos = <Product[]>[
     sku: 'SLT001',
     description:
       'La salsa de tomate Pomarola es ideal para preparar salsas y guisos. Su sabor y textura la hacen perfecta para acompañar tus pastas y arroces favoritos.',
-    imagen:
-      'https://www.emporioagricola.cl/cdn/shop/products/pomarola_medium.jpg?v=1596231896',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Pomarola',
   },
   {
     id: 11,
@@ -119,8 +119,8 @@ export const productos = <Product[]>[
     sku: 'LEC001',
     description:
       'La leche entera Colún es ideal para preparar desayunos y postres. Su sabor y textura la hacen perfecta para acompañar tus cereales y frutas favoritas.',
-    imagen:
-      'https://santaisabel.vtexassets.com/arquivos/ids/295371/Leche-entera-1-L.jpg?v=638240207839630000',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Colún',
   },
   {
     id: 12,
@@ -130,6 +130,7 @@ export const productos = <Product[]>[
     sku: 'CAF001',
     description:
       'El café Gold Nescafé es ideal para preparar deliciosas tazas de café. Su sabor y aroma lo hacen perfecto para disfrutar en cualquier momento del día.',
-    imagen: 'https://m.media-amazon.com/images/I/61PfDMubrJL._SL1500_.jpg',
+    imagen: 'assets/global/product-mock.png',
+    brand: 'Nescafé',
   },
 ];
