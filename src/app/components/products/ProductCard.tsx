@@ -22,8 +22,15 @@ export default function ProductCard({ product }: Props) {
     setQuantity(quantity + 1);
   };
 
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + '...';
+    }
+    return text;
+  };
+
   return (
-    <div className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative w-full sm:max-w-[582px] sm:mx-auto">
+    <div className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative">
       <div className="flex items-center gap-[6px]">
         <div className="rounded-full bg-slate-200 items-center justify-center hidden sm:flex p-[6px]">
           <HearthProductIcon />
@@ -34,11 +41,11 @@ export default function ProductCard({ product }: Props) {
         />
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col">
           <span className="text-[#64748B] text-[12px] font-medium">
             {product.brand}
           </span>
-          <span className="text-[12px] font-medium">{product.name}.</span>
+          <span className="text-[12px] font-medium">{truncateText(product.name, 30)}</span>
           <span className="text-lime-500 font-bold">
             {product.price.toLocaleString('es-CL', {
               style: 'currency',
