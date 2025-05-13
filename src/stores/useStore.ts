@@ -8,7 +8,6 @@ interface StoreState {
   isLoading: boolean;
   searchTerm: string;
   setProducts: (products: Product[]) => void;
-  setLoading: (loading: boolean) => void;
   setSearchTerm: (term: string) => void;
   fetchProducts: () => Promise<void>;
 }
@@ -18,8 +17,16 @@ const useStore = create<StoreState>((set, get) => ({
   products: [],
   filteredProducts: [],
   searchTerm: '',
-  setProducts: (products: Product[]) => set({ products }),
-  setLoading: (loading: boolean) => set({ isLoading: loading }),
+  setProducts: (products: Product[]) => {
+    set({
+      products,
+      filteredProducts: get().searchTerm
+        ? products.filter((product) =>
+            product.name.toLowerCase().includes(get().searchTerm.toLowerCase())
+          )
+        : products,
+    });
+  },
   setSearchTerm: (term: string) => {
     const { products } = get();
     set({
@@ -35,7 +42,17 @@ const useStore = create<StoreState>((set, get) => ({
     try {
       set({ isLoading: true });
       const { data } = await fetchGetProducts();
-      set({ products: data, isLoading: false });
+
+      if (Array.isArray(data)) {
+        set({
+          products: data,
+          filteredProducts: data, // Todos los productos
+          isLoading: false,
+        });
+      } else {
+        console.error('La respuesta no contiene un array de productos:', data);
+        set({ isLoading: false });
+      }
     } catch (error) {
       console.error('Error fetching products:', error);
       set({ isLoading: false });
