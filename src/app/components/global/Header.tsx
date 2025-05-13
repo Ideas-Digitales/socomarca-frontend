@@ -60,8 +60,6 @@ export default function Header({ carro }: Props) {
   // Lista de enlaces del menú móvil
   const menuItems = [
     { name: 'Inicio', href: '/' },
-    { name: 'Productos', href: '/productos' },
-    { name: 'Ofertas', href: '/ofertas' },
     { name: 'Historial de compra', href: '/mis-compras' },
     { name: 'Favoritos', href: '/favoritos' },
     { name: 'Datos personales', href: '/datos-personales' },
