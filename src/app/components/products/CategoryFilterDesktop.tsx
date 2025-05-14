@@ -85,7 +85,7 @@ export default function CategoryFilterDesktop() {
   };
 
   return (
-    <div className="flex flex-col items-start bg-white w-[200px] border-r border-gray-200">
+    <div className="flex flex-col items-start bg-white w-[200px]">
       {/* Main category header */}
       <div
         className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer"

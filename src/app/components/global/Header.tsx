@@ -4,7 +4,15 @@ import Image from 'next/image';
 import { Product } from '@/interfaces/product.interface';
 import Link from 'next/link';
 import useStore, { useInitMobileDetection } from '@/stores/useStore';
-import { Bars3Icon, HeartIcon, ListBulletIcon, PhoneIcon, ShoppingCartIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  Bars3Icon,
+  HeartIcon,
+  ListBulletIcon,
+  PhoneIcon,
+  ShoppingCartIcon,
+  UserIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 const logoImageUrl = '/assets/global/logo-socomarca.png';
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 
@@ -19,7 +27,7 @@ export default function Header({ carro }: Props) {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   useInitMobileDetection();
 
-  const isMobile = useStore((state) => state.isMobile);
+  const { isTablet } = useStore();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -40,10 +48,10 @@ export default function Header({ carro }: Props) {
   }, [abierto]);
 
   useEffect(() => {
-    if (!isMobile && menuMobileOpen) {
+    if (!isTablet && menuMobileOpen) {
       setMenuMobileOpen(false);
     }
-  }, [isMobile, menuMobileOpen]);
+  }, [isTablet, menuMobileOpen]);
 
   const toggleMobileMenu = () => {
     setMenuMobileOpen(!menuMobileOpen);
@@ -62,14 +70,14 @@ export default function Header({ carro }: Props) {
       <div className="bg-white text-black py-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs">
         <div className="max-w-7xl px-4 flex justify-between items-center mx-auto">
           <div className="flex gap-3 items-center">
-            {isMobile ? (
+            {isTablet ? (
               <button
                 id="menu-toggle-btn"
                 onClick={toggleMobileMenu}
                 className="cursor-pointer"
                 aria-label="Toggle menu"
               >
-                <Bars3Icon width={24}height={24} />
+                <Bars3Icon width={24} height={24} />
               </button>
             ) : (
               <div className="hidden sm:flex flex-row gap-2 sm:gap-4">
@@ -82,7 +90,7 @@ export default function Header({ carro }: Props) {
                 </div>
               </div>
             )}
-            {isMobile && (
+            {isTablet && (
               <Image
                 src={imagoLogoUrl}
                 width={28}
@@ -91,13 +99,17 @@ export default function Header({ carro }: Props) {
               />
             )}
           </div>
-          {!isMobile && (
+          {!isTablet && (
             <Image
               src={logoImageUrl}
               width={230}
               height={200}
               alt="Logo"
               className="hidden sm:block py-[4px]"
+              style={{
+                width: 'auto',
+                height: 'auto',
+              }}
             />
           )}
           <div className="flex items-end gap-4">

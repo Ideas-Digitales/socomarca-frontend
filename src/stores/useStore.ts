@@ -19,14 +19,18 @@ interface StoreState {
   isLoading: boolean;
   searchTerm: string;
   isMobile: boolean;
-  cart: ProductToBuy[];
+  isTablet: boolean;
+  cartProducts: ProductToBuy[];
   addProcuctToCart: (product: Product, quantity: number) => void;
+  incrementProductInCart: (productId: number) => void;
+  decrementProductInCart: (productId: number) => void;
   removeProductFromCart: (productId: number) => void;
   clearCart: () => void;
   setProducts: (products: Product[]) => void;
   setSearchTerm: (term: string) => void;
   fetchProducts: () => Promise<void>;
   checkIsMobile: () => void;
+  checkIsTablet: () => void;
 }
 
 /**
@@ -255,27 +259,44 @@ const useStore = create<StoreState>((set, get) => ({
   filteredProducts: [],
   searchTerm: '',
   isMobile: false,
-  cart: [],
+  isTablet: false,
+  cartProducts: [],
 
   // Métodos del carrito sin cambios...
   addProcuctToCart: (product: Product, quantity) => {
-    const { cart } = get();
-    const existingProduct = cart.find((item) => item.id === product.id);
+    const { cartProducts } = get();
+    const existingProduct = cartProducts.find((item) => item.id === product.id);
     if (existingProduct) {
-      const updatedCart = cart.map((item) =>
+      const updatedCart = cartProducts.map((item) =>
         item.id === product.id
           ? { ...item, quantity: item.quantity + quantity }
           : item
       );
-      set({ cart: updatedCart });
+      set({ cartProducts: updatedCart });
     } else {
       const newProduct = { ...product, quantity };
-      set({ cart: [...cart, newProduct] });
+      set({ cartProducts: [...cartProducts, newProduct] });
     }
   },
+  incrementProductInCart: (productId: number) => {
+    const { cartProducts } = get();
+    const updatedCart = cartProducts.map((item) =>
+      item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
+    );
+    set({ cartProducts: updatedCart });
+  },
+  decrementProductInCart: (productId: number) => {
+    const { cartProducts } = get();
+    const updatedCart = cartProducts.map((item) =>
+      item.id === productId && item.quantity > 1
+        ? { ...item, quantity: item.quantity - 1 }
+        : item
+    );
+    set({ cartProducts: updatedCart });
+  },
   removeProductFromCart: (productId: number) => {
-    const { cart } = get();
-    const updatedCart = cart.reduce((acc: ProductToBuy[], item) => {
+    const { cartProducts } = get();
+    const updatedCart = cartProducts.reduce((acc: ProductToBuy[], item) => {
       if (item.id === productId) {
         if (item.quantity && item.quantity > 1) {
           acc.push({ ...item, quantity: item.quantity - 1 });
@@ -285,10 +306,10 @@ const useStore = create<StoreState>((set, get) => ({
       }
       return acc;
     }, []);
-    set({ cart: updatedCart });
+    set({ cartProducts: updatedCart });
   },
   clearCart: () => {
-    set({ cart: [] });
+    set({ cartProducts: [] });
   },
 
   /**
@@ -348,6 +369,12 @@ const useStore = create<StoreState>((set, get) => ({
       set({ isMobile });
     }
   },
+  checkIsTablet: () => {
+    if (typeof window !== 'undefined') {
+      const isTablet = window.innerWidth < 1024;
+      set({ isTablet });
+    }
+  },
 }));
 
 /**
@@ -355,12 +382,14 @@ const useStore = create<StoreState>((set, get) => ({
  */
 export const useInitMobileDetection = () => {
   const checkIsMobile = useStore((state) => state.checkIsMobile);
+  const checkIsTablet = useStore((state) => state.checkIsTablet);
 
   useEffect(() => {
     checkIsMobile();
-
+    checkIsTablet();
     const handleResize = () => {
       checkIsMobile();
+      checkIsTablet();
     };
 
     window.addEventListener('resize', handleResize);
@@ -368,7 +397,7 @@ export const useInitMobileDetection = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [checkIsMobile]);
+  }, [checkIsMobile, checkIsTablet]);
 };
 
 export default useStore;

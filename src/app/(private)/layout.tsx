@@ -12,7 +12,7 @@ export default function PrivateLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isLoading, fetchProducts, cart } = useStore();
+  const { isLoading, fetchProducts, cartProducts } = useStore();
   useInitMobileDetection();
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function PrivateLayout({
     <>
       <div className="flex flex-col min-h-dvh">
         {/* Navbar */}
-        <Header carro={cart} />
+        <Header carro={cartProducts} />
         <Search />
 
         <main className="flex-grow relative w-full">
