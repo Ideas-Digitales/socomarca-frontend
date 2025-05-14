@@ -122,7 +122,7 @@ export default function Footer() {
       </div>
 
       {/* Línea inferior */}
-      <div className="bg-slate-200 py-4 px-6 flex flex-col md:flex-row items-center justify-between text-xs">
+      <div className="bg-slate-100 py-4 px-6 flex flex-col md:flex-row items-center justify-between text-xs">
         <p>
           © 2025 – Todos los derechos reservados.{' '}
           <span className="text-black font-semibold">socomarca.cl</span>

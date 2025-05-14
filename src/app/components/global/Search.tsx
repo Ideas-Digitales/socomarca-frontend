@@ -29,7 +29,7 @@ export default function Search() {
   };
 
   return (
-    <div className="bg-white md:bg-slate-200">
+    <div className="bg-white md:bg-slate-100">
       <div className="max-w-7xl mx-auto w-full ">
         <div className="flex py-4 px-4 sm:py-[28px] flex-col w-full">
           <label
