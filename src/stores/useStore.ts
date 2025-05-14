@@ -66,7 +66,7 @@ const useStore = create<StoreState>((set, get) => ({
   },
   checkIsMobile: () => {
     if (typeof window !== 'undefined') {
-      const isMobile = window.innerWidth < 768;
+      const isMobile = window.innerWidth < 640; // 640px is the breakpoint for mobile in Tailwind CSS
       set({ isMobile });
     }
   },

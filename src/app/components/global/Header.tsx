@@ -1,6 +1,5 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Product } from '@/interfaces/product.interface';
 import PhoneIcon from '../icons/PhoneIcon';
@@ -19,7 +18,6 @@ interface Props {
 }
 
 export default function Header({ carro }: Props) {
-  const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [menuMobileOpen, setMenuMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -44,9 +42,8 @@ export default function Header({ carro }: Props) {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [abierto]);
 
-  // Efecto para cerrar el menú móvil cuando cambie de móvil a desktop
   useEffect(() => {
     if (!isMobile && menuMobileOpen) {
       setMenuMobileOpen(false);
@@ -57,7 +54,6 @@ export default function Header({ carro }: Props) {
     setMenuMobileOpen(!menuMobileOpen);
   };
 
-  // Lista de enlaces del menú móvil
   const menuItems = [
     { name: 'Inicio', href: '/' },
     { name: 'Historial de compra', href: '/mis-compras' },
@@ -71,14 +67,26 @@ export default function Header({ carro }: Props) {
       <div className="bg-white text-black py-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs">
         <div className="max-w-7xl px-3 flex justify-between items-center mx-auto">
           <div className="flex gap-3 items-center">
-            <button
-              id="menu-toggle-btn"
-              onClick={toggleMobileMenu}
-              className="cursor-pointer"
-              aria-label="Toggle menu"
-            >
-              <Menu />
-            </button>
+            {isMobile ? (
+              <button
+                id="menu-toggle-btn"
+                onClick={toggleMobileMenu}
+                className="cursor-pointer"
+                aria-label="Toggle menu"
+              >
+                <Menu />
+              </button>
+            ) : (
+              <div className="hidden sm:flex flex-row gap-2 sm:gap-4">
+                <div>
+                  <PhoneIcon width={24} height={24} />
+                </div>
+                <div>
+                  <p className="font-bold">Teléfono </p>
+                  <p>+56 2 0000 0000</p>
+                </div>
+              </div>
+            )}
             {isMobile && (
               <Image
                 src={imagoLogoUrl}

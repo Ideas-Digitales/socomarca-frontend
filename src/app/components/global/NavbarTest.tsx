@@ -28,7 +28,25 @@ export default function NavbarTest() {
   };
 
   return (
-    <nav className="py-4 relative bg-[#f1f5f9]">
+    <nav className="py-4 fixed bottom-1 right-1 z-50">
+      {isMenuOpen && (
+        <div className="absolute right-0 bottom-16 w-64 bg-white shadow-lg rounded-lg py-2 z-50 max-h-96 overflow-y-auto">
+          <ul>
+            {links.map((link) => (
+              <li key={link.name}>
+                <Link
+                  href={link.href}
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 flex justify-end">
         <button
           onClick={toggleMenu}
@@ -47,31 +65,14 @@ export default function NavbarTest() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`transition-transform ${isMenuOpen ? 'rotate-180' : ''}`}
+            className={`transition-transform ${
+              isMenuOpen ? 'rotate-0' : 'rotate-180'
+            }`}
           >
             <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
       </div>
-
-      {/* Menú desplegable */}
-      {isMenuOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg py-2 z-50 max-h-96 overflow-y-auto">
-          <ul>
-            {links.map((link) => (
-              <li key={link.name}>
-                <Link
-                  href={link.href}
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </nav>
   );
 }

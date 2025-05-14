@@ -81,7 +81,7 @@ export default function CarroDeCompraPage() {
   const subtotal = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
 
   return (
-    <div className="w-full bg-[#f1f5f9] min-h-screen p-4">
+    <div className="w-full bg-slate-100 min-h-screen p-4">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
         {/* Sección del carrito */}
         <div className="w-full lg:w-3/4 bg-white rounded-lg shadow p-6">
@@ -95,7 +95,7 @@ export default function CarroDeCompraPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="border border-slate-200 bg-slate-50 font-semibold text-gray-600 text-left">
+                <tr className="border border-slate-100 bg-slate-50 font-semibold text-gray-600 text-left">
                   <th className="p-4 text-center font-semibold text-black">
                     Producto
                   </th>
@@ -109,7 +109,7 @@ export default function CarroDeCompraPage() {
               </thead>
               <tbody>
                 {productos.map((p) => (
-                  <tr key={p.id} className="border border-slate-200">
+                  <tr key={p.id} className="border border-slate-100">
                     <td className="px-4 py-2 flex items-center gap-4">
                       <img
                         src={p.imagen}
@@ -146,7 +146,7 @@ export default function CarroDeCompraPage() {
                       </div>
                     </td>
                     <td className="p-4 text-right font-bold text-gray-700">
-                      <div className="flex flex-row justify-around">
+                      <div className="flex flex-row justify-between">
                         <span>
                           ${(p.precio * p.cantidad).toLocaleString("es-CL")}
                         </span>
@@ -174,12 +174,12 @@ export default function CarroDeCompraPage() {
 
         {/* Sección del resumen */}
         <aside className="w-full lg:w-1/4 bg-white rounded-lg shadow p-6 h-fit">
-          <div className="border-b-[1px] border-b-slate-200 pb-2 mb-3">
+          <div className="border-b-[1px] border-b-slate-100 pb-2 mb-3">
             <h3 className="text-xl font-bold border-b-slate-50">
               Resumen de compra
             </h3>
           </div>
-          <div className="flex justify-between mb-2 pb-3 border-b-[1px] border-b-slate-200">
+          <div className="flex justify-between mb-2 pb-3 border-b-[1px] border-b-slate-100">
             <span>Subtotal</span>
             <span>${subtotal.toLocaleString("es-CL")}</span>
           </div>

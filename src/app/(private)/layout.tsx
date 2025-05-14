@@ -5,7 +5,7 @@ import Header from '../components/global/Header';
 import NavbarTest from '../components/global/NavbarTest';
 import { useEffect } from 'react';
 import Search from '../components/global/Search';
-import useStore from '@/stores/useStore';
+import useStore, { useInitMobileDetection } from '@/stores/useStore';
 import LoadingSpinner from '../components/global/LoadingSpinner';
 
 export default function PrivateLayout({
@@ -14,6 +14,7 @@ export default function PrivateLayout({
   children: React.ReactNode;
 }) {
   const { isLoading, filteredProducts, fetchProducts } = useStore();
+  useInitMobileDetection();
 
   useEffect(() => {
     fetchProducts();
@@ -21,7 +22,7 @@ export default function PrivateLayout({
 
   return (
     <>
-      <div className="flex flex-col min-h-dvh bg-[#f1f5f9]">
+      <div className="flex flex-col min-h-dvh">
         {/* Navbar */}
         <Header carro={filteredProducts} />
         <Search />
