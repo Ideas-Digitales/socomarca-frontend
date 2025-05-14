@@ -12,6 +12,7 @@ const links = [
   { name: 'Términos y Condiciones', href: '/terminos-y-condiciones' },
   { name: 'Política de Privacidad', href: '/politica-de-privacidad' },
   { name: 'Preguntas Frecuentes', href: '/preguntas-frecuentes' },
+  { name: 'Inicio de sesión', href: '/login' },
 ];
 
 export default function NavbarTest() {
