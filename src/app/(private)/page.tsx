@@ -8,7 +8,7 @@ import CategoryFilterMobile from '../components/products/CategoryFilterMobile';
 export default function PrivatePage() {
   const { filteredProducts, isMobile } = useStore();
   return (
-    <div className="bg-slate-200 sm:py-7">
+    <div className="bg-slate-100 sm:py-7">
       {isMobile && <GPSPosition />}
       <div className="mx-auto">
         {isMobile && <CategoryFilterMobile />}

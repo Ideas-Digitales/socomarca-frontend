@@ -1,6 +1,6 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
+import NavbarTest from './components/global/NavbarTest';
 
 export const metadata: Metadata = {
   title: 'Socomarca',
@@ -13,7 +13,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        {children}
+        <NavbarTest />
+      </body>
     </html>
   );
 }

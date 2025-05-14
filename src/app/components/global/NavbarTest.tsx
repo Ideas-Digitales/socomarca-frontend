@@ -13,6 +13,8 @@ const links = [
   { name: 'Política de Privacidad', href: '/politica-de-privacidad' },
   { name: 'Preguntas Frecuentes', href: '/preguntas-frecuentes' },
   { name: 'Inicio de sesión', href: '/login' },
+  { name: 'Recuperar contraseña', href: '/recuperar' },
+  { name: 'Check email', href: '/check-email' },
 ];
 
 export default function NavbarTest() {

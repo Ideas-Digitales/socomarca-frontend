@@ -2,7 +2,6 @@
 
 import Footer from '../components/global/Footer';
 import Header from '../components/global/Header';
-import NavbarTest from '../components/global/NavbarTest';
 import { useEffect } from 'react';
 import Search from '../components/global/Search';
 import useStore, { useInitMobileDetection } from '@/stores/useStore';
@@ -13,7 +12,7 @@ export default function PrivateLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isLoading, filteredProducts, fetchProducts } = useStore();
+  const { isLoading, fetchProducts, cart } = useStore();
   useInitMobileDetection();
 
   useEffect(() => {
@@ -24,10 +23,9 @@ export default function PrivateLayout({
     <>
       <div className="flex flex-col min-h-dvh">
         {/* Navbar */}
-        <Header carro={filteredProducts} />
+        <Header carro={cart} />
         <Search />
 
-        <NavbarTest />
         <main className="flex-grow relative w-full">
           {isLoading ? (
             <div className="flex justify-center items-center h-full min-h-[200px]">

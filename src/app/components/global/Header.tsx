@@ -2,15 +2,10 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Product } from '@/interfaces/product.interface';
-import PhoneIcon from '../icons/PhoneIcon';
-import HearthIcon from '../icons/HearthIcon';
-import OrderIcon from '../icons/OrderIcon';
-import UserIcon from '../icons/UserIcon';
-import CartIcon from '../icons/CartIcon';
-import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import useStore, { useInitMobileDetection } from '@/stores/useStore';
-const logoImageUrl = '/assets/global/logo.png';
+import { Bars3Icon, HeartIcon, ListBulletIcon, PhoneIcon, ShoppingCartIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
+const logoImageUrl = '/assets/global/logo-socomarca.png';
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 
 interface Props {
@@ -65,7 +60,7 @@ export default function Header({ carro }: Props) {
   return (
     <>
       <div className="bg-white text-black py-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs">
-        <div className="max-w-7xl px-3 flex justify-between items-center mx-auto">
+        <div className="max-w-7xl px-4 flex justify-between items-center mx-auto">
           <div className="flex gap-3 items-center">
             {isMobile ? (
               <button
@@ -74,7 +69,7 @@ export default function Header({ carro }: Props) {
                 className="cursor-pointer"
                 aria-label="Toggle menu"
               >
-                <Menu />
+                <Bars3Icon width={24}height={24} />
               </button>
             ) : (
               <div className="hidden sm:flex flex-row gap-2 sm:gap-4">
@@ -99,29 +94,29 @@ export default function Header({ carro }: Props) {
           {!isMobile && (
             <Image
               src={logoImageUrl}
-              width={isMobile ? 100 : 150}
-              height={isMobile ? 34 : 50}
+              width={230}
+              height={200}
               alt="Logo"
-              className="hidden sm:block"
+              className="hidden sm:block py-[4px]"
             />
           )}
           <div className="flex items-end gap-4">
             <div className="flex flex-row gap-2 sm:gap-4">
               <Link href="/mis-compras" className="flex items-center gap-2">
-                <OrderIcon width={24} height={24} />
+                <ListBulletIcon width={24} height={24} />
                 <span className="font-bold hidden sm:block">
                   Historial de compra
                 </span>
               </Link>
               <Link href="/favoritos">
-                <HearthIcon width={24} height={24} />
+                <HeartIcon width={24} height={24} />
               </Link>
               <Link href="/datos-personales">
                 <UserIcon width={24} height={24} />
               </Link>
               <Link href="/carro-de-compra">
                 <div className="relative">
-                  <CartIcon width={24} height={24} />
+                  <ShoppingCartIcon width={24} height={24} />
                   {carro?.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                       {carro.length}
@@ -156,7 +151,7 @@ export default function Header({ carro }: Props) {
             className="text-gray-500 hover:text-gray-700"
             aria-label="Close menu"
           >
-            <X size={24} />
+            <XMarkIcon width={24} height={24} />
           </button>
         </div>
         <nav className="mt-4">

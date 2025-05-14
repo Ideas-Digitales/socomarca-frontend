@@ -25,7 +25,7 @@ export default function ProductsContainer({ products }: Props) {
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
-      c
+      {!isMobile && <p>c</p>}
     </div>
   );
 }

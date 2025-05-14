@@ -8,3 +8,7 @@ export interface Product {
   description: string;
   brand: string;
 }
+
+export interface ProductToBuy extends Product {
+  quantity: number;
+}

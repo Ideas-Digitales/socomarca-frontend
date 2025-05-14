@@ -1,19 +1,44 @@
 'use client';
 
-import { useState } from 'react';
-import SearchIcon from '../icons/SearchIcon';
+import { useState, useEffect, useRef } from 'react';
 import useStore from '@/stores/useStore';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export default function Search() {
   const { setSearchTerm } = useStore();
   const [inputValue, setInputValue] = useState('');
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
+
+    // Limpiar el timeout anterior si existe
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Configurar un nuevo timeout
+    debounceTimeoutRef.current = setTimeout(() => {
+      setSearchTerm(value);
+    }, 800); // 0.8 segundos
   };
 
+  // Limpiar el timeout cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleSearch = () => {
+    // Cancelar cualquier debounce pendiente
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    // Ejecutar la búsqueda inmediatamente
     setSearchTerm(inputValue);
   };
 
@@ -62,7 +87,7 @@ export default function Search() {
               onClick={handleSearch}
               className="flex py-[9px] px-2 sm:px-[15px] justify-end items-center gap-[10px] button-search"
             >
-              <SearchIcon />
+              <MagnifyingGlassIcon color='#fff' width={23} height={24} />
             </button>
           </div>
         </div>
