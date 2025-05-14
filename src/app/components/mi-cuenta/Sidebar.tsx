@@ -1,11 +1,11 @@
 'use client';
 
 const items = [
-  { key: 'datos', label: 'Datos personales', icon: '👤' },
-  { key: 'direcciones', label: 'Direcciones', icon: '📍' },
-  { key: 'favoritos', label: 'Mis favoritos', icon: '❤️' },
-  { key: 'compras', label: 'Mis compras', icon: '🧾' },
-  { key: 'logout', label: 'Cerrar sesión', icon: '⏻' },
+  { key: 'datos', label: 'Datos personales', icon: '' },
+  { key: 'direcciones', label: 'Direcciones', icon: '' },
+  { key: 'favoritos', label: 'Mis favoritos', icon: '' },
+  { key: 'compras', label: 'Mis compras', icon: '' },
+  { key: 'logout', label: 'Cerrar sesión', icon: '' },
 ];
 
 export default function Sidebar({ selectedKey, onSelect }: {

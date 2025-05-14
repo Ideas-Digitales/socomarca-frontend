@@ -7,7 +7,8 @@ export default function MiCuentaPage() {
   const [selected, setSelected] = useState('datos');
 
   return (
-    <div className="bg-[#f1f5f9] min-h-screen p-6">
+    <div className="bg-[#f1f5f9] min-h-screen">
+  <div className="max-w-7xl mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6">Hola, Damary</h1>
       <div className="flex gap-6">
         <Sidebar selectedKey={selected} onSelect={setSelected} />
@@ -56,7 +57,7 @@ export default function MiCuentaPage() {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between bg-gray-100 px-4 py-2 rounded">
                   <div className="flex items-center gap-2">
-                    <span>🤍</span>
+                    <span></span>
                     <span>Nombre</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -66,7 +67,7 @@ export default function MiCuentaPage() {
                 </div>
                 <div className="flex items-center justify-between bg-gray-100 px-4 py-2 rounded">
                   <div className="flex items-center gap-2">
-                    <span>🖤</span>
+                    <span></span>
                     <span>Nombre</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -149,6 +150,7 @@ export default function MiCuentaPage() {
           {selected === 'logout' && <p>Has cerrado sesión.</p>}
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
 
 interface Producto {
   id: number;
@@ -12,6 +13,7 @@ interface Producto {
 }
 
 export default function CarroDeCompraPage() {
+  const router = useRouter();
   const [productos, setProductos] = useState<Producto[]>([
     {
       id: 0,
@@ -54,6 +56,14 @@ export default function CarroDeCompraPage() {
       imagen: "/img/sal.png",
     },
   ]);
+
+  const backHome = () => {
+    router.push("/");
+  };
+
+  const goNext = () => {
+    router.push("/finalizar-compra")
+  }
 
   const [productoAEliminar, setProductoAEliminar] = useState<Producto | null>(
     null
@@ -166,7 +176,10 @@ export default function CarroDeCompraPage() {
           </div>
 
           <div className="mt-6">
-            <button className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded">
+            <button
+              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
+              onClick={backHome}
+            >
               Seguir comprando
             </button>
           </div>
@@ -191,7 +204,7 @@ export default function CarroDeCompraPage() {
             Impuestos y envíos calculados al finalizar la compra
           </p>
 
-          <button className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded">
+          <button onClick={goNext} className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded">
             Continuar con la compra
           </button>
         </aside>
