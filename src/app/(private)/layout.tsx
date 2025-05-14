@@ -21,7 +21,7 @@ export default function PrivateLayout({
 
   return (
     <>
-      <div className="flex flex-col min-h-dvh bg-slate-200">
+      <div className="flex flex-col min-h-dvh bg-[#f1f5f9]">
         {/* Navbar */}
         <Header carro={filteredProducts} />
         <Search />

@@ -28,7 +28,7 @@ export default function NavbarTest() {
   };
 
   return (
-    <nav className="py-4 relative">
+    <nav className="py-4 relative bg-[#f1f5f9]">
       <div className="container mx-auto px-4 flex justify-end">
         <button
           onClick={toggleMenu}
