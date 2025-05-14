@@ -62,7 +62,7 @@ export default function CartProductCard({ product, index }: Props) {
           {product.brand}
         </span>
         <span className="text-[12px] font-medium">
-          {truncateText(product.name, 30)}
+          {truncateText(product.name, 20)}
         </span>
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
@@ -70,7 +70,12 @@ export default function CartProductCard({ product, index }: Props) {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
             <div className="flex">
               <button
-                className="flex w-8 h-8 p-2 justify-between items-center bg-slate-100 rounded-[6px] cursor-pointer"
+                disabled={product.quantity === 0}
+                className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
+                  product.quantity === 0
+                    ? 'bg-slate-200 opacity-50 cursor-not-allowed'
+                    : 'bg-slate-100'
+                }`}
                 onClick={decreaseQuantity}
               >
                 <MinusIcon />
@@ -81,7 +86,12 @@ export default function CartProductCard({ product, index }: Props) {
               </span>
 
               <button
-                className="flex w-8 h-8 p-2 justify-between items-center bg-slate-100 rounded-[6px] cursor-pointer"
+                disabled={product.quantity === product.stock}
+                className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
+                  product.quantity === product.stock
+                    ? 'bg-slate-200 opacity-50 cursor-not-allowed'
+                    : 'bg-slate-100'
+                }`}
                 onClick={increaseQuantity}
               >
                 <PlusIcon />

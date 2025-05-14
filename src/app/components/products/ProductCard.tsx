@@ -79,7 +79,12 @@ export default function ProductCard({ product }: Props) {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
             <div className="flex">
               <button
-                className="flex w-8 h-8 p-2 justify-between items-center bg-slate-100 rounded-[6px] cursor-pointer"
+                disabled={quantity === 0}
+                className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
+                  quantity === 0
+                    ? 'bg-slate-200 opacity-50 cursor-not-allowed'
+                    : 'bg-slate-100'
+                }`}
                 onClick={decreaseQuantity}
               >
                 <MinusIcon />
@@ -90,7 +95,12 @@ export default function ProductCard({ product }: Props) {
               </span>
 
               <button
-                className="flex w-8 h-8 p-2 justify-between items-center bg-slate-100 rounded-[6px] cursor-pointer"
+                disabled={quantity === product.stock}
+                className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
+                  quantity === product.stock
+                    ? 'bg-slate-200 opacity-50 cursor-not-allowed'
+                    : 'bg-slate-100'
+                }`}
                 onClick={increaseQuantity}
               >
                 <PlusIcon />
