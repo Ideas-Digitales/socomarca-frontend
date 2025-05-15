@@ -8,6 +8,7 @@ const links = [
   { name: 'Carro de compra', href: '/carro-de-compra' },
   { name: 'Finalizar compra', href: '/finalizar-compra' },
   { name: 'Compra exitosa', href: '/compra-exitosa' },
+  { name: 'Compra fallida', href: '/compra-fallida' },
   { name: 'Mi cuenta', href: '/mi-cuenta' },
   { name: 'Términos y Condiciones', href: '/terminos-y-condiciones' },
   { name: 'Política de Privacidad', href: '/politica-de-privacidad' },
