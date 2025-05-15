@@ -1,31 +1,47 @@
 'use client';
 
+import { ArrowRightOnRectangleIcon, ChevronRightIcon, HeartIcon, MapPinIcon, ShoppingBagIcon, UserIcon } from "@heroicons/react/24/outline";
+
+
 const items = [
-  { key: 'datos', label: 'Datos personales', icon: '' },
-  { key: 'direcciones', label: 'Direcciones', icon: '' },
-  { key: 'favoritos', label: 'Mis favoritos', icon: '' },
-  { key: 'compras', label: 'Mis compras', icon: '' },
-  { key: 'logout', label: 'Cerrar sesión', icon: '' },
+  { key: 'datos', label: 'Datos personales', icon: UserIcon },
+  { key: 'direcciones', label: 'Direcciones', icon: MapPinIcon },
+  { key: 'favoritos', label: 'Mis favoritos', icon: HeartIcon },
+  { key: 'compras', label: 'Mis compras', icon: ShoppingBagIcon },
+  { key: 'logout', label: 'Cerrar sesión', icon: ArrowRightOnRectangleIcon },
 ];
 
-export default function Sidebar({ selectedKey, onSelect }: {
+
+export default function Sidebar({
+  selectedKey,
+  onSelect,
+  onLogoutClick, // nuevo
+}: {
   selectedKey: string;
   onSelect: (key: string) => void;
+  onLogoutClick?: () => void; // opcional
 }) {
   return (
-    <div className="w-full md:w-64 bg-white rounded-lg shadow">
+    <div className="w-full md:w-64 bg-white rounded-lg shadow h-fit">
       {items.map(item => (
-        <button
-          key={item.key}
-          onClick={() => onSelect(item.key)}
-          className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium border-b hover:bg-gray-50 ${
-            selectedKey === item.key ? 'bg-lime-100 text-black' : 'text-gray-700'
-          }`}
-        >
-          <span>{item.icon}</span>
-          <span>{item.label}</span>
-        </button>
-      ))}
+  <button
+  key={item.key}
+  onClick={() =>
+    item.key === 'logout' ? onLogoutClick?.() : onSelect(item.key)
+  }
+  className={`w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium border-b border-b-slate-200 hover:bg-gray-50 ${
+    selectedKey === item.key ? 'bg-lime-100 text-black' : 'text-gray-700'
+  }`}
+>
+  <div className="flex items-center gap-3">
+    <item.icon className="w-5 h-5" />
+    <span> {item.label} </span>
+  </div>
+  <ChevronRightIcon className="w-4 h-4 text-gray-600" />
+</button>
+
+))}
+
     </div>
   );
 } 
