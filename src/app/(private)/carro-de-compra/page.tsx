@@ -102,78 +102,110 @@ export default function CarroDeCompraPage() {
             </span>
           </h2>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border border-slate-100 bg-slate-50 font-semibold text-gray-600 text-left">
-                  <th className="p-4 text-center font-semibold text-black">
-                    Producto
-                  </th>
-                  <th className="p-4 text-center font-semibold text-black">
-                    Cantidad
-                  </th>
-                  <th className="p-4 text-center font-semibold text-black">
-                    Precio
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {productos.map((p) => (
-                  <tr key={p.id} className="border border-slate-100">
-                    <td className="px-4 py-2 flex items-center gap-4">
-                      <img
-                        src={p.imagen}
-                        alt={p.nombre}
-                        className="w-12 h-16 object-contain rounded"
-                        onError={(e) => {
-                          const target = e.currentTarget;
-                          target.onerror = null;
-                          target.src = "/assets/global/logo_plant.png";
-                          target.classList.add("grayscale", "opacity-50");
-                        }}
-                      />
+          {/* Tabla para pantallas grandes */}
+<div className="hidden lg:block overflow-x-auto">
+  <table className="min-w-full text-sm">
+    <thead>
+      <tr className="border border-slate-100 bg-slate-50 font-semibold text-gray-600 text-left">
+        <th className="p-4 text-center font-semibold text-black">Producto</th>
+        <th className="p-4 text-center font-semibold text-black">Cantidad</th>
+        <th className="p-4 text-center font-semibold text-black">Precio</th>
+      </tr>
+    </thead>
+    <tbody>
+      {productos.map((p) => (
+        <tr key={p.id} className="border border-slate-100">
+          <td className="px-4 py-2 flex items-center gap-4">
+            <img
+              src={p.imagen}
+              alt={p.nombre}
+              className="w-12 h-16 object-contain rounded"
+              onError={(e) => {
+                const target = e.currentTarget;
+                target.onerror = null;
+                target.src = "/assets/global/logo_plant.png";
+                target.classList.add("grayscale", "opacity-50");
+              }}
+            />
+            <div>
+              <p className="text-xs text-slate-400">{p.marca}</p>
+              <p className="text-black text-xs">{p.nombre}</p>
+            </div>
+          </td>
+          <td className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <button onClick={() => cambiarCantidad(p.id, -1)} className="px-2 py-1 bg-gray-200 rounded">−</button>
+              <span className="w-8 text-center">{p.cantidad}</span>
+              <button onClick={() => cambiarCantidad(p.id, 1)} className="px-2 py-1 bg-gray-200 rounded">+</button>
+            </div>
+          </td>
+          <td className="p-4 text-right font-bold text-gray-700">
+            <div className="flex flex-row justify-between">
+              <span>${(p.precio * p.cantidad).toLocaleString("es-CL")}</span>
+              <button onClick={() => setProductoAEliminar(p)} className="text-black hover:cursor-pointer hover:text-red-500" title="Eliminar producto">
+                <TrashIcon className="w-5 h-5" />
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
-                      <div>
-                        <p className="text-xs text-slate-400 ">{p.marca}</p>
-                        <p className="text-black text-xs">{p.nombre}</p>
-                      </div>
-                    </td>
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => cambiarCantidad(p.id, -1)}
-                          className="px-2 py-1 bg-gray-200 rounded"
-                        >
-                          −
-                        </button>
-                        <span className="w-8 text-center">{p.cantidad}</span>
-                        <button
-                          onClick={() => cambiarCantidad(p.id, 1)}
-                          className="px-2 py-1 bg-gray-200 rounded"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </td>
-                    <td className="p-4 text-right font-bold text-gray-700">
-                      <div className="flex flex-row justify-between">
-                        <span>
-                          ${(p.precio * p.cantidad).toLocaleString("es-CL")}
-                        </span>
-                        <button
-                          onClick={() => setProductoAEliminar(p)}
-                          className="text-black hover:cursor-pointer hover:text-red-500"
-                          title="Eliminar producto"
-                        >
-                          <TrashIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+{/* Layout en tarjetas para móviles */}
+<div className="lg:hidden flex flex-col gap-4">
+  {productos.map((p) => (
+    <div key={p.id} className="relative flex gap-4 bg-white rounded-lg p-4 shadow-sm">
+      {/* Botón eliminar arriba a la derecha */}
+      <button
+        onClick={() => setProductoAEliminar(p)}
+        className="absolute top-2 right-2 text-black hover:text-red-500"
+        title="Eliminar producto"
+      >
+        <TrashIcon className="w-5 h-5" />
+      </button>
+
+      <img
+        src={p.imagen}
+        alt={p.nombre}
+        className="w-16 h-20 object-contain rounded"
+        onError={(e) => {
+          const target = e.currentTarget;
+          target.onerror = null;
+          target.src = "/assets/global/logo_plant.png";
+          target.classList.add("grayscale", "opacity-50");
+        }}
+      />
+
+      <div className="flex-1 pr-6">
+        <p className="text-xs text-slate-400">{p.marca}</p>
+        <p className="text-sm font-semibold text-black">{p.nombre}</p>
+        <p className="text-sm font-bold text-gray-700 mt-1">
+          ${(p.precio * p.cantidad).toLocaleString("es-CL")}
+        </p>
+
+        <div className="flex items-center gap-2 mt-2">
+          <button
+            onClick={() => cambiarCantidad(p.id, -1)}
+            className="px-2 py-1 bg-gray-200 rounded"
+          >
+            −
+          </button>
+          <span className="w-6 text-center">{p.cantidad}</span>
+          <button
+            onClick={() => cambiarCantidad(p.id, 1)}
+            className="px-2 py-1 bg-gray-200 rounded"
+          >
+            +
+          </button>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+
 
           <div className="mt-6">
             <button
