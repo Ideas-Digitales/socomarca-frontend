@@ -1,18 +1,24 @@
 'use client';
 
-/**
- * Sistema de búsqueda inteligente con las siguientes características:
- * - Ignora acentos/tildes (ej: buscar "cafe" encuentra "café")
- * - Tolera errores ortográficos comunes (ej: "arros" encuentra "arroz")
- * - Búsqueda de múltiples términos (ej: "arroz aceite" encuentra ambos productos)
- * - Ordenación por relevancia (productos con más coincidencias aparecen primero)
- */
-
 import { Product, ProductToBuy } from '@/interfaces/product.interface';
 import { fetchGetProducts } from '@/services/actions/products.actions';
 import { create } from 'zustand';
 import { useEffect } from 'react';
 
+// Añadimos la interfaz para la metadata de paginación
+interface PaginationMeta {
+  total_items: number;
+  page_size: number;
+  current_page: number;
+  total_pages: number;
+  links: {
+    self: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+}
+
+// Actualizamos la interfaz StoreState para incluir la meta y páginación
 interface StoreState {
   products: Product[];
   filteredProducts: Product[];
@@ -21,42 +27,40 @@ interface StoreState {
   isMobile: boolean;
   isTablet: boolean;
   cartProducts: ProductToBuy[];
-  addProcuctToCart: (product: Product, quantity: number) => void;
+  paginationMeta: PaginationMeta | null;
+  currentPage: number;
+  setPage: (page: number) => void;
+  nextPage: () => void;
+  prevPage: () => void;
+  isQaMode: boolean;
+  addProductToCart: (product: Product, quantity: number) => void;
   incrementProductInCart: (productId: number) => void;
   decrementProductInCart: (productId: number) => void;
   removeProductFromCart: (productId: number) => void;
+  removeAllQuantityByProductId: (productId: number) => void;
   clearCart: () => void;
-  setProducts: (products: Product[]) => void;
+  setProducts: (products: Product[], meta?: PaginationMeta) => void;
   setSearchTerm: (term: string) => void;
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (page?: number, size?: number) => Promise<void>;
   checkIsMobile: () => void;
   checkIsTablet: () => void;
 }
 
-/**
- * Normaliza el texto eliminando acentos y convirtiendo a minúsculas
- * Permite búsquedas sin importar mayúsculas/minúsculas o acentos
- */
+// Las funciones de normalización y ranking se mantienen iguales
 const normalizeText = (text: string): string => {
+  // Tu código existente...
   return text
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 };
 
-/**
- * Calcula la distancia de Levenshtein entre dos palabras
- * Permite detectar términos similares con errores ortográficos
- * @see https://www.geeksforgeeks.org/introduction-to-levenshtein-distance/
- */
 const levenshteinDistance = (a: string, b: string): number => {
-  // Implementación de algoritmo Levenshtein
-  // Retorna cuántos cambios se necesitan para transformar una palabra en otra
+  // Tu código existente...
   const matrix = Array(b.length + 1)
     .fill(null)
     .map(() => Array(a.length + 1).fill(null));
 
-  // Resto del código sin cambios...
   for (let i = 0; i <= a.length; i++) {
     matrix[0][i] = i;
   }
@@ -79,25 +83,17 @@ const levenshteinDistance = (a: string, b: string): number => {
   return matrix[b.length][a.length];
 };
 
-/**
- * Calcula una puntuación de relevancia entre un producto y los términos de búsqueda
- * Usa un sistema de puntos que prioriza coincidencias en el siguiente orden:
- * 1. Coincidencias exactas en nombre (mayor prioridad)
- * 2. Coincidencias parciales en nombre
- * 3. Palabras similares en nombre
- * 4. Coincidencias en descripción (menor prioridad)
- */
 const calculateRelevanceScore = (
   product: Product,
   searchWords: string[]
 ): number => {
+  // Tu código existente...
   // Normalizar nombre y descripción del producto
   const normalizedName = normalizeText(product.name);
   const normalizedDescription = product.description
     ? normalizeText(product.description)
     : '';
 
-  // Resto del código sin cambios...
   // Dividir el nombre del producto en palabras
   const productWords = normalizedName
     .split(/\s+/)
@@ -118,7 +114,6 @@ const calculateRelevanceScore = (
       bestWordMatch = Math.max(bestWordMatch, 100 + searchWord.length * 2);
     }
 
-    // Resto del código sin cambios...
     // Coincidencia exacta en la descripción
     if (normalizedDescription.includes(searchWord)) {
       // Bonus menor por coincidencia en descripción
@@ -162,7 +157,6 @@ const calculateRelevanceScore = (
       }
     }
 
-    // Resto del código sin cambios...
     // Comparar con palabras de la descripción (menor prioridad)
     for (const descWord of descriptionWords) {
       // Coincidencia exacta de palabra completa en descripción
@@ -216,12 +210,8 @@ const calculateRelevanceScore = (
   return totalScore;
 };
 
-/**
- * Filtra y ordena productos según relevancia con la búsqueda
- * Maneja múltiples términos y ordena resultados por relevancia
- * @example "arroz aceite" → Muestra primero productos que contienen ambos términos
- */
 function filterAndRankProducts(products: Product[], term: string): Product[] {
+  // Tu código existente...
   if (!term) return products;
 
   // Normalizar y dividir el término de búsqueda en palabras individuales
@@ -249,10 +239,7 @@ function filterAndRankProducts(products: Product[], term: string): Product[] {
   return matchingProducts.map((item) => item.product);
 }
 
-/**
- * Store global de la aplicación utilizando Zustand
- * Gestiona productos, búsqueda inteligente y carrito de compras
- */
+// Actualizamos el store para incluir la paginación
 const useStore = create<StoreState>((set, get) => ({
   isLoading: false,
   products: [],
@@ -261,9 +248,33 @@ const useStore = create<StoreState>((set, get) => ({
   isMobile: false,
   isTablet: false,
   cartProducts: [],
+  paginationMeta: null,
+  currentPage: 1,
+  isQaMode: process.env.NEXT_PUBLIC_QA_MODE === 'true',
+  setPage: (page: number) => {
+    set({ currentPage: page });
+    get().fetchProducts(page);
+  },
+  nextPage: () => {
+    const { currentPage, paginationMeta } = get();
+    if (paginationMeta && currentPage < paginationMeta.total_pages) {
+      const nextPage = currentPage + 1;
+      set({ currentPage: nextPage });
+      get().fetchProducts(nextPage);
+    }
+  },
+
+  prevPage: () => {
+    const { currentPage } = get();
+    if (currentPage > 1) {
+      const prevPage = currentPage - 1;
+      set({ currentPage: prevPage });
+      get().fetchProducts(prevPage);
+    }
+  },
 
   // Métodos del carrito sin cambios...
-  addProcuctToCart: (product: Product, quantity) => {
+  addProductToCart: (product: Product, quantity) => {
     const { cartProducts } = get();
     const existingProduct = cartProducts.find((item) => item.id === product.id);
     if (existingProduct) {
@@ -311,23 +322,24 @@ const useStore = create<StoreState>((set, get) => ({
   clearCart: () => {
     set({ cartProducts: [] });
   },
+  removeAllQuantityByProductId: (productId: number) => {
+    const { cartProducts } = get();
+    const updatedCart = cartProducts.filter((item) => item.id !== productId);
+    set({ cartProducts: updatedCart });
+  },
 
-  /**
-   * Actualiza productos y aplica filtro de búsqueda si existe término
-   */
-  setProducts: (products: Product[]) => {
+  // Actualiza productos y metadata
+  setProducts: (products: Product[], meta?: PaginationMeta) => {
     const searchTerm = get().searchTerm;
     set({
       products,
       filteredProducts: searchTerm
         ? filterAndRankProducts(products, searchTerm)
         : products,
+      paginationMeta: meta || get().paginationMeta,
     });
   },
 
-  /**
-   * Actualiza término de búsqueda y filtra productos según relevancia
-   */
   setSearchTerm: (term: string) => {
     const { products } = get();
     set({
@@ -336,22 +348,22 @@ const useStore = create<StoreState>((set, get) => ({
     });
   },
 
-  /**
-   * Obtiene productos desde el servidor
-   */
-  fetchProducts: async () => {
+  fetchProducts: async (page = 1, size = 9) => {
     try {
       set({ isLoading: true });
-      const { data } = await fetchGetProducts();
+      const response = await fetchGetProducts({ page, size });
 
-      if (Array.isArray(data)) {
+      if (response.ok && response.data) {
+        console.log(response.data);
         set({
-          products: data,
-          filteredProducts: data,
+          products: response.data.data,
+          filteredProducts: response.data.data,
+          paginationMeta: response.data.meta,
+          currentPage: response.data.meta.current_page,
           isLoading: false,
         });
       } else {
-        console.error('La respuesta no contiene un array de productos:', data);
+        console.error('Error en la respuesta del servidor:', response.error);
         set({ isLoading: false });
       }
     } catch (error) {
@@ -360,9 +372,6 @@ const useStore = create<StoreState>((set, get) => ({
     }
   },
 
-  /**
-   * Detecta si el dispositivo es móvil para adaptación responsive
-   */
   checkIsMobile: () => {
     if (typeof window !== 'undefined') {
       const isMobile = window.innerWidth < 640;
@@ -377,9 +386,6 @@ const useStore = create<StoreState>((set, get) => ({
   },
 }));
 
-/**
- * Hook para inicializar y gestionar la detección de dispositivos móviles
- */
 export const useInitMobileDetection = () => {
   const checkIsMobile = useStore((state) => state.checkIsMobile);
   const checkIsTablet = useStore((state) => state.checkIsTablet);

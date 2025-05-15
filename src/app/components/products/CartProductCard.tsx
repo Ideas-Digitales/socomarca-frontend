@@ -12,6 +12,7 @@ export default function CartProductCard({ product, index }: Props) {
     removeProductFromCart,
     incrementProductInCart,
     decrementProductInCart,
+    removeAllQuantityByProductId,
   } = useStore();
 
   const decreaseQuantity = () => {
@@ -102,7 +103,7 @@ export default function CartProductCard({ product, index }: Props) {
 
             <TrashIcon
               className="cursor-pointer"
-              onClick={() => removeProductFromCart(product.id)}
+              onClick={() => removeAllQuantityByProductId(product.id)}
               color="#E11D48"
               width={16}
               height={16}
