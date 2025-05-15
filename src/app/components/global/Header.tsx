@@ -1,9 +1,9 @@
-'use client';
-import { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
-import { Product } from '@/interfaces/product.interface';
-import Link from 'next/link';
-import useStore, { useInitMobileDetection } from '@/stores/useStore';
+"use client";
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { Product } from "@/interfaces/product.interface";
+import Link from "next/link";
+import useStore, { useInitMobileDetection } from "@/stores/useStore";
 import {
   Bars3Icon,
   HeartIcon,
@@ -12,9 +12,10 @@ import {
   ShoppingCartIcon,
   UserIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
-const logoImageUrl = '/assets/global/logo-socomarca.png';
-const imagoLogoUrl = '/assets/global/imagotipo.png';
+} from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+const logoImageUrl = "/assets/global/logo-socomarca.png";
+const imagoLogoUrl = "/assets/global/imagotipo.png";
 
 interface Props {
   carro: Product[];
@@ -37,14 +38,14 @@ export default function Header({ carro }: Props) {
       if (
         mobileMenuRef.current &&
         !mobileMenuRef.current.contains(event.target as Node) &&
-        (event.target as HTMLElement).id !== 'menu-toggle-btn'
+        (event.target as HTMLElement).id !== "menu-toggle-btn"
       ) {
         setMenuMobileOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [abierto]);
 
   useEffect(() => {
@@ -57,12 +58,14 @@ export default function Header({ carro }: Props) {
     setMenuMobileOpen(!menuMobileOpen);
   };
 
+  const router = useRouter();
+
   const menuItems = [
-    { name: 'Inicio', href: '/' },
-    { name: 'Historial de compra', href: '/mis-compras' },
-    { name: 'Favoritos', href: '/favoritos' },
-    { name: 'Datos personales', href: '/datos-personales' },
-    { name: 'Carrito', href: '/carro-de-compra' },
+    { name: "Inicio", href: "/" },
+    { name: "Historial de compra", href: "/mis-compras" },
+    { name: "Favoritos", href: "/favoritos" },
+    { name: "Datos personales", href: "/datos-personales" },
+    { name: "Carrito", href: "/carro-de-compra" },
   ];
 
   return (
@@ -96,6 +99,8 @@ export default function Header({ carro }: Props) {
                 width={28}
                 height={34}
                 alt="Imagologo"
+                onClick={() => router.push("/")}
+                className="cursor-pointer"
               />
             )}
           </div>
@@ -105,11 +110,12 @@ export default function Header({ carro }: Props) {
               width={230}
               height={200}
               alt="Logo"
-              className="hidden sm:block py-[4px]"
+              className="hidden sm:block py-[4px] cursor-pointer"
               style={{
-                width: 'auto',
-                height: 'auto',
+                width: "auto",
+                height: "auto",
               }}
+              onClick={() => router.push("/")}
             />
           )}
           <div className="flex items-end gap-4">
@@ -144,7 +150,7 @@ export default function Header({ carro }: Props) {
       {menuMobileOpen && (
         <div
           className="fixed inset-0 z-40 transition-opacity duration-300"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }}
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.25)" }}
           aria-hidden="true"
         />
       )}
@@ -153,11 +159,18 @@ export default function Header({ carro }: Props) {
       <div
         ref={mobileMenuRef}
         className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out shadow-lg ${
-          menuMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          menuMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <Image src={imagoLogoUrl} width={28} height={34} alt="Imagologo" />
+          <Image
+            src={imagoLogoUrl}
+            width={28}
+            height={34}
+            alt="Imagologo"
+            onClick={() => router.push("/")}
+            className="cursor-pointer"
+          />
           <button
             onClick={toggleMobileMenu}
             className="text-gray-500 hover:text-gray-700"

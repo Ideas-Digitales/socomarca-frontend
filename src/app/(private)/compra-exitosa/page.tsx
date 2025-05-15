@@ -33,8 +33,8 @@ export default function CompraExitosaPage() {
           Volver al Home
         </button>
 
-        <p className="mt-6 text-sm text-gray-700 flex items-center justify-center gap-2">
-          <InformationCircleIcon className="w-5 h-5 text-gray-500" />
+        <p className="mt-6 text-sm text-gray-700 flex items-start md:items-center justify-center gap-2">
+          <InformationCircleIcon className="w-6 h-6 lg:w-5 lg:h-5 text-gray-500" />
           Te enviaremos un mensaje a tu correo con el detalle de tu compra
         </p>
       </div>

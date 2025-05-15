@@ -60,7 +60,7 @@ export default function CartProductCard({ product, index }: Props) {
       </div>
       <div className="flex flex-col">
         <span className="text-[#64748B] text-[12px] font-medium">
-          {product.brand}
+          {product.brand_id}
         </span>
         <span className="text-[12px] font-medium">
           {truncateText(product.name, 20)}
