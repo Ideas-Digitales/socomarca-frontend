@@ -29,9 +29,6 @@ export default function MiCuentaPage() {
     null
   );
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [direccionEditando, setDireccionEditando] = useState<number | null>(
-    null
-  );
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -241,7 +238,6 @@ export default function MiCuentaPage() {
                         <button
                           title="Editar"
                           onClick={() => {
-                            setDireccionEditando(idx);
                             setModalAbierto(true);
                           }}
                         >
@@ -258,7 +254,6 @@ export default function MiCuentaPage() {
 
                 <button
                   onClick={() => {
-                    setDireccionEditando(null); // nueva
                     setModalAbierto(true);
                   }}
                   className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
