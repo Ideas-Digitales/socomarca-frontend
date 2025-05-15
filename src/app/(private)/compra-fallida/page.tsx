@@ -1,5 +1,4 @@
 "use client";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
 export default function CompraFallidaPage() {
@@ -7,8 +6,6 @@ export default function CompraFallidaPage() {
 
   // Simulación de datos
   const numeroOrden = "95491147";
-  const totalCompra = 36250;
-  const direccion = "Los alamos #444 Providencia, Región Metropolitana";
 
   return (
     <div className="bg-red-50 min-h-[60vh] flex justify-center py-6 md:py-10 px-4">
