@@ -1,6 +1,7 @@
 import useStore from '@/stores/useStore';
 import CartProductCard from './CartProductCard';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function CartProductsContainer() {
   const { cartProducts } = useStore();
@@ -54,9 +55,11 @@ export default function CartProductsContainer() {
             </span>
           </div>
           <div className="w-full p-3">
-            <button className="text-white bg-lime-500 w-full py-3 px-12 rounded-[6px]">
-              Finalizar compra
-            </button>
+            <Link href="/carro-de-compra">
+              <button className="text-white bg-lime-500 w-full py-3 px-12 rounded-[6px] cursor-pointer">
+                Finalizar compra
+              </button>
+            </Link>
           </div>
         </div>
       )}

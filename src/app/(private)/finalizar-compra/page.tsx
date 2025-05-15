@@ -228,7 +228,7 @@ const goNext= () => {
             de tankandtrailco.cl
           </div>
 
-          <button onClick={goNext} className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded">
+          <button onClick={goNext} className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer">
             Finalizar compra
           </button>
         </aside>

@@ -1,94 +1,34 @@
-"use client";
-import { useState } from "react";
-import { TrashIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
-
-interface Producto {
-  id: number;
-  nombre: string;
-  marca: string;
-  precio: number;
-  cantidad: number;
-  imagen: string;
-}
+'use client';
+import { useState } from 'react';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import useStore from '@/stores/useStore';
 
 export default function CarroDeCompraPage() {
   const router = useRouter();
-  const [productos, setProductos] = useState<Producto[]>([
-    {
-      id: 0,
-      nombre: "Arroz granel laminado",
-      marca: "Miraflores",
-      precio: 1390,
-      cantidad: 1,
-      imagen: "/img/arroz.png",
-    },
-    {
-      id: 1,
-      nombre: "Fideos espagueti 500g",
-      marca: "Carozzi",
-      precio: 890,
-      cantidad: 1,
-      imagen: "/img/fideos.png",
-    },
-    {
-      id: 2,
-      nombre: "Aceite vegetal 1L",
-      marca: "Miraflores",
-      precio: 2290,
-      cantidad: 1,
-      imagen: "/img/aceite.png",
-    },
-    {
-      id: 3,
-      nombre: "Azúcar granulada 1kg",
-      marca: "Iansa",
-      precio: 1190,
-      cantidad: 1,
-      imagen: "/img/azucar.png",
-    },
-    {
-      id: 4,
-      nombre: "Sal fina 1kg",
-      marca: "Lobos",
-      precio: 450,
-      cantidad: 1,
-      imagen: "/img/sal.png",
-    },
-  ]);
+  const {
+    cartProducts,
+    removeAllQuantityByProductId,
+    decrementProductInCart,
+    incrementProductInCart,
+  } = useStore();
 
   const backHome = () => {
-    router.push("/");
+    router.push('/');
   };
 
   const goNext = () => {
-    router.push("/finalizar-compra")
-  }
+    router.push('/finalizar-compra');
+  };
 
-  const [productoAEliminar, setProductoAEliminar] = useState<Producto | null>(
+  const [idProductoAEliminar, setIdProductoAEliminar] = useState<number | null>(
     null
   );
-  const eliminarProducto = () => {
-    if (productoAEliminar) {
-      setProductos((prev) => prev.filter((p) => p.id !== productoAEliminar.id));
-      setProductoAEliminar(null);
-    }
-  };
 
-  const cambiarCantidad = (id: number, delta: number) => {
-    setProductos((prev) =>
-      prev.map((producto) =>
-        producto.id === id
-          ? {
-              ...producto,
-              cantidad: Math.max(1, producto.cantidad + delta),
-            }
-          : producto
-      )
-    );
-  };
-
-  const subtotal = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+  const subtotal = cartProducts.reduce(
+    (acc, p) => acc + p.price * p.quantity,
+    0
+  );
 
   return (
     <div className="w-full bg-slate-100 min-h-screen p-4">
@@ -96,9 +36,9 @@ export default function CarroDeCompraPage() {
         {/* Sección del carrito */}
         <div className="w-full lg:w-3/4 bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-bold mb-4">
-            Carro{" "}
+            Carro{' '}
             <span className="text-lime-500 text-base font-normal">
-              ({productos.length} productos)
+              ({cartProducts.length} productos)
             </span>
           </h2>
 
@@ -118,38 +58,38 @@ export default function CarroDeCompraPage() {
                 </tr>
               </thead>
               <tbody>
-                {productos.map((p) => (
+                {cartProducts.map((p) => (
                   <tr key={p.id} className="border border-slate-100">
                     <td className="px-4 py-2 flex items-center gap-4">
                       <img
                         src={p.imagen}
-                        alt={p.nombre}
+                        alt={p.name}
                         className="w-12 h-16 object-contain rounded"
                         onError={(e) => {
                           const target = e.currentTarget;
                           target.onerror = null;
-                          target.src = "/assets/global/logo_plant.png";
-                          target.classList.add("grayscale", "opacity-50");
+                          target.src = '/assets/global/logo_plant.png';
+                          target.classList.add('grayscale', 'opacity-50');
                         }}
                       />
 
                       <div>
-                        <p className="text-xs text-slate-400 ">{p.marca}</p>
-                        <p className="text-black text-xs">{p.nombre}</p>
+                        <p className="text-xs text-slate-400 ">{p.brand_id}</p>
+                        <p className="text-black text-xs">{p.name}</p>
                       </div>
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => cambiarCantidad(p.id, -1)}
-                          className="px-2 py-1 bg-gray-200 rounded"
+                          onClick={() => decrementProductInCart(p.id)}
+                          className="px-2 py-1 bg-gray-200 rounded cursor-pointer"
                         >
                           −
                         </button>
-                        <span className="w-8 text-center">{p.cantidad}</span>
+                        <span className="w-8 text-center">{p.quantity}</span>
                         <button
-                          onClick={() => cambiarCantidad(p.id, 1)}
-                          className="px-2 py-1 bg-gray-200 rounded"
+                          onClick={() => incrementProductInCart(p.id)}
+                          className="px-2 py-1 bg-gray-200 rounded cursor-pointer"
                         >
                           +
                         </button>
@@ -158,10 +98,10 @@ export default function CarroDeCompraPage() {
                     <td className="p-4 text-right font-bold text-gray-700">
                       <div className="flex flex-row justify-between">
                         <span>
-                          ${(p.precio * p.cantidad).toLocaleString("es-CL")}
+                          ${(p.price * p.quantity).toLocaleString('es-CL')}
                         </span>
                         <button
-                          onClick={() => setProductoAEliminar(p)}
+                          onClick={() => setIdProductoAEliminar(p.id)}
                           className="text-black hover:cursor-pointer hover:text-red-500"
                           title="Eliminar producto"
                         >
@@ -177,7 +117,7 @@ export default function CarroDeCompraPage() {
 
           <div className="mt-6">
             <button
-              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
+              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded cursor-pointer"
               onClick={backHome}
             >
               Seguir comprando
@@ -194,37 +134,49 @@ export default function CarroDeCompraPage() {
           </div>
           <div className="flex justify-between mb-2 pb-3 border-b-[1px] border-b-slate-100">
             <span>Subtotal</span>
-            <span>${subtotal.toLocaleString("es-CL")}</span>
+            <span>${subtotal.toLocaleString('es-CL')}</span>
           </div>
           <div className="flex justify-between font-bold mb-2">
             <span>Total todo medio de pago</span>
-            <span>${subtotal.toLocaleString("es-CL")}</span>
+            <span>${subtotal.toLocaleString('es-CL')}</span>
           </div>
           <p className="text-xs text-gray-500 mb-4">
             Impuestos y envíos calculados al finalizar la compra
           </p>
 
-          <button onClick={goNext} className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded">
+          <button
+            onClick={goNext}
+            disabled={cartProducts.length === 0}
+            className={`w-full ${
+              cartProducts.length > 0
+                ? 'bg-lime-500 hover:bg-lime-600'
+                : 'bg-gray-300 cursor-not-allowed'
+            } text-white py-2 rounded`}
+          >
             Continuar con la compra
           </button>
         </aside>
-        {productoAEliminar && (
+
+        {/* Modal de confirmación para eliminar */}
+        {idProductoAEliminar !== null && (
           <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-120 shadow-lg">
               <h4 className="text-lg font-bold mb-2">Eliminar producto</h4>
               <p className="text-sm text-gray-600 mb-4">
-                ¿Estás seguro que deseas eliminar{" "}
-                <strong>{productoAEliminar.nombre}</strong> del carrito?
+                ¿Estás seguro que deseas eliminar este producto del carrito?
               </p>
               <div className="flex justify-end gap-2">
                 <button
-                  onClick={() => setProductoAEliminar(null)}
+                  onClick={() => setIdProductoAEliminar(null)}
                   className="px-4 py-2 text-sm rounded hover:bg-gray-100"
                 >
                   Cancelar
                 </button>
                 <button
-                  onClick={eliminarProducto}
+                  onClick={() => {
+                    removeAllQuantityByProductId(idProductoAEliminar);
+                    setIdProductoAEliminar(null);
+                  }}
                   className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded"
                 >
                   Eliminar

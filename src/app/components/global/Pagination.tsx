@@ -1,0 +1,179 @@
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+export default function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: PaginationProps) {
+  // Función para generar el rango de páginas a mostrar en desktop
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 7; // Mostrará máximo 7 números de página
+
+    if (totalPages <= maxPagesToShow) {
+      // Si hay menos páginas que el máximo a mostrar, mostramos todas
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Si estamos cerca del inicio
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 5; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push('...');
+        pageNumbers.push(totalPages);
+      }
+      // Si estamos cerca del final
+      else if (currentPage >= totalPages - 2) {
+        pageNumbers.push(1);
+        pageNumbers.push('...');
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pageNumbers.push(i);
+        }
+      }
+      // Si estamos en medio
+      else {
+        pageNumbers.push(1);
+        pageNumbers.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push('...');
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  };
+
+  // Versión simplificada para móvil: muestra solo algunos números
+  const getMobilePageNumbers = () => {
+    const pageNumbers = [];
+
+    // En móvil mostramos como máximo 3 números de página
+    if (totalPages <= 3) {
+      // Si hay 3 o menos páginas, mostramos todas
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Si estamos en la primera página
+      if (currentPage === 1) {
+        pageNumbers.push(1, 2, '...');
+      }
+      // Si estamos en la última página
+      else if (currentPage === totalPages) {
+        pageNumbers.push('...', totalPages - 1, totalPages);
+      }
+      // Para cualquier página intermedia
+      else {
+        pageNumbers.push(
+          currentPage === 2 ? 1 : '...',
+          currentPage,
+          currentPage === totalPages - 1 ? totalPages : '...'
+        );
+      }
+    }
+
+    return pageNumbers;
+  };
+
+  // Manejadores para los botones de Anterior y Siguiente
+  const handlePrevious = () => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  };
+
+  return (
+    <div className="flex py-4 px-2 md:p-[10px] items-center gap-[10px] bg-white rounded-[4px] justify-between border-b border-slate-200">
+      {/* Botón Anterior */}
+      <button
+        onClick={handlePrevious}
+        disabled={currentPage === 1}
+        className={`flex justify-center items-center gap-[6px] ${
+          currentPage === 1 ? 'text-gray-400' : 'text-lime-500 cursor-pointer'
+        }`}
+      >
+        <ChevronLeftIcon width={16} height={16} className="flex-shrink-0" />
+        <span className="text-xs font-medium">Anterior</span>
+      </button>
+
+      {/* Versión para escritorio: números de página más completos */}
+      <div className="hidden sm:flex justify-center items-center gap-2">
+        {getPageNumbers().map((page, index) =>
+          page === '...' ? (
+            <span key={`ellipsis-${index}`} className="text-gray-500">
+              ...
+            </span>
+          ) : (
+            <button
+              key={`page-${page}`}
+              onClick={() => typeof page === 'number' && onPageChange(page)}
+              className={`w-8 h-8 flex items-center justify-center font-semibold ${
+                currentPage === page
+                  ? 'border border-lime-500 rounded-md text-slate-950'
+                  : 'text-gray-700 hover:bg-gray-100 hover:rounded-[6px] transition-all duration-300'
+              }`}
+            >
+              {page}
+            </button>
+          )
+        )}
+      </div>
+
+      {/* Versión para móvil: números de página compactos */}
+      <div className="flex sm:hidden justify-center items-center gap-1">
+        {getMobilePageNumbers().map((page, index) =>
+          page === '...' ? (
+            <span
+              key={`mobile-ellipsis-${index}`}
+              className="text-gray-500 px-1"
+            >
+              ...
+            </span>
+          ) : (
+            <button
+              key={`mobile-page-${page}`}
+              onClick={() => typeof page === 'number' && onPageChange(page)}
+              className={`w-7 h-7 flex items-center justify-center font-medium text-sm ${
+                currentPage === page
+                  ? 'border border-lime-500 rounded-md text-slate-950'
+                  : 'text-gray-700'
+              }`}
+            >
+              {page}
+            </button>
+          )
+        )}
+      </div>
+
+      {/* Botón Siguiente */}
+      <button
+        onClick={handleNext}
+        disabled={currentPage === totalPages}
+        className={`flex justify-center items-center gap-[6px] ${
+          currentPage === totalPages
+            ? 'text-gray-400'
+            : 'text-lime-500 cursor-pointer'
+        }`}
+      >
+        <span className="text-xs font-medium">Siguiente</span>
+        <ChevronRightIcon width={16} height={16} className="flex-shrink-0" />
+      </button>
+    </div>
+  );
+}

@@ -56,7 +56,7 @@ export default function Search() {
   return (
     <div className="bg-white md:bg-slate-100">
       <div className="max-w-7xl mx-auto w-full ">
-        <div className="flex py-4 px-4 sm:py-[28px] flex-col w-full">
+        <div className="flex py-4 px-4 md:px-0 sm:py-[28px] flex-col w-full">
           <label
             htmlFor="search"
             className="hidden sm:block text-base sm:text-[18px] font-medium leading-6 sm:leading-7 mb-2"
@@ -85,7 +85,7 @@ export default function Search() {
             )}
             <button
               onClick={handleSearch}
-              className="flex py-[9px] px-2 sm:px-[15px] justify-end items-center gap-[10px] button-search"
+              className="flex py-[9px] px-2 sm:px-[15px] justify-end items-center gap-[10px] button-search cursor-pointer"
             >
               <MagnifyingGlassIcon color='#fff' width={23} height={24} />
             </button>

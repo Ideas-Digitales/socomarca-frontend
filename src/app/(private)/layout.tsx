@@ -3,7 +3,6 @@
 import Footer from '../components/global/Footer';
 import Header from '../components/global/Header';
 import { useEffect } from 'react';
-import Search from '../components/global/Search';
 import useStore, { useInitMobileDetection } from '@/stores/useStore';
 import LoadingSpinner from '../components/global/LoadingSpinner';
 
@@ -24,7 +23,6 @@ export default function PrivateLayout({
       <div className="flex flex-col min-h-dvh">
         {/* Navbar */}
         <Header carro={cartProducts} />
-        <Search />
 
         <main className="flex-grow relative w-full">
           {isLoading ? (
