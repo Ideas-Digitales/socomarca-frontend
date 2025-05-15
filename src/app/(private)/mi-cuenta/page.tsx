@@ -149,7 +149,7 @@ export default function MiCuentaPage() {
   };
 
   return (
-    <div className="bg-[#f1f5f9] min-h-screen">
+    <div className="bg-[#f1f5f9] min-h-screen px-4">
       <div className="max-w-7xl mx-auto py-6">
         <h1 className="text-3xl font-bold mb-6">Hola, Damary</h1>
         <div className="flex flex-col md:flex-row gap-6">
