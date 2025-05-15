@@ -3,10 +3,10 @@ import Link from 'next/link';
 import FacebookIcon from '../icons/FacebookIcon';
 import TwitterIcon from '../icons/TwitterIcon';
 import InstagramIcon from '../icons/InstagramIcon';
-import PinterestIcon from '../icons/PinterestIcon';
 import YoutubeIcon from '../icons/YoutubeIcon';
-import TelefonoIcon from '../icons/TelefonoIcon';
-import EmailIcon from '../icons/EmailIcon';
+import PinterestIcon from '../icons/PinterestIcon';
+import { EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+
 const masterCardImageUrl = '/assets/footer/mastercard.png';
 const americanExpressImageUrl = '/assets/footer/american-express.png';
 const paypalImageUrl = '/assets/footer/paypal.png';
@@ -97,7 +97,9 @@ export default function Footer() {
         <div className="flex flex-col items-start gap-[10px]">
           <h3 className="text-gray-500 font-bold">Contacto</h3>
           <div className="flex gap-1">
-            <TelefonoIcon width={25} height={24} />
+            <span className="text-lime-600">
+              <PhoneIcon width={25} height={24} />
+            </span>
             <div>
               <p className="flex flex-col gap-1">
                 <span className="text-lime-600 text-[16px]">
@@ -108,7 +110,9 @@ export default function Footer() {
             </div>
           </div>
           <div className="flex gap-1">
-            <EmailIcon width={25} height={24} />
+            <span className="text-lime-600">
+              <EnvelopeIcon width={25} height={24} />
+            </span>
             <div>
               <p className="flex flex-col gap-1">
                 <span className="text-lime-600 text-[16px]">

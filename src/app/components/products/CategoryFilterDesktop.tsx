@@ -1,6 +1,10 @@
 import { useState } from 'react';
-import PlusIcon from '../icons/PlusIcon';
-import { ChevronDownIcon, ChevronRightIcon, MinusIcon } from 'lucide-react';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  MinusIcon,
+  PlusIcon,
+} from '@heroicons/react/24/outline';
 
 // Define types for our categories
 type SubCategory = {
@@ -81,7 +85,7 @@ export default function CategoryFilterDesktop() {
   };
 
   return (
-    <div className="flex flex-col items-start bg-white w-[200px] border-r border-gray-200">
+    <div className="flex flex-col items-start bg-white w-[200px]">
       {/* Main category header */}
       <div
         className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer"
@@ -89,9 +93,9 @@ export default function CategoryFilterDesktop() {
       >
         <span className="font-bold uppercase text-gray-800">Categoría</span>
         {isMainCategoryOpen ? (
-          <MinusIcon color="#84CC16" />
+          <MinusIcon width={24} height={24} color="#84CC16" />
         ) : (
-          <PlusIcon color="#84CC16" />
+          <PlusIcon width={24} height={24} color="#84CC16" />
         )}
       </div>
 
@@ -108,9 +112,9 @@ export default function CategoryFilterDesktop() {
                 <span className="text-sm">{category.name}</span>
                 {category.hasSubCategories &&
                   (category.isOpen ? (
-                    <ChevronDownIcon className="text-lime-500" />
+                    <ChevronDownIcon width={24} height={24} className="text-lime-500" />
                   ) : (
-                    <ChevronRightIcon className="text-slate-400" />
+                    <ChevronRightIcon width={24}height={24} className="text-slate-400" />
                   ))}
               </div>
 
@@ -135,19 +139,19 @@ export default function CategoryFilterDesktop() {
       {/* MARCAS section */}
       <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-t border-b border-gray-200 cursor-pointer">
         <span className="font-bold uppercase text-gray-800">Marcas</span>
-        <PlusIcon color="#84CC16" />
+        <PlusIcon width={24} height={24} color="#84CC16" />
       </div>
 
       {/* MIS FAVORITOS section */}
       <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer">
         <span className="font-bold uppercase text-gray-800">Mis favoritos</span>
-        <PlusIcon color="#84CC16" />
+        <PlusIcon width={24} height={24} color="#84CC16" />
       </div>
 
       {/* PRECIO section */}
       <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer">
         <span className="font-bold uppercase text-gray-800">Precio</span>
-        <MinusIcon color="#84CC16" />
+        <MinusIcon width={24} height={24} color="#84CC16" />
       </div>
 
       {/* Price range slider placeholder */}

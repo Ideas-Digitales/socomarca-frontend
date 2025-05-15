@@ -1,14 +1,14 @@
 'use client';
 
 import AuthView from '@/app/components/auth/AuthView';
-import MailIcon from '@/app/components/icons/MailIcon';
+import { EnvelopeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 export default function CheckEmailPage() {
   return (
     <AuthView showLogo={false}>
       <div className="flex flex-col items-center gap-6 h-full">
-        <MailIcon />
+        <EnvelopeIcon width={64} height={64} color="#84CC16" />
         <h1 className="text-4xl font-bold leading-10">Revisa tu email</h1>
         <p className="leading-6 text-center">
           Te hemos enviado un correo electrónico con el enlace <br /> para que
