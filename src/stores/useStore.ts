@@ -4,6 +4,8 @@ import { Product, ProductToBuy } from '@/interfaces/product.interface';
 import { fetchGetProducts } from '@/services/actions/products.actions';
 import { create } from 'zustand';
 import { useEffect } from 'react';
+import { Category } from '@/interfaces/category.interface';
+import { fetchGetCategories } from '@/services/actions/categories.actions';
 
 // Añadimos la interfaz para la metadata de paginación
 interface PaginationMeta {
@@ -21,6 +23,7 @@ interface PaginationMeta {
 // Actualizamos la interfaz StoreState para incluir la meta y páginación
 interface StoreState {
   products: Product[];
+  categories: Category[];
   filteredProducts: Product[];
   isLoading: boolean;
   searchTerm: string;
@@ -42,6 +45,7 @@ interface StoreState {
   setProducts: (products: Product[], meta?: PaginationMeta) => void;
   setSearchTerm: (term: string) => void;
   fetchProducts: (page?: number, size?: number) => Promise<void>;
+  fetchCategories: () => Promise<void>;
   checkIsMobile: () => void;
   checkIsTablet: () => void;
 }
@@ -243,6 +247,7 @@ function filterAndRankProducts(products: Product[], term: string): Product[] {
 const useStore = create<StoreState>((set, get) => ({
   isLoading: false,
   products: [],
+  categories: [],
   filteredProducts: [],
   searchTerm: '',
   isMobile: false,
@@ -368,6 +373,26 @@ const useStore = create<StoreState>((set, get) => ({
       }
     } catch (error) {
       console.error('Error fetching products:', error);
+      set({ isLoading: false });
+    }
+  },
+  fetchCategories: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await fetchGetCategories();
+
+      if (response.ok && response.data) {
+        console.log(response.data);
+        set({
+          categories: response.data,
+          isLoading: false,
+        });
+      } else {
+        console.error('Error en la respuesta del servidor:', response.error);
+        set({ isLoading: false });
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
       set({ isLoading: false });
     }
   },
