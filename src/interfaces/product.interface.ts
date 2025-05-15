@@ -16,9 +16,5 @@ export interface Product {
 
 export interface ProductToBuy extends Product {
   quantity: number;
-<<<<<<< HEAD
-  is_favorite: boolean;
-=======
   is_favorite?: boolean;
->>>>>>> develop
 }

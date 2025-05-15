@@ -44,11 +44,7 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   return (
-<<<<<<< HEAD
-    <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[320px]">
-=======
     <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[320px] border-b-slate-200 border-b">
->>>>>>> develop
       {/* Imagen del producto */}
       <div className="flex items-center justify-center h-[100px] w-full">
         <div

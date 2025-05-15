@@ -1,10 +1,6 @@
 'use client';
 import { useState } from 'react';
-<<<<<<< HEAD
-import { TrashIcon } from '@heroicons/react/24/outline';
-=======
 import { ChevronLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
->>>>>>> develop
 import { useRouter } from 'next/navigation';
 import useStore from '@/stores/useStore';
 
@@ -28,14 +24,6 @@ export default function CarroDeCompraPage() {
   const [idProductoAEliminar, setIdProductoAEliminar] = useState<number | null>(
     null
   );
-<<<<<<< HEAD
-
-  const subtotal = cartProducts.reduce(
-    (acc, p) => acc + p.price * p.quantity,
-    0
-  );
-=======
->>>>>>> develop
 
   const subtotal = cartProducts.reduce(
     (acc, p) => acc + p.price * p.quantity,
@@ -49,14 +37,6 @@ export default function CarroDeCompraPage() {
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
         {/* Sección del carrito */}
         <div className="w-full lg:w-3/4 bg-white rounded-lg shadow p-6">
-<<<<<<< HEAD
-          <h2 className="text-2xl font-bold mb-4">
-            Carro{' '}
-            <span className="text-lime-500 text-base font-normal">
-              ({cartProducts.length} productos)
-            </span>
-          </h2>
-=======
           <div className="flex items-center gap-3">
             <ChevronLeftIcon
               className="w-5 h-5 mb-4 font-bold lg:hidden"
@@ -70,7 +50,6 @@ export default function CarroDeCompraPage() {
               </span>
             </h2>
           </div>
->>>>>>> develop
 
           {/* Tabla para pantallas grandes */}
           <div className="hidden lg:block overflow-x-auto">
@@ -104,11 +83,7 @@ export default function CarroDeCompraPage() {
                         }}
                       />
                       <div>
-<<<<<<< HEAD
-                        <p className="text-xs text-slate-400 ">{p.brand_id}</p>
-=======
                         <p className="text-xs text-slate-400">{p.brand_id}</p>
->>>>>>> develop
                         <p className="text-black text-xs">{p.name}</p>
                       </div>
                     </td>
@@ -206,11 +181,7 @@ export default function CarroDeCompraPage() {
 
           <div className="mt-6">
             <button
-<<<<<<< HEAD
-              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded cursor-pointer"
-=======
               className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded cursor-pointer hidden lg:block"
->>>>>>> develop
               onClick={backHome}
             >
               Seguir comprando

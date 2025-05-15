@@ -45,10 +45,7 @@ interface StoreState {
   setProducts: (products: Product[], meta?: PaginationMeta) => void;
   setSearchTerm: (term: string) => void;
   fetchProducts: (page?: number, size?: number) => Promise<void>;
-<<<<<<< HEAD
-=======
   fetchCategories: () => Promise<void>;
->>>>>>> develop
   checkIsMobile: () => void;
   checkIsTablet: () => void;
 }
