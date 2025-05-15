@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, ChevronLeftIcon} from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
 interface Producto {
@@ -90,17 +90,25 @@ export default function CarroDeCompraPage() {
 
   const subtotal = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
 
+  function goBack() {
+    router.back();
+  }
+
   return (
     <div className="w-full bg-slate-100 min-h-screen p-4">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
         {/* Sección del carrito */}
         <div className="w-full lg:w-3/4 bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold mb-4">
-            Carro{" "}
+        <div className="flex items-center gap-3">
+          <ChevronLeftIcon  className="w-5 h-5 mb-4 font-bold lg:hidden" strokeWidth={3} onClick={goBack}/> 
+          <h2 className="text-2xl font-bold mb-4 ">
+             Carro{" "}
             <span className="text-lime-500 text-base font-normal">
               ({productos.length} productos)
             </span>
           </h2>
+        </div>
+      
 
           {/* Tabla para pantallas grandes */}
 <div className="hidden lg:block overflow-x-auto">
@@ -156,7 +164,7 @@ export default function CarroDeCompraPage() {
 {/* Layout en tarjetas para móviles */}
 <div className="lg:hidden flex flex-col gap-4">
   {productos.map((p) => (
-    <div key={p.id} className="relative flex gap-4 bg-white rounded-lg p-4 shadow-sm">
+    <div key={p.id} className="relative flex gap-4 bg-white p-4 border-b border-b-slate-200">
       {/* Botón eliminar arriba a la derecha */}
       <button
         onClick={() => setProductoAEliminar(p)}
@@ -209,7 +217,7 @@ export default function CarroDeCompraPage() {
 
           <div className="mt-6">
             <button
-              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
+              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded hidden lg:block"
               onClick={backHome}
             >
               Seguir comprando
