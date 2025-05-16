@@ -1,88 +1,84 @@
-"use client";
-import { useState } from "react";
-import RegionComunaSelector from "@/app/components/RegionComunaSelector";
-import { useRouter } from "next/navigation";
+'use client';
+import { useState } from 'react';
+import RegionComunaSelector from '@/app/components/RegionComunaSelector';
+import { useRouter } from 'next/navigation';
+import RutInput from '@/app/components/global/RutInputVisualIndicators';
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
-    nombre: "",
-    rut: "",
-    correo: "",
-    telefono: "",
-    region: "",
-    comuna: "",
-    direccion: "",
-    detallesDireccion: "",
+    nombre: '',
+    rut: '',
+    correo: '',
+    telefono: '',
+    region: '',
+    comuna: '',
+    direccion: '',
+    detallesDireccion: '',
   });
+  const [aceptaTerminos, setAceptaTerminos] = useState(true);
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAceptaTerminos(e.target.checked);
+  };
   const validarEmail = (email: string) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const validarTelefono = (telefono: string) =>
-  /^(\+?56)?(\s?)(0?9)(\s?)[98765432]\d{7}$/.test(telefono);
-
-const validarRUT = (rut: string) => {
-  rut = rut.replace(/\./g, "").replace("-", "").toUpperCase();
-  const cuerpo = rut.slice(0, -1);
-  const dv = rut.slice(-1);
-  let suma = 0;
-  let multiplo = 2;
-
-  for (let i = cuerpo.length - 1; i >= 0; i--) {
-    suma += parseInt(cuerpo[i]) * multiplo;
-    multiplo = multiplo < 7 ? multiplo + 1 : 2;
-  }
-
-  const dvEsperado = 11 - (suma % 11);
-  const dvFinal =
-    dvEsperado === 11 ? "0" : dvEsperado === 10 ? "K" : dvEsperado.toString();
-
-  return dv === dvFinal;
-};
-
+  const validarTelefono = (telefono: string) =>
+    /^(\+?56)?(\s?)(0?9)(\s?)[98765432]\d{7}$/.test(telefono);
 
   const handleChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-) => {
-  const { name, value } = e.target;
-  setFormData((prev) => ({ ...prev, [name]: value }));
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
-  // Validaciones en tiempo real
-  setErrors((prev) => {
-    const newErrors = { ...prev };
+    // Validaciones en tiempo real
+    setErrors((prev) => {
+      const newErrors = { ...prev };
 
-    if (name === "correo") {
-      if (!validarEmail(value)) {
-        newErrors.correo = "Correo inválido";
-      } else {
-        delete newErrors.correo;
+      if (name === 'correo') {
+        if (!validarEmail(value)) {
+          newErrors.correo = 'Correo inválido';
+        } else {
+          delete newErrors.correo;
+        }
       }
-    }
 
-    if (name === "telefono") {
-      if (!validarTelefono(value)) {
-        newErrors.telefono = "Teléfono chileno inválido";
-      } else {
-        delete newErrors.telefono;
+      if (name === 'telefono') {
+        if (!validarTelefono(value)) {
+          newErrors.telefono = 'Teléfono chileno inválido';
+        } else {
+          delete newErrors.telefono;
+        }
       }
-    }
 
-    if (name === "rut") {
-      if (!validarRUT(value)) {
-        newErrors.rut = "RUT inválido";
+      return newErrors;
+    });
+  };
+
+  // Manejador específico para el cambio del RUT
+  const handleRutChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, rut: value }));
+  };
+
+  // Manejador para la validación del RUT
+  const handleRutValidation = (isValid: boolean) => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      if (!isValid && formData.rut) {
+        newErrors.rut = 'RUT inválido';
       } else {
         delete newErrors.rut;
       }
-    }
+      return newErrors;
+    });
+  };
 
-    return newErrors;
-  });
-};
+  const goNext = () => {
+    router.push('/compra-exitosa');
+  };
 
-const goNext= () => {
-  router.push('/compra-exitosa')
-}
   return (
     <div className="bg-[#f1f5f9] min-h-screen p-4">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
@@ -106,15 +102,14 @@ const goNext= () => {
               <label className="block font-medium">
                 Rut<span className="text-red-400">*</span>
               </label>
-              <input
-                type="text"
+              <RutInput
+                className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
                 name="rut"
                 value={formData.rut}
-                onChange={handleChange}
-                className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+                onChange={handleRutChange}
+                onValidationChange={handleRutValidation}
+                errorMessage="RUT inválido"
               />
-              {errors.rut && <p className="text-red-500 text-sm mt-1">{errors.rut}</p>}
-
             </div>
             <div>
               <label className="block font-medium">
@@ -127,8 +122,9 @@ const goNext= () => {
                 onChange={handleChange}
                 className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
               />
-              {errors.correo && <p className="text-red-500 text-sm mt-1">{errors.correo}</p>}
-
+              {errors.correo && (
+                <p className="text-red-500 text-sm mt-1">{errors.correo}</p>
+              )}
             </div>
             <div>
               <label className="block font-medium">
@@ -141,14 +137,15 @@ const goNext= () => {
                 onChange={handleChange}
                 className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
               />
-              {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>}
-
+              {errors.telefono && (
+                <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>
+              )}
             </div>
             <RegionComunaSelector
               region={formData.region}
               comuna={formData.comuna}
               onChange={(field, value) =>
-                setFormData({ ...formData, [field]: value })
+                setFormData((prev) => ({ ...prev, [field]: value }))
               }
             />
             <div>
@@ -201,7 +198,7 @@ const goNext= () => {
             <span>$32.583</span>
           </div>
 
-          <div className="mb-4  border-t-slate-200 border-t pt-3 pb-2">
+          <div className="mb-4 border-t-slate-200 border-t pt-3 pb-2">
             <p className="font-bold">
               Pagar con Webpay (Tarjeta de Crédito y Débito)
             </p>
@@ -218,17 +215,27 @@ const goNext= () => {
           </div>
 
           <div className="text-sm text-gray-600 mb-4">
-            <input type="radio" name="acepta" id="acepta" className="mr-2" />
+            <input
+              type="checkbox"
+              name="acepta"
+              id="acepta"
+              className="mr-2"
+              checked={aceptaTerminos}
+              onChange={handleCheckboxChange}
+            />
             Todos los derechos reservados tankandtrailco.cl
             <br />
-            Al comprar aceptas los{" "}
+            Al comprar aceptas los{' '}
             <a href="#" className="text-green-600 underline">
               términos y condiciones
-            </a>{" "}
+            </a>{' '}
             de tankandtrailco.cl
           </div>
 
-          <button onClick={goNext} className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer">
+          <button
+            onClick={goNext}
+            className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer"
+          >
             Finalizar compra
           </button>
         </aside>

@@ -7,6 +7,7 @@ interface RutInputProps
   onChange?: (value: string) => void;
   onValidationChange?: (isValid: boolean) => void;
   errorMessage?: string;
+  className?: string;
 }
 
 const validateRut = (rut: string): boolean => {

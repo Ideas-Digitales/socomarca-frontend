@@ -135,7 +135,7 @@ export default function CarroDeCompraPage() {
                             </span>
                             <button
                               onClick={() => setIdProductoAEliminar(p.id)}
-                              className="text-black hover:cursor-pointer hover:text-red-500"
+                              className=" hover:cursor-pointer text-red-500"
                               title="Eliminar producto"
                             >
                               <TrashIcon className="w-5 h-5" />
@@ -158,7 +158,7 @@ export default function CarroDeCompraPage() {
                     {/* Botón eliminar arriba a la derecha */}
                     <button
                       onClick={() => setIdProductoAEliminar(p.id)}
-                      className="absolute top-2 right-2 text-black hover:text-red-500"
+                      className="absolute top-2 right-2 text-red-500"
                       title="Eliminar producto"
                     >
                       <TrashIcon className="w-5 h-5" />

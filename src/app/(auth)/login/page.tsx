@@ -85,7 +85,7 @@ export default function LoginPage() {
           </div>
           <div className="flex flex-col items-start gap-[9px] w-full">
             <label htmlFor="password" className="text-[14px]">
-              Password
+              Contraseña
             </label>
             <input
               id="password"
@@ -98,7 +98,7 @@ export default function LoginPage() {
         </div>
 
         {/* Buttons */}
-        <div className="flex px-[1px] justify-between items-center w-full mt-5">
+        <div className="flex flex-col sm:flex-row gap-6 px-[1px] justify-between items-center w-full mt-5">
           <button
             type="submit"
             disabled={!isValid || !password || isLoading}
