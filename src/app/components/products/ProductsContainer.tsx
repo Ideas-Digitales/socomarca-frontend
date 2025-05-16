@@ -26,17 +26,24 @@ export default function ProductsContainer() {
     indexOfLastProduct
   );
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
     // Opcional: desplazar al inicio de los productos
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
   // Efecto para actualizar la vista cuando cambia isMobile
   useEffect(() => {
     if (isMobile) {
       setCurrentView('list');
     }
   }, [isMobile]);
+
+  // Nuevo efecto para resetear la página cuando filteredProducts cambia
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredProducts]);
 
   const handleViewChange = (view: string) => {
     // Solo permitir cambiar la vista si no estamos en móvil
@@ -96,11 +103,13 @@ export default function ProductsContainer() {
           )}
         </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        {totalPages > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
 
       {isTablet && <CartsProductsMobile />}
