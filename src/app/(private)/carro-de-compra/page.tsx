@@ -1,8 +1,8 @@
-'use client';
-import { useState } from 'react';
-import { ChevronLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
-import useStore from '@/stores/useStore';
+"use client";
+import { useState } from "react";
+import { ChevronLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+import useStore from "@/stores/useStore";
 
 export default function CarroDeCompraPage() {
   const router = useRouter();
@@ -14,11 +14,11 @@ export default function CarroDeCompraPage() {
   } = useStore();
 
   const backHome = () => {
-    router.push('/');
+    router.push("/");
   };
 
   const goNext = () => {
-    router.push('/finalizar-compra');
+    router.push("/finalizar-compra");
   };
 
   const [idProductoAEliminar, setIdProductoAEliminar] = useState<number | null>(
@@ -36,7 +36,12 @@ export default function CarroDeCompraPage() {
     <div className="w-full bg-slate-100 min-h-screen p-4">
       <div>
         {cartProducts.length === 0 || !cartProducts ? (
-          <div className="flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center mt-10">
+            <img
+              src="/assets/global/logo_default.png"
+              alt="Logo"
+              className="w-24 h-24 mb-6"
+            />
             <h2 className="text-2xl font-bold mb-4">Tu carrito está vacío</h2>
             <p className="text-gray-500 mb-4">
               Agrega productos a tu carrito para comenzar a comprar.
@@ -59,7 +64,7 @@ export default function CarroDeCompraPage() {
                   onClick={goBack}
                 />
                 <h2 className="text-2xl font-bold mb-4 ">
-                  Carro{' '}
+                  Carro{" "}
                   <span className="text-lime-500 text-base font-normal">
                     ({cartProducts.length} productos)
                   </span>
@@ -93,8 +98,8 @@ export default function CarroDeCompraPage() {
                             onError={(e) => {
                               const target = e.currentTarget;
                               target.onerror = null;
-                              target.src = '/assets/global/logo_default.png';
-                              target.classList.add('grayscale', 'opacity-50');
+                              target.src = "/assets/global/logo_default.png";
+                              target.classList.add("grayscale", "opacity-50");
                             }}
                           />
                           <div>
@@ -126,7 +131,7 @@ export default function CarroDeCompraPage() {
                         <td className="p-4 text-right font-bold text-gray-700">
                           <div className="flex flex-row justify-between">
                             <span>
-                              ${(p.price * p.quantity).toLocaleString('es-CL')}
+                              ${(p.price * p.quantity).toLocaleString("es-CL")}
                             </span>
                             <button
                               onClick={() => setIdProductoAEliminar(p.id)}
@@ -166,8 +171,8 @@ export default function CarroDeCompraPage() {
                       onError={(e) => {
                         const target = e.currentTarget;
                         target.onerror = null;
-                        target.src = '/assets/global/logo_default.png';
-                        target.classList.add('grayscale', 'opacity-50');
+                        target.src = "/assets/global/logo_default.png";
+                        target.classList.add("grayscale", "opacity-50");
                       }}
                     />
 
@@ -177,7 +182,7 @@ export default function CarroDeCompraPage() {
                         {p.name}
                       </p>
                       <p className="text-sm font-bold text-gray-700 mt-1">
-                        ${(p.price * p.quantity).toLocaleString('es-CL')}
+                        ${(p.price * p.quantity).toLocaleString("es-CL")}
                       </p>
 
                       <div className="flex items-center gap-2 mt-2">
@@ -219,11 +224,11 @@ export default function CarroDeCompraPage() {
               </div>
               <div className="flex justify-between mb-2 pb-3 border-b-[1px] border-b-slate-100">
                 <span>Subtotal</span>
-                <span>${subtotal.toLocaleString('es-CL')}</span>
+                <span>${subtotal.toLocaleString("es-CL")}</span>
               </div>
               <div className="flex justify-between font-bold mb-2">
                 <span>Total todo medio de pago</span>
-                <span>${subtotal.toLocaleString('es-CL')}</span>
+                <span>${subtotal.toLocaleString("es-CL")}</span>
               </div>
               <p className="text-xs text-gray-500 mb-4">
                 Impuestos y envíos calculados al finalizar la compra
@@ -234,8 +239,8 @@ export default function CarroDeCompraPage() {
                 disabled={cartProducts.length === 0}
                 className={`w-full ${
                   cartProducts.length > 0
-                    ? 'bg-lime-500 hover:bg-lime-600'
-                    : 'bg-gray-300 cursor-not-allowed'
+                    ? "bg-lime-500 hover:bg-lime-600"
+                    : "bg-gray-300 cursor-not-allowed"
                 } text-white py-2 rounded`}
               >
                 Continuar con la compra
