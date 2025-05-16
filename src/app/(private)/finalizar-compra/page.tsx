@@ -206,9 +206,9 @@ const goNext= () => {
               Pagar con Webpay (Tarjeta de Crédito y Débito)
             </p>
             <img
-              src="/assets/global/webpay.png"
+              src="/assets/global/logo_webpay.png"
               alt="Webpay"
-              className="my-2 w-[70%] max-w-xs"
+              className="my-2 w-[40%] max-w-xs"
             />
             <p className="text-sm text-gray-600">
               Pagar con Redcompra
