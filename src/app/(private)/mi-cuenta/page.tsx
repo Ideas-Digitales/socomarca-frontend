@@ -475,7 +475,7 @@ export default function MiCuentaPage() {
                     <p className="text-xs text-gray-500 mb-4">
                       Impuestos y envíos calculados al finalizar la compra
                     </p>
-                    <button className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded">
+                    <button onClick={() => router.push('/carro-de-compra')} className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded">
                       Continuar con la compra
                     </button>
                   </div>
