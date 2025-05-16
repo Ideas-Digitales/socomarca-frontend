@@ -49,7 +49,7 @@ export default function MiCuentaPage() {
   });
   const listasFavoritas = [
     {
-      nombre: "SM medium",
+      nombre: "Pizzas",
       productos: [
         { nombre: "Arroz granel", imagen: "/img/arroz.png" },
         { nombre: "Fideos", imagen: "/img/arroz.png" },
@@ -143,7 +143,6 @@ export default function MiCuentaPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      // Aquí podrías enviar los datos
       alert("Datos guardados correctamente");
     }
   };
@@ -298,7 +297,11 @@ export default function MiCuentaPage() {
                             key={j}
                             src={prod.imagen}
                             alt={prod.nombre}
-                            className="w-12 h-16 object-cover bg-gray-100 rounded"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src =
+                                "/assets/global/logo_default.png";
+                            }}
+                            className="w-12 h-16 object-contain bg-gray-100 rounded"
                           />
                         ))}
                       </div>
@@ -363,7 +366,12 @@ export default function MiCuentaPage() {
                               key={i}
                               src={producto.imagen}
                               alt={producto.nombre}
-                              className="w-12 h-16 object-cover bg-gray-100 rounded"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src =
+                                  "/assets/global/logo_default.png";
+                              }}
+                              className="w-12 h-16 object-contain bg-gray-100 rounded"
                             />
                           ))}
                         </div>
@@ -380,7 +388,10 @@ export default function MiCuentaPage() {
                             Revisar Detalle
                           </button>
 
-                          <button onClick={() => router.push('/carro-de-compra')} className="bg-lime-500 hover:bg-lime-600 text-white px-4 py-2 rounded text-sm">
+                          <button
+                            onClick={() => router.push("/carro-de-compra")}
+                            className="bg-lime-500 hover:bg-lime-600 text-white px-4 py-2 rounded text-sm"
+                          >
                             Repetir Pedido
                           </button>
                         </div>
@@ -416,9 +427,15 @@ export default function MiCuentaPage() {
                         <div className="flex gap-4 items-center">
                           <img
                             src={p.imagen}
-                            className="w-14 h-16 object-cover"
+                            className="w-14 h-16 object-contain"
                             alt={p.nombre}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src =
+                                "/assets/global/logo_default.png";
+                            }}
                           />
+
                           <div>
                             <p className="text-sm font-medium text-gray-500">
                               {p.marca}
@@ -517,8 +534,13 @@ export default function MiCuentaPage() {
                     <img
                       src={prod.imagen}
                       alt={prod.nombre}
-                      className="w-20 h-24 object-cover rounded mb-2"
+                      className="w-20 h-24 object-contain rounded mb-2"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/assets/global/logo_default.png";
+                      }}
                     />
+
                     <span>{prod.nombre}</span>
                   </div>
                 ))}
