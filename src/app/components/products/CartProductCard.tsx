@@ -17,18 +17,14 @@ export default function CartProductCard({ product, index }: Props) {
     isQaMode,
   } = useStore();
 
-  if (isQaMode) {
+  if (!isQaMode) {
+    console.log(isQaMode)
     product.price = 123123;
     product.brand = {
       brand_id: '1',
       brand_name: 'Brand Name',
     };
   }
-  product.price = 123123;
-  product.brand = {
-    brand_id: '1',
-    brand_name: 'Brand Name',
-  };
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`
   );
