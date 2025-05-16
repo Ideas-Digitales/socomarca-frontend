@@ -1,6 +1,7 @@
 import { ProductToBuy } from '@/interfaces/product.interface';
 import useStore from '@/stores/useStore';
 import { MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
 
 interface Props {
   product: ProductToBuy;
@@ -14,6 +15,19 @@ export default function CartProductCard({ product, index }: Props) {
     decrementProductInCart,
     removeAllQuantityByProductId,
   } = useStore();
+
+  const [backgroundImage, setBackgroundImage] = useState(
+    `url(${product.imagen})`
+  );
+
+  useEffect(() => {
+    // Verificar si la imagen existe
+    const img = new Image();
+    img.src = product.imagen;
+    img.onerror = () => {
+      setBackgroundImage(`url(/assets/global/logo_default.png)`);
+    };
+  }, [product.imagen]);
 
   const decreaseQuantity = () => {
     if (product.quantity > 0) {
@@ -55,7 +69,7 @@ export default function CartProductCard({ product, index }: Props) {
       <div className="flex items-center gap-[6px]">
         <div
           className="w-[45px] h-[46px] p-[2px] bg-contain bg-no-repeat bg-center"
-          style={{ backgroundImage: `url(${product.imagen})` }}
+          style={{ backgroundImage }}
         />
       </div>
       <div className="flex flex-col">

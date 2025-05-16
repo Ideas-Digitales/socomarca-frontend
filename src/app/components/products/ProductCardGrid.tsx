@@ -1,5 +1,5 @@
 import { Product } from '@/interfaces/product.interface';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useStore from '@/stores/useStore';
 import { HeartIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeathIconSolid } from '@heroicons/react/24/solid';
@@ -11,6 +11,18 @@ interface Props {
 export default function ProductCardGrid({ product }: Props) {
   const { addProductToCart } = useStore();
   const [quantity, setQuantity] = useState(0);
+  const [backgroundImage, setBackgroundImage] = useState(
+    `url(${product.imagen})`
+  );
+
+  useEffect(() => {
+    // Verificar si la imagen existe
+    const img = new Image();
+    img.src = product.imagen;
+    img.onerror = () => {
+      setBackgroundImage(`url(/assets/global/logo_default.png)`);
+    };
+  }, [product.imagen]);
 
   const [isFavorite, setIsFavorite] = useState(false);
   const toggleFavorite = () => {
@@ -49,7 +61,7 @@ export default function ProductCardGrid({ product }: Props) {
       <div className="flex items-center justify-center h-[100px] w-full">
         <div
           className="w-full h-full bg-contain bg-no-repeat bg-center"
-          style={{ backgroundImage: `url(${product.imagen})` }}
+          style={{ backgroundImage }}
         >
           <div className="rounded-full bg-slate-100 items-center justify-center hidden absolute sm:flex p-[6px]">
             {!isFavorite ? (

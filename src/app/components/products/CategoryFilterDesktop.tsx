@@ -6,7 +6,6 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline';
 
-// Define types for our categories
 type SubCategory = {
   id: string;
   name: string;
@@ -28,12 +27,14 @@ const mockCategories: Category[] = [
     name: 'Despensa',
     isOpen: true,
     hasSubCategories: true,
-    subCategories: Array(11)
-      .fill(null)
-      .map((_, i) => ({
-        id: `1-${i}`,
-        name: 'XS normal',
-      })),
+    subCategories: [
+      { id: '1-1', name: 'Aceites y grasas' },
+      { id: '1-2', name: 'Arroz, pastas y legumbres' },
+      { id: '1-3', name: 'Conservas y salsas' },
+      { id: '1-4', name: 'Especias y condimentos' },
+      { id: '1-5', name: 'Harinas y azúcares' },
+      { id: '1-6', name: 'Snacks y galletas' },
+    ]
   },
   {
     id: '2',

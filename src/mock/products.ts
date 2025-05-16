@@ -30,7 +30,7 @@ export const productos: Product[] = [
     status: true,
     price: 890,
     stock: 212,
-    imagen: 'assets/global/product-mock.png',
+    imagen: 'assets/global/produ2ct-mock.png',
     created_at: '2024-11-28 11:45:23',
     updated_at: '2025-04-21 10:17:35',
   },
