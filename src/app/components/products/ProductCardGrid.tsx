@@ -9,6 +9,11 @@ interface Props {
 }
 
 export default function ProductCardGrid({ product }: Props) {
+  product.price = 123123;
+  product.brand = {
+    brand_id: '1',
+    brand_name: 'Brand Name',
+  };
   const { addProductToCart } = useStore();
   const [quantity, setQuantity] = useState(0);
   const [backgroundImage, setBackgroundImage] = useState(
@@ -56,11 +61,11 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   return (
-    <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[320px] border-b-slate-200 border-b">
+    <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b">
       {/* Imagen del producto */}
       <div className="flex items-center justify-center h-[100px] w-full">
         <div
-          className="w-full h-full bg-contain bg-no-repeat bg-center"
+          className="w-full bg-contain bg-no-repeat bg-center h-[87px]"
           style={{ backgroundImage }}
         >
           <div className="rounded-full bg-slate-100 items-center justify-center hidden absolute sm:flex p-[6px]">
@@ -88,7 +93,7 @@ export default function ProductCardGrid({ product }: Props) {
       {/* Información del producto */}
       <div className="flex flex-col w-full items-center">
         <span className="text-[#64748B] text-xs font-medium">
-          {product.brand_id}
+          {product.brand.brand_name}
         </span>
         <span className="text-sm font-medium text-center">
           {truncateText(product.name, 25)}

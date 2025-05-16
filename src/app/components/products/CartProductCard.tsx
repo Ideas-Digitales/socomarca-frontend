@@ -9,6 +9,11 @@ interface Props {
 }
 
 export default function CartProductCard({ product, index }: Props) {
+  product.price = 123123;
+  product.brand = {
+    brand_id: '1',
+    brand_name: 'Brand Name',
+  };
   const {
     removeProductFromCart,
     incrementProductInCart,
@@ -74,7 +79,7 @@ export default function CartProductCard({ product, index }: Props) {
       </div>
       <div className="flex flex-col">
         <span className="text-[#64748B] text-[12px] font-medium">
-          {product.brand_id}
+          {product.brand.brand_name}
         </span>
         <span className="text-[12px] font-medium">
           {truncateText(product.name, 20)}

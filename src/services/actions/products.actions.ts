@@ -8,7 +8,7 @@ interface FetchGetProductsProps {
 
 const BACKEND_URL = process.env.BACKEND_URL;
 const QA_JWT = process.env.QA_JWT;
-const NEXT_PUBLIC_QA_MODE = process.env.NEXT_PUBLIC_QA_MODE;
+const NEXT_PUBLIC_QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === 'true';
 
 export const fetchGetProducts = async ({
   page,
@@ -28,6 +28,7 @@ export const fetchGetProducts = async ({
         error: null,
       };
     } else {
+      console.log(123)
       const response = await fetch(
         `${BACKEND_URL}/products?page=${page}&size=${size}`,
         {

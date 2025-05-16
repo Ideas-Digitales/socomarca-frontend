@@ -10,6 +10,11 @@ interface Props {
 }
 
 export default function ProductCard({ product }: Props) {
+  product.price = 123123;
+  product.brand = {
+    brand_id: '1',
+    brand_name: 'Brand Name',
+  };
   const { addProductToCart } = useStore();
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`
@@ -20,7 +25,7 @@ export default function ProductCard({ product }: Props) {
     const img = new Image();
     img.src = product.imagen;
     img.onerror = () => {
-      setBackgroundImage(`url(/assets/global/logo_default.png)`);
+      setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
   }, [product.imagen]);
 
@@ -87,7 +92,7 @@ export default function ProductCard({ product }: Props) {
       <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
         <div className="flex flex-col">
           <span className="text-[#64748B] text-[12px] font-medium">
-            {product.brand_id}
+            {product.brand.brand_name}
           </span>
           <span className="text-[12px] font-medium">
             {truncateText(product.name, 30)}

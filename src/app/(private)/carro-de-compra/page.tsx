@@ -99,7 +99,7 @@ export default function CarroDeCompraPage() {
                           />
                           <div>
                             <p className="text-xs text-slate-400">
-                              {p.brand_id}
+                              {p.brand.brand_name}
                             </p>
                             <p className="text-black text-xs">{p.name}</p>
                           </div>
@@ -172,7 +172,9 @@ export default function CarroDeCompraPage() {
                     />
 
                     <div className="flex-1 pr-6">
-                      <p className="text-xs text-slate-400">{p.brand_id}</p>
+                      <p className="text-xs text-slate-400">
+                        {p.brand.brand_name}
+                      </p>
                       <p className="text-sm font-semibold text-black">
                         {p.name}
                       </p>
