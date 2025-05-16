@@ -28,20 +28,35 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    try {
-      const result = await login({ rut, password });
+   try {
+  const result = await login({ rut, password });
 
-      if (result.success) {
-        router.push('/');
-      } else {
-        setError(result.error || 'Error al iniciar sesión');
-      }
-    } catch (error) {
-      setError('Ocurrió un error inesperado');
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
+  if (result.success) {
+    router.push('/');
+  } else {
+    // Esto asume que `result` tiene una estructura diferente si no es success
+    const errorMessage =
+      result.error ||
+      'Error al iniciar sesión';
+
+    setError(errorMessage);
+  }
+} catch (error: any) {
+  // Si el error es una respuesta del servidor
+  if (error?.response?.status === 422) {
+    const data = error.response.data;
+    const rutError = data?.errors?.rut?.[0];
+
+    setError(rutError || data?.message || 'El RUT es inválido');
+  } else {
+    setError('Ocurrió un error inesperado');
+  }
+
+  console.error(error);
+} finally {
+  setIsLoading(false);
+}
+
   };
 
   return (
