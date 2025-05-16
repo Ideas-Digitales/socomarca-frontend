@@ -71,7 +71,7 @@ export default function Header({ carro }: Props) {
   return (
     <>
       <div className="bg-white text-black py-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs">
-        <div className="max-w-7xl px-4 md:px-0 flex justify-between items-center mx-auto">
+        <div className="max-w-7xl px-4 flex justify-between items-center mx-auto">
           <div className="flex gap-3 items-center">
             {isTablet ? (
               <button
