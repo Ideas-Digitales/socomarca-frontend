@@ -9,18 +9,26 @@ interface Props {
 }
 
 export default function CartProductCard({ product, index }: Props) {
-  product.price = 123123;
-  product.brand = {
-    brand_id: '1',
-    brand_name: 'Brand Name',
-  };
   const {
     removeProductFromCart,
     incrementProductInCart,
     decrementProductInCart,
     removeAllQuantityByProductId,
+    isQaMode,
   } = useStore();
 
+  if (isQaMode) {
+    product.price = 123123;
+    product.brand = {
+      brand_id: '1',
+      brand_name: 'Brand Name',
+    };
+  }
+  product.price = 123123;
+  product.brand = {
+    brand_id: '1',
+    brand_name: 'Brand Name',
+  };
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`
   );

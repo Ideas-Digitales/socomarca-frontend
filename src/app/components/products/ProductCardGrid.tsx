@@ -9,16 +9,20 @@ interface Props {
 }
 
 export default function ProductCardGrid({ product }: Props) {
-  product.price = 123123;
-  product.brand = {
-    brand_id: '1',
-    brand_name: 'Brand Name',
-  };
-  const { addProductToCart } = useStore();
+  
+  const { addProductToCart, isQaMode } = useStore();
   const [quantity, setQuantity] = useState(0);
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`
   );
+
+  if (!isQaMode) {
+    product.price = 123123;
+    product.brand = {
+      brand_id: '1',
+      brand_name: 'Brand Name',
+    };
+  }
 
   useEffect(() => {
     // Verificar si la imagen existe
