@@ -47,9 +47,9 @@ export default function LoginPage() {
     const data = error.response.data;
     const rutError = data?.errors?.rut?.[0];
 
-    setError(rutError || data?.message || 'El RUT es inválido');
+    setError(rutError || data?.message || 'Las credenciales ingresadas no son válidas');
   } else {
-    setError('Ocurrió un error inesperado');
+    setError('Las credenciales ingresadas no son válidas');
   }
 
   console.error(error);
