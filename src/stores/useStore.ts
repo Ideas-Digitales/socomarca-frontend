@@ -50,9 +50,7 @@ interface StoreState {
   checkIsTablet: () => void;
 }
 
-// Las funciones de normalización y ranking se mantienen iguales
 const normalizeText = (text: string): string => {
-  // Tu código existente...
   return text
     .toLowerCase()
     .normalize('NFD')
@@ -60,7 +58,6 @@ const normalizeText = (text: string): string => {
 };
 
 const levenshteinDistance = (a: string, b: string): number => {
-  // Tu código existente...
   const matrix = Array(b.length + 1)
     .fill(null)
     .map(() => Array(a.length + 1).fill(null));
@@ -91,7 +88,6 @@ const calculateRelevanceScore = (
   product: Product,
   searchWords: string[]
 ): number => {
-  // Tu código existente...
   // Normalizar nombre y descripción del producto
   const normalizedName = normalizeText(product.name);
   const normalizedDescription = product.description
@@ -112,33 +108,25 @@ const calculateRelevanceScore = (
   for (const searchWord of searchWords) {
     let bestWordMatch = 0;
 
-    // Coincidencia exacta en el nombre completo (mejor puntuación)
     if (normalizedName.includes(searchWord)) {
-      // Bonus por coincidencia exacta en el nombre
       bestWordMatch = Math.max(bestWordMatch, 100 + searchWord.length * 2);
     }
 
-    // Coincidencia exacta en la descripción
     if (normalizedDescription.includes(searchWord)) {
-      // Bonus menor por coincidencia en descripción
       bestWordMatch = Math.max(bestWordMatch, 50 + searchWord.length);
     }
 
-    // Comparar con cada palabra del nombre del producto
     for (const productWord of productWords) {
-      // Coincidencia exacta de palabra completa
       if (productWord === searchWord) {
         bestWordMatch = Math.max(bestWordMatch, 90 + searchWord.length * 2);
         continue;
       }
 
-      // Palabra de producto contiene la palabra de búsqueda
       if (productWord.includes(searchWord) && searchWord.length >= 3) {
         bestWordMatch = Math.max(bestWordMatch, 80 + searchWord.length);
         continue;
       }
 
-      // Palabra de búsqueda contiene la palabra de producto
       if (searchWord.includes(productWord) && productWord.length >= 3) {
         bestWordMatch = Math.max(bestWordMatch, 70 + productWord.length);
         continue;
@@ -215,7 +203,6 @@ const calculateRelevanceScore = (
 };
 
 function filterAndRankProducts(products: Product[], term: string): Product[] {
-  // Tu código existente...
   if (!term) return products;
 
   // Normalizar y dividir el término de búsqueda en palabras individuales
