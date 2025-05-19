@@ -28,7 +28,6 @@ export const fetchGetProducts = async ({
         error: null,
       };
     } else {
-      console.log(123)
       const response = await fetch(
         `${BACKEND_URL}/products?page=${page}&size=${size}`,
         {
@@ -45,7 +44,6 @@ export const fetchGetProducts = async ({
       }
 
       const data = await response.json();
-
 
       return {
         ok: true,

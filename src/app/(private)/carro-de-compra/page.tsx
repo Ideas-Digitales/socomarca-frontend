@@ -1,8 +1,11 @@
-"use client";
-import { useState } from "react";
-import { ChevronLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
-import useStore from "@/stores/useStore";
+'use client';
+import { useState } from 'react';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import useStore from '@/stores/useStore';
+import CarroCompraCard from '@/app/components/carro-de-compra/CarroCompraCard';
+import CarroCompraCardMobile from '@/app/components/carro-de-compra/CarroCompraCardMobile';
+import Image from 'next/image';
 
 export default function CarroDeCompraPage() {
   const router = useRouter();
@@ -14,11 +17,11 @@ export default function CarroDeCompraPage() {
   } = useStore();
 
   const backHome = () => {
-    router.push("/");
+    router.push('/');
   };
 
   const goNext = () => {
-    router.push("/finalizar-compra");
+    router.push('/finalizar-compra');
   };
 
   const [idProductoAEliminar, setIdProductoAEliminar] = useState<number | null>(
@@ -37,7 +40,9 @@ export default function CarroDeCompraPage() {
       <div>
         {cartProducts.length === 0 || !cartProducts ? (
           <div className="flex flex-col items-center justify-center mt-10">
-            <img
+            <Image
+              width={100}
+              height={100}
               src="/assets/global/logo_default.png"
               alt="Logo"
               className="w-24 h-24 mb-6"
@@ -48,7 +53,7 @@ export default function CarroDeCompraPage() {
             </p>
             <button
               onClick={backHome}
-              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
+              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded cursor-pointer"
             >
               Ir a la tienda
             </button>
@@ -64,7 +69,7 @@ export default function CarroDeCompraPage() {
                   onClick={goBack}
                 />
                 <h2 className="text-2xl font-bold mb-4 ">
-                  Carro{" "}
+                  Carro{' '}
                   <span className="text-lime-500 text-base font-normal">
                     ({cartProducts.length} productos)
                   </span>
@@ -73,137 +78,46 @@ export default function CarroDeCompraPage() {
 
               {/* Tabla para pantallas grandes */}
               <div className="hidden lg:block overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border border-slate-100 bg-slate-50 font-semibold text-gray-600 text-left">
-                      <th className="p-4 text-center font-semibold text-black">
-                        Producto
-                      </th>
-                      <th className="p-4 text-center font-semibold text-black">
-                        Cantidad
-                      </th>
-                      <th className="p-4 text-center font-semibold text-black">
-                        Precio
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cartProducts.map((p) => (
-                      <tr key={p.id} className="border border-slate-100">
-                        <td className="px-4 py-2 flex items-center gap-4">
-                          <img
-                            src={p.imagen}
-                            alt={p.name}
-                            className="w-12 h-16 object-contain rounded"
-                            onError={(e) => {
-                              const target = e.currentTarget;
-                              target.onerror = null;
-                              target.src = "/assets/global/logo_default.png";
-                              target.classList.add("grayscale", "opacity-50");
-                            }}
-                          />
-                          <div>
-                            <p className="text-xs text-slate-400">
-                              {p.brand.brand_name}
-                            </p>
-                            <p className="text-black text-xs">{p.name}</p>
-                          </div>
-                        </td>
-                        <td className="p-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => decrementProductInCart(p.id)}
-                              className="px-2 py-1 bg-gray-200 rounded cursor-pointer"
-                            >
-                              −
-                            </button>
-                            <span className="w-8 text-center">
-                              {p.quantity}
-                            </span>
-                            <button
-                              onClick={() => incrementProductInCart(p.id)}
-                              className="px-2 py-1 bg-gray-200 rounded cursor-pointer"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </td>
-                        <td className="p-4 text-right font-bold text-gray-700">
-                          <div className="flex flex-row justify-between">
-                            <span>
-                              ${(p.price * p.quantity).toLocaleString("es-CL")}
-                            </span>
-                            <button
-                              onClick={() => setIdProductoAEliminar(p.id)}
-                              className=" hover:cursor-pointer text-red-500"
-                              title="Eliminar producto"
-                            >
-                              <TrashIcon className="w-5 h-5" />
-                            </button>
-                          </div>
-                        </td>
+                <div className="max-h-[60dvh] overflow-y-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="sticky top-0 bg-white z-10">
+                      <tr className="border border-slate-100 bg-slate-50 font-semibold text-gray-600 text-left">
+                        <th className="p-4 text-center font-semibold text-black">
+                          Producto
+                        </th>
+                        <th className="p-4 text-center font-semibold text-black">
+                          Cantidad
+                        </th>
+                        <th className="p-4 text-center font-semibold text-black">
+                          Precio
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {cartProducts.map((p) => (
+                        <CarroCompraCard
+                          decrementProductInCart={decrementProductInCart}
+                          incrementProductInCart={incrementProductInCart}
+                          key={p.id}
+                          p={p}
+                          setIdProductoAEliminar={setIdProductoAEliminar}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* Layout en tarjetas para móviles */}
-              <div className="lg:hidden flex flex-col gap-4">
+              <div className="lg:hidden flex flex-col gap-4 max-h-[60dvh] overflow-y-auto">
                 {cartProducts.map((p) => (
-                  <div
+                  <CarroCompraCardMobile
+                    decrementProductInCart={decrementProductInCart}
+                    incrementProductInCart={incrementProductInCart}
+                    p={p}
                     key={p.id}
-                    className="relative flex gap-4 bg-white p-4 border-b border-b-slate-200"
-                  >
-                    {/* Botón eliminar arriba a la derecha */}
-                    <button
-                      onClick={() => setIdProductoAEliminar(p.id)}
-                      className="absolute top-2 right-2 text-red-500"
-                      title="Eliminar producto"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-
-                    <img
-                      src={p.imagen}
-                      alt={p.name}
-                      className="w-16 h-20 object-contain rounded"
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        target.onerror = null;
-                        target.src = "/assets/global/logo_default.png";
-                        target.classList.add("grayscale", "opacity-50");
-                      }}
-                    />
-
-                    <div className="flex-1 pr-6">
-                      <p className="text-xs text-slate-400">
-                        {p.brand.brand_name}
-                      </p>
-                      <p className="text-sm font-semibold text-black">
-                        {p.name}
-                      </p>
-                      <p className="text-sm font-bold text-gray-700 mt-1">
-                        ${(p.price * p.quantity).toLocaleString("es-CL")}
-                      </p>
-
-                      <div className="flex items-center gap-2 mt-2">
-                        <button
-                          onClick={() => decrementProductInCart(p.id)}
-                          className="px-2 py-1 bg-gray-200 rounded"
-                        >
-                          −
-                        </button>
-                        <span className="w-6 text-center">{p.quantity}</span>
-                        <button
-                          onClick={() => incrementProductInCart(p.id)}
-                          className="px-2 py-1 bg-gray-200 rounded"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                    setIdProductoAEliminar={setIdProductoAEliminar}
+                  />
                 ))}
               </div>
 
@@ -226,11 +140,11 @@ export default function CarroDeCompraPage() {
               </div>
               <div className="flex justify-between mb-2 pb-3 border-b-[1px] border-b-slate-100">
                 <span>Subtotal</span>
-                <span>${subtotal.toLocaleString("es-CL")}</span>
+                <span>${subtotal.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between font-bold mb-2">
                 <span>Total todo medio de pago</span>
-                <span>${subtotal.toLocaleString("es-CL")}</span>
+                <span>${subtotal.toLocaleString('es-CL')}</span>
               </div>
               <p className="text-xs text-gray-500 mb-4">
                 Impuestos y envíos calculados al finalizar la compra
@@ -241,8 +155,8 @@ export default function CarroDeCompraPage() {
                 disabled={cartProducts.length === 0}
                 className={`w-full ${
                   cartProducts.length > 0
-                    ? "bg-lime-500 hover:bg-lime-600"
-                    : "bg-gray-300 cursor-not-allowed"
+                    ? 'bg-lime-500 hover:bg-lime-600'
+                    : 'bg-gray-300 cursor-not-allowed'
                 } text-white py-2 rounded`}
               >
                 Continuar con la compra
