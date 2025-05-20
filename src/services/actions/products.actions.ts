@@ -1,21 +1,18 @@
 'use server';
 import { ProductsMock, productsMock } from '@/mock/products';
+import { BACKEND_URL, IS_QA_MODE, QA_JWT } from '@/utils/getEnv';
 
 interface FetchGetProductsProps {
   page: number;
   size: number;
 }
 
-const BACKEND_URL = process.env.BACKEND_URL;
-const QA_JWT = process.env.QA_JWT;
-const NEXT_PUBLIC_QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === 'true';
-
 export const fetchGetProducts = async ({
   page,
   size,
 }: FetchGetProductsProps) => {
   try {
-    if (NEXT_PUBLIC_QA_MODE) {
+    if (IS_QA_MODE) {
       const response = await new Promise<ProductsMock>((resolve) => {
         setTimeout(() => {
           resolve(productsMock);

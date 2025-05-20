@@ -84,7 +84,7 @@ export default function FinalizarCompraPage() {
     <div className="bg-[#f1f5f9] min-h-screen p-4">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
         {/* Formulario de facturación */}
-        <div className="w-full lg:w-2/3 bg-white rounded-lg shadow p-6">
+        <div className="w-full lg:w-2/3 bg-white rounded-lg shadow p-6 h-fit">
           <h2 className="text-2xl font-bold mb-6">Datos de facturación</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

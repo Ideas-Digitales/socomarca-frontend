@@ -6,8 +6,8 @@ import { create } from 'zustand';
 import { useEffect } from 'react';
 import { Category } from '@/interfaces/category.interface';
 import { fetchGetCategories } from '@/services/actions/categories.actions';
+import { IS_QA_MODE } from '@/utils/getEnv';
 
-// Añadimos la interfaz para la metadata de paginación
 interface PaginationMeta {
   total_items: number;
   page_size: number;
@@ -20,7 +20,6 @@ interface PaginationMeta {
   };
 }
 
-// Actualizamos la interfaz StoreState para incluir la meta y páginación
 interface StoreState {
   products: Product[];
   categories: Category[];
@@ -74,9 +73,9 @@ const levenshteinDistance = (a: string, b: string): number => {
     for (let i = 1; i <= a.length; i++) {
       const substitutionCost = a[i - 1] === b[j - 1] ? 0 : 1;
       matrix[j][i] = Math.min(
-        matrix[j][i - 1] + 1, // eliminación
-        matrix[j - 1][i] + 1, // inserción
-        matrix[j - 1][i - 1] + substitutionCost // sustitución
+        matrix[j][i - 1] + 1,
+        matrix[j - 1][i] + 1,
+        matrix[j - 1][i - 1] + substitutionCost
       );
     }
   }
@@ -242,7 +241,7 @@ const useStore = create<StoreState>((set, get) => ({
   cartProducts: [],
   paginationMeta: null,
   currentPage: 1,
-  isQaMode: process.env.NEXT_PUBLIC_QA_MODE === 'true',
+  isQaMode: IS_QA_MODE,
   setPage: (page: number) => {
     set({ currentPage: page });
     get().fetchProducts(page);

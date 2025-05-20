@@ -1,15 +1,12 @@
 'use server';
 
 import { mockCategories } from '@/mock/categories';
-
-const BACKEND_URL = process.env.BACKEND_URL;
-const QA_JWT = process.env.QA_JWT;
-const NEXT_PUBLIC_QA_MODE = process.env.NEXT_PUBLIC_QA_MODE;
+import { BACKEND_URL, IS_QA_MODE, QA_JWT } from '@/utils/getEnv';
 
 export const fetchGetCategories = async () => {
-  console.log(BACKEND_URL)
+  console.log(BACKEND_URL);
   try {
-    if (NEXT_PUBLIC_QA_MODE) {
+    if (IS_QA_MODE) {
       const response = await new Promise((resolve) => {
         setTimeout(() => {
           resolve(mockCategories);

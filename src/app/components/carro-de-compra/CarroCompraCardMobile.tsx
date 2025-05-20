@@ -1,5 +1,4 @@
 import { TrashIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
 
 interface Props {
   p: {
@@ -37,7 +36,7 @@ export default function CarroCompraCardMobile({
         <TrashIcon className="w-5 h-5" />
       </button>
 
-      <Image
+      <img
         src={p.imagen}
         alt={p.name}
         className="w-16 h-20 object-contain rounded"
