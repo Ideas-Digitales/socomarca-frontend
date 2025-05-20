@@ -2,7 +2,7 @@
 
 
 
-### 🚀 Levantar el proyecto
+### 🚀 Iniciar proyecto
 
 1. **Instala las dependencias** (usamos `pnpm` como gestor de paquetes):
 
