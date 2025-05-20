@@ -1,4 +1,4 @@
-import useStore from '@/stores/useStore';
+import useStore from '@/stores/base';
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 

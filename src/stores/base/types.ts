@@ -1,16 +1,28 @@
 import { Product, ProductToBuy } from '@/interfaces/product.interface';
 import { Category } from '@/interfaces/category.interface';
 
+export interface PaginationLinks {
+  first: string | null;
+  last: string | null;
+  prev: string | null;
+  next: string | null;
+}
+
+export interface PaginationMetaLink {
+  url: string | null;
+  label: string;
+  active: boolean;
+}
+
 export interface PaginationMeta {
-  total_items: number;
-  page_size: number;
   current_page: number;
-  total_pages: number;
-  links: {
-    self: string | null;
-    prev: string | null;
-    next: string | null;
-  };
+  from: number;
+  last_page: number;
+  links: PaginationMetaLink[];
+  path: string;
+  per_page: number;
+  to: number;
+  total: number;
 }
 
 // Estado base del store
@@ -28,24 +40,31 @@ export interface StoreState {
   isMobile: boolean;
   isTablet: boolean;
   isQaMode: boolean;
+  viewMode: 'grid' | 'list';
 
   // Carrito
   cartProducts: ProductToBuy[];
 
   // Paginación
   paginationMeta: PaginationMeta | null;
+  paginationLinks: PaginationLinks | null;
   currentPage: number;
 }
 
 // Acciones de productos
 export interface ProductsSlice {
-  setProducts: (products: Product[], meta?: PaginationMeta) => void;
+  setProducts: (
+    products: Product[],
+    meta?: PaginationMeta,
+    links?: PaginationLinks
+  ) => void;
   setSearchTerm: (term: string) => void;
   fetchProducts: (page?: number, size?: number) => Promise<void>;
 }
 
 // Acciones de categorías
 export interface CategoriesSlice {
+  setCategories: (categories: Category[]) => void;
   fetchCategories: () => Promise<void>;
 }
 
@@ -53,6 +72,7 @@ export interface CategoriesSlice {
 export interface UiSlice {
   checkIsMobile: () => void;
   checkIsTablet: () => void;
+  setViewMode: (mode: 'grid' | 'list') => void;
 }
 
 // Acciones de carrito

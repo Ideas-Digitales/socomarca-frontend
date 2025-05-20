@@ -1,20 +1,25 @@
+import { PaginationLinks, PaginationMeta } from '@/stores/base/types';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
+  meta: PaginationMeta | null;
+  links?: PaginationLinks | null;
   onPageChange: (page: number) => void;
 }
 
 export default function Pagination({
-  currentPage,
-  totalPages,
+  meta,
+  links,
   onPageChange,
 }: PaginationProps) {
-  // Función para generar el rango de páginas a mostrar en desktop
+  if (!meta) return null;
+
+  const currentPage = meta.current_page;
+  const totalPages = meta.last_page;
+
   const getPageNumbers = () => {
     const pageNumbers = [];
-    const maxPagesToShow = 7; // Mostrará máximo 7 números de página
+    const maxPagesToShow = 7;
 
     if (totalPages <= maxPagesToShow) {
       // Si hay menos páginas que el máximo a mostrar, mostramos todas
@@ -98,14 +103,20 @@ export default function Pagination({
     }
   };
 
+  // Verificamos si hay páginas previas o siguientes disponibles
+  const hasPrevious = Boolean(links?.prev) || currentPage > 1;
+  const hasNext = Boolean(links?.next) || currentPage < totalPages;
+
   return (
     <div className="flex py-4 px-2 md:p-[10px] items-center gap-[10px] bg-white rounded-[4px] justify-between border-b border-slate-200">
       {/* Botón Anterior */}
       <button
         onClick={handlePrevious}
-        disabled={currentPage === 1}
+        disabled={!hasPrevious}
         className={`flex justify-center items-center gap-[6px] ${
-          currentPage === 1 ? 'text-gray-400' : 'text-lime-500 cursor-pointer'
+          !hasPrevious
+            ? 'text-gray-400 cursor-not-allowed'
+            : 'text-lime-500 cursor-pointer'
         }`}
       >
         <ChevronLeftIcon width={16} height={16} className="flex-shrink-0" />
@@ -164,10 +175,10 @@ export default function Pagination({
       {/* Botón Siguiente */}
       <button
         onClick={handleNext}
-        disabled={currentPage === totalPages}
+        disabled={!hasNext}
         className={`flex justify-center items-center gap-[6px] ${
-          currentPage === totalPages
-            ? 'text-gray-400'
+          !hasNext
+            ? 'text-gray-400 cursor-not-allowed'
             : 'text-lime-500 cursor-pointer'
         }`}
       >

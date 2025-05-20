@@ -6,11 +6,15 @@ export const createUiSlice: StateCreator<
   [],
   [],
   UiSlice
-> = (set) => ({
+> = (set, get) => ({
   checkIsMobile: () => {
     if (typeof window !== 'undefined') {
       const isMobile = window.innerWidth < 640;
       set({ isMobile });
+
+      if (isMobile && get().viewMode === 'grid') {
+        set({ viewMode: 'list' });
+      }
     }
   },
 
@@ -19,5 +23,12 @@ export const createUiSlice: StateCreator<
       const isTablet = window.innerWidth < 1024;
       set({ isTablet });
     }
+  },
+
+  setViewMode: (mode: 'grid' | 'list') => {
+    if (mode === 'grid' && get().isMobile) {
+      return;
+    }
+    set({ viewMode: mode });
   },
 });

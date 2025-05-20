@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Product } from "@/interfaces/product.interface";
 import Link from "next/link";
-import useStore, { useInitMobileDetection } from "@/stores/useStore";
+import useStore, { useInitMobileDetection } from "@/stores/base";
 import {
   Bars3Icon,
   HeartIcon,

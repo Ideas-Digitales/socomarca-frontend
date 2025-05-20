@@ -380,7 +380,6 @@ export default function MiCuentaPage() {
                           <button
                             onClick={() => {
                               setPedidoSeleccionado(c);
-                              console.log(c);
                               setSelected("detalle-compra");
                             }}
                             className="bg-gray-300 hover:bg-gray-400 text-white px-4 py-2 rounded text-sm"

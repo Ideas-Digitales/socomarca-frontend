@@ -1,4 +1,4 @@
-import useStore from '@/stores/useStore';
+import useStore from '@/stores/base';
 import CartProductCard from './CartProductCard';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';

@@ -1,5 +1,10 @@
 import { StateCreator } from 'zustand';
-import { PaginationMeta, ProductsSlice, StoreState } from '../types';
+import {
+  PaginationLinks,
+  PaginationMeta,
+  ProductsSlice,
+  StoreState,
+} from '../types';
 import { fetchGetProducts } from '@/services/actions/products.actions';
 import { filterAndRankProducts } from '../utils/searchUtils';
 
@@ -9,7 +14,7 @@ export const createProductsSlice: StateCreator<
   [],
   ProductsSlice
 > = (set, get) => ({
-  setProducts: (products, meta?: PaginationMeta) => {
+  setProducts: (products, meta?: PaginationMeta, links?: PaginationLinks) => {
     const searchTerm = get().searchTerm;
     set({
       products,
@@ -17,6 +22,7 @@ export const createProductsSlice: StateCreator<
         ? filterAndRankProducts(products, searchTerm)
         : products,
       paginationMeta: meta || get().paginationMeta,
+      paginationLinks: links || get().paginationLinks,
     });
   },
 
@@ -34,11 +40,11 @@ export const createProductsSlice: StateCreator<
       const response = await fetchGetProducts({ page, size });
 
       if (response.ok && response.data) {
-        console.log(response.data);
         set({
           products: response.data.data,
           filteredProducts: response.data.data,
           paginationMeta: response.data.meta,
+          paginationLinks: response.data.links,
           currentPage: response.data.meta.current_page,
           isLoading: false,
         });

@@ -4,9 +4,7 @@ interface Props {
   p: {
     id: number;
     name: string;
-    brand: {
-      brand_name: string;
-    };
+    brand_id: number;
     imagen: string;
     price: number;
     quantity: number;
@@ -37,7 +35,7 @@ export default function CarroCompraCard({
           }}
         />
         <div>
-          <p className="text-xs text-slate-400">{p.brand.brand_name}</p>
+          <p className="text-xs text-slate-400">{p.brand_id}</p>
           <p className="text-black text-xs">{p.name}</p>
         </div>
       </td>

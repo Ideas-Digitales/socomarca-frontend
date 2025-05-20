@@ -1,5 +1,5 @@
 import { ProductToBuy } from '@/interfaces/product.interface';
-import useStore from '@/stores/useStore';
+import useStore from '@/stores/base';
 import { MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 
@@ -19,10 +19,6 @@ export default function CartProductCard({ product, index }: Props) {
 
   if (!isQaMode) {
     product.price = 123123;
-    product.brand = {
-      brand_id: '1',
-      brand_name: 'Brand Name',
-    };
   }
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`
@@ -82,7 +78,7 @@ export default function CartProductCard({ product, index }: Props) {
       </div>
       <div className="flex flex-col">
         <span className="text-[#64748B] text-[12px] font-medium">
-          {product.brand.brand_name}
+          {product.brand_id}
         </span>
         <span className="text-[12px] font-medium">
           {truncateText(product.name, 20)}

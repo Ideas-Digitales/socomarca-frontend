@@ -1,15 +1,14 @@
 'use client';
 
-// store/index.ts
 import { create } from 'zustand';
 import { useEffect } from 'react';
 import { IS_QA_MODE } from '@/utils/getEnv';
 import { Store, StoreState } from './types';
 import { createCartSlice } from './slices/cartSlice';
-import { createCategoriesSlice } from './slices/categoriesSlice';
-import { createPaginationSlice } from './slices/paginationSlice';
 import { createProductsSlice } from './slices/productsSlice';
+import { createCategoriesSlice } from './slices/categoriesSlice';
 import { createUiSlice } from './slices/uiSlice';
+import { createPaginationSlice } from './slices/paginationSlice';
 
 // Estado inicial
 const initialState: StoreState = {
@@ -20,8 +19,10 @@ const initialState: StoreState = {
   searchTerm: '',
   isMobile: false,
   isTablet: false,
+  viewMode: 'grid',
   cartProducts: [],
   paginationMeta: null,
+  paginationLinks: null,
   currentPage: 1,
   isQaMode: IS_QA_MODE,
 };

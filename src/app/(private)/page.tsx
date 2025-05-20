@@ -1,6 +1,6 @@
 'use client';
 
-import useStore from '@/stores/useStore';
+import useStore from '@/stores/base';
 import ProductsContainer from '../components/products/ProductsContainer';
 import GPSPosition from '../components/global/GPSPosition';
 import CategoryFilterMobile from '../components/products/CategoryFilterMobile';

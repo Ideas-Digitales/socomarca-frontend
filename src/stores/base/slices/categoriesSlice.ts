@@ -8,15 +8,19 @@ export const createCategoriesSlice: StateCreator<
   [],
   CategoriesSlice
 > = (set) => ({
+  setCategories: (categories) => {
+    set({
+      categories: categories,
+    });
+  },
   fetchCategories: async () => {
     try {
       set({ isLoading: true });
       const response = await fetchGetCategories();
 
       if (response.ok && response.data) {
-        console.log(response.data);
         set({
-          categories: response.data,
+          categories: response.data.data,
           isLoading: false,
         });
       } else {

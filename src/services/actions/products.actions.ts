@@ -26,7 +26,7 @@ export const fetchGetProducts = async ({
       };
     } else {
       const response = await fetch(
-        `${BACKEND_URL}/products?page=${page}&size=${size}`,
+        `${BACKEND_URL}/products/?page=${page}&size=${size}`,
         {
           method: 'GET',
           headers: {

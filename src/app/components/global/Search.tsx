@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import useStore from '@/stores/useStore';
+import useStore from '@/stores/base';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export default function Search() {

@@ -4,7 +4,6 @@ import { mockCategories } from '@/mock/categories';
 import { BACKEND_URL, IS_QA_MODE, QA_JWT } from '@/utils/getEnv';
 
 export const fetchGetCategories = async () => {
-  console.log(BACKEND_URL);
   try {
     if (IS_QA_MODE) {
       const response = await new Promise((resolve) => {

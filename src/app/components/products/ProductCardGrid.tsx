@@ -1,6 +1,6 @@
 import { Product } from '@/interfaces/product.interface';
 import { useEffect, useState } from 'react';
-import useStore from '@/stores/useStore';
+import useStore from '@/stores/base';
 import { HeartIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeathIconSolid } from '@heroicons/react/24/solid';
 
@@ -17,10 +17,6 @@ export default function ProductCardGrid({ product }: Props) {
 
   if (!isQaMode) {
     product.price = 123123;
-    product.brand = {
-      brand_id: '1',
-      brand_name: 'Brand Name',
-    };
   }
 
   useEffect(() => {
@@ -96,7 +92,7 @@ export default function ProductCardGrid({ product }: Props) {
       {/* Información del producto */}
       <div className="flex flex-col w-full items-center">
         <span className="text-[#64748B] text-xs font-medium">
-          {product.brand.brand_name}
+          {product.brand_id}
         </span>
         <span className="text-sm font-medium text-center">
           {truncateText(product.name, 25)}

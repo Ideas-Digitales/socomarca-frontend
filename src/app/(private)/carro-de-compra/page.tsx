@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import useStore from '@/stores/useStore';
+import useStore from '@/stores/base';
 import CarroCompraCard from '@/app/components/carro-de-compra/CarroCompraCard';
 import CarroCompraCardMobile from '@/app/components/carro-de-compra/CarroCompraCardMobile';
 import Image from 'next/image';

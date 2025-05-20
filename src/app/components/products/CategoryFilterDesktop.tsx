@@ -1,72 +1,21 @@
+'use client';
+
 import { useState } from 'react';
 import {
-  ChevronDownIcon,
-  ChevronRightIcon,
+  // ChevronDownIcon,
+  // ChevronRightIcon,
   MinusIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
-
-type SubCategory = {
-  id: string;
-  name: string;
-  count?: number;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  isOpen?: boolean;
-  hasSubCategories?: boolean;
-  subCategories?: SubCategory[];
-};
-
-// Mock data based on the image
-const mockCategories: Category[] = [
-  {
-    id: '1',
-    name: 'Despensa',
-    isOpen: true,
-    hasSubCategories: true,
-    subCategories: [
-      { id: '1-1', name: 'Aceites y grasas' },
-      { id: '1-2', name: 'Arroz, pastas y legumbres' },
-      { id: '1-3', name: 'Conservas y salsas' },
-      { id: '1-4', name: 'Especias y condimentos' },
-      { id: '1-5', name: 'Harinas y azúcares' },
-      { id: '1-6', name: 'Snacks y galletas' },
-    ]
-  },
-  {
-    id: '2',
-    name: 'Hogar y limpieza',
-    hasSubCategories: true,
-  },
-  {
-    id: '3',
-    name: 'Lácteos y fiambre',
-    hasSubCategories: true,
-  },
-  {
-    id: '4',
-    name: 'Cuidado personal',
-    hasSubCategories: true,
-  },
-  {
-    id: '5',
-    name: 'Bebestibles',
-    hasSubCategories: true,
-  },
-  {
-    id: '6',
-    name: 'Confites',
-    hasSubCategories: true,
-  },
-];
+import useStore from '@/stores/base';
 
 // Main component
 export default function CategoryFilterDesktop() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const { categories } = useStore();
+  console.log('categories', categories);
   const [isMainCategoryOpen, setIsMainCategoryOpen] = useState(true);
+
+  const [openCategories, setOpenCategories] = useState<number[]>([]);
 
   // Toggle main category section
   const toggleMainCategory = () => {
@@ -74,15 +23,12 @@ export default function CategoryFilterDesktop() {
   };
 
   // Toggle specific category
-  const toggleCategory = (categoryId: string) => {
-    setCategories(
-      categories.map((category) => {
-        if (category.id === categoryId) {
-          return { ...category, isOpen: !category.isOpen };
-        }
-        return category;
-      })
-    );
+  const toggleCategory = (categoryId: number) => {
+    if (openCategories.includes(categoryId)) {
+      setOpenCategories(openCategories.filter((id) => id !== categoryId));
+    } else {
+      setOpenCategories([...openCategories, categoryId]);
+    }
   };
 
   return (
@@ -94,9 +40,9 @@ export default function CategoryFilterDesktop() {
       >
         <span className="font-bold uppercase text-gray-800">Categoría</span>
         {isMainCategoryOpen ? (
-          <MinusIcon width={24} height={24} color="#84CC16" />
+          <MinusIcon width={24} height={24} className="text-lime-500" />
         ) : (
-          <PlusIcon width={24} height={24} color="#84CC16" />
+          <PlusIcon width={24} height={24} className="text-lime-500" />
         )}
       </div>
 
@@ -111,27 +57,37 @@ export default function CategoryFilterDesktop() {
                 onClick={() => toggleCategory(category.id)}
               >
                 <span className="text-sm">{category.name}</span>
-                {category.hasSubCategories &&
+                {/* {category.hasSubCategories &&
                   (category.isOpen ? (
-                    <ChevronDownIcon width={24} height={24} className="text-lime-500" />
+                    <ChevronDownIcon
+                      width={24}
+                      height={24}
+                      className="text-lime-500"
+                    />
                   ) : (
-                    <ChevronRightIcon width={24}height={24} className="text-slate-400" />
-                  ))}
+                    <ChevronRightIcon
+                      width={24}
+                      height={24}
+                      className="text-slate-400"
+                    />
+                  ))} */}
               </div>
 
               {/* Subcategories */}
-              {category.isOpen && category.subCategories && (
-                <div className="pl-3 pb-2">
-                  {category.subCategories.map((subCategory) => (
-                    <div
-                      key={subCategory.id}
-                      className="flex items-center py-1 px-3 text-xs text-gray-600 hover:text-gray-900 cursor-pointer"
-                    >
-                      • {subCategory.name}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* {category.isOpen &&
+                category.subCategories &&
+                category.subCategories.length > 0 && (
+                  <div className="pl-3 pb-2">
+                    {category.subCategories.map((subCategory) => (
+                      <div
+                        key={subCategory.id}
+                        className="flex items-center py-1 px-3 text-xs text-gray-600 hover:text-gray-900 cursor-pointer"
+                      >
+                        • {subCategory.name}
+                      </div>
+                    ))}
+                  </div>
+                )} */}
             </div>
           ))}
         </div>
@@ -140,19 +96,19 @@ export default function CategoryFilterDesktop() {
       {/* MARCAS section */}
       <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-t border-b border-gray-200 cursor-pointer">
         <span className="font-bold uppercase text-gray-800">Marcas</span>
-        <PlusIcon width={24} height={24} color="#84CC16" />
+        <PlusIcon width={24} height={24} className="text-lime-500" />
       </div>
 
       {/* MIS FAVORITOS section */}
       <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer">
         <span className="font-bold uppercase text-gray-800">Mis favoritos</span>
-        <PlusIcon width={24} height={24} color="#84CC16" />
+        <PlusIcon width={24} height={24} className="text-lime-500" />
       </div>
 
       {/* PRECIO section */}
       <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer">
         <span className="font-bold uppercase text-gray-800">Precio</span>
-        <MinusIcon width={24} height={24} color="#84CC16" />
+        <MinusIcon width={24} height={24} className="text-lime-500" />
       </div>
 
       {/* Price range slider placeholder */}

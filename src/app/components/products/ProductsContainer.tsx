@@ -3,53 +3,32 @@
 import ProductCard from './ProductCard';
 import ProductCardGrid from './ProductCardGrid';
 import CategoryFilterDesktop from './CategoryFilterDesktop';
-import useStore from '@/stores/useStore';
 import CartProductsDesktop from './CartProductsDesktop';
 import Pagination from '../global/Pagination';
 import { ListBulletIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
-import { useState, useEffect } from 'react';
 import CartsProductsMobile from './CartsProductsMobile';
+import useStore from '@/stores/base';
 
 export default function ProductsContainer() {
-  const { isTablet, filteredProducts, isMobile } = useStore();
-  // Inicializar con 'list' por defecto, o basado en isMobile
-  const [currentView, setCurrentView] = useState(() =>
-    isMobile ? 'list' : 'grid'
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
-
-  const indexOfLastProduct = currentPage * itemsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
-  const currentProducts = filteredProducts.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const {
+    isTablet,
+    filteredProducts,
+    isMobile,
+    paginationMeta,
+    paginationLinks,
+    setPage,
+    isLoading,
+    viewMode,
+    setViewMode,
+  } = useStore();
 
   const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-    // Opcional: desplazar al inicio de los productos
+    setPage(pageNumber);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Efecto para actualizar la vista cuando cambia isMobile
-  useEffect(() => {
-    if (isMobile) {
-      setCurrentView('list');
-    }
-  }, [isMobile]);
-
-  // Nuevo efecto para resetear la página cuando filteredProducts cambia
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filteredProducts]);
-
-  const handleViewChange = (view: string) => {
-    // Solo permitir cambiar la vista si no estamos en móvil
-    if (!isMobile) {
-      setCurrentView(view);
-    }
+  const handleViewChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
   };
 
   return (
@@ -66,7 +45,7 @@ export default function ProductsContainer() {
               <button
                 onClick={() => handleViewChange('list')}
                 className={`p-2 rounded-md cursor-pointer ${
-                  currentView === 'list' ? 'bg-gray-200' : ''
+                  viewMode === 'list' ? 'bg-gray-200' : ''
                 } ${isMobile ? 'opacity-50' : ''}`}
                 disabled={isMobile}
               >
@@ -75,7 +54,7 @@ export default function ProductsContainer() {
               <button
                 onClick={() => handleViewChange('grid')}
                 className={`p-2 rounded-md cursor-pointer ${
-                  currentView === 'grid' ? 'bg-gray-200' : ''
+                  viewMode === 'grid' ? 'bg-gray-200' : ''
                 } ${isMobile ? 'opacity-50' : ''}`}
                 disabled={isMobile}
               >
@@ -85,28 +64,38 @@ export default function ProductsContainer() {
           </div>
         )}
 
-        <div
-          className={`
-          ${
-            currentView === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-items-center'
-              : 'flex flex-col gap-[2px]'
-          }
-        `}
-        >
-          {currentProducts.map((product) =>
-            currentView === 'list' ? (
-              <ProductCard key={product.id} product={product} />
-            ) : (
-              <ProductCardGrid key={product.id} product={product} />
-            )
-          )}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <p>Cargando productos...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <p>No se encontraron productos</p>
+          </div>
+        ) : (
+          <div
+            className={`
+            ${
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-items-center'
+                : 'flex flex-col gap-[2px]'
+            }
+          `}
+          >
+            {filteredProducts.map((product) =>
+              viewMode === 'list' ? (
+                <ProductCard key={product.id} product={product} />
+              ) : (
+                <ProductCardGrid key={product.id} product={product} />
+              )
+            )}
+          </div>
+        )}
 
-        {totalPages > 0 && (
+        {paginationMeta && !isLoading && filteredProducts.length > 0 && (
           <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
+            meta={paginationMeta}
+            links={paginationLinks}
             onPageChange={handlePageChange}
           />
         )}

@@ -1,18 +1,9 @@
-import { PaginationMeta } from '@/interfaces/pagination.interface';
-import { BrandProduct, Product } from '@/interfaces/product.interface';
-
-const brands: Record<string, BrandProduct> = {
-  '2': { brand_id: '2', brand_name: 'Carozzi' },
-  '3': { brand_id: '3', brand_name: 'Tucapel' },
-  '4': { brand_id: '4', brand_name: 'Organix' },
-  '5': { brand_id: '5', brand_name: 'Gourmet Foods' },
-  '6': { brand_id: '6', brand_name: 'Selecta' },
-  '7': { brand_id: '7', brand_name: 'Maggi' },
-  '8': { brand_id: '8', brand_name: 'Verde Fresco' },
-  '9': { brand_id: '9', brand_name: 'Importaciones Asia' },
-  '10': { brand_id: '10', brand_name: 'Nipponfood' },
-  '12': { brand_id: '12', brand_name: 'Congelados del Sur' },
-};
+import { Product } from '@/interfaces/product.interface';
+import {
+  PaginationLinks,
+  PaginationMeta,
+  PaginationMetaLink,
+} from '@/stores/base/types';
 
 export const productos: Product[] = [
   {
@@ -20,11 +11,9 @@ export const productos: Product[] = [
     name: 'Arroz Grano Largo Premium',
     description:
       'Arroz grano largo seleccionado de primera calidad, bolsa de 1kg',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['3'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 3,
     sku: 'ALM-ARZ-001',
     status: true,
     price: 1290,
@@ -38,11 +27,9 @@ export const productos: Product[] = [
     name: 'Fideos Spaghetti N°5',
     description:
       'Fideos de sémola de trigo durum, formato spaghetti, paquete de 500g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['2'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 2,
     sku: 'ALM-FID-112',
     status: true,
     price: 890,
@@ -56,11 +43,9 @@ export const productos: Product[] = [
     name: 'Papas Russet Malla 2kg',
     description:
       'Papas variedad russet ideales para freír y hornear, malla de 2kg',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['8'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 8,
     sku: 'VER-PAP-053',
     status: true,
     price: 1990,
@@ -74,11 +59,9 @@ export const productos: Product[] = [
     name: 'Quínoa Orgánica 500g',
     description:
       'Quínoa orgánica certificada de alto valor nutricional, envase de 500g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['4'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 4,
     sku: 'ALM-QUI-217',
     status: true,
     price: 3490,
@@ -91,11 +74,9 @@ export const productos: Product[] = [
     id: 5,
     name: 'Couscous Integral 400g',
     description: 'Couscous de trigo integral, cocción rápida, envase de 400g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['5'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 5,
     sku: 'ALM-COU-087',
     status: true,
     price: 2190,
@@ -109,11 +90,9 @@ export const productos: Product[] = [
     name: 'Lentejas 6mm Bolsa 1kg',
     description:
       'Lentejas seleccionadas calibre 6mm, tiempo de cocción reducido',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['3'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 3,
     sku: 'ALM-LEN-541',
     status: false,
     price: 1590,
@@ -127,11 +106,9 @@ export const productos: Product[] = [
     name: 'Polenta Instantánea 500g',
     description:
       'Polenta de maíz precocida lista en 3 minutos, paquete de 500g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['7'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 7,
     sku: 'ALM-POL-067',
     status: true,
     price: 990,
@@ -144,11 +121,9 @@ export const productos: Product[] = [
     id: 8,
     name: 'Arroz Arborio para Risotto',
     description: 'Arroz variedad arborio especial para risotto, bolsa de 750g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['6'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 6,
     sku: 'ALM-ARB-206',
     status: true,
     price: 2490,
@@ -161,11 +136,9 @@ export const productos: Product[] = [
     id: 9,
     name: 'Papas Camote Orgánicas 1kg',
     description: 'Camotes orgánicos cultivados sin pesticidas, malla de 1kg',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['8'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 8,
     sku: 'VER-CAM-432',
     status: true,
     price: 2790,
@@ -178,11 +151,9 @@ export const productos: Product[] = [
     id: 10,
     name: 'Fideos Tallarines al Huevo',
     description: 'Tallarines elaborados con huevo fresco, paquete de 400g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['2'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 2,
     sku: 'ALM-TAL-874',
     status: true,
     price: 1190,
@@ -195,11 +166,9 @@ export const productos: Product[] = [
     id: 11,
     name: 'Garbanzos Seleccionados 900g',
     description: 'Garbanzos de tamaño uniforme y rápida cocción, bolsa de 900g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['3'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 3,
     sku: 'ALM-GAR-310',
     status: true,
     price: 1890,
@@ -212,11 +181,9 @@ export const productos: Product[] = [
     id: 12,
     name: 'Arroz Basmati Aromático',
     description: 'Arroz basmati importado de grano extra largo, envase de 800g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['9'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 9,
     sku: 'ALM-BAS-175',
     status: true,
     price: 3290,
@@ -229,11 +196,9 @@ export const productos: Product[] = [
     id: 13,
     name: 'Porotos Negros Selectos 1kg',
     description: 'Porotos negros de primera selección, bolsa de 1kg',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['3'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 3,
     sku: 'ALM-POR-243',
     status: true,
     price: 1750,
@@ -246,11 +211,9 @@ export const productos: Product[] = [
     id: 14,
     name: 'Fideos Rigati Tricolor 350g',
     description: 'Pasta corta tricolor con espinaca y tomate, paquete de 350g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['5'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 5,
     sku: 'ALM-RIG-578',
     status: true,
     price: 1390,
@@ -264,11 +227,9 @@ export const productos: Product[] = [
     name: 'Papas Nativas Variedad Mix 1.5kg',
     description:
       'Mezcla de papas nativas de diferentes colores, malla de 1.5kg',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['8'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 8,
     sku: 'VER-PMX-129',
     status: true,
     price: 3190,
@@ -282,11 +243,9 @@ export const productos: Product[] = [
     name: 'Bulgur Fino 500g',
     description:
       'Trigo partido fino ideal para ensaladas y guarniciones, paquete de 500g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['4'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 4,
     sku: 'ALM-BUL-643',
     status: true,
     price: 1890,
@@ -300,11 +259,9 @@ export const productos: Product[] = [
     name: 'Fideos Lasaña Precocidos',
     description:
       'Láminas de lasaña precocidas, no requieren hervido previo, 250g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['2'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 2,
     sku: 'ALM-LAS-418',
     status: true,
     price: 1690,
@@ -317,11 +274,9 @@ export const productos: Product[] = [
     id: 18,
     name: 'Arroz Integral Orgánico 1kg',
     description: 'Arroz integral de cultivo orgánico certificado, bolsa de 1kg',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['3'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 3,
     sku: 'ALM-AIN-732',
     status: true,
     price: 2190,
@@ -335,11 +290,9 @@ export const productos: Product[] = [
     name: 'Porotos Blancos Medianos 800g',
     description:
       'Porotos blancos de calibre mediano, alta calidad, bolsa de 800g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['3'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 3,
     sku: 'ALM-BLN-527',
     status: false,
     price: 1490,
@@ -353,11 +306,9 @@ export const productos: Product[] = [
     name: 'Papas Amarillas Premium 2kg',
     description:
       'Papas amarillas de pulpa cremosa ideal para puré, malla de 2kg',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['8'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 8,
     sku: 'VER-PAM-219',
     status: true,
     price: 2490,
@@ -371,11 +322,9 @@ export const productos: Product[] = [
     name: 'Arroz Sushi Japonés 500g',
     description:
       'Arroz especial para sushi, grano corto y pegajoso, envase de 500g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['9'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 9,
     sku: 'ALM-SUS-625',
     status: true,
     price: 2790,
@@ -388,11 +337,9 @@ export const productos: Product[] = [
     id: 22,
     name: 'Fideos Cabello de Ángel 250g',
     description: 'Fideos finísimos ideal para sopas, paquete de 250g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['2'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 2,
     sku: 'ALM-CAB-324',
     status: true,
     price: 690,
@@ -406,11 +353,9 @@ export const productos: Product[] = [
     name: 'Puré de Papas Instantáneo 400g',
     description:
       'Puré de papas en copos, preparación instantánea, paquete de 400g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['7'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 7,
     sku: 'ALM-PPI-467',
     status: true,
     price: 1290,
@@ -423,11 +368,9 @@ export const productos: Product[] = [
     id: 24,
     name: 'Maíz para Palomitas 500g',
     description: 'Maíz especial para preparar palomitas, bolsa de 500g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['6'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 6,
     sku: 'ALM-POP-192',
     status: true,
     price: 990,
@@ -440,11 +383,9 @@ export const productos: Product[] = [
     id: 25,
     name: 'Lentejas Rojas Partidas 500g',
     description: 'Lentejas rojas peladas de rápida cocción, paquete de 500g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['4'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 4,
     sku: 'ALM-LRO-358',
     status: true,
     price: 1990,
@@ -457,11 +398,9 @@ export const productos: Product[] = [
     id: 26,
     name: 'Arroz Salvaje Mezcla Gourmet 400g',
     description: 'Mezcla de arroz salvaje y arroz integral, bolsa de 400g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['9'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 9,
     sku: 'ALM-ASA-741',
     status: true,
     price: 3790,
@@ -474,11 +413,9 @@ export const productos: Product[] = [
     id: 27,
     name: 'Papas Fritas Congeladas 1kg',
     description: 'Papas prefritas congeladas listas para hornear, bolsa de 1kg',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['12'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 12,
     sku: 'CON-PAF-583',
     status: true,
     price: 2990,
@@ -491,11 +428,9 @@ export const productos: Product[] = [
     id: 28,
     name: 'Cous Cous Marroquí Especiado 300g',
     description: 'Cous cous con mezcla de especias orientales, envase de 300g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['5'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 5,
     sku: 'ALM-CSM-912',
     status: true,
     price: 1890,
@@ -508,11 +443,9 @@ export const productos: Product[] = [
     id: 29,
     name: 'Frijoles Rojos Mexicanos 900g',
     description: 'Frijoles rojos estilo mexicano, bolsa de 900g',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['3'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 3,
     sku: 'ALM-FRM-476',
     status: true,
     price: 1790,
@@ -526,11 +459,9 @@ export const productos: Product[] = [
     name: 'Fideos Ramen Pack 5 unidades',
     description:
       'Fideos ramen estilo asiático, pack de 5 unidades de 120g cada una',
-    category: {
-      category_id: '1',
-      category_name: 'Arroz, pastas y legumbres',
-    },
-    brand: brands['10'],
+    category_id: 1,
+    subcategory_id: 1,
+    brand_id: 10,
     sku: 'ALM-RAM-259',
     status: true,
     price: 1990,
@@ -541,25 +472,140 @@ export const productos: Product[] = [
   },
 ];
 
-// Metadatos para paginación
-export const productsMeta: PaginationMeta = {
-  total_items: 6,
-  page_size: 3,
-  current_page: 1,
-  total_pages: 2,
-  links: {
-    self: '/api/products?page=1&size=3',
-    prev: null,
-    next: '/api/products?page=2&size=3',
+// Metadatos para paginación ajustados al formato de Laravel
+export const paginationLinks: PaginationLinks = {
+  first:
+    'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=1',
+  last: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=2',
+  prev: null,
+  next: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=2',
+};
+
+export const paginationMetaLinks: PaginationMetaLink[] = [
+  {
+    url: null,
+    label: '&laquo; Previous',
+    active: false,
   },
+  {
+    url: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=1',
+    label: '1',
+    active: true,
+  },
+  {
+    url: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=2',
+    label: '2',
+    active: false,
+  },
+  {
+    url: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=2',
+    label: 'Next &raquo;',
+    active: false,
+  },
+];
+
+export const productsMeta: PaginationMeta = {
+  current_page: 1,
+  from: 1,
+  last_page: 2,
+  links: paginationMetaLinks,
+  path: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products',
+  per_page: 20,
+  to: 20,
+  total: 40,
 };
 
 export interface ProductsMock {
   data: Product[];
+  links: PaginationLinks;
   meta: PaginationMeta;
 }
 
-export const productsMock = {
+export const productsMock: ProductsMock = {
   data: productos,
+  links: paginationLinks,
   meta: productsMeta,
+};
+
+// Para uso de prueba/desarrollo
+export const getPagedProducts = (page: number = 1, size: number = 10) => {
+  const totalProducts = productos.length;
+  const start = (page - 1) * size;
+  const end = Math.min(start + size, totalProducts);
+  const pagedProducts = productos.slice(start, end);
+
+  const totalPages = Math.ceil(totalProducts / size);
+
+  // Crear enlaces de paginación dinámicos
+  const links: PaginationLinks = {
+    first:
+      'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=1',
+    last: `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${totalPages}`,
+    prev:
+      page > 1
+        ? `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${
+            page - 1
+          }`
+        : null,
+    next:
+      page < totalPages
+        ? `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${
+            page + 1
+          }`
+        : null,
+  };
+
+  // Crear enlaces de meta paginación dinámicos
+  const metaLinks: PaginationMetaLink[] = [];
+
+  // Link para 'Previous'
+  metaLinks.push({
+    url:
+      page > 1
+        ? `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${
+            page - 1
+          }`
+        : null,
+    label: '&laquo; Previous',
+    active: false,
+  });
+
+  // Enlaces de página
+  for (let i = 1; i <= totalPages; i++) {
+    metaLinks.push({
+      url: `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${i}`,
+      label: i.toString(),
+      active: i === page,
+    });
+  }
+
+  // Link para 'Next'
+  metaLinks.push({
+    url:
+      page < totalPages
+        ? `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${
+            page + 1
+          }`
+        : null,
+    label: 'Next &raquo;',
+    active: false,
+  });
+
+  // Crear meta paginación dinámica
+  const meta: PaginationMeta = {
+    current_page: page,
+    from: start + 1,
+    last_page: totalPages,
+    links: metaLinks,
+    path: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products',
+    per_page: size,
+    to: end,
+    total: totalProducts,
+  };
+
+  return {
+    data: pagedProducts,
+    links: links,
+    meta: meta,
+  };
 };

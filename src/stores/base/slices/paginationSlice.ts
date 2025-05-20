@@ -14,7 +14,7 @@ export const createPaginationSlice: StateCreator<
 
   nextPage: () => {
     const { currentPage, paginationMeta } = get();
-    if (paginationMeta && currentPage < paginationMeta.total_pages) {
+    if (paginationMeta && currentPage < paginationMeta.total) {
       const nextPage = currentPage + 1;
       set({ currentPage: nextPage });
       get().fetchProducts(nextPage);
