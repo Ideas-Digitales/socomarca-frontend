@@ -3,8 +3,8 @@
 import Footer from '../components/global/Footer';
 import Header from '../components/global/Header';
 import { useEffect } from 'react';
-import useStore, { useInitMobileDetection } from '@/stores/useStore';
 import LoadingSpinner from '../components/global/LoadingSpinner';
+import useStore, { useInitMobileDetection } from '@/stores/base';
 
 export default function PrivateLayout({
   children,
