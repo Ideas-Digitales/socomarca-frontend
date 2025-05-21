@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import useStore from '@/stores/base';
 import CarroCompraCard from '@/app/components/carro-de-compra/CarroCompraCard';
 import CarroCompraCardMobile from '@/app/components/carro-de-compra/CarroCompraCardMobile';
-import Image from 'next/image';
 
 export default function CarroDeCompraPage() {
   const router = useRouter();
@@ -40,10 +39,8 @@ export default function CarroDeCompraPage() {
       <div>
         {cartProducts.length === 0 || !cartProducts ? (
           <div className="flex flex-col items-center justify-center mt-10">
-            <Image
-              width={100}
-              height={100}
-              src="/assets/global/logo_default.png"
+            <img
+              src="assets/global/logo_plant.png"
               alt="Logo"
               className="w-24 h-24 mb-6"
             />

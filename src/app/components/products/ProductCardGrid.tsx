@@ -24,7 +24,7 @@ export default function ProductCardGrid({ product }: Props) {
     const img = new Image();
     img.src = product.imagen;
     img.onerror = () => {
-      setBackgroundImage(`url(/assets/global/logo_default.png)`);
+      setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
   }, [product.imagen]);
 

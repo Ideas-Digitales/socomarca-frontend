@@ -30,7 +30,7 @@ export default function CarroCompraCard({
           onError={(e) => {
             const target = e.currentTarget;
             target.onerror = null;
-            target.src = '/assets/global/logo_default.png';
+            target.src = 'assets/global/logo_plant.png';
             target.classList.add('grayscale', 'opacity-50');
           }}
         />

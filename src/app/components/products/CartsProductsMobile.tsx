@@ -10,7 +10,7 @@ export default function CartsProductsMobile() {
     return acc + product.quantity;
   }, 0);
   return (
-    <div className="flex w-full p-3 justify-between items-center fixed bottom-0 bg-slate-100 z-[100] right-0">
+    <div className="flex w-full p-3 justify-between items-center fixed bottom-0 bg-slate-100 z-[100] right-0 border-t border-slate-200">
       <Link href="/carro-de-compra">
         <ShoppingCartIcon width={24} height={24} />
       </Link>

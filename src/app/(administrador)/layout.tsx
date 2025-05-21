@@ -1,3 +1,5 @@
+import Sidebar from '../components/admin/Sidebar';
+
 export default function AdministradorLayout({
   children,
 }: {
@@ -5,8 +7,11 @@ export default function AdministradorLayout({
 }) {
   return (
     <>
-      <div>
-        <main className="">{children}</main>
+      <div className="flex w-full">
+        <Sidebar />
+        <div className="flex flex-col min-h-dvh w-full">
+          <main className="flex-grow relative w-full">{children}</main>
+        </div>
       </div>
     </>
   );

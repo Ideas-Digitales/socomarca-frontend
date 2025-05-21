@@ -6,12 +6,12 @@ import InstagramIcon from '../icons/InstagramIcon';
 import YoutubeIcon from '../icons/YoutubeIcon';
 import PinterestIcon from '../icons/PinterestIcon';
 import { EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import Logo from './Logo';
 
 const masterCardImageUrl = '/assets/footer/mastercard.png';
 const americanExpressImageUrl = '/assets/footer/american-express.png';
 const paypalImageUrl = '/assets/footer/paypal.png';
 const visaImageUrl = '/assets/footer/visa.png';
-const logoImageUrl = '/assets/global/logo.png';
 
 // Icon RRSS
 
@@ -25,13 +25,7 @@ export default function Footer() {
         {/* Logo y descripción */}
         <div className="flex flex-col items-start gap-[10px]">
           <h1 className="text-lime-600 text-xl font-bold">
-            <Image
-              src={logoImageUrl}
-              alt="Logo de Socomarca"
-              width={216}
-              height={39}
-              className="h-10 w-auto"
-            />
+            <Logo />
           </h1>
           <p className="text-gray-500">
             Vivamus tristique odio sit amet velit semper, eu posuere turpis

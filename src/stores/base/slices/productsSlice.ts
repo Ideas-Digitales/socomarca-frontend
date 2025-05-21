@@ -26,12 +26,61 @@ export const createProductsSlice: StateCreator<
     });
   },
 
+  setFilteredProducts: (filteredProducts) => {
+    const currentMeta = get().paginationMeta;
+
+    if (!currentMeta) {
+      set({ filteredProducts });
+      return;
+    }
+
+    const perPage = currentMeta.per_page || 9;
+    const lastPage = Math.max(1, Math.ceil(filteredProducts.length / perPage));
+
+    const updatedMeta: PaginationMeta = {
+      ...currentMeta,
+      current_page: 1,
+      from: filteredProducts.length > 0 ? 1 : 0,
+      last_page: lastPage,
+      to: Math.min(filteredProducts.length, perPage),
+      total: filteredProducts.length,
+      links: Array.from({ length: lastPage }, (_, i) => ({
+        url: i === 0 ? null : `?page=${i + 1}`,
+        label:
+          i === 0
+            ? 'Previous'
+            : i === lastPage - 1
+            ? 'Next'
+            : (i + 1).toString(),
+        active: i === 0,
+      })),
+    };
+
+    // Update navigation links
+    const updatedLinks: PaginationLinks = {
+      first: filteredProducts.length > 0 ? '?page=1' : null,
+      last: filteredProducts.length > 0 ? `?page=${lastPage}` : null,
+      next: 1 < lastPage ? '?page=2' : null,
+      prev: null,
+    };
+
+    set({
+      filteredProducts,
+      paginationMeta: updatedMeta,
+      paginationLinks: updatedLinks,
+      currentPage: 1,
+    });
+  },
+
   setSearchTerm: (term: string) => {
     const { products } = get();
-    set({
-      searchTerm: term,
-      filteredProducts: term ? filterAndRankProducts(products, term) : products,
-    });
+
+    // Apply search term filter
+    const filtered = term ? filterAndRankProducts(products, term) : products;
+
+    set({ searchTerm: term });
+
+    get().setFilteredProducts(filtered);
   },
 
   fetchProducts: async (page = 1, size = 9) => {

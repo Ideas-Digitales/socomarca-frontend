@@ -60,6 +60,7 @@ export interface ProductsSlice {
   ) => void;
   setSearchTerm: (term: string) => void;
   fetchProducts: (page?: number, size?: number) => Promise<void>;
+  setFilteredProducts: (filteredProducts: Product[]) => void;
 }
 
 // Acciones de categorías
