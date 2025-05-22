@@ -1,18 +1,7 @@
 "use client";
 import { useState } from "react";
 import Sidebar from "@/app/components/mi-cuenta/Sidebar";
-import {
-  HeartIcon as HeartSolid,
-  MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
-} from "@heroicons/react/24/solid";
-import { regionesYComunas } from "@/app/components/regionesYComunas";
 import { useRouter } from "next/navigation";
-import {
-  PencilSquareIcon,
-  TrashIcon,
-  HeartIcon as HeartOutline,
-} from "@heroicons/react/24/outline";
 import DatosPersonalesForm from "@/app/components/mi-cuenta/DatosPersonalesForm";
 import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
 import FavoritosSection from "@/app/components/mi-cuenta/FavoritosSection";

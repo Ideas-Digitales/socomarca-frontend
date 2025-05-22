@@ -2,6 +2,7 @@
 
 import AuthView from '@/app/components/auth/AuthView';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -41,9 +42,9 @@ export default function RecuperarContraseñaPage() {
       <div className="flex flex-col items-center gap-[10px] w-full"></div>
       <p className="text-[12px] font-medium">
         ¿Ya tienes cuenta?{' '}
-        <a href="/login" className="text-lime-500 cursor-pointer">
+        <Link href="/login" className="text-lime-500 cursor-pointer">
           Iniciar sesión
-        </a>
+        </Link>
       </p>
     </AuthView>
   );
