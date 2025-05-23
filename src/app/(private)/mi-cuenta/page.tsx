@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Sidebar from "@/app/components/mi-cuenta/Sidebar";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import DatosPersonalesForm from "@/app/components/mi-cuenta/DatosPersonalesForm";
 import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
 import FavoritosSection from "@/app/components/mi-cuenta/FavoritosSection";
@@ -12,6 +12,9 @@ import ModalVerLista from "@/app/components/mi-cuenta/ModalVerLista";
 import ModalCrearLista from "@/app/components/mi-cuenta/ModalCrearLista";
 import ModalEditarDireccion from "@/app/components/mi-cuenta/ModalEditarDireccion";
 import DetalleListaSection from "@/app/components/mi-cuenta/DetalleListaSection";
+import { Suspense } from 'react';
+import SectionSync from "@/app/components/mi-cuenta/SectionSync";
+
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -119,14 +122,6 @@ export default function MiCuentaPage() {
   };
   const router = useRouter();
 
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const sectionParam = searchParams.get("section");
-    if (sectionParam && SECCIONES_VALIDAS.includes(sectionParam)) {
-      setSelected(sectionParam);
-    }
-  }, [searchParams]);
 
   const handleSectionChange = (newSection: string) => {
     const currentParams = new URLSearchParams(window.location.search);
@@ -175,6 +170,12 @@ export default function MiCuentaPage() {
             onSelect={handleSectionChange}
             onLogoutClick={() => setModalLogoutVisible(true)}
           />
+<Suspense>
+  <SectionSync
+    setSelected={setSelected}
+    validSections={SECCIONES_VALIDAS}
+  />
+</Suspense>
 
           <div className="flex-1 bg-white rounded-lg shadow p-6">
             {selected === "datos" && (
