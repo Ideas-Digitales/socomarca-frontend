@@ -15,12 +15,13 @@ export default function ProductCardGrid({ product }: Props) {
     `url(${product.imagen})`
   );
 
+  const productStock = 1;
+
   if (!isQaMode) {
-    product.price = 123123;
+    product.stock = productStock;
   }
 
   useEffect(() => {
-    // Verificar si la imagen existe
     const img = new Image();
     img.src = product.imagen;
     img.onerror = () => {
@@ -92,7 +93,7 @@ export default function ProductCardGrid({ product }: Props) {
       {/* Información del producto */}
       <div className="flex flex-col w-full items-center">
         <span className="text-[#64748B] text-xs font-medium">
-          {product.brand_id}
+          {product.brand.name}
         </span>
         <span className="text-sm font-medium text-center">
           {truncateText(product.name, 25)}

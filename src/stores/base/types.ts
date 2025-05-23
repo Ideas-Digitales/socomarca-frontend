@@ -14,6 +14,13 @@ export interface PaginationMetaLink {
   active: boolean;
 }
 
+// Tipos para el sidebar navigation
+export interface ActiveItem {
+  type: 'menu' | 'submenu';
+  menuIndex: number;
+  submenuIndex?: number;
+}
+
 export interface PaginationMeta {
   current_page: number;
   from: number;
@@ -49,6 +56,11 @@ export interface StoreState {
   paginationMeta: PaginationMeta | null;
   paginationLinks: PaginationLinks | null;
   currentPage: number;
+
+  // Sidebar Navigation
+  activeItem: ActiveItem | null;
+  openSubmenus: number[];
+  isMobileSidebarOpen: boolean;
 }
 
 // Acciones de productos
@@ -93,10 +105,30 @@ export interface PaginationSlice {
   prevPage: () => void;
 }
 
+export interface SidebarSlice {
+  //Actions
+  setActiveItem: (item: ActiveItem | null) => void;
+  toggleSubmenu: (menuIndex: number) => void;
+  closeAllSubmenus: () => void;
+  setMobileSidebarOpen: (isOpen: boolean) => void;
+  closeMobileSidebar: () => void;
+
+  // Helpers
+  isMenuActive: (menuIndex: number) => boolean;
+  isSubmenuActive: (menuIndex: number, submenuIndex: number) => boolean;
+  isSubmenuOpen: (menuIndex: number) => boolean;
+
+  // Complex Actions
+  handleMenuClick: (menuIndex: number, hasSubmenu: boolean) => void;
+  handleSubmenuClick: (menuIndex: number, submenuIndex: number) => void;
+  resetNavigation: () => void;
+}
+
 // Tipo completo del store
 export type Store = StoreState &
   ProductsSlice &
   CategoriesSlice &
   UiSlice &
   CartSlice &
-  PaginationSlice;
+  PaginationSlice &
+  SidebarSlice;

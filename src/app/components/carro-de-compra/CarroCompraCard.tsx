@@ -1,10 +1,11 @@
+import { Brand } from '@/interfaces/product.interface';
 import { TrashIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   p: {
     id: number;
     name: string;
-    brand_id: number;
+    brand: Brand;
     imagen: string;
     price: number;
     quantity: number;
@@ -35,7 +36,7 @@ export default function CarroCompraCard({
           }}
         />
         <div>
-          <p className="text-xs text-slate-400">{p.brand_id}</p>
+          <p className="text-xs text-slate-400">{p.brand.name}</p>
           <p className="text-black text-xs">{p.name}</p>
         </div>
       </td>

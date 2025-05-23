@@ -30,8 +30,8 @@ export default function Logo({
       height={height || 39}
       className={className}
       style={{
-        width: width ? width : 'auto',
-        height: height ? height : 'auto',
+        width: width ? `${width}px` : 'auto',
+        height: height ? `${height}px` : 'auto',
         ...style,
       }}
       onClick={onClick}

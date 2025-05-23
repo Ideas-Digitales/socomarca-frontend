@@ -1,611 +1,277 @@
-import { Product } from '@/interfaces/product.interface';
+import { Category } from '@/interfaces/category.interface';
 import {
-  PaginationLinks,
-  PaginationMeta,
-  PaginationMetaLink,
-} from '@/stores/base/types';
+  Subcategory,
+  Brand,
+  Product,
+  ProductToBuy,
+} from '@/interfaces/product.interface';
 
-export const productos: Product[] = [
-  {
-    id: 1,
-    name: 'Arroz Grano Largo Premium',
-    description:
-      'Arroz grano largo seleccionado de primera calidad, bolsa de 1kg',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 3,
-    sku: 'ALM-ARZ-001',
-    status: true,
-    price: 1290,
-    stock: 145,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2024-12-15 09:32:45',
-    updated_at: '2025-05-03 14:21:08',
-  },
-  {
-    id: 2,
-    name: 'Fideos Spaghetti N°5',
-    description:
-      'Fideos de sémola de trigo durum, formato spaghetti, paquete de 500g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 2,
-    sku: 'ALM-FID-112',
-    status: true,
-    price: 890,
-    stock: 212,
-    imagen: 'assets/global/produ2ct-mock.png',
-    created_at: '2024-11-28 11:45:23',
-    updated_at: '2025-04-21 10:17:35',
-  },
-  {
-    id: 3,
-    name: 'Papas Russet Malla 2kg',
-    description:
-      'Papas variedad russet ideales para freír y hornear, malla de 2kg',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 8,
-    sku: 'VER-PAP-053',
-    status: true,
-    price: 1990,
-    stock: 58,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-10 08:12:37',
-    updated_at: '2025-05-10 16:43:21',
-  },
-  {
-    id: 4,
-    name: 'Quínoa Orgánica 500g',
-    description:
-      'Quínoa orgánica certificada de alto valor nutricional, envase de 500g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 4,
-    sku: 'ALM-QUI-217',
-    status: true,
-    price: 3490,
-    stock: 36,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-04 15:32:18',
-    updated_at: '2025-04-18 09:55:42',
-  },
-  {
-    id: 5,
-    name: 'Couscous Integral 400g',
-    description: 'Couscous de trigo integral, cocción rápida, envase de 400g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 5,
-    sku: 'ALM-COU-087',
-    status: true,
-    price: 2190,
-    stock: 42,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-15 12:22:15',
-    updated_at: '2025-05-05 17:10:33',
-  },
-  {
-    id: 6,
-    name: 'Lentejas 6mm Bolsa 1kg',
-    description:
-      'Lentejas seleccionadas calibre 6mm, tiempo de cocción reducido',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 3,
-    sku: 'ALM-LEN-541',
-    status: false,
-    price: 1590,
-    stock: 0,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2024-10-20 10:10:10',
-    updated_at: '2025-05-02 11:23:47',
-  },
+const CATEGORIES: Category[] = [
+  { id: 1, name: 'Alimentos Básicos' },
+  { id: 2, name: 'Verduras y Hortalizas' },
+  { id: 3, name: 'Carnes y Proteínas' },
+  { id: 4, name: 'Lácteos' },
+  { id: 5, name: 'Bebidas' },
+  { id: 6, name: 'Snacks y Dulces' },
+  { id: 7, name: 'Cuidado Personal' },
+  { id: 8, name: 'Limpieza del Hogar' },
+];
+
+const SUBCATEGORIES: Subcategory[] = [
+  { id: 1, name: 'Cereales y Granos', category_id: 1 },
+  { id: 2, name: 'Legumbres', category_id: 1 },
+  { id: 3, name: 'Pastas', category_id: 1 },
+  { id: 4, name: 'Verduras Frescas', category_id: 2 },
+  { id: 5, name: 'Tubérculos', category_id: 2 },
+  { id: 6, name: 'Carnes Rojas', category_id: 3 },
+  { id: 7, name: 'Aves', category_id: 3 },
+  { id: 8, name: 'Pescados', category_id: 3 },
+  { id: 9, name: 'Leches', category_id: 4 },
+  { id: 10, name: 'Quesos', category_id: 4 },
+  { id: 11, name: 'Yogures', category_id: 4 },
+  { id: 12, name: 'Jugos', category_id: 5 },
+  { id: 13, name: 'Refrescos', category_id: 5 },
+  { id: 14, name: 'Aguas', category_id: 5 },
+];
+
+const BRANDS: Brand[] = [
+  { id: 1, name: 'Marca Premium', logo_url: 'assets/brands/premium-logo.png' },
+  { id: 2, name: 'DeliciFood', logo_url: 'assets/brands/delicifood-logo.png' },
+  { id: 3, name: 'NutriVida', logo_url: 'assets/brands/nutrivida-logo.png' },
+  { id: 4, name: 'Orgánico Plus', logo_url: 'assets/brands/organico-logo.png' },
+  { id: 5, name: 'SaludMax', logo_url: 'assets/brands/saludmax-logo.png' },
+  { id: 6, name: 'FreshMart', logo_url: 'assets/brands/freshmart-logo.png' },
   {
     id: 7,
-    name: 'Polenta Instantánea 500g',
-    description:
-      'Polenta de maíz precocida lista en 3 minutos, paquete de 500g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 7,
-    sku: 'ALM-POL-067',
-    status: true,
-    price: 990,
-    stock: 83,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-03-08 14:27:39',
-    updated_at: '2025-04-28 12:14:22',
+    name: 'SuperNatural',
+    logo_url: 'assets/brands/supernatural-logo.png',
   },
-  {
-    id: 8,
-    name: 'Arroz Arborio para Risotto',
-    description: 'Arroz variedad arborio especial para risotto, bolsa de 750g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 6,
-    sku: 'ALM-ARB-206',
-    status: true,
-    price: 2490,
-    stock: 32,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-15 09:43:18',
-    updated_at: '2025-05-12 15:34:27',
-  },
-  {
-    id: 9,
-    name: 'Papas Camote Orgánicas 1kg',
-    description: 'Camotes orgánicos cultivados sin pesticidas, malla de 1kg',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 8,
-    sku: 'VER-CAM-432',
-    status: true,
-    price: 2790,
-    stock: 27,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-17 16:38:55',
-    updated_at: '2025-04-30 18:22:41',
-  },
+  { id: 8, name: 'BioSelect', logo_url: 'assets/brands/bioselect-logo.png' },
+  { id: 9, name: 'PureTaste', logo_url: 'assets/brands/puretaste-logo.png' },
   {
     id: 10,
-    name: 'Fideos Tallarines al Huevo',
-    description: 'Tallarines elaborados con huevo fresco, paquete de 400g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 2,
-    sku: 'ALM-TAL-874',
-    status: true,
-    price: 1190,
-    stock: 98,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2024-12-22 11:11:11',
-    updated_at: '2025-05-07 13:45:22',
-  },
-  {
-    id: 11,
-    name: 'Garbanzos Seleccionados 900g',
-    description: 'Garbanzos de tamaño uniforme y rápida cocción, bolsa de 900g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 3,
-    sku: 'ALM-GAR-310',
-    status: true,
-    price: 1890,
-    stock: 54,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-22 08:45:33',
-    updated_at: '2025-05-09 11:32:18',
-  },
-  {
-    id: 12,
-    name: 'Arroz Basmati Aromático',
-    description: 'Arroz basmati importado de grano extra largo, envase de 800g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 9,
-    sku: 'ALM-BAS-175',
-    status: true,
-    price: 3290,
-    stock: 17,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-25 13:27:45',
-    updated_at: '2025-05-08 09:18:52',
-  },
-  {
-    id: 13,
-    name: 'Porotos Negros Selectos 1kg',
-    description: 'Porotos negros de primera selección, bolsa de 1kg',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 3,
-    sku: 'ALM-POR-243',
-    status: true,
-    price: 1750,
-    stock: 67,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-12 09:15:22',
-    updated_at: '2025-05-13 10:42:19',
-  },
-  {
-    id: 14,
-    name: 'Fideos Rigati Tricolor 350g',
-    description: 'Pasta corta tricolor con espinaca y tomate, paquete de 350g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 5,
-    sku: 'ALM-RIG-578',
-    status: true,
-    price: 1390,
-    stock: 43,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-03 14:22:08',
-    updated_at: '2025-05-11 17:23:45',
-  },
-  {
-    id: 15,
-    name: 'Papas Nativas Variedad Mix 1.5kg',
-    description:
-      'Mezcla de papas nativas de diferentes colores, malla de 1.5kg',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 8,
-    sku: 'VER-PMX-129',
-    status: true,
-    price: 3190,
-    stock: 15,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-03-01 10:17:35',
-    updated_at: '2025-05-14 12:28:53',
-  },
-  {
-    id: 16,
-    name: 'Bulgur Fino 500g',
-    description:
-      'Trigo partido fino ideal para ensaladas y guarniciones, paquete de 500g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 4,
-    sku: 'ALM-BUL-643',
-    status: true,
-    price: 1890,
-    stock: 29,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-27 11:43:21',
-    updated_at: '2025-05-10 15:37:42',
-  },
-  {
-    id: 17,
-    name: 'Fideos Lasaña Precocidos',
-    description:
-      'Láminas de lasaña precocidas, no requieren hervido previo, 250g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 2,
-    sku: 'ALM-LAS-418',
-    status: true,
-    price: 1690,
-    stock: 52,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-18 09:25:46',
-    updated_at: '2025-05-05 14:18:33',
-  },
-  {
-    id: 18,
-    name: 'Arroz Integral Orgánico 1kg',
-    description: 'Arroz integral de cultivo orgánico certificado, bolsa de 1kg',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 3,
-    sku: 'ALM-AIN-732',
-    status: true,
-    price: 2190,
-    stock: 78,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-05 08:53:17',
-    updated_at: '2025-05-09 11:27:39',
-  },
-  {
-    id: 19,
-    name: 'Porotos Blancos Medianos 800g',
-    description:
-      'Porotos blancos de calibre mediano, alta calidad, bolsa de 800g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 3,
-    sku: 'ALM-BLN-527',
-    status: false,
-    price: 1490,
-    stock: 0,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2024-11-10 13:42:51',
-    updated_at: '2025-05-02 09:15:28',
-  },
-  {
-    id: 20,
-    name: 'Papas Amarillas Premium 2kg',
-    description:
-      'Papas amarillas de pulpa cremosa ideal para puré, malla de 2kg',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 8,
-    sku: 'VER-PAM-219',
-    status: true,
-    price: 2490,
-    stock: 41,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-25 15:18:42',
-    updated_at: '2025-05-12 10:42:19',
-  },
-  {
-    id: 21,
-    name: 'Arroz Sushi Japonés 500g',
-    description:
-      'Arroz especial para sushi, grano corto y pegajoso, envase de 500g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 9,
-    sku: 'ALM-SUS-625',
-    status: true,
-    price: 2790,
-    stock: 22,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-22 16:37:14',
-    updated_at: '2025-05-04 18:23:47',
-  },
-  {
-    id: 22,
-    name: 'Fideos Cabello de Ángel 250g',
-    description: 'Fideos finísimos ideal para sopas, paquete de 250g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 2,
-    sku: 'ALM-CAB-324',
-    status: true,
-    price: 690,
-    stock: 113,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2024-12-17 11:28:53',
-    updated_at: '2025-05-01 14:32:18',
-  },
-  {
-    id: 23,
-    name: 'Puré de Papas Instantáneo 400g',
-    description:
-      'Puré de papas en copos, preparación instantánea, paquete de 400g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 7,
-    sku: 'ALM-PPI-467',
-    status: true,
-    price: 1290,
-    stock: 65,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-08 09:14:35',
-    updated_at: '2025-05-07 16:19:42',
-  },
-  {
-    id: 24,
-    name: 'Maíz para Palomitas 500g',
-    description: 'Maíz especial para preparar palomitas, bolsa de 500g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 6,
-    sku: 'ALM-POP-192',
-    status: true,
-    price: 990,
-    stock: 87,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-10 13:21:47',
-    updated_at: '2025-05-13 09:38:24',
-  },
-  {
-    id: 25,
-    name: 'Lentejas Rojas Partidas 500g',
-    description: 'Lentejas rojas peladas de rápida cocción, paquete de 500g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 4,
-    sku: 'ALM-LRO-358',
-    status: true,
-    price: 1990,
-    stock: 34,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-03-04 10:43:21',
-    updated_at: '2025-05-08 15:27:36',
-  },
-  {
-    id: 26,
-    name: 'Arroz Salvaje Mezcla Gourmet 400g',
-    description: 'Mezcla de arroz salvaje y arroz integral, bolsa de 400g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 9,
-    sku: 'ALM-ASA-741',
-    status: true,
-    price: 3790,
-    stock: 12,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-17 14:32:18',
-    updated_at: '2025-05-11 11:43:57',
-  },
-  {
-    id: 27,
-    name: 'Papas Fritas Congeladas 1kg',
-    description: 'Papas prefritas congeladas listas para hornear, bolsa de 1kg',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 12,
-    sku: 'CON-PAF-583',
-    status: true,
-    price: 2990,
-    stock: 45,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2024-12-28 09:17:32',
-    updated_at: '2025-05-09 13:24:51',
-  },
-  {
-    id: 28,
-    name: 'Cous Cous Marroquí Especiado 300g',
-    description: 'Cous cous con mezcla de especias orientales, envase de 300g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 5,
-    sku: 'ALM-CSM-912',
-    status: true,
-    price: 1890,
-    stock: 27,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-01-30 12:49:23',
-    updated_at: '2025-05-05 10:37:41',
-  },
-  {
-    id: 29,
-    name: 'Frijoles Rojos Mexicanos 900g',
-    description: 'Frijoles rojos estilo mexicano, bolsa de 900g',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 3,
-    sku: 'ALM-FRM-476',
-    status: true,
-    price: 1790,
-    stock: 39,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-02-08 11:32:47',
-    updated_at: '2025-05-14 09:21:38',
-  },
-  {
-    id: 30,
-    name: 'Fideos Ramen Pack 5 unidades',
-    description:
-      'Fideos ramen estilo asiático, pack de 5 unidades de 120g cada una',
-    category_id: 1,
-    subcategory_id: 1,
-    brand_id: 10,
-    sku: 'ALM-RAM-259',
-    status: true,
-    price: 1990,
-    stock: 73,
-    imagen: 'assets/global/product-mock.png',
-    created_at: '2025-03-12 15:27:39',
-    updated_at: '2025-05-10 16:43:22',
+    name: 'GreenChoice',
+    logo_url: 'assets/brands/greenchoice-logo.png',
   },
 ];
 
-// Metadatos para paginación ajustados al formato de Laravel
-export const paginationLinks: PaginationLinks = {
-  first:
-    'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=1',
-  last: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=2',
-  prev: null,
-  next: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=2',
+const PRODUCT_NAMES = {
+  cereales: [
+    'Arroz Grano Largo Premium',
+    'Arroz Integral Orgánico',
+    'Arroz Basmati Aromático',
+    'Arroz Arborio para Risotto',
+    'Arroz Sushi Japonés',
+    'Arroz Salvaje Mezcla Gourmet',
+    'Quínoa Orgánica',
+    'Bulgur Fino',
+    'Couscous Integral',
+    'Avena Instantánea',
+  ],
+  legumbres: [
+    'Lentejas Rojas Partidas',
+    'Lentejas Verdes',
+    'Garbanzos Seleccionados',
+    'Porotos Negros Selectos',
+    'Porotos Blancos Medianos',
+    'Frijoles Rojos Mexicanos',
+    'Arvejas Secas',
+    'Habas Secas',
+  ],
+  pastas: [
+    'Fideos Spaghetti N°5',
+    'Fideos Tallarines al Huevo',
+    'Fideos Rigati Tricolor',
+    'Fideos Lasaña Precocidos',
+    'Fideos Cabello de Ángel',
+    'Fideos Ramen Pack',
+    'Ñoquis Frescos',
+    'Ravioles de Ricota',
+  ],
+  verduras: [
+    'Papas Russet Premium',
+    'Papas Amarillas',
+    'Papas Camote Orgánicas',
+    'Papas Nativas Mix',
+    'Tomates Cherry',
+    'Lechuga Hidropónica',
+    'Zanahorias Baby',
+    'Brócoli Fresco',
+  ],
 };
 
-export const paginationMetaLinks: PaginationMetaLink[] = [
-  {
-    url: null,
-    label: '&laquo; Previous',
-    active: false,
-  },
-  {
-    url: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=1',
-    label: '1',
-    active: true,
-  },
-  {
-    url: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=2',
-    label: '2',
-    active: false,
-  },
-  {
-    url: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=2',
-    label: 'Next &raquo;',
-    active: false,
-  },
-];
-
-export const productsMeta: PaginationMeta = {
-  current_page: 1,
-  from: 1,
-  last_page: 2,
-  links: paginationMetaLinks,
-  path: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products',
-  per_page: 20,
-  to: 20,
-  total: 40,
+// Utility functions
+const getRandomElement = <T>(array: T[]): T => {
+  return array[Math.floor(Math.random() * array.length)];
 };
 
-export interface ProductsMock {
-  data: Product[];
-  links: PaginationLinks;
-  meta: PaginationMeta;
-}
-
-export const productsMock: ProductsMock = {
-  data: productos,
-  links: paginationLinks,
-  meta: productsMeta,
+const getRandomNumber = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-// Para uso de prueba/desarrollo
-export const getPagedProducts = (page: number = 1, size: number = 10) => {
-  const totalProducts = productos.length;
-  const start = (page - 1) * size;
-  const end = Math.min(start + size, totalProducts);
-  const pagedProducts = productos.slice(start, end);
+const getRandomPrice = (): number => {
+  const prices = [
+    490, 690, 890, 990, 1190, 1290, 1490, 1590, 1690, 1890, 1990, 2190, 2490,
+    2790, 2990, 3190, 3490, 3790,
+  ];
+  return getRandomElement(prices);
+};
 
-  const totalPages = Math.ceil(totalProducts / size);
+const generateSKU = (
+  category: string,
+  productName: string,
+  id: number
+): string => {
+  const categoryCode = category.substring(0, 3).toUpperCase();
+  const productCode = productName.split(' ')[0].substring(0, 3).toUpperCase();
+  const numericCode = String(id).padStart(3, '0');
+  return `${categoryCode}-${productCode}-${numericCode}`;
+};
 
-  // Crear enlaces de paginación dinámicos
-  const links: PaginationLinks = {
-    first:
-      'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=1',
-    last: `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${totalPages}`,
-    prev:
-      page > 1
-        ? `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${
-            page - 1
-          }`
-        : null,
-    next:
-      page < totalPages
-        ? `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${
-            page + 1
-          }`
-        : null,
-  };
+const getSubcategoriesByCategory = (categoryId: number): Subcategory[] => {
+  return SUBCATEGORIES.filter((sub) => sub.category_id === categoryId);
+};
 
-  // Crear enlaces de meta paginación dinámicos
-  const metaLinks: PaginationMetaLink[] = [];
+// Main generator functions
+export const generateProduct = (id: number): Product => {
+  const category = getRandomElement(CATEGORIES);
+  const availableSubcategories = getSubcategoriesByCategory(category.id);
+  const subcategory = getRandomElement(availableSubcategories);
+  const brand = getRandomElement(BRANDS);
 
-  // Link para 'Previous'
-  metaLinks.push({
-    url:
-      page > 1
-        ? `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${
-            page - 1
-          }`
-        : null,
-    label: '&laquo; Previous',
-    active: false,
-  });
-
-  // Enlaces de página
-  for (let i = 1; i <= totalPages; i++) {
-    metaLinks.push({
-      url: `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${i}`,
-      label: i.toString(),
-      active: i === page,
-    });
+  // Seleccionar nombre basado en la categoría
+  let productName: string;
+  if (category.id === 1) {
+    // Alimentos Básicos
+    if (subcategory.name.includes('Cereales')) {
+      productName = getRandomElement(PRODUCT_NAMES.cereales);
+    } else if (subcategory.name.includes('Legumbres')) {
+      productName = getRandomElement(PRODUCT_NAMES.legumbres);
+    } else {
+      productName = getRandomElement(PRODUCT_NAMES.pastas);
+    }
+  } else if (category.id === 2) {
+    // Verduras
+    productName = getRandomElement(PRODUCT_NAMES.verduras);
+  } else {
+    productName = `Producto ${category.name} ${id}`;
   }
 
-  // Link para 'Next'
-  metaLinks.push({
-    url:
-      page < totalPages
-        ? `https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products?page=${
-            page + 1
-          }`
-        : null,
-    label: 'Next &raquo;',
-    active: false,
-  });
-
-  // Crear meta paginación dinámica
-  const meta: PaginationMeta = {
-    current_page: page,
-    from: start + 1,
-    last_page: totalPages,
-    links: metaLinks,
-    path: 'https://socomarca-backend-main-1i0dlp.laravel.cloud/api/products',
-    per_page: size,
-    to: end,
-    total: totalProducts,
-  };
+  const sku = generateSKU(category.name, productName, id);
+  const price = getRandomPrice();
+  const stock = getRandomNumber(0, 200);
+  const status = stock > 0 && Math.random() > 0.1; // 90% de productos activos
 
   return {
-    data: pagedProducts,
-    links: links,
-    meta: meta,
+    id,
+    name: `${productName} ${getRandomNumber(100, 999)}g`,
+    price,
+    stock,
+    sku,
+    imagen: `assets/products/product-${id}.jpg`,
+    category,
+    subcategory,
+    brand,
+    status,
+  };
+};
+
+export const generateProducts = (count: number): Product[] => {
+  return Array.from({ length: count }, (_, index) =>
+    generateProduct(index + 1)
+  );
+};
+
+export const generateProductToBuy = (
+  product: Product,
+  quantity?: number
+): ProductToBuy => {
+  return {
+    ...product,
+    quantity: quantity || getRandomNumber(1, 5),
+    is_favorite: Math.random() > 0.7, // 30% de probabilidad de ser favorito
+  };
+};
+
+export const generateProductsToBuy = (
+  products: Product[],
+  count?: number
+): ProductToBuy[] => {
+  const selectedProducts = count
+    ? products.slice(0, count)
+    : products.filter(() => Math.random() > 0.5);
+
+  return selectedProducts.map((product) => generateProductToBuy(product));
+};
+
+// Funciones para obtener datos específicos
+export const getCategories = (): Category[] => [...CATEGORIES];
+
+export const getSubcategories = (): Subcategory[] => [...SUBCATEGORIES];
+
+export const getBrands = (): Brand[] => [...BRANDS];
+
+export const getProductsByCategory = (
+  categoryId: number,
+  count: number = 10
+): Product[] => {
+  return generateProducts(count * 3)
+    .filter((product) => product.category.id === categoryId)
+    .slice(0, count);
+};
+
+export const getProductsByBrand = (
+  brandId: number,
+  count: number = 10
+): Product[] => {
+  return generateProducts(count * 2)
+    .filter((product) => product.brand.id === brandId)
+    .slice(0, count);
+};
+
+export const searchProducts = (
+  query: string,
+  allProducts: Product[]
+): Product[] => {
+  const searchTerm = query.toLowerCase();
+  return allProducts.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm) ||
+      product.category.name.toLowerCase().includes(searchTerm) ||
+      product.brand.name.toLowerCase().includes(searchTerm) ||
+      product.sku.toLowerCase().includes(searchTerm)
+  );
+};
+
+// Funciones de utilidad para paginación
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+export const paginateProducts = (
+  products: Product[],
+  page: number = 1,
+  perPage: number = 20
+): PaginatedResult<Product> => {
+  const total = products.length;
+  const totalPages = Math.ceil(total / perPage);
+  const start = (page - 1) * perPage;
+  const end = start + perPage;
+  const data = products.slice(start, end);
+
+  return {
+    data,
+    total,
+    page,
+    per_page: perPage,
+    total_pages: totalPages,
+    has_next: page < totalPages,
+    has_prev: page > 1,
   };
 };

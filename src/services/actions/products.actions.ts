@@ -1,11 +1,113 @@
 'use server';
-import { ProductsMock, productsMock } from '@/mock/products';
+import { Product } from '@/interfaces/product.interface';
+import {
+  PaginatedResult,
+  generateProducts,
+  paginateProducts,
+} from '@/mock/products';
 import { BACKEND_URL, IS_QA_MODE, QA_JWT } from '@/utils/getEnv';
+
+interface ProductsMock {
+  data: Product[];
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    path: string;
+    per_page: number;
+    to: number;
+    total: number;
+    links: Array<{
+      url: string | null;
+      label: string;
+      active: boolean;
+    }>;
+  };
+}
 
 interface FetchGetProductsProps {
   page: number;
   size: number;
 }
+
+const createLaravelStyleResponse = (
+  paginatedData: PaginatedResult<Product>,
+  baseUrl: string = BACKEND_URL || 'https://api.example.com'
+): ProductsMock => {
+  const { data, total, page, per_page, total_pages, has_next, has_prev } =
+    paginatedData;
+
+  const links = {
+    first: `${baseUrl}/products?page=1&size=${per_page}`,
+    last: `${baseUrl}/products?page=${total_pages}&size=${per_page}`,
+    prev: has_prev
+      ? `${baseUrl}/products?page=${page - 1}&size=${per_page}`
+      : null,
+    next: has_next
+      ? `${baseUrl}/products?page=${page + 1}&size=${per_page}`
+      : null,
+  };
+
+  const metaLinks = [];
+
+  metaLinks.push({
+    url: has_prev
+      ? `${baseUrl}/products?page=${page - 1}&size=${per_page}`
+      : null,
+    label: '&laquo; Previous',
+    active: false,
+  });
+
+  for (let i = 1; i <= total_pages; i++) {
+    metaLinks.push({
+      url: `${baseUrl}/products?page=${i}&size=${per_page}`,
+      label: i.toString(),
+      active: i === page,
+    });
+  }
+
+  metaLinks.push({
+    url: has_next
+      ? `${baseUrl}/products?page=${page + 1}&size=${per_page}`
+      : null,
+    label: 'Next &raquo;',
+    active: false,
+  });
+
+  const from = total > 0 ? (page - 1) * per_page + 1 : 0;
+  const to = Math.min(page * per_page, total);
+
+  return {
+    data,
+    links,
+    meta: {
+      current_page: page,
+      from,
+      last_page: total_pages,
+      path: `${baseUrl}/products`,
+      per_page,
+      to,
+      total,
+      links: metaLinks,
+    },
+  };
+};
+
+let cachedProducts: Product[] | null = null;
+const TOTAL_MOCK_PRODUCTS = 150;
+
+const getCachedProducts = (): Product[] => {
+  if (!cachedProducts) {
+    cachedProducts = generateProducts(TOTAL_MOCK_PRODUCTS);
+  }
+  return cachedProducts;
+};
 
 export const fetchGetProducts = async ({
   page,
@@ -13,11 +115,14 @@ export const fetchGetProducts = async ({
 }: FetchGetProductsProps) => {
   try {
     if (IS_QA_MODE) {
-      const response = await new Promise<ProductsMock>((resolve) => {
-        setTimeout(() => {
-          resolve(productsMock);
-        }, 1000);
-      });
+      // Simular delay de red
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const allProducts = getCachedProducts();
+
+      const paginatedData = paginateProducts(allProducts, page, size);
+
+      const response = createLaravelStyleResponse(paginatedData);
 
       return {
         ok: true,
@@ -56,4 +161,73 @@ export const fetchGetProducts = async ({
       error: error instanceof Error ? error.message : 'Error desconocido',
     };
   }
+};
+
+// Función adicional para limpiar el cache (útil para testing)
+export const clearProductsCache = async () => {
+  cachedProducts = null;
+};
+
+// Función para pre-cargar el cache (opcional)
+export const preloadProductsCache = async () => {
+  getCachedProducts();
+};
+
+// Funciones auxiliares para casos específicos
+export const fetchGetProductsByCategory = async (
+  categoryId: number,
+  page: number = 1,
+  size: number = 20
+) => {
+  if (IS_QA_MODE) {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    const allProducts = getCachedProducts();
+    const categoryProducts = allProducts.filter(
+      (p) => p.category.id === categoryId
+    );
+    const paginatedData = paginateProducts(categoryProducts, page, size);
+    const response = createLaravelStyleResponse(paginatedData);
+
+    return {
+      ok: true,
+      data: response,
+      error: null,
+    };
+  }
+
+  // Lógica para API real aquí
+  return fetchGetProducts({ page, size });
+};
+
+export const fetchSearchProducts = async (
+  query: string,
+  page: number = 1,
+  size: number = 20
+) => {
+  if (IS_QA_MODE) {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    const allProducts = getCachedProducts();
+    const searchTerm = query.toLowerCase();
+    const filteredProducts = allProducts.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchTerm) ||
+        product.category.name.toLowerCase().includes(searchTerm) ||
+        product.brand.name.toLowerCase().includes(searchTerm) ||
+        product.sku.toLowerCase().includes(searchTerm)
+    );
+
+    const paginatedData = paginateProducts(filteredProducts, page, size);
+    const response = createLaravelStyleResponse(paginatedData);
+
+    return {
+      ok: true,
+      data: response,
+      error: null,
+    };
+  }
+
+  // Lógica para API real aquí
+  return fetchGetProducts({ page, size });
 };
