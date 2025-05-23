@@ -68,7 +68,7 @@ export default function TransaccionesTable({
                   index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
                 }`}
               >
-                <td className="py-3 px-4 text-sm text-blue-600 font-medium whitespace-nowrap">
+                <td className="py-3 px-4 text-sm text-gray-600 font-medium whitespace-nowrap">
                   #{transaccion.id}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-900 whitespace-nowrap">

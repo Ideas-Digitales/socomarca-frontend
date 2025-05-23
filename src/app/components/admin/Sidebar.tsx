@@ -42,7 +42,7 @@ const menu: Menu[] = [
     submenu: [
       { name: 'Total de ventas', url: '/admin/total-de-ventas' },
       { name: 'Transacciones exitosas', url: '/admin/transacciones-exitosas' },
-      { name: 'Cliente con más compra', url: '/admin/cliente-mas-compra' },
+      { name: 'Cliente con más compra', url: '/admin/clientes-mas-compra' },
       { name: 'Productos con más ventas', url: '/admin/productos-mas-ventas' },
       { name: 'Comunas con más ventas', url: '/admin/comunas-mas-ventas' },
       { name: 'Categoría con más ventas', url: '/admin/categoria-mas-ventas' },

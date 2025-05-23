@@ -6,7 +6,7 @@ import { DashboardConfig } from '@/interfaces/dashboard.interface';
 import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
 import { useState } from 'react';
 
-export default function TransaccionesExitosas() {
+export default function ClientesMasCompra() {
   const [transacciones] = useState(() => generarTransaccionesAleatorias(100));
   const { paginatedItems, paginationMeta, changePage } =
     usePagination(transacciones);
@@ -14,28 +14,13 @@ export default function TransaccionesExitosas() {
   const config: DashboardConfig = {
     metrics: [
       {
-        label: 'Transacciones exitosas',
+        label: 'Clientes con más compras',
         value: transacciones.length,
         color: 'lime',
       },
     ],
     showTable: true,
-  };
-
-  const handleDownload = () => {
-    console.log('Descargando datos...');
-  };
-
-  const handleAmountFilter = () => {
-    console.log('Filtrar por montos...');
-  };
-
-  const handleClientFilter = () => {
-    console.log('Filtrar por cliente...');
-  };
-
-  const handleFilter = () => {
-    console.log('Aplicar filtros...');
+    tableTitle: 'Cliente(s) con más compra',
   };
 
   return (
@@ -44,10 +29,10 @@ export default function TransaccionesExitosas() {
       transacciones={paginatedItems}
       paginationMeta={paginationMeta}
       onPageChange={changePage}
-      onDownload={handleDownload}
-      onAmountFilter={handleAmountFilter}
-      onClientFilter={handleClientFilter}
-      onFilter={handleFilter}
+      onDownload={() => console.log('Descargando datos...')}
+      onAmountFilter={() => console.log('Filtrar por montos...')}
+      onClientFilter={() => console.log('Filtrar por cliente...')}
+      onFilter={() => console.log('Aplicar filtros...')}
     />
   );
 }
