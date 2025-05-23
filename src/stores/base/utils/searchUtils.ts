@@ -40,17 +40,11 @@ export const calculateRelevanceScore = (
 ): number => {
   // Normalizar nombre y descripción del producto
   const normalizedName = normalizeText(product.name);
-  const normalizedDescription = product.description
-    ? normalizeText(product.description)
-    : '';
 
   // Dividir el nombre del producto en palabras
   const productWords = normalizedName
     .split(/\s+/)
     .filter((word) => word.length > 1);
-  const descriptionWords = normalizedDescription
-    ? normalizedDescription.split(/\s+/).filter((word) => word.length > 1)
-    : [];
 
   let totalScore = 0;
 
@@ -60,10 +54,6 @@ export const calculateRelevanceScore = (
 
     if (normalizedName.includes(searchWord)) {
       bestWordMatch = Math.max(bestWordMatch, 100 + searchWord.length * 2);
-    }
-
-    if (normalizedDescription.includes(searchWord)) {
-      bestWordMatch = Math.max(bestWordMatch, 50 + searchWord.length);
     }
 
     for (const productWord of productWords) {
@@ -99,33 +89,6 @@ export const calculateRelevanceScore = (
       }
     }
 
-    // Comparar con palabras de la descripción (menor prioridad)
-    for (const descWord of descriptionWords) {
-      // Coincidencia exacta de palabra completa en descripción
-      if (descWord === searchWord) {
-        bestWordMatch = Math.max(bestWordMatch, 40 + searchWord.length);
-        continue;
-      }
-
-      // Palabra de descripción contiene la palabra de búsqueda
-      if (descWord.includes(searchWord) && searchWord.length >= 3) {
-        bestWordMatch = Math.max(bestWordMatch, 30 + searchWord.length);
-        continue;
-      }
-
-      // Similitud por distancia de Levenshtein en descripción
-      const distance = levenshteinDistance(searchWord, descWord);
-      const maxAllowedDistance = Math.min(2, Math.floor(descWord.length / 3));
-
-      if (distance <= maxAllowedDistance) {
-        const similarityScore =
-          20 +
-          (maxAllowedDistance - distance) * 5 +
-          Math.min(searchWord.length, descWord.length);
-        bestWordMatch = Math.max(bestWordMatch, similarityScore);
-      }
-    }
-
     // Sumar la mejor puntuación encontrada para esta palabra de búsqueda
     totalScore += bestWordMatch;
   }
@@ -135,10 +98,7 @@ export const calculateRelevanceScore = (
     // Mayor bonus si hay coincidencia con todas las palabras de búsqueda
     let matchedTermsCount = 0;
     for (const searchWord of searchWords) {
-      if (
-        normalizedName.includes(searchWord) ||
-        normalizedDescription.includes(searchWord)
-      ) {
+      if (normalizedName.includes(searchWord)) {
         matchedTermsCount++;
       }
     }
