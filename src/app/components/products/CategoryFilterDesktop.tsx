@@ -10,7 +10,6 @@ export default function CategoryFilterDesktop() {
   const { categories, setFilteredProducts, products } = useStore();
   const [isMainCategoryOpen, setIsMainCategoryOpen] = useState(true);
   const [isPriceOpen, setIsPriceOpen] = useState(true);
-
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
   const [minPrice, setMinPrice] = useState<number>(0);
@@ -269,12 +268,6 @@ export default function CategoryFilterDesktop() {
         }`}
       >
         <div className="w-full p-3">
-          {/* Display current price range */}
-          <div className="text-sm mb-3 transition-opacity duration-300">
-            Rango de precios: ${formatPrice(minPrice)}
-            {hasPriceRange ? ` - $${formatPrice(maxPrice)}` : ''}
-          </div>
-
           {/* Dual Range Slider Component - only show if there's an actual range and initialization is complete */}
           {hasPriceRange ? (
             <div className="transition-opacity duration-300">
@@ -367,46 +360,6 @@ export default function CategoryFilterDesktop() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Indicador de categorías seleccionadas */}
-      <div
-        className={`w-full border-t border-gray-200 overflow-hidden transition-all duration-400 ease-in-out ${
-          selectedCategories.length > 0
-            ? 'max-h-32 opacity-100 transform translate-y-0'
-            : 'max-h-0 opacity-0 transform -translate-y-4'
-        }`}
-      >
-        {selectedCategories.length > 0 && (
-          <div className="w-full p-3">
-            <div className="text-xs text-gray-500 mb-2 transition-opacity duration-300">
-              {selectedCategories.length} categoría
-              {selectedCategories.length > 1 ? 's' : ''} seleccionada
-              {selectedCategories.length > 1 ? 's' : ''}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {selectedCategories.map((categoryId) => {
-                const category = categories.find(
-                  (cat) => cat.id === categoryId
-                );
-                return category ? (
-                  <span
-                    key={categoryId}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-lime-100 text-lime-800 transition-all duration-300 ease-in-out"
-                  >
-                    {category.name}
-                    <button
-                      onClick={() => toggleCategorySelection(categoryId)}
-                      className="ml-1 text-lime-600 hover:text-lime-800 cursor-pointer transition-colors duration-200"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ) : null;
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

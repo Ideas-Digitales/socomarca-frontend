@@ -19,8 +19,9 @@ export const createCategoriesSlice: StateCreator<
       const response = await fetchGetCategories();
 
       if (response.ok && response.data) {
+        console.log('Categorías obtenidas:', response.data, response.ok);
         set({
-          categories: response.data.data,
+          categories: response.data.data || response.data,
           isLoading: false,
         });
       } else {

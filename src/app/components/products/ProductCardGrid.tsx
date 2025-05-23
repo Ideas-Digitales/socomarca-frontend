@@ -17,7 +17,7 @@ export default function ProductCardGrid({ product }: Props) {
     `url(${product.imagen})`
   );
 
-  const productStock = 100;
+  const productStock = 10022;
 
   if (!isQaMode) {
     product.stock = productStock;
@@ -44,7 +44,8 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   const increaseQuantity = () => {
-    if (quantity >= product.stock) {
+    const maxAllowed = Math.min(product.stock, 999);
+    if (quantity >= maxAllowed) {
       return;
     }
     setQuantity(quantity + 1);
@@ -63,13 +64,15 @@ export default function ProductCardGrid({ product }: Props) {
     const numericValue = parseInt(value, 10);
 
     // Validar que sea un número válido
-    if (isNaN(numericValue) || numericValue < 0) {
+    if (isNaN(numericValue)) {
       return;
     }
 
-    // Limitar al stock disponible
-    if (numericValue > product.stock) {
-      setQuantity(product.stock);
+    // Limitar a máximo 999 o stock disponible (el menor de los dos)
+    const maxAllowed = Math.min(product.stock, 999);
+
+    if (numericValue > maxAllowed || numericValue < 0) {
+      setQuantity(maxAllowed);
     } else {
       setQuantity(numericValue);
     }
@@ -161,21 +164,20 @@ export default function ProductCardGrid({ product }: Props) {
             <MinusIcon />
           </button>
 
-          {/* Input de cantidad en lugar del span */}
           <input
             type="number"
             min="0"
-            max={product.stock}
+            max={Math.min(product.stock, 999)}
             value={quantity}
             onChange={handleQuantityChange}
-            className="w-12 h-full text-center border border-slate-300 rounded-[4px] focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 text-sm"
+            className="w-8 h-8 text-center border border-slate-300 rounded-[4px] focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 text-sm mx-0 p-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
             placeholder="0"
           />
 
           <button
-            disabled={quantity === product.stock}
+            disabled={quantity === Math.min(product.stock, 999)}
             className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
-              quantity === product.stock
+              quantity === Math.min(product.stock, 999)
                 ? 'bg-slate-200 opacity-50 cursor-not-allowed'
                 : 'bg-slate-100  text-slate-950'
             }`}

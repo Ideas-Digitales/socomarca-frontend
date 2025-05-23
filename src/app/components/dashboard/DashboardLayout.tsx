@@ -46,7 +46,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="flex flex-col items-start gap-4 flex-1-0-0 md:max-w-[552px] w-full">
+        <div className="flex flex-col items-start gap-4 flex-1-0-0  w-full">
           <FilterBar
             onDownload={onDownload}
             onAmountFilter={onAmountFilter}
