@@ -125,7 +125,7 @@ export default function Footer() {
           © 2025 – Todos los derechos reservados.{' '}
           <span className="text-black font-semibold">socomarca.cl</span>
         </p>
-        <div className="flex flex-col md:flex-row items-center gap-2 mt-2 md:mt-0 opacity-50">
+        <div className="flex-col md:flex-row items-center gap-2 mt-2 md:mt-0 opacity-50 hidden md:flex">
           <Image
             width={37.8}
             height={23}

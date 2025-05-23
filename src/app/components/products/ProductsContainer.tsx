@@ -86,7 +86,10 @@ export default function ProductsContainer() {
               viewMode === 'list' ? (
                 <ProductCard key={product.id} product={product} />
               ) : (
-                <ProductCardGrid key={product.id} product={product} />
+                <ProductCardGrid
+                  key={product.id}
+                  product={product}
+                />
               )
             )}
           </div>

@@ -6,55 +6,43 @@ import useStore from '@/stores/base';
 import { Product } from '@/interfaces/product.interface';
 import DualRangeSlider from './DualRangerSlider';
 
-// Main component
 export default function CategoryFilterDesktop() {
   const { categories, setFilteredProducts, products } = useStore();
   const [isMainCategoryOpen, setIsMainCategoryOpen] = useState(true);
   const [isPriceOpen, setIsPriceOpen] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
-  // Price range states
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(0);
   const [lowerPrice, setLowerPrice] = useState<number>(0);
   const [upperPrice, setUpperPrice] = useState<number>(0);
 
-  // Reference to track initialization
   const initialized = useRef(false);
 
-  // Format price for display
   const formatPrice = useCallback((price: number): string => {
     return price.toLocaleString('es-CL');
   }, []);
 
-  // Initialize the price range once
   useEffect(() => {
     if (products && products.length > 0 && !initialized.current) {
-      // Extract all valid product prices
       const validPrices = products
         .map((product) => product.price || 0)
         .filter((price) => !isNaN(price) && price >= 0);
 
       if (validPrices.length > 0) {
-        // Find min and max prices
         const min = Math.floor(Math.min(...validPrices));
         let max = Math.ceil(Math.max(...validPrices));
 
-        // IMPORTANTE: Si min y max son iguales, solo añadimos un pequeño margen de 1
-        // No añadimos 10000 como antes
         if (min === max) {
           max = min + 1;
         }
 
-        console.log('Initial price range:', min, max);
-
-        // Set initial price range
         setMinPrice(min);
         setMaxPrice(max);
         setLowerPrice(min);
         setUpperPrice(max);
 
-        // Mark as initialized
         initialized.current = true;
       }
     }
@@ -120,14 +108,27 @@ export default function CategoryFilterDesktop() {
     [maxPrice, lowerPrice]
   );
 
-  // Apply filters (both category and price)
+  // Nueva función: Toggle individual de categorías (sin aplicar filtros inmediatamente)
+  const toggleCategorySelection = useCallback((categoryId: number) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(categoryId)) {
+        // Si ya está seleccionada, la removemos
+        return prev.filter((id) => id !== categoryId);
+      } else {
+        // Si no está seleccionada, la agregamos
+        return [...prev, categoryId];
+      }
+    });
+  }, []);
+
+  // Apply filters (both category and price) - Solo se ejecuta al presionar el botón
   const applyFilters = useCallback(() => {
     let filteredResults: Product[] = [...products];
 
-    // Apply category filter if one is selected
-    if (selectedCategory !== null) {
-      filteredResults = filteredResults.filter(
-        (product) => product.category_id === selectedCategory
+    // Apply category filter if any categories are selected
+    if (selectedCategories.length > 0) {
+      filteredResults = filteredResults.filter((product) =>
+        selectedCategories.includes(product.category.id)
       );
     }
 
@@ -138,48 +139,20 @@ export default function CategoryFilterDesktop() {
     });
 
     setFilteredProducts(filteredResults);
-  }, [products, selectedCategory, lowerPrice, upperPrice, setFilteredProducts]);
+  }, [
+    products,
+    selectedCategories,
+    lowerPrice,
+    upperPrice,
+    setFilteredProducts,
+  ]);
 
-  const filterProductsByCategory = useCallback(
-    (categoryId: number) => {
-      // Toggle category selection
-      if (selectedCategory === categoryId) {
-        setSelectedCategory(null);
-
-        // Apply only price filter
-        const filteredByPrice = products.filter((product) => {
-          const price = product.price || 0;
-          return price >= lowerPrice && price <= upperPrice;
-        });
-
-        setFilteredProducts(filteredByPrice);
-      } else {
-        setSelectedCategory(categoryId);
-
-        // Apply both category and price filters
-        const filteredProducts = products.filter(
-          (product) =>
-            product.category_id === categoryId &&
-            (product.price || 0) >= lowerPrice &&
-            (product.price || 0) <= upperPrice
-        );
-
-        setFilteredProducts(filteredProducts);
-      }
-    },
-    [products, lowerPrice, upperPrice, selectedCategory, setFilteredProducts]
-  );
-
-  // Toggle specific category
-  // const toggleCategory = useCallback((categoryId: number) => {
-  //   setOpenCategories((prev) => {
-  //     if (prev.includes(categoryId)) {
-  //       return prev.filter((id) => id !== categoryId);
-  //     } else {
-  //       return [...prev, categoryId];
-  //     }
-  //   });
-  // }, []);
+  // Función para limpiar todos los filtros
+  const clearAllFilters = useCallback(() => {
+    setSelectedCategories([]);
+    setLowerPrice(minPrice);
+    setUpperPrice(maxPrice);
+  }, [minPrice, maxPrice]);
 
   // Check if min and max are the same value
   const hasPriceRange = minPrice !== maxPrice && initialized.current;
@@ -188,85 +161,135 @@ export default function CategoryFilterDesktop() {
     <div className="flex flex-col items-start bg-white w-[200px] h-full">
       {/* Main category header */}
       <div
-        className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer"
+        className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200"
         onClick={toggleMainCategory}
       >
         <span className="font-bold uppercase text-gray-800">Categoría</span>
-        {isMainCategoryOpen ? (
-          <MinusIcon width={24} height={24} className="text-lime-500" />
-        ) : (
-          <PlusIcon width={24} height={24} className="text-lime-500" />
-        )}
+        <div className="transition-transform duration-300 ease-in-out">
+          {isMainCategoryOpen ? (
+            <MinusIcon width={24} height={24} className="text-lime-500" />
+          ) : (
+            <PlusIcon width={24} height={24} className="text-lime-500" />
+          )}
+        </div>
       </div>
 
       {/* Category list */}
-      {isMainCategoryOpen && (
+      <div
+        className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
+          isMainCategoryOpen ? 'max-h-[40dvh] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
         <div className="w-full max-h-[40dvh] overflow-y-auto">
           {categories.map((category) => (
             <div key={category.id} className="w-full">
-              {/* Category header */}
+              {/* Category header con checkbox */}
               <div
-                className={`flex w-full min-h-[40px] p-3 items-center justify-between gap-[10px] cursor-pointer hover:bg-gray-50 ${
-                  selectedCategory === category.id ? 'bg-gray-100' : ''
+                className={`flex w-full min-h-[40px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-3 py-2 ${
+                  selectedCategories.includes(category.id) ? 'bg-gray-100' : ''
                 }`}
-                onClick={() => filterProductsByCategory(category.id)}
+                onClick={() => toggleCategorySelection(category.id)}
               >
-                <span className="text-sm py-[6px] px-3 text-slate-500">
+                {/* Checkbox visual */}
+                <div
+                  className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-300 ease-in-out transform ${
+                    selectedCategories.includes(category.id)
+                      ? 'bg-lime-500 border-lime-500 scale-110'
+                      : 'border-gray-300 scale-100 hover:border-lime-300'
+                  }`}
+                >
+                  <div
+                    className={`transition-all duration-200 ${
+                      selectedCategories.includes(category.id)
+                        ? 'opacity-100 scale-100'
+                        : 'opacity-0 scale-75'
+                    }`}
+                  >
+                    {selectedCategories.includes(category.id) && (
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-sm text-slate-500 flex-1 transition-colors duration-200">
                   {category.name}
                 </span>
               </div>
             </div>
           ))}
         </div>
-      )}
+      </div>
 
       {/* MARCAS section */}
-      <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-t border-b border-gray-200 cursor-pointer">
+      <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-t border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200">
         <span className="font-bold uppercase text-gray-800">Marcas</span>
-        <PlusIcon width={24} height={24} className="text-lime-500" />
+        <div className="transition-transform duration-300 ease-in-out">
+          <PlusIcon width={24} height={24} className="text-lime-500" />
+        </div>
       </div>
 
       {/* MIS FAVORITOS section */}
-      <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer">
+      <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200">
         <span className="font-bold uppercase text-gray-800">Mis favoritos</span>
-        <PlusIcon width={24} height={24} className="text-lime-500" />
+        <div className="transition-transform duration-300 ease-in-out">
+          <PlusIcon width={24} height={24} className="text-lime-500" />
+        </div>
       </div>
 
       {/* PRECIO section */}
       <div
-        className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer"
+        className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200"
         onClick={togglePriceSection}
       >
         <span className="font-bold uppercase text-gray-800">Precio</span>
-        {isPriceOpen ? (
-          <MinusIcon width={24} height={24} className="text-lime-500" />
-        ) : (
-          <PlusIcon width={24} height={24} className="text-lime-500" />
-        )}
+        <div className="transition-transform duration-300 ease-in-out">
+          {isPriceOpen ? (
+            <MinusIcon width={24} height={24} className="text-lime-500" />
+          ) : (
+            <PlusIcon width={24} height={24} className="text-lime-500" />
+          )}
+        </div>
       </div>
 
       {/* Price range slider and inputs */}
-      {isPriceOpen && initialized.current && (
+      <div
+        className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
+          isPriceOpen && initialized.current
+            ? 'max-h-96 opacity-100'
+            : 'max-h-0 opacity-0'
+        }`}
+      >
         <div className="w-full p-3">
           {/* Display current price range */}
-          <div className="text-sm mb-3">
+          <div className="text-sm mb-3 transition-opacity duration-300">
             Rango de precios: ${formatPrice(minPrice)}
             {hasPriceRange ? ` - $${formatPrice(maxPrice)}` : ''}
           </div>
 
           {/* Dual Range Slider Component - only show if there's an actual range and initialization is complete */}
           {hasPriceRange ? (
-            <DualRangeSlider
-              min={minPrice}
-              max={maxPrice}
-              initialLower={lowerPrice}
-              initialUpper={upperPrice}
-              onChange={handlePriceRangeChange}
-              formatValue={formatPrice}
-              step={100} // Ajustable según necesidades
-            />
+            <div className="transition-opacity duration-300">
+              <DualRangeSlider
+                min={minPrice}
+                max={maxPrice}
+                initialLower={lowerPrice}
+                initialUpper={upperPrice}
+                onChange={handlePriceRangeChange}
+                formatValue={formatPrice}
+                step={100}
+              />
+            </div>
           ) : (
-            <div className="mb-6 mt-4">
+            <div className="mb-6 mt-4 transition-opacity duration-300">
               <div className="text-sm text-center text-gray-500">
                 {initialized.current
                   ? 'Todos los productos tienen el mismo precio'
@@ -284,7 +307,7 @@ export default function CategoryFilterDesktop() {
               <div className="text-xs text-gray-500 mb-1">Desde</div>
               <input
                 type="text"
-                className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                 placeholder={`$${formatPrice(minPrice)}`}
                 value={`$${formatPrice(lowerPrice)}`}
                 onChange={handleLowerPriceChange}
@@ -299,7 +322,7 @@ export default function CategoryFilterDesktop() {
               <div className="text-xs text-gray-500 mb-1">Hasta</div>
               <input
                 type="text"
-                className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                 placeholder={`$${formatPrice(maxPrice)}`}
                 value={`$${formatPrice(upperPrice)}`}
                 onChange={handleUpperPriceChange}
@@ -312,14 +335,79 @@ export default function CategoryFilterDesktop() {
             </div>
           </div>
 
-          <button
-            className="w-full bg-lime-500 text-white rounded-md py-3 px-12 text-center text-[12px]"
-            onClick={applyFilters}
-          >
-            Aplicar Filtro
-          </button>
+          {/* Botones de acción */}
+          <div className="flex flex-col gap-2">
+            <button
+              className="w-full bg-lime-500 text-white rounded-md py-3 px-12 text-center text-[12px] hover:bg-lime-600 transition-all duration-300 cursor-pointer"
+              onClick={applyFilters}
+            >
+              Aplicar Filtro
+            </button>
+
+            {/* Botón para limpiar filtros (opcional) */}
+            <div
+              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                selectedCategories.length > 0 ||
+                lowerPrice !== minPrice ||
+                upperPrice !== maxPrice
+                  ? 'max-h-12 opacity-100 transform translate-y-0'
+                  : 'max-h-0 opacity-0 transform -translate-y-2'
+              }`}
+            >
+              {(selectedCategories.length > 0 ||
+                lowerPrice !== minPrice ||
+                upperPrice !== maxPrice) && (
+                <button
+                  className="w-full bg-gray-200 text-gray-700 rounded-md py-2 px-12 text-center text-[12px] hover:bg-gray-300 transition-all duration-300 cursor-pointer"
+                  onClick={clearAllFilters}
+                >
+                  Limpiar Filtros
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Indicador de categorías seleccionadas */}
+      <div
+        className={`w-full border-t border-gray-200 overflow-hidden transition-all duration-400 ease-in-out ${
+          selectedCategories.length > 0
+            ? 'max-h-32 opacity-100 transform translate-y-0'
+            : 'max-h-0 opacity-0 transform -translate-y-4'
+        }`}
+      >
+        {selectedCategories.length > 0 && (
+          <div className="w-full p-3">
+            <div className="text-xs text-gray-500 mb-2 transition-opacity duration-300">
+              {selectedCategories.length} categoría
+              {selectedCategories.length > 1 ? 's' : ''} seleccionada
+              {selectedCategories.length > 1 ? 's' : ''}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {selectedCategories.map((categoryId) => {
+                const category = categories.find(
+                  (cat) => cat.id === categoryId
+                );
+                return category ? (
+                  <span
+                    key={categoryId}
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-lime-100 text-lime-800 transition-all duration-300 ease-in-out"
+                  >
+                    {category.name}
+                    <button
+                      onClick={() => toggleCategorySelection(categoryId)}
+                      className="ml-1 text-lime-600 hover:text-lime-800 cursor-pointer transition-colors duration-200"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,0 +1,215 @@
+import { useEffect } from 'react';
+import {
+  Bars3Icon,
+  XMarkIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+} from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import Logo from '../global/Logo';
+import useStore from '@/stores/base';
+import { menuItems, MenuItem } from '@/lib/menuData';
+
+export default function SidebarMobile() {
+  const router = useRouter();
+
+  // Estados del store
+  const {
+    isMobileSidebarOpen,
+    openSubmenus,
+    setMobileSidebarOpen,
+    closeMobileSidebar,
+    handleMenuClick,
+    handleSubmenuClick,
+    resetNavigation,
+  } = useStore();
+
+  const openSubmenuIndex = openSubmenus.length > 0 ? openSubmenus[0] : null;
+  const activeSubmenuId =
+    openSubmenuIndex !== null ? menuItems[openSubmenuIndex]?.id : null;
+
+  // Cerrar con tecla ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (activeSubmenuId) {
+          // Si hay submenu activo, solo cerrarlo (volver al menú principal)
+          resetNavigation();
+        } else if (isMobileSidebarOpen) {
+          // Si no hay submenu, cerrar todo el sidebar
+          closeMobileSidebar();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [
+    isMobileSidebarOpen,
+    activeSubmenuId,
+    closeMobileSidebar,
+    resetNavigation,
+  ]);
+
+  useEffect(() => {
+    if (isMobileSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileSidebarOpen]);
+
+  const handleItemClick = (item: MenuItem, index: number) => {
+    if (item.subItems) {
+      // Tiene submenu - usar el store para manejarlo
+      handleMenuClick(index, true);
+    } else {
+      // No tiene submenu - navegar directamente
+      if (item.href) {
+        router.push(item.href);
+      }
+      handleMenuClick(index, false); // Esto cerrará el sidebar automáticamente
+    }
+  };
+
+  const handleSubItemClick = (
+    subItem: { label: string; href: string },
+    menuIndex: number,
+    subIndex: number
+  ) => {
+    // Navegar y cerrar
+    router.push(subItem.href);
+    handleSubmenuClick(menuIndex, subIndex); // Esto cerrará el sidebar automáticamente
+  };
+
+  const handleBackToMain = () => {
+    // Cerrar todos los submenus pero mantener el sidebar abierto
+    if (openSubmenuIndex !== null) {
+      handleMenuClick(openSubmenuIndex, true); // Esto toggleará y cerrará el submenu
+    }
+  };
+
+  const handleOverlayClick = () => {
+    closeMobileSidebar();
+    resetNavigation();
+  };
+
+  return (
+    <>
+      {/* Header */}
+      <nav className="px-[30px] py-[22px] w-full flex justify-between bg-white items-center fixed top-0 left-0 right-0 z-30 shadow-2xl">
+        <button
+          onClick={() => setMobileSidebarOpen(true)}
+          className="p-1 hover:bg-slate-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+          aria-label="Abrir menú"
+        >
+          <Bars3Icon width={31} height={31} className="text-slate-700" />
+        </button>
+        <Logo width={128} height={23} />
+      </nav>
+
+      {/* Overlay con animación mejorada */}
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity ease-in-out duration-300"
+          onClick={handleOverlayClick}
+        />
+      )}
+
+      {/* Sidebar principal con animación mejorada */}
+      <div
+        className={`
+        fixed top-0 left-0 h-full w-80 bg-slate-100 shadow-2xl z-50 transform transition-all ease-in-out duration-300
+        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}
+      >
+        {/* Header del sidebar */}
+        <div className="flex items-center justify-between p-4 border-b-[1px] border-slate-300">
+          <button
+            onClick={() => {
+              closeMobileSidebar();
+              resetNavigation();
+            }}
+            className="p-2 hover:bg-slate-200 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 flex justify-between items-center w-full"
+            aria-label="Cerrar menú"
+          >
+            <ChevronLeftIcon width={20} height={20} />
+            <h2 className="text-lg uppercase text-[15px] font-medium">
+              Volver atrás
+            </h2>
+            <XMarkIcon width={24} height={24} />
+          </button>
+        </div>
+
+        {/* Items del menú */}
+        <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
+          {menuItems.map((item, index) => {
+            const IconComponent = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleItemClick(item, index)}
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-all ease-in-out duration-300 focus:outline-none focus:bg-slate-50 group border-b-[1px] border-slate-300"
+              >
+                <div className="flex items-center gap-3">
+                  <IconComponent className="w-5 h-5 text-slate-600 group-hover:text-slate-800 transition-all ease-in-out duration-300" />
+                  <span className="text-slate-700 group-hover:text-slate-900 font-medium transition-all ease-in-out duration-300">
+                    {item.label}
+                  </span>
+                </div>
+                {item.subItems && (
+                  <ChevronRightIcon className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-all ease-in-out duration-300" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Submenu */}
+      {activeSubmenuId && (
+        <div className="fixed top-0 left-0 h-full w-80 bg-slate-100 shadow-2xl z-[60] transform transition-all duration-300 ease-out translate-x-0 animate-in slide-in-from-left">
+          {/* Header del submenu */}
+          <div className="flex items-center gap-4 p-4 bg-slate-100 border-b-[1px] border-slate-300">
+            <button
+              onClick={handleBackToMain}
+              className="p-2 hover:bg-white/50 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+              aria-label="Volver atrás"
+            >
+              <ChevronLeftIcon width={24} height={24} />
+            </button>
+            <h2 className="text-lg font-medium uppercase text-[15px] flex-1">
+              {menuItems.find((item) => item.id === activeSubmenuId)?.label}
+            </h2>
+          </div>
+
+          {/* Items del submenu */}
+          <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
+            {menuItems
+              .find((item) => item.id === activeSubmenuId)
+              ?.subItems?.map((subItem, subIndex) => (
+                <button
+                  key={subIndex}
+                  onClick={() => {
+                    const menuIndex = menuItems.findIndex(
+                      (item) => item.id === activeSubmenuId
+                    );
+                    handleSubItemClick(subItem, menuIndex, subIndex);
+                  }}
+                  className="w-full flex items-center px-8 py-4 hover:bg-slate-50 text-left transition-colors focus:outline-none focus:bg-slate-50 group border-b-[1px] border-slate-300"
+                >
+                  <span className="text-slate-700 group-hover:text-slate-900 transition-colors">
+                    {subItem.label}
+                  </span>
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

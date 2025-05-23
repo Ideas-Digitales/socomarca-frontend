@@ -15,13 +15,13 @@ export default function ProductCard({ product }: Props) {
     `url(${product.imagen})`
   );
 
-  if (!isQaMode) {
-    product.price = 123123;
+  const productStock = 1;
 
+  if (!isQaMode) {
+    product.stock = productStock;
   }
 
   useEffect(() => {
-    // Verificar si la imagen existe
     const img = new Image();
     img.src = product.imagen;
     img.onerror = () => {
@@ -92,7 +92,7 @@ export default function ProductCard({ product }: Props) {
       <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
         <div className="flex flex-col">
           <span className="text-[#64748B] text-[12px] font-medium">
-            {product.brand_id}
+            {product.brand.name}
           </span>
           <span className="text-[12px] font-medium">
             {truncateText(product.name, 30)}

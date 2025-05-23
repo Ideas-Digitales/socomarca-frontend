@@ -9,6 +9,7 @@ import { createProductsSlice } from './slices/productsSlice';
 import { createCategoriesSlice } from './slices/categoriesSlice';
 import { createUiSlice } from './slices/uiSlice';
 import { createPaginationSlice } from './slices/paginationSlice';
+import { createSidebarSlice } from './slices/sidebarSlice';
 
 // Estado inicial
 const initialState: StoreState = {
@@ -25,6 +26,9 @@ const initialState: StoreState = {
   paginationLinks: null,
   currentPage: 1,
   isQaMode: IS_QA_MODE,
+  activeItem: null,
+  openSubmenus: [],
+  isMobileSidebarOpen: false,
 };
 
 // Crear el store combinando todos los slices
@@ -35,6 +39,7 @@ const useStore = create<Store>()((...a) => ({
   ...createUiSlice(...a),
   ...createCartSlice(...a),
   ...createPaginationSlice(...a),
+  ...createSidebarSlice(...a),
 }));
 
 // Hook para manejar la detección de dispositivos móviles

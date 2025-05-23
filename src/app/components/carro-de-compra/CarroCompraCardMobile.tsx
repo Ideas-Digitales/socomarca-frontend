@@ -1,10 +1,11 @@
+import { Brand } from '@/interfaces/product.interface';
 import { TrashIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   p: {
     id: number;
     name: string;
-    brand_id: number;
+    brand: Brand;
     imagen: string;
     price: number;
     quantity: number;
@@ -47,7 +48,7 @@ export default function CarroCompraCardMobile({
       />
 
       <div className="flex-1 pr-6">
-        <p className="text-xs text-slate-400">{p.brand_id}</p>
+        <p className="text-xs text-slate-400">{p.brand.name}</p>
         <p className="text-sm font-semibold text-black">{p.name}</p>
         <p className="text-sm font-bold text-gray-700 mt-1">
           ${(p.price * p.quantity).toLocaleString('es-CL')}

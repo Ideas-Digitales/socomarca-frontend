@@ -5,13 +5,27 @@ export interface Product {
   stock: number;
   sku: string;
   imagen: string;
-  description: string;
-  category_id: number;
-  subcategory_id: number;
-  brand_id: number;
-  created_at: string;
-  updated_at: string;
+  category: Category;
+  subcategory: Subcategory;
+  brand: Brand;
   status: boolean;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface Subcategory {
+  id: number;
+  name: string;
+  category_id: number;
+}
+
+export interface Brand {
+  id: number;
+  name: string;
+  logo_url: string;
 }
 
 export interface ProductToBuy extends Product {
