@@ -4,6 +4,7 @@ import RegionComunaSelector from '@/app/components/RegionComunaSelector';
 import { useRouter } from 'next/navigation';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
@@ -181,9 +182,9 @@ export default function FinalizarCompraPage() {
           <h3 className="text-xl font-bold mb-4">Tu Orden</h3>
 
           <div className="flex justify-between text-green-600 border-t-slate-200 border-t py-5">
-            <a href="#" className="underline">
+            <Link href="#" className="underline">
               Productos (19)
-            </a>
+            </Link>
             <span className="text-black">$29.583</span>
           </div>
           <div className="flex justify-between border-t-slate-200 border-t py-5 ">
@@ -230,9 +231,9 @@ export default function FinalizarCompraPage() {
             Todos los derechos reservados tankandtrailco.cl
             <br />
             Al comprar aceptas los{' '}
-            <a href="#" className="text-lime-500">
+            <Link href="#" className="text-lime-500">
               términos y condiciones
-            </a>{' '}
+            </Link>{' '}
             de tankandtrailco.cl
           </div>
 

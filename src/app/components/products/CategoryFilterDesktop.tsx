@@ -181,7 +181,7 @@ export default function CategoryFilterDesktop() {
         }`}
       >
         <div className="w-full max-h-[40dvh] overflow-y-auto">
-          {categories.map((category) => (
+          {categories?.map((category) => (
             <div key={category.id} className="w-full">
               {/* Category header con checkbox */}
               <div
