@@ -6,11 +6,10 @@ import Sidebar from '../components/admin/Sidebar';
 import SidebarMobile from '../components/admin/SidebarMobile';
 import useStore, { useInitMobileDetection } from '@/stores/base';
 
-// Componente Spinner
 const LoadingSpinner = () => (
   <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
     <div className="flex flex-col items-center gap-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-600"></div>
       <p className="text-gray-600">Cargando...</p>
     </div>
   </div>
@@ -25,7 +24,7 @@ export default function AdministradorLayout({
   const [isMounted, setIsMounted] = useState(false);
 
   useInitMobileDetection();
-  const { isMobile } = useStore();
+  const { isTablet } = useStore();
 
   // Efecto para manejar el estado de montaje del componente
   useEffect(() => {
@@ -46,11 +45,11 @@ export default function AdministradorLayout({
 
   return (
     <>
-      <div className={`${!isMobile && 'flex'} w-full`}>
-        {isMobile ? <SidebarMobile /> : <Sidebar />}
+      <div className={`${!isTablet && 'flex'} w-full`}>
+        {isTablet ? <SidebarMobile /> : <Sidebar />}
 
         <div className="flex flex-col relative min-h-dvh w-full">
-          {!isMobile && <DescargarDatos />}
+          {!isTablet && <DescargarDatos />}
           <main className="flex-grow relative w-full py-[88px]">
             {children}
           </main>

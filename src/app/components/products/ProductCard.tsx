@@ -19,6 +19,7 @@ export default function ProductCard({ product }: Props) {
 
   if (!isQaMode) {
     product.stock = productStock;
+    product.price = product.price || 1000;
   }
 
   useEffect(() => {
@@ -97,11 +98,13 @@ export default function ProductCard({ product }: Props) {
           <span className="text-[12px] font-medium">
             {truncateText(product.name, 30)}
           </span>
-          <span className="text-lime-500 font-bold">
-            {product.price.toLocaleString('es-CL', {
-              style: 'currency',
-              currency: 'CLP',
-            }) || '$0'}
+          <span className="text-lime-500 font-bold text-center text-lg mt-1">
+            {product.price !== null && product.price !== undefined
+              ? product.price.toLocaleString('es-CL', {
+                  style: 'currency',
+                  currency: 'CLP',
+                })
+              : '$0'}
           </span>
         </div>
         <div className="sm:flex sm:h-[74px] sm:flex-col sm:justify-between sm:items-end sm:gap-[6px] sm:flex-1-0-0 gap-4">

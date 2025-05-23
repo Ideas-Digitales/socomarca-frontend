@@ -19,6 +19,7 @@ export default function ProductCardGrid({ product }: Props) {
 
   if (!isQaMode) {
     product.stock = productStock;
+    product.price = product.price || 1000;
   }
 
   useEffect(() => {
@@ -99,10 +100,12 @@ export default function ProductCardGrid({ product }: Props) {
           {truncateText(product.name, 25)}
         </span>
         <span className="text-lime-500 font-bold text-center text-lg mt-1">
-          {product.price.toLocaleString('es-CL', {
-            style: 'currency',
-            currency: 'CLP',
-          }) || '$0'}
+          {product.price !== null && product.price !== undefined
+            ? product.price.toLocaleString('es-CL', {
+                style: 'currency',
+                currency: 'CLP',
+              })
+            : '$0'}
         </span>
       </div>
 
