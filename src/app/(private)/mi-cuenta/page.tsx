@@ -104,10 +104,6 @@ export default function MiCuentaPage() {
     },
   ]);
 
-  const comprasFiltradas = compras.filter((c) =>
-    c.numero.includes(busqueda.trim())
-  );
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
