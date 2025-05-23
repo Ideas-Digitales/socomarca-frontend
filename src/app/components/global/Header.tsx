@@ -135,13 +135,13 @@ export default function Header({ carro }: Props) {
           )}
           <div className="flex items-end gap-4">
             <div className="flex flex-row gap-2 sm:gap-4">
-              <Link href="/mis-compras" className="flex items-center gap-2">
+              <Link href="/mi-cuenta?section=compras" className="flex items-center gap-2">
                 <ListBulletIcon width={24} height={24} />
                 <span className="font-bold hidden sm:block">
                   Historial de compra
                 </span>
               </Link>
-              <Link href="/favoritos">
+              <Link href="/mi-cuenta?section=favoritos">
                 <HeartIcon width={24} height={24} />
               </Link>
               <Link href="/mi-cuenta">

@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "@/app/components/mi-cuenta/Sidebar";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import DatosPersonalesForm from "@/app/components/mi-cuenta/DatosPersonalesForm";
 import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
 import FavoritosSection from "@/app/components/mi-cuenta/FavoritosSection";
@@ -12,6 +12,13 @@ import ModalVerLista from "@/app/components/mi-cuenta/ModalVerLista";
 import ModalCrearLista from "@/app/components/mi-cuenta/ModalCrearLista";
 import ModalEditarDireccion from "@/app/components/mi-cuenta/ModalEditarDireccion";
 
+const SECCIONES_VALIDAS = [
+  "datos",
+  "direcciones",
+  "favoritos",
+  "compras",
+  "detalle-compra",
+];
 export default function MiCuentaPage() {
   const [selected, setSelected] = useState("datos");
   const [modalListaVisible, setModalListaVisible] = useState(false);
@@ -27,7 +34,6 @@ export default function MiCuentaPage() {
     null
   );
   const [modalAbierto, setModalAbierto] = useState(false);
-
   const [formData, setFormData] = useState({
     nombre: "",
     primerApellido: "",
@@ -111,6 +117,23 @@ export default function MiCuentaPage() {
   };
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const sectionParam = searchParams.get("section");
+    if (sectionParam && SECCIONES_VALIDAS.includes(sectionParam)) {
+      setSelected(sectionParam);
+    }
+  }, [searchParams]);
+
+  const handleSectionChange = (newSection: string) => {
+  const currentParams = new URLSearchParams(window.location.search);
+  currentParams.set('section', newSection);
+  router.replace(`?${currentParams.toString()}`, { scroll: false });
+  setSelected(newSection);
+};
+
+
   const validateForm = () => {
     const errors: any = {};
     if (!formData.nombre) errors.nombre = "El nombre es requerido";
@@ -148,7 +171,7 @@ export default function MiCuentaPage() {
         <div className="flex flex-col md:flex-row gap-6">
           <Sidebar
             selectedKey={selected}
-            onSelect={setSelected}
+            onSelect={handleSectionChange}
             onLogoutClick={() => setModalLogoutVisible(true)}
           />
 
