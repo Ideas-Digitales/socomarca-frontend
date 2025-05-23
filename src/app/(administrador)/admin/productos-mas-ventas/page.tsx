@@ -5,68 +5,58 @@ import DashboardLayout, {
 } from '@/app/components/dashboard/DashboardLayout';
 import { usePagination } from '@/hooks/usePagination';
 import { DashboardConfig } from '@/interfaces/dashboard.interface';
+import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
 import { useState } from 'react';
 
 interface ProductoVenta {
   id: string;
-  nombre: string;
-  categoria: string;
-  cantidadVendida: number;
-  precio: number;
-  ingresoTotal: number;
-  stock: number;
-  estado: 'Disponible' | 'Bajo Stock' | 'Agotado';
+  productos: string;
+  subtotal: number;
+  margen: number;
+  venta: number;
 }
 
 export default function ProductosMasVentas() {
-  const [clientes] = useState<ProductoVenta[]>(() =>
-    Array.from({ length: 50 }, (_, i) => ({
-      id: `producto-${i + 1}`,
-      nombre: `Producto ${i + 1}`,
-      categoria: `Categoría ${Math.floor(Math.random() * 5) + 1}`,
-      cantidadVendida: Math.floor(Math.random() * 100) + 1,
-      precio: Math.floor(Math.random() * 1000) + 100,
-      ingresoTotal: Math.floor(Math.random() * 100000) + 10000,
-      stock: Math.floor(Math.random() * 200) + 10,
-      estado:
-        Math.random() < 0.5
-          ? 'Disponible'
-          : Math.random() < 0.5
-          ? 'Bajo Stock'
-          : 'Agotado',
-    }))
-  );
+  const [productos] = useState(() => generarTransaccionesAleatorias(100));
+  const productosFixed = productos.map((producto) => ({
+    id: String(producto.id),
+    productos: producto.cliente,
+    subtotal: producto.monto,
+    margen: producto.monto,
+    venta: producto.monto,
+  }));
 
   const { paginatedItems, paginationMeta, changePage } =
-    usePagination(clientes);
+    usePagination(productosFixed);
 
   const config: DashboardConfig = {
     metrics: [
       {
-        label: 'Clientes con más compras',
-        value: clientes.length,
+        label: 'Productos con más ventas',
+        value: productos.length,
         color: 'lime',
       },
     ],
     showTable: true,
-    tableTitle: 'Clientes con Más Compras',
+    tableTitle: 'Productos con más ventas',
   };
   const productosVentasColumns: TableColumn<ProductoVenta>[] = [
-    { key: 'nombre', label: 'Nombre del Producto' },
-    { key: 'categoria', label: 'Categoría' },
-    { key: 'cantidadVendida', label: 'Cantidad Vendida' },
+    { key: 'productos', label: 'Productos' },
     {
-      key: 'precio',
-      label: 'Precio',
+      key: 'subtotal',
+      label: 'Subtotal',
       render: (value: number) => `$${value.toLocaleString()}`,
     },
     {
-      key: 'ingresoTotal',
-      label: 'Ingreso Total',
+      key: 'margen',
+      label: 'Margen',
       render: (value: number) => `$${value.toLocaleString()}`,
     },
-    { key: 'stock', label: 'Stock' },
-    { key: 'estado', label: 'Estado' },
+    {
+      key: 'venta',
+      label: 'Venta',
+      render: (value: number) => `$${value.toLocaleString()}`,
+    },
   ];
 
   return (

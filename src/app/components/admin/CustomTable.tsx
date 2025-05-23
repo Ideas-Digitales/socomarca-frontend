@@ -46,7 +46,10 @@ const TransaccionesTable = <T extends Record<string, any> = any>({
           </thead>
           <tbody>
             {transacciones.map((row, rowIndex) => (
-              <tr key={rowIndex}>
+              <tr
+                key={rowIndex}
+                className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-100'}
+              >
                 {columns.map((column, colIndex) => {
                   const value = row[column.key as keyof T];
                   return (

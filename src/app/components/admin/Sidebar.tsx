@@ -5,98 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Logo from '../global/Logo';
 import HR from '../global/HR';
-import {
-  ChatBubbleBottomCenterIcon,
-  ClipboardDocumentCheckIcon,
-  ClipboardDocumentListIcon,
-  DocumentIcon,
-  PowerIcon,
-  PresentationChartBarIcon,
-  QuestionMarkCircleIcon,
-  ShoppingBagIcon,
-  SquaresPlusIcon,
-  UserCircleIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/24/outline';
-import { JSX } from 'react';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
+import { MenuItem, menuItems } from '@/lib/menuData';
 
 const avatar = '/assets/global/avatar.png';
-
-interface Menu {
-  label: string;
-  icon: JSX.Element | string;
-  url?: string; // Agregado para menús principales
-  submenu?: Submenu[];
-}
-
-interface Submenu {
-  name: string;
-  url: string;
-}
-
-const menu: Menu[] = [
-  {
-    label: 'Reporte de ventas',
-    icon: <PresentationChartBarIcon className="w-5 h-5" />,
-    submenu: [
-      { name: 'Total de ventas', url: '/admin/total-de-ventas' },
-      { name: 'Transacciones exitosas', url: '/admin/transacciones-exitosas' },
-      { name: 'Cliente con más compra', url: '/admin/clientes-mas-compra' },
-      { name: 'Productos con más ventas', url: '/admin/productos-mas-ventas' },
-      { name: 'Comunas con más ventas', url: '/admin/comunas-mas-ventas' },
-      { name: 'Categoría con más ventas', url: '/admin/categoria-mas-ventas' },
-      {
-        name: 'Transacciones fallidas o canceladas',
-        url: '/admin/transacciones-fallidas',
-      },
-    ],
-  },
-  {
-    label: 'Productos',
-    icon: <ShoppingBagIcon className="w-5 h-5" />,
-    url: '/admin/productos',
-  },
-  {
-    label: 'Categorías',
-    icon: <SquaresPlusIcon className="w-5 h-5" />,
-    url: '/admin/categorias',
-  },
-  {
-    label: 'Clientes',
-    icon: <UserCircleIcon className="w-5 h-5" />,
-    url: '/admin/clientes',
-  },
-  {
-    label: 'Información del sitio',
-    icon: <DocumentIcon className="w-5 h-5" />,
-    url: '/admin/informacion-sitio',
-  },
-  {
-    label: 'Términos y condiciones',
-    icon: <ClipboardDocumentCheckIcon className="w-5 h-5" />,
-    url: '/admin/terminos-condiciones',
-  },
-  {
-    label: 'Políticas y privacidad',
-    icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
-    url: '/admin/politicas-privacidad',
-  },
-  {
-    label: 'Preguntas frecuentes',
-    icon: <QuestionMarkCircleIcon className="w-5 h-5" />,
-    url: '/admin/preguntas-frecuentes',
-  },
-  {
-    label: 'Mensaje para el cliente',
-    icon: <ChatBubbleBottomCenterIcon className="w-5 h-5" />,
-    url: '/admin/mensaje-cliente',
-  },
-  {
-    label: 'Cerrar sesión',
-    icon: <PowerIcon className="w-5 h-5" />,
-  },
-];
 
 export default function Sidebar() {
   const userName = 'Alex Mandarino';
@@ -118,13 +31,13 @@ export default function Sidebar() {
   }, [pathname, setActiveItemByUrl]);
 
   // Función para manejar navegación
-  const handleNavigation = (item: Menu, index: number) => {
-    if (item.submenu) {
+  const handleNavigation = (item: MenuItem, index: number) => {
+    if (item.subItems) {
       // Si tiene submenú, solo abrir/cerrar el submenú
       handleMenuClick(index, true);
-    } else if (item.url) {
+    } else if (item.href) {
       // Si no tiene submenú pero tiene URL, navegar
-      router.push(item.url);
+      router.push(item.href);
       handleMenuClick(index, false);
     } else {
       // Para casos especiales como "Cerrar sesión"
@@ -134,11 +47,11 @@ export default function Sidebar() {
 
   // Función para manejar navegación de submenús
   const handleSubmenuNavigation = (
-    subItem: Submenu,
+    subItem: { label: string; href: string },
     menuIndex: number,
     subIndex: number
   ) => {
-    router.push(subItem.url);
+    router.push(subItem.href);
     handleSubmenuClick(menuIndex, subIndex);
   };
 
@@ -171,58 +84,64 @@ export default function Sidebar() {
 
       {/* Menu - Scrollable area */}
       <div className="w-full flex-1 overflow-y-auto">
-        {menu.map((item, index) => (
-          <div key={index} className="flex flex-col w-full">
-            <div
-              className={`flex items-center gap-3 py-4 px-6 text-sm cursor-pointer transition-all ease-in-out duration-500 ${
-                isMenuActive(index)
-                  ? 'bg-lime-100 text-black hover:bg-lime-200'
-                  : 'text-slate-500 hover:bg-slate-200'
-              }`}
-              onClick={() => handleNavigation(item, index)}
-            >
-              <span className="flex-shrink-0">{item.icon}</span>
-              <span className="flex-1">{item.label}</span>
-              {item.submenu && (
-                <span className="flex-shrink-0 transition-transform ease-in-out duration-500">
-                  <ChevronRightIcon
-                    className={`w-4 h-4 transition-transform duration-200 transform ${
-                      isSubmenuOpen(index) ? 'rotate-90' : 'rotate-0'
-                    }`}
-                  />
-                </span>
-              )}
-            </div>
-            {item.submenu && (
+        {menuItems.map((item, index) => {
+          const IconComponent = item.icon;
+
+          return (
+            <div key={item.id} className="flex flex-col w-full">
               <div
-                className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                  isSubmenuOpen(index)
-                    ? 'max-h-96 opacity-100'
-                    : 'max-h-0 opacity-0'
+                className={`flex items-center gap-3 py-4 px-6 text-sm cursor-pointer transition-all ease-in-out duration-500 ${
+                  isMenuActive(index)
+                    ? 'bg-lime-100 text-black hover:bg-lime-200'
+                    : 'text-slate-500 hover:bg-slate-200'
                 }`}
+                onClick={() => handleNavigation(item, index)}
               >
-                <div className="flex flex-col bg-slate-50">
-                  {item.submenu.map((subItem, subIndex) => (
-                    <div
-                      key={subIndex}
-                      className={`flex items-center gap-3 py-2 px-6 text-sm cursor-pointer transition-colors duration-200 ${
-                        isSubmenuActive(index, subIndex)
-                          ? 'text-black font-medium bg-lime-50 border-r-2 border-lime-400'
-                          : 'text-slate-500 hover:bg-slate-200'
+                <span className="flex-shrink-0">
+                  <IconComponent className="w-5 h-5" />
+                </span>
+                <span className="flex-1">{item.label}</span>
+                {item.subItems && (
+                  <span className="flex-shrink-0 transition-transform ease-in-out duration-500">
+                    <ChevronRightIcon
+                      className={`w-4 h-4 transition-transform duration-200 transform ${
+                        isSubmenuOpen(index) ? 'rotate-90' : 'rotate-0'
                       }`}
-                      onClick={() =>
-                        handleSubmenuNavigation(subItem, index, subIndex)
-                      }
-                    >
-                      <span>{subItem.name}</span>
-                    </div>
-                  ))}
-                </div>
+                    />
+                  </span>
+                )}
               </div>
-            )}
-            <HR />
-          </div>
-        ))}
+              {item.subItems && (
+                <div
+                  className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                    isSubmenuOpen(index)
+                      ? 'max-h-96 opacity-100'
+                      : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="flex flex-col bg-slate-50">
+                    {item.subItems.map((subItem, subIndex) => (
+                      <div
+                        key={subIndex}
+                        className={`flex items-center gap-3 py-2 px-6 text-sm cursor-pointer transition-colors duration-200 ${
+                          isSubmenuActive(index, subIndex)
+                            ? 'text-black font-medium bg-lime-50 border-r-2 border-lime-400'
+                            : 'text-slate-500 hover:bg-slate-200'
+                        }`}
+                        onClick={() =>
+                          handleSubmenuNavigation(subItem, index, subIndex)
+                        }
+                      >
+                        <span>{subItem.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <HR />
+            </div>
+          );
+        })}
       </div>
     </nav>
   );

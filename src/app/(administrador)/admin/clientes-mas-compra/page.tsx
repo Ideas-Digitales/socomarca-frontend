@@ -38,7 +38,7 @@ export default function ClientesMasCompra() {
       },
     ],
     showTable: true,
-    tableTitle: 'Clientes con Más Compras',
+    tableTitle: 'Clientes con más compras',
   };
 
   // Columnas específicas para clientes

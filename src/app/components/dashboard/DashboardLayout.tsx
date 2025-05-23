@@ -2,11 +2,11 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import DayPickerComponent from '@/app/components/admin/DayPickerComponent';
 import LineChartContent from '@/app/components/admin/LineChartContent';
-import TransaccionesTable from '@/app/components/admin/TransaccionesTable';
 import MetricsCard from './MetricsCard';
 import FilterBar from './FilterBar';
 import { PaginationMeta } from '@/stores/base/types';
 import { DashboardConfig } from '@/interfaces/dashboard.interface';
+import CustomTable from '../admin/CustomTable';
 
 const DynamicLineChart = dynamic(() => Promise.resolve(LineChartContent), {
   ssr: false,
@@ -87,7 +87,7 @@ const DashboardLayout = <T extends Record<string, any> = any>({
         paginationMeta &&
         onPageChange && (
           <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full">
-            <TransaccionesTable
+            <CustomTable
               title={config.tableTitle}
               transacciones={tableData}
               columns={tableColumns}
