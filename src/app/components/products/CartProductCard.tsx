@@ -14,12 +14,8 @@ export default function CartProductCard({ product, index }: Props) {
     incrementProductInCart,
     decrementProductInCart,
     removeAllQuantityByProductId,
-    isQaMode,
   } = useStore();
 
-  if (!isQaMode) {
-    product.price = 123123;
-  }
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`
   );

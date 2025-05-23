@@ -118,7 +118,7 @@ export default function SidebarMobile() {
         >
           <Bars3Icon width={31} height={31} className="text-slate-700" />
         </button>
-        <Logo width={128} height={23} />
+        <Logo width={213} height={38} />
       </nav>
 
       {/* Overlay con animación mejorada */}

@@ -1,5 +1,4 @@
 import { Product } from '@/interfaces/product.interface';
-// import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import useStore from '@/stores/base';
 import { HeartIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
@@ -15,7 +14,7 @@ export default function ProductCard({ product }: Props) {
     `url(${product.imagen})`
   );
 
-  const productStock = 1;
+  const productStock = 100;
 
   if (!isQaMode) {
     product.stock = productStock;
@@ -47,6 +46,31 @@ export default function ProductCard({ product }: Props) {
       return;
     }
     setQuantity(quantity + 1);
+  };
+
+  // Nueva función para manejar el cambio en el input
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Permitir campo vacío temporalmente
+    if (value === '') {
+      setQuantity(0);
+      return;
+    }
+
+    const numericValue = parseInt(value, 10);
+
+    // Validar que sea un número válido
+    if (isNaN(numericValue) || numericValue < 0) {
+      return;
+    }
+
+    // Limitar al stock disponible
+    if (numericValue > product.stock) {
+      setQuantity(product.stock);
+    } else {
+      setQuantity(numericValue);
+    }
   };
 
   const addToCart = () => {
@@ -113,7 +137,7 @@ export default function ProductCard({ product }: Props) {
             <strong>SKU:</strong> {product.sku}
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
-            <div className="flex">
+            <div className="flex items-center gap-1">
               <button
                 disabled={quantity === 0}
                 className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
@@ -126,9 +150,16 @@ export default function ProductCard({ product }: Props) {
                 <MinusIcon />
               </button>
 
-              <span className="w-8 h-8 p-1 flex flex-col items-center justify-center">
-                {quantity}
-              </span>
+              {/* Input de cantidad en lugar del span */}
+              <input
+                type="number"
+                min="0"
+                max={product.stock}
+                value={quantity}
+                onChange={handleQuantityChange}
+                className="w-8 h-full text-center border border-slate-300 rounded-[4px] focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 text-sm mx-0 p-1"
+                placeholder="0"
+              />
 
               <button
                 disabled={quantity === product.stock}
