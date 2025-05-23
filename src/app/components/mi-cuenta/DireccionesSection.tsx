@@ -5,6 +5,8 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
+import { useState } from 'react';
+import ModalConfirmacion from '../global/ModalConfirmacion';
 
 export default function DireccionesSection({
   favoritaIndex,
@@ -15,6 +17,11 @@ export default function DireccionesSection({
   setFavoritaIndex: (i: number) => void;
   setModalAbierto: (v: boolean) => void;
 }) {
+    const [modalVisible, setModalVisible] = useState(false);
+const [direccionAEliminar, setDireccionAEliminar] = useState<string | null>(null);
+
+
+
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">Direcciones</h2>
@@ -48,9 +55,17 @@ export default function DireccionesSection({
                 <PencilSquareIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
               </button>
 
-              <button title="Eliminar">
-                <TrashIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
-              </button>
+            <button
+  title="Eliminar"
+  onClick={() => {
+  setDireccionAEliminar(nombre);
+  setModalVisible(true);
+}}
+
+>
+  <TrashIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
+</button>
+
             </div>
           </div>
         ))}
@@ -62,6 +77,25 @@ export default function DireccionesSection({
       >
         Agregar nueva dirección
       </button>
+      {modalVisible && (
+  <ModalConfirmacion
+  isOpen={modalVisible}
+  titulo={`¿Eliminar dirección "${direccionAEliminar}"?`}
+  descripcion="Esta acción eliminará la dirección seleccionada."
+  onCancel={() => {
+    setModalVisible(false);
+    setDireccionAEliminar(null);
+  }}
+  onConfirm={() => {
+    console.log('Eliminar dirección:', direccionAEliminar);
+    // lógica real de eliminación si se implementa
+    setModalVisible(false);
+    setDireccionAEliminar(null);
+  }}
+/>
+
+)}
+
     </div>
   );
 }

@@ -48,7 +48,7 @@ export default function FavoritosSection({
                   setListaSeleccionada(lista);
                   setSelected("detalle-lista")                  //
                 }}
-                className="text-sm text-blue-500 flex items-center gap-1 hover:underline"
+                className="text-sm text-lime-600 flex items-center gap-1 hover:underline cursor-pointer"
               >
                 Revisar lista <span className="text-lg">›</span>
               </button>

@@ -40,18 +40,32 @@ export default function ComprasSection({
     <div className="p-4 rounded">
       <h2 className="text-xl font-bold mb-6">Mis compras</h2>
 
-      <div className="flex justify-end mb-4">
-        <div className="relative w-full md:w-72">
-          <input
-            type="text"
-            placeholder="Buscar Nº de pedido"
-            className="border border-slate-400 px-4 py-2 rounded w-full pr-10"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-          <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-2.5 text-gray-500" />
-        </div>
-      </div>
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+  <div className="w-[80px]">
+    {busqueda.trim() ? (
+      <button
+        onClick={() => setBusqueda('')}
+        className="text-sm text-lime-600 hover:underline"
+      >
+        Ver todos
+      </button>
+    ) : (
+      <div>&nbsp;</div> // espacio en blanco del mismo tamaño
+    )}
+  </div>
+
+  <div className="relative w-full md:w-72">
+    <input
+      type="text"
+      placeholder="Buscar Nº de pedido"
+      className="border border-slate-400 px-4 py-2 rounded w-full pr-10"
+      value={busqueda}
+      onChange={(e) => setBusqueda(e.target.value)}
+    />
+    <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-2.5 text-gray-500" />
+  </div>
+</div>
+
 
       <div className="space-y-4">
         {comprasFiltradas.length > 0 ? (
