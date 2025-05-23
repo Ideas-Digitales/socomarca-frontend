@@ -1,23 +1,24 @@
-'use client';
-import { useState } from 'react';
-import RegionComunaSelector from '@/app/components/RegionComunaSelector';
-import { useRouter } from 'next/navigation';
-import RutInput from '@/app/components/global/RutInputVisualIndicators';
-import Image from 'next/image';
-import Link from 'next/link';
+"use client";
+import { useState } from "react";
+import RegionComunaSelector from "@/app/components/RegionComunaSelector";
+import { useRouter } from "next/navigation";
+import RutInput from "@/app/components/global/RutInputVisualIndicators";
+import Image from "next/image";
+import Link from "next/link";
+import TelefonoInput from "@/app/components/global/TelefonoInput";
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
-    nombre: '',
-    rut: '',
-    correo: '',
-    telefono: '',
-    region: '',
-    comuna: '',
-    direccion: '',
-    detallesDireccion: '',
+    nombre: "",
+    rut: "",
+    correo: "",
+    telefono: "",
+    region: "",
+    comuna: "",
+    direccion: "",
+    detallesDireccion: "",
   });
   const [aceptaTerminos, setAceptaTerminos] = useState(true);
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,17 +40,17 @@ export default function FinalizarCompraPage() {
     setErrors((prev) => {
       const newErrors = { ...prev };
 
-      if (name === 'correo') {
+      if (name === "correo") {
         if (!validarEmail(value)) {
-          newErrors.correo = 'Correo inválido';
+          newErrors.correo = "Correo inválido";
         } else {
           delete newErrors.correo;
         }
       }
 
-      if (name === 'telefono') {
+      if (name === "telefono") {
         if (!validarTelefono(value)) {
-          newErrors.telefono = 'Teléfono chileno inválido';
+          newErrors.telefono = "Teléfono chileno inválido";
         } else {
           delete newErrors.telefono;
         }
@@ -69,7 +70,7 @@ export default function FinalizarCompraPage() {
     setErrors((prev) => {
       const newErrors = { ...prev };
       if (!isValid && formData.rut) {
-        newErrors.rut = 'RUT inválido';
+        newErrors.rut = "RUT inválido";
       } else {
         delete newErrors.rut;
       }
@@ -78,7 +79,7 @@ export default function FinalizarCompraPage() {
   };
 
   const goNext = () => {
-    router.push('/compra-exitosa');
+    router.push("/compra-exitosa");
   };
 
   return (
@@ -129,16 +130,19 @@ export default function FinalizarCompraPage() {
               )}
             </div>
             <div>
-              <label className="block font-medium">
-                Teléfono<span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
+              <TelefonoInput
                 name="telefono"
                 value={formData.telefono}
-                onChange={handleChange}
-                className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+                onChange={(e, prefijo) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    telefono: e.target.value,
+                    telefonoCompleto: `${prefijo}${e.target.value}`,
+                  }))
+                }
+                error={errors.telefono}
               />
+
               {errors.telefono && (
                 <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>
               )}
@@ -207,7 +211,7 @@ export default function FinalizarCompraPage() {
             <Image
               width={104}
               height={27}
-              style={{ width: 'auto', height: 'auto' }}
+              style={{ width: "auto", height: "auto" }}
               src="/assets/global/logo_webpay.png"
               alt="Webpay"
               className="my-2 w-[40%] max-w-xs"
@@ -230,10 +234,10 @@ export default function FinalizarCompraPage() {
             />
             Todos los derechos reservados tankandtrailco.cl
             <br />
-            Al comprar aceptas los{' '}
+            Al comprar aceptas los{" "}
             <Link href="#" className="text-lime-500">
               términos y condiciones
-            </Link>{' '}
+            </Link>{" "}
             de tankandtrailco.cl
           </div>
 

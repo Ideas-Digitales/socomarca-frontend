@@ -1,16 +1,19 @@
 'use client';
 import React from 'react';
+import TelefonoInput from '../global/TelefonoInput';
 
 export default function DatosPersonalesForm({
   formData,
   formErrors,
   onChange,
   onSubmit,
+  setFormData,
 }: {
   formData: any;
   formErrors: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
+  setFormData: React.Dispatch<React.SetStateAction<any>>;
 }) {
   return (
     <form
@@ -22,11 +25,10 @@ export default function DatosPersonalesForm({
         { label: 'Primer apellido', name: 'primerApellido' },
         { label: 'Segundo apellido', name: 'segundoApellido' },
         { label: 'Correo electrónico', name: 'email', type: 'email' },
-        { label: 'Teléfono', name: 'telefono', type: 'tel' },
         { label: 'RUT', name: 'rut' },
       ].map(({ label, name, type = 'text' }) => (
         <div key={name}>
-          <label className="block font-medium">{label}</label>
+          <label className="block font-medium">{label}<span className="text-red-400">*</span></label>
           <input
             type={type}
             name={name}
@@ -41,6 +43,22 @@ export default function DatosPersonalesForm({
           )}
         </div>
       ))}
+
+      {/* Teléfono con prefijo */}
+      <div className="md:col-span-1">
+        <TelefonoInput
+          name="telefono"
+          value={formData.telefono}
+          onChange={(e, prefijo) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              telefono: e.target.value,
+              telefonoCompleto: `${prefijo}${e.target.value}`,
+            }))
+          }
+          error={formErrors.telefono}
+        />
+      </div>
 
       <div className="md:col-span-3 mt-4">
         <button
