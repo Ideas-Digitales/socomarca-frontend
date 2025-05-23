@@ -12,9 +12,8 @@ import ModalVerLista from "@/app/components/mi-cuenta/ModalVerLista";
 import ModalCrearLista from "@/app/components/mi-cuenta/ModalCrearLista";
 import ModalEditarDireccion from "@/app/components/mi-cuenta/ModalEditarDireccion";
 import DetalleListaSection from "@/app/components/mi-cuenta/DetalleListaSection";
-import { Suspense } from 'react';
+import { Suspense } from "react";
 import SectionSync from "@/app/components/mi-cuenta/SectionSync";
-
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -122,7 +121,6 @@ export default function MiCuentaPage() {
   };
   const router = useRouter();
 
-
   const handleSectionChange = (newSection: string) => {
     const currentParams = new URLSearchParams(window.location.search);
     currentParams.set("section", newSection);
@@ -170,12 +168,12 @@ export default function MiCuentaPage() {
             onSelect={handleSectionChange}
             onLogoutClick={() => setModalLogoutVisible(true)}
           />
-<Suspense>
-  <SectionSync
-    setSelected={setSelected}
-    validSections={SECCIONES_VALIDAS}
-  />
-</Suspense>
+          <Suspense>
+            <SectionSync
+              setSelected={setSelected}
+              validSections={SECCIONES_VALIDAS}
+            />
+          </Suspense>
 
           <div className="flex-1 bg-white rounded-lg shadow p-6">
             {selected === "datos" && (
@@ -186,6 +184,7 @@ export default function MiCuentaPage() {
                   formErrors={formErrors}
                   onChange={handleInputChange}
                   onSubmit={handleSubmit}
+                  setFormData={setFormData} 
                 />
               </div>
             )}
@@ -210,18 +209,17 @@ export default function MiCuentaPage() {
               />
             )}
 
-           {selected === 'detalle-lista' && listaSeleccionada && (
-  <DetalleListaSection
-    lista={listaSeleccionada}
-    onVolver={() => {
-      setSelected('favoritos');
-      const params = new URLSearchParams(window.location.search);
-      params.set('section', 'favoritos');
-      router.replace(`?${params.toString()}`, { scroll: false });
-    }}
-  />
-)}
-
+            {selected === "detalle-lista" && listaSeleccionada && (
+              <DetalleListaSection
+                lista={listaSeleccionada}
+                onVolver={() => {
+                  setSelected("favoritos");
+                  const params = new URLSearchParams(window.location.search);
+                  params.set("section", "favoritos");
+                  router.replace(`?${params.toString()}`, { scroll: false });
+                }}
+              />
+            )}
 
             {selected === "compras" && (
               <ComprasSection
