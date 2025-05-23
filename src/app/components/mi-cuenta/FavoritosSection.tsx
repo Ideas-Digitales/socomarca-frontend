@@ -13,10 +13,10 @@ export interface ListaFavorita {
 export default function FavoritosSection({
   listasFavoritas,
   setListaSeleccionada,
-  setModalListaVisible,
   setNombreNuevaLista,
   setErrorNombreLista,
   setModalCrearListaVisible,
+  setSelected
 }: {
   listasFavoritas: ListaFavorita[];
   setListaSeleccionada: (lista: ListaFavorita) => void;
@@ -24,6 +24,7 @@ export default function FavoritosSection({
   setNombreNuevaLista: (v: string) => void;
   setErrorNombreLista: (v: string) => void;
   setModalCrearListaVisible: (v: boolean) => void;
+   setSelected: (v: string) => void;
 }) {
   return (
     <div className="bg-[#f1f5f9] p-4 rounded">
@@ -45,7 +46,7 @@ export default function FavoritosSection({
               <button
                 onClick={() => {
                   setListaSeleccionada(lista);
-                  setModalListaVisible(true);
+                  setSelected("detalle-lista")                  //
                 }}
                 className="text-sm text-blue-500 flex items-center gap-1 hover:underline"
               >
@@ -61,7 +62,7 @@ export default function FavoritosSection({
                   alt={prod.nombre}
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src =
-                      '/assets/global/logo_default.png';
+                      '/assets/global/logo_plant.png';
                   }}
                   className="w-12 h-16 object-contain bg-gray-100 rounded"
                 />

@@ -11,6 +11,7 @@ import ModalLogout from "@/app/components/mi-cuenta/ModalLogout";
 import ModalVerLista from "@/app/components/mi-cuenta/ModalVerLista";
 import ModalCrearLista from "@/app/components/mi-cuenta/ModalCrearLista";
 import ModalEditarDireccion from "@/app/components/mi-cuenta/ModalEditarDireccion";
+import DetalleListaSection from "@/app/components/mi-cuenta/DetalleListaSection";
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -18,6 +19,7 @@ const SECCIONES_VALIDAS = [
   "favoritos",
   "compras",
   "detalle-compra",
+  "detalle-lista",
 ];
 export default function MiCuentaPage() {
   const [selected, setSelected] = useState("datos");
@@ -55,16 +57,16 @@ export default function MiCuentaPage() {
     {
       nombre: "Pizzas",
       productos: [
-        { nombre: "Arroz granel", imagen: "/img/arroz.png" },
-        { nombre: "Fideos", imagen: "/img/arroz.png" },
-        { nombre: "Aceite", imagen: "/img/arroz.png" },
+        { nombre: "Arroz granel", imagen: "/img/arroz.png", cantidad: 1 },
+        { nombre: "Fideos", imagen: "/img/arroz.png", cantidad: 1 },
+        { nombre: "Aceite", imagen: "/img/arroz.png", cantidad: 1 },
       ],
     },
     {
       nombre: "Canasta mensual",
       productos: [
-        { nombre: "Café", imagen: "/img/arroz.png" },
-        { nombre: "Pan", imagen: "/img/arroz.png" },
+        { nombre: "Café", imagen: "/img/arroz.png", cantidad: 1 },
+        { nombre: "Pan", imagen: "/img/arroz.png", cantidad: 1 },
       ],
     },
   ];
@@ -127,12 +129,11 @@ export default function MiCuentaPage() {
   }, [searchParams]);
 
   const handleSectionChange = (newSection: string) => {
-  const currentParams = new URLSearchParams(window.location.search);
-  currentParams.set('section', newSection);
-  router.replace(`?${currentParams.toString()}`, { scroll: false });
-  setSelected(newSection);
-};
-
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set("section", newSection);
+    router.replace(`?${currentParams.toString()}`, { scroll: false });
+    setSelected(newSection);
+  };
 
   const validateForm = () => {
     const errors: any = {};
@@ -204,8 +205,22 @@ export default function MiCuentaPage() {
                 setNombreNuevaLista={setNombreNuevaLista}
                 setErrorNombreLista={setErrorNombreLista}
                 setModalCrearListaVisible={setModalCrearListaVisible}
+                setSelected={setSelected}
               />
             )}
+
+           {selected === 'detalle-lista' && listaSeleccionada && (
+  <DetalleListaSection
+    lista={listaSeleccionada}
+    onVolver={() => {
+      setSelected('favoritos');
+      const params = new URLSearchParams(window.location.search);
+      params.set('section', 'favoritos');
+      router.replace(`?${params.toString()}`, { scroll: false });
+    }}
+  />
+)}
+
 
             {selected === "compras" && (
               <ComprasSection
