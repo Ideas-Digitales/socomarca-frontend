@@ -1,53 +1,95 @@
 'use client';
 
-import DashboardLayout from '@/app/components/dashboard/DashboardLayout';
+import DashboardLayout, {
+  TableColumn,
+} from '@/app/components/dashboard/DashboardLayout';
 import { usePagination } from '@/hooks/usePagination';
 import { DashboardConfig } from '@/interfaces/dashboard.interface';
-import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
+import {
+  generarTransaccionesAleatorias,
+  TransaccionExitosa,
+} from '@/mock/transaccionesExitosas';
 import { useState } from 'react';
+
+interface TransaccionExitosaFormatted {
+  id: string;
+  cliente: string;
+  monto1: number;
+  monto2: number;
+  monto3: number;
+  fecha: string;
+  acciones: string;
+}
 
 export default function TransaccionesExitosas() {
   const [transacciones] = useState(() => generarTransaccionesAleatorias(100));
+  const transaccionesFixed = transacciones.map(
+    (transaccion: TransaccionExitosa) => ({
+      id: String(transaccion.id),
+      cliente: transaccion.cliente,
+      monto1: transaccion.monto,
+      monto2: transaccion.monto,
+      monto3: transaccion.monto,
+      fecha: transaccion.fecha,
+      acciones: transaccion.acciones,
+    })
+  );
+
   const { paginatedItems, paginationMeta, changePage } =
-    usePagination(transacciones);
+    usePagination(transaccionesFixed);
 
   const config: DashboardConfig = {
     metrics: [
       {
         label: 'Transacciones exitosas',
-        value: transacciones.length,
+        value: transaccionesFixed.length,
         color: 'lime',
       },
     ],
     showTable: true,
+    tableTitle: 'Lista de Transacciones Exitosas',
   };
 
-  const handleDownload = () => {
-    console.log('Descargando datos...');
-  };
-
-  const handleAmountFilter = () => {
-    console.log('Filtrar por montos...');
-  };
-
-  const handleClientFilter = () => {
-    console.log('Filtrar por cliente...');
-  };
-
-  const handleFilter = () => {
-    console.log('Aplicar filtros...');
-  };
+  // Definir columnas para transacciones (opcional - si no se pasa, usa las por defecto)
+  const transaccionesColumns: TableColumn<TransaccionExitosaFormatted>[] = [
+    { key: 'id', label: 'ID' },
+    { key: 'cliente', label: 'Cliente' },
+    {
+      key: 'monto1',
+      label: 'Monto',
+      render: (value: number) => `$${value.toLocaleString()}`,
+      
+    },
+    {
+      key: 'monto2',
+      label: 'Monto',
+      render: (value: number) => `$${value.toLocaleString()}`,
+    },
+    {
+      key: 'monto3',
+      label: 'Monto',
+      render: (value: number) => `$${value.toLocaleString()}`,
+    },
+    { key: 'fecha', label: 'Fecha' },
+    {
+      key: 'fecha',
+      label: 'Fecha',
+      render: (value: string) => value,
+    },
+    { key: 'acciones', label: 'Acciones', render: (value: string) => <div className="text-lime-500">{value}</div> },
+  ];
 
   return (
     <DashboardLayout
       config={config}
-      transacciones={paginatedItems}
+      tableData={paginatedItems}
+      tableColumns={transaccionesColumns}
       paginationMeta={paginationMeta}
       onPageChange={changePage}
-      onDownload={handleDownload}
-      onAmountFilter={handleAmountFilter}
-      onClientFilter={handleClientFilter}
-      onFilter={handleFilter}
+      onDownload={() => console.log('Descargando transacciones...')}
+      onAmountFilter={() => console.log('Filtrar por montos...')}
+      onClientFilter={() => console.log('Filtrar por cliente...')}
+      onFilter={() => console.log('Aplicar filtros...')}
     />
   );
 }

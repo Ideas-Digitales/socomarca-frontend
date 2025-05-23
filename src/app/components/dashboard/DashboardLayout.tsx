@@ -5,7 +5,6 @@ import LineChartContent from '@/app/components/admin/LineChartContent';
 import TransaccionesTable from '@/app/components/admin/TransaccionesTable';
 import MetricsCard from './MetricsCard';
 import FilterBar from './FilterBar';
-import { TransaccionExitosa } from '@/mock/transaccionesExitosas';
 import { PaginationMeta } from '@/stores/base/types';
 import { DashboardConfig } from '@/interfaces/dashboard.interface';
 
@@ -14,9 +13,17 @@ const DynamicLineChart = dynamic(() => Promise.resolve(LineChartContent), {
   loading: () => <div>Cargando gráfico...</div>,
 });
 
-interface DashboardLayoutProps {
+// Exportar la interfaz para uso en las páginas
+export interface TableColumn<T = any> {
+  key: keyof T | string;
+  label: string;
+  render?: (value: any, row: T) => React.ReactNode;
+}
+
+interface DashboardLayoutProps<T = any> {
   config: DashboardConfig;
-  transacciones?: TransaccionExitosa[];
+  tableData?: T[];
+  tableColumns?: TableColumn<T>[];
   paginationMeta?: PaginationMeta;
   onPageChange?: (page: number) => void;
   onDownload?: () => void;
@@ -25,19 +32,20 @@ interface DashboardLayoutProps {
   onFilter?: () => void;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+const DashboardLayout = <T extends Record<string, any> = any>({
   config,
-  transacciones = [],
+  tableData = [],
+  tableColumns,
   paginationMeta,
   onPageChange,
   onDownload,
   onAmountFilter,
   onClientFilter,
   onFilter,
-}) => {
+}: DashboardLayoutProps<T>) => {
   return (
     <div className="flex flex-col w-full bg-white">
-      {/* Header Section */}
+      {/* Header Section - Exactamente como lo tienes */}
       <div className="flex flex-col md:flex-row py-7 px-4 md:px-12 items-center gap-7">
         <div className="flex flex-col justify-between items-center h-full">
           <div className="flex h-full items-center">
@@ -45,7 +53,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* Main Content - Exactamente como lo tienes */}
         <div className="flex flex-col items-start gap-4 flex-1-0-0  w-full">
           <FilterBar
             onDownload={onDownload}
@@ -60,7 +68,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
       </div>
 
-      {/* Bottom Chart Section */}
+      {/* Bottom Chart Section - Exactamente como lo tienes */}
       {config.showBottomChart && (
         <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full">
           <div className="flex flex-col gap-4 py-[14px] px-5 rounded-[6px] border-gray-100 border-[1px] border-solid w-full">
@@ -73,15 +81,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
       )}
 
-      {/* Table Section */}
+      {/* Table Section - Solo cambiar para pasar las columnas */}
       {config.showTable &&
-        transacciones.length > 0 &&
+        tableData.length > 0 &&
         paginationMeta &&
         onPageChange && (
           <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full">
             <TransaccionesTable
               title={config.tableTitle}
-              transacciones={transacciones}
+              transacciones={tableData}
+              columns={tableColumns}
               paginationMeta={paginationMeta}
               onPageChange={onPageChange}
             />

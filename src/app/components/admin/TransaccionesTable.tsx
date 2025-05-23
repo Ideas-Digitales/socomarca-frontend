@@ -1,104 +1,71 @@
-import { TransaccionExitosa } from '@/mock/transaccionesExitosas';
-import Pagination from '@/app/components/global/Pagination';
+// TransaccionesTable.tsx actualizado para recibir columnas como props
+import React from 'react';
 import { PaginationMeta } from '@/stores/base/types';
+import Pagination from '../global/Pagination';
 
-interface TransaccionesTableProps {
-  transacciones: TransaccionExitosa[];
-  paginationMeta: PaginationMeta;
-  onPageChange: (page: number) => void;
-  title?: string;
-  className?: string;
+// Tipo genérico para las columnas
+export interface TableColumn<T = any> {
+  key: keyof T | string;
+  label: string;
+  render?: (value: any, row: T) => React.ReactNode;
 }
 
-export default function TransaccionesTable({
+interface TransaccionesTableProps<T = any> {
+  title?: string;
+  transacciones: T[];
+  columns?: TableColumn<T>[];
+  paginationMeta: PaginationMeta;
+  onPageChange: (page: number) => void;
+}
+
+const TransaccionesTable = <T extends Record<string, any> = any>({
+  title,
   transacciones,
+  columns = [],
   paginationMeta,
   onPageChange,
-  title = 'Transacciones exitosas',
-  className = '',
-}: TransaccionesTableProps) {
-  // Formatear monto
-  const formatearMonto = (monto: number): string => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0,
-    }).format(monto);
-  };
-
+}: TransaccionesTableProps<T>) => {
   return (
-    <div
-      className={`flex flex-col gap-3 py-[14px] px-5 rounded-[6px] border-gray-100 border-[1px] border-solid w-full ${className}`}
-    >
-      <h4 className="text-lg font-bold text-[20px]">{title}</h4>
+    <div className="w-full">
+      {title && <h3 className="mb-4">{title}</h3>}
 
-      {/* Tabla con scroll horizontal para mobile y desktop */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse min-w-[600px]">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                # de la orden/venta
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                Cliente
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                Monto
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                Monto
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                Monto
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                Fecha
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                Acciones
-              </th>
+      {/* Mantener exactamente la estructura original de la tabla */}
+      <div className="overflow-x-auto border-[1px] border-gray-200 border-solid">
+        <table className="min-w-full">
+          <thead className="h-full">
+            <tr>
+              {columns.map((column, index) => (
+                <th
+                  key={index}
+                  className="bg-slate-500 text-white text-sm font-semibold py-3 px-6"
+                >
+                  {column.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {transacciones.map((transaccion, index) => (
-              <tr
-                key={transaccion.id}
-                className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                  index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
-                }`}
-              >
-                <td className="py-3 px-4 text-sm text-gray-600 font-medium whitespace-nowrap">
-                  #{transaccion.id}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 whitespace-nowrap">
-                  {transaccion.cliente}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 font-medium whitespace-nowrap">
-                  {formatearMonto(transaccion.monto)}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 font-medium whitespace-nowrap">
-                  {formatearMonto(transaccion.monto)}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 font-medium whitespace-nowrap">
-                  {formatearMonto(transaccion.monto)}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-600 whitespace-nowrap">
-                  {transaccion.fecha}
-                </td>
-                <td className="py-3 px-4 text-sm whitespace-nowrap">
-                  <button className="text-lime-500 hover:text-lime-600 font-medium transition-colors">
-                    {transaccion.acciones}
-                  </button>
-                </td>
+            {transacciones.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {columns.map((column, colIndex) => {
+                  const value = row[column.key as keyof T];
+                  return (
+                    <td key={colIndex} className="text-sm py-3 px-6">
+                      {column.render
+                        ? column.render(value, row)
+                        : String(value || '')}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Paginación */}
       <Pagination meta={paginationMeta} onPageChange={onPageChange} />
     </div>
   );
-}
+};
+
+export default TransaccionesTable;
