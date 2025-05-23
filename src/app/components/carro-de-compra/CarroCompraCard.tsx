@@ -23,7 +23,7 @@ export default function CarroCompraCard({
 }: Props) {
   return (
     <tr key={p.id} className="border border-slate-100">
-      <td className="px-4 py-2 flex items-center gap-4">
+      <td className="px-4 py-4 flex items-center gap-4">
         <img
           src={p.imagen}
           alt={p.name}

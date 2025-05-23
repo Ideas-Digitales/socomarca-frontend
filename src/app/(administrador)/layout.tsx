@@ -45,10 +45,19 @@ export default function AdministradorLayout({
 
   return (
     <>
-      <div className={`${!isTablet && 'flex'} w-full`}>
-        {isTablet ? <SidebarMobile /> : <Sidebar />}
+      <div className="w-full">
+        {/* Sidebar - Solo se renderiza en desktop */}
+        {!isTablet && <Sidebar />}
+        
+        {/* Mobile Sidebar - Solo se renderiza en tablet/mobile */}
+        {isTablet && <SidebarMobile />}
 
-        <div className="flex flex-col relative min-h-dvh w-full">
+        {/* Main Content Area */}
+        <div 
+          className={`flex flex-col relative min-h-dvh ${
+            !isTablet ? 'ml-[290px]' : ''
+          }`}
+        >
           {!isTablet && <DescargarDatos />}
           <main className="flex-grow relative w-full py-[88px]">
             {children}

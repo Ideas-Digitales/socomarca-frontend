@@ -17,6 +17,7 @@ export default function DayPickerComponent() {
             setSelected(date);
           }
         }}
+        className='mb-3'
         modifiersClassNames={{
           selected: 'bg-lime-500 text-white',
           today: 'text-lime-500 font-bold',
@@ -28,7 +29,7 @@ export default function DayPickerComponent() {
           chevron: `fill-lime-500 text-lime-500 hover:fill-lime-600 rounded`,
         }}
       />
-      <span className="text-sm mt-[10px]">Selecciona una fecha</span>
+      <span className="text-sm">Selecciona una fecha</span>
     </div>
   );
 }

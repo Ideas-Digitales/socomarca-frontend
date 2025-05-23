@@ -5,13 +5,14 @@ import {
   ChevronRightIcon,
   ChevronLeftIcon,
 } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Logo from '../global/Logo';
 import useStore from '@/stores/base';
 import { menuItems, MenuItem } from '@/lib/menuData';
 
 export default function SidebarMobile() {
   const router = useRouter();
+  const pathname = usePathname();
 
   // Estados del store
   const {
@@ -22,11 +23,19 @@ export default function SidebarMobile() {
     handleMenuClick,
     handleSubmenuClick,
     resetNavigation,
+    setActiveItemByUrl,
+    isMenuActive,
+    isSubmenuActive,
   } = useStore();
 
   const openSubmenuIndex = openSubmenus.length > 0 ? openSubmenus[0] : null;
   const activeSubmenuId =
     openSubmenuIndex !== null ? menuItems[openSubmenuIndex]?.id : null;
+
+  // Detectar y activar el menú correcto basado en la URL actual
+  useEffect(() => {
+    setActiveItemByUrl(pathname);
+  }, [pathname, setActiveItemByUrl]);
 
   // Cerrar con tecla ESC
   useEffect(() => {
@@ -101,7 +110,7 @@ export default function SidebarMobile() {
   return (
     <>
       {/* Header */}
-      <nav className="px-[30px] py-[22px] w-full flex justify-between bg-white items-center fixed top-0 left-0 right-0 z-30 shadow-2xl">
+      <nav className="px-[30px] py-[22px] w-full flex justify-between bg-white items-center fixed top-0 left-0 right-0 z-30 shadow-md">
         <button
           onClick={() => setMobileSidebarOpen(true)}
           className="p-1 hover:bg-slate-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
@@ -149,20 +158,44 @@ export default function SidebarMobile() {
         <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
           {menuItems.map((item, index) => {
             const IconComponent = item.icon;
+            const isActive = isMenuActive(index);
+
             return (
               <button
                 key={item.id}
                 onClick={() => handleItemClick(item, index)}
-                className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-all ease-in-out duration-300 focus:outline-none focus:bg-slate-50 group border-b-[1px] border-slate-300"
+                className={`w-full flex items-center justify-between px-6 py-4 transition-all ease-in-out duration-300 focus:outline-none group border-b-[1px] border-slate-300 ${
+                  isActive
+                    ? 'bg-lime-100 hover:bg-lime-200'
+                    : 'hover:bg-slate-50 focus:bg-slate-50'
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <IconComponent className="w-5 h-5 text-slate-600 group-hover:text-slate-800 transition-all ease-in-out duration-300" />
-                  <span className="text-slate-700 group-hover:text-slate-900 font-medium transition-all ease-in-out duration-300">
+                  <IconComponent
+                    className={`w-5 h-5 transition-all ease-in-out duration-300 ${
+                      isActive
+                        ? 'text-lime-700'
+                        : 'text-slate-600 group-hover:text-slate-800'
+                    }`}
+                  />
+                  <span
+                    className={`font-medium transition-all ease-in-out duration-300 ${
+                      isActive
+                        ? 'text-lime-900'
+                        : 'text-slate-700 group-hover:text-slate-900'
+                    }`}
+                  >
                     {item.label}
                   </span>
                 </div>
                 {item.subItems && (
-                  <ChevronRightIcon className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-all ease-in-out duration-300" />
+                  <ChevronRightIcon
+                    className={`w-5 h-5 transition-all ease-in-out duration-300 ${
+                      isActive
+                        ? 'text-lime-600'
+                        : 'text-slate-400 group-hover:text-slate-600'
+                    }`}
+                  />
                 )}
               </button>
             );
@@ -191,22 +224,36 @@ export default function SidebarMobile() {
           <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
             {menuItems
               .find((item) => item.id === activeSubmenuId)
-              ?.subItems?.map((subItem, subIndex) => (
-                <button
-                  key={subIndex}
-                  onClick={() => {
-                    const menuIndex = menuItems.findIndex(
-                      (item) => item.id === activeSubmenuId
-                    );
-                    handleSubItemClick(subItem, menuIndex, subIndex);
-                  }}
-                  className="w-full flex items-center px-8 py-4 hover:bg-slate-50 text-left transition-colors focus:outline-none focus:bg-slate-50 group border-b-[1px] border-slate-300"
-                >
-                  <span className="text-slate-700 group-hover:text-slate-900 transition-colors">
-                    {subItem.label}
-                  </span>
-                </button>
-              ))}
+              ?.subItems?.map((subItem, subIndex) => {
+                const menuIndex = menuItems.findIndex(
+                  (item) => item.id === activeSubmenuId
+                );
+                const isSubActive = isSubmenuActive(menuIndex, subIndex);
+
+                return (
+                  <button
+                    key={subIndex}
+                    onClick={() => {
+                      handleSubItemClick(subItem, menuIndex, subIndex);
+                    }}
+                    className={`w-full flex items-center px-8 py-4 text-left transition-colors focus:outline-none group border-b-[1px] border-slate-300 ${
+                      isSubActive
+                        ? 'bg-lime-50 hover:bg-lime-100 border-r-4 border-r-lime-400'
+                        : 'hover:bg-slate-50 focus:bg-slate-50'
+                    }`}
+                  >
+                    <span
+                      className={`transition-colors ${
+                        isSubActive
+                          ? 'text-lime-900 font-medium'
+                          : 'text-slate-700 group-hover:text-slate-900'
+                      }`}
+                    >
+                      {subItem.label}
+                    </span>
+                  </button>
+                );
+              })}
           </div>
         </div>
       )}

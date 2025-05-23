@@ -112,6 +112,7 @@ export interface SidebarSlice {
   closeAllSubmenus: () => void;
   setMobileSidebarOpen: (isOpen: boolean) => void;
   closeMobileSidebar: () => void;
+  setActiveItemByUrl: (currentPath: string) => void; // Nueva función
 
   // Helpers
   isMenuActive: (menuIndex: number) => boolean;

@@ -16,7 +16,7 @@ const links = [
   { name: 'Inicio de sesión', href: '/login' },
   { name: 'Recuperar contraseña', href: '/recuperar' },
   { name: 'Check email', href: '/check-email' },
-  { name: 'Administración', href: '/admin' },
+  { name: 'Administración', href: '/admin/total-de-ventas' },
 ];
 
 export default function NavbarTest() {

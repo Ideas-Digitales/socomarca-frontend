@@ -1,10 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import useStore from '@/stores/base';
 import CarroCompraCard from '@/app/components/carro-de-compra/CarroCompraCard';
 import CarroCompraCardMobile from '@/app/components/carro-de-compra/CarroCompraCardMobile';
+import Pagination from '@/app/components/global/Pagination';
+
+const ITEMS_PER_PAGE = 10; // Productos por página
 
 export default function CarroDeCompraPage() {
   const router = useRouter();
@@ -15,6 +18,48 @@ export default function CarroDeCompraPage() {
     incrementProductInCart,
   } = useStore();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [idProductoAEliminar, setIdProductoAEliminar] = useState<number | null>(
+    null
+  );
+
+  // Calcular paginación para productos del carrito
+  const paginationData = useMemo(() => {
+    const totalProducts = cartProducts.length;
+    const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedProducts = cartProducts.slice(startIndex, endIndex);
+
+    const meta = {
+      current_page: currentPage,
+      from: totalProducts > 0 ? startIndex + 1 : 0,
+      last_page: totalPages,
+      links: [], // No necesitamos los links del meta para esta implementación
+      path: '/carro-de-compra',
+      per_page: ITEMS_PER_PAGE,
+      to: Math.min(endIndex, totalProducts),
+      total: totalProducts,
+    };
+
+    const links = {
+      first: totalPages > 0 ? '/carro-de-compra?page=1' : null,
+      last: totalPages > 0 ? `/carro-de-compra?page=${totalPages}` : null,
+      prev: currentPage > 1 ? `/carro-de-compra?page=${currentPage - 1}` : null,
+      next:
+        currentPage < totalPages
+          ? `/carro-de-compra?page=${currentPage + 1}`
+          : null,
+    };
+
+    return { meta, links, paginatedProducts };
+  }, [cartProducts, currentPage]);
+
+  const subtotal = cartProducts.reduce(
+    (acc, p) => acc + p.price * p.quantity,
+    0
+  );
+
   const backHome = () => {
     router.push('/');
   };
@@ -23,17 +68,35 @@ export default function CarroDeCompraPage() {
     router.push('/finalizar-compra');
   };
 
-  const [idProductoAEliminar, setIdProductoAEliminar] = useState<number | null>(
-    null
-  );
-
-  const subtotal = cartProducts.reduce(
-    (acc, p) => acc + p.price * p.quantity,
-    0
-  );
-  function goBack() {
+  const goBack = () => {
     router.back();
-  }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll al inicio de la tabla/lista cuando cambie de página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Reset página cuando se eliminen productos y la página actual quede vacía
+  const handleProductRemoval = (productId: number) => {
+    removeAllQuantityByProductId(productId);
+
+    // Si después de eliminar el producto, la página actual queda vacía, ir a la página anterior
+    const remainingProducts = cartProducts.filter((p) => p.id !== productId);
+    const totalPagesAfterRemoval = Math.ceil(
+      remainingProducts.length / ITEMS_PER_PAGE
+    );
+
+    if (currentPage > totalPagesAfterRemoval && totalPagesAfterRemoval > 0) {
+      setCurrentPage(totalPagesAfterRemoval);
+    } else if (remainingProducts.length === 0) {
+      setCurrentPage(1);
+    }
+
+    setIdProductoAEliminar(null);
+  };
+
   return (
     <div className="w-full bg-slate-100 min-h-screen p-4">
       <div>
@@ -59,13 +122,13 @@ export default function CarroDeCompraPage() {
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
             {/* Sección del carrito */}
             <div className="w-full lg:w-3/4 bg-white rounded-lg shadow p-6">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mb-4">
                 <ChevronLeftIcon
-                  className="w-5 h-5 mb-4 font-bold lg:hidden"
+                  className="w-5 h-5 font-bold lg:hidden"
                   strokeWidth={3}
                   onClick={goBack}
                 />
-                <h2 className="text-2xl font-bold mb-4 ">
+                <h2 className="text-2xl font-bold ">
                   Carro{' '}
                   <span className="text-lime-500 text-base font-normal">
                     ({cartProducts.length} productos)
@@ -73,11 +136,20 @@ export default function CarroDeCompraPage() {
                 </h2>
               </div>
 
+              {/* Información de paginación */}
+              {paginationData.meta.total > ITEMS_PER_PAGE && (
+                <div className="mb-4 text-sm text-gray-600">
+                  Mostrando {paginationData.meta.from} -{' '}
+                  {paginationData.meta.to} de {paginationData.meta.total}{' '}
+                  productos
+                </div>
+              )}
+
               {/* Tabla para pantallas grandes */}
               <div className="hidden lg:block overflow-x-auto">
-                <div className="max-h-[60dvh] overflow-y-auto">
+                <div className="max-h-[60dvh] overflow-y-auto overflow-hidden">
                   <table className="min-w-full text-sm">
-                    <thead className="sticky top-0 bg-white z-10">
+                    <thead className="sticky -top-[1px] bg-white z-10">
                       <tr className="border border-slate-100 bg-slate-50 font-semibold text-gray-600 text-left">
                         <th className="p-4 text-center font-semibold text-black">
                           Producto
@@ -91,7 +163,7 @@ export default function CarroDeCompraPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {cartProducts.map((p) => (
+                      {paginationData.paginatedProducts.map((p) => (
                         <CarroCompraCard
                           decrementProductInCart={decrementProductInCart}
                           incrementProductInCart={incrementProductInCart}
@@ -107,7 +179,7 @@ export default function CarroDeCompraPage() {
 
               {/* Layout en tarjetas para móviles */}
               <div className="lg:hidden flex flex-col gap-4 max-h-[60dvh] overflow-y-auto">
-                {cartProducts.map((p) => (
+                {paginationData.paginatedProducts.map((p) => (
                   <CarroCompraCardMobile
                     decrementProductInCart={decrementProductInCart}
                     incrementProductInCart={incrementProductInCart}
@@ -117,6 +189,17 @@ export default function CarroDeCompraPage() {
                   />
                 ))}
               </div>
+
+              {/* PAGINACIÓN */}
+              {paginationData.meta.total > ITEMS_PER_PAGE && (
+                <div className="mt-6">
+                  <Pagination
+                    meta={paginationData.meta}
+                    links={paginationData.links}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
 
               <div className="mt-6">
                 <button
@@ -176,10 +259,7 @@ export default function CarroDeCompraPage() {
                       Cancelar
                     </button>
                     <button
-                      onClick={() => {
-                        removeAllQuantityByProductId(idProductoAEliminar);
-                        setIdProductoAEliminar(null);
-                      }}
+                      onClick={() => handleProductRemoval(idProductoAEliminar)}
                       className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded"
                     >
                       Eliminar

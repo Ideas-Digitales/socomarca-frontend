@@ -134,10 +134,10 @@ export default function Pagination({
             <button
               key={`page-${page}`}
               onClick={() => typeof page === 'number' && onPageChange(page)}
-              className={`w-8 h-8 flex items-center justify-center font-semibold ${
+              className={`w-8 h-8 flex items-center justify-center font-semibold transition-colors duration-300 ${
                 currentPage === page
-                  ? 'border border-lime-500 rounded-md text-slate-950'
-                  : 'text-gray-700 hover:bg-gray-100 hover:rounded-[6px] transition-all duration-300'
+                  ? 'border border-lime-500 rounded-md'
+                  : ' hover:bg-gray-100 hover:rounded-[6px]'
               }`}
             >
               {page}
@@ -160,10 +160,10 @@ export default function Pagination({
             <button
               key={`mobile-page-${page}`}
               onClick={() => typeof page === 'number' && onPageChange(page)}
-              className={`w-7 h-7 flex items-center justify-center font-medium text-sm ${
+              className={`w-7 h-7 flex items-center justify-center font-medium text-sm transition-colors duration-300 ${
                 currentPage === page
-                  ? 'border border-lime-500 rounded-md text-slate-950'
-                  : 'text-gray-700'
+                  ? 'bg-lime-500 text-white rounded-md'
+                  : 'text-gray-500 hover:bg-gray-100 hover:rounded-[6px] rounded-md'
               }`}
             >
               {page}

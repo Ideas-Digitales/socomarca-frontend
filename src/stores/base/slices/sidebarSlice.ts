@@ -1,6 +1,60 @@
 import { StateCreator } from 'zustand';
 import { SidebarSlice, StoreState } from '../types';
 
+// Configuración de menús (debe coincidir con el menú del componente)
+const menuConfig = [
+  {
+    label: 'Reporte de ventas',
+    submenu: [
+      { name: 'Total de ventas', url: '/admin/total-de-ventas' },
+      { name: 'Transacciones exitosas', url: '/admin/transacciones-exitosas' },
+      { name: 'Cliente con más compra', url: '/admin/cliente-mas-compra' },
+      { name: 'Productos con más ventas', url: '/admin/productos-mas-ventas' },
+      { name: 'Comunas con más ventas', url: '/admin/comunas-mas-ventas' },
+      { name: 'Categoría con más ventas', url: '/admin/categoria-mas-ventas' },
+      {
+        name: 'Transacciones fallidas o canceladas',
+        url: '/admin/transacciones-fallidas',
+      },
+    ],
+  },
+  {
+    label: 'Productos',
+    url: '/admin/productos',
+  },
+  {
+    label: 'Categorías',
+    url: '/admin/categorias',
+  },
+  {
+    label: 'Clientes',
+    url: '/admin/clientes',
+  },
+  {
+    label: 'Información del sitio',
+    url: '/admin/informacion-sitio',
+  },
+  {
+    label: 'Términos y condiciones',
+    url: '/admin/terminos-condiciones',
+  },
+  {
+    label: 'Políticas y privacidad',
+    url: '/admin/politicas-privacidad',
+  },
+  {
+    label: 'Preguntas frecuentes',
+    url: '/admin/preguntas-frecuentes',
+  },
+  {
+    label: 'Mensaje para el cliente',
+    url: '/admin/mensaje-cliente',
+  },
+  {
+    label: 'Cerrar sesión',
+  },
+];
+
 export const createSidebarSlice: StateCreator<
   StoreState & SidebarSlice,
   [],
@@ -32,6 +86,41 @@ export const createSidebarSlice: StateCreator<
 
   closeMobileSidebar: () => {
     set({ isMobileSidebarOpen: false });
+  },
+
+  // Nueva función para activar menú basado en URL
+  // Nueva función para activar menú basado en URL (SIN abrir submenús automáticamente)
+  setActiveItemByUrl: (currentPath: string) => {
+    let foundItem = null;
+
+    // Buscar en submenús primero
+    for (let menuIndex = 0; menuIndex < menuConfig.length; menuIndex++) {
+      const menuItem = menuConfig[menuIndex];
+
+      if (menuItem.submenu) {
+        for (
+          let submenuIndex = 0;
+          submenuIndex < menuItem.submenu.length;
+          submenuIndex++
+        ) {
+          const submenuItem = menuItem.submenu[submenuIndex];
+          if (submenuItem.url === currentPath) {
+            foundItem = { type: 'submenu' as const, menuIndex, submenuIndex };
+            break;
+          }
+        }
+      } else if (menuItem.url === currentPath) {
+        foundItem = { type: 'menu' as const, menuIndex };
+        break;
+      }
+
+      if (foundItem) break;
+    }
+
+    // Solo actualizar el item activo, NO abrir submenús automáticamente
+    if (foundItem) {
+      set({ activeItem: foundItem });
+    }
   },
 
   // Helpers
