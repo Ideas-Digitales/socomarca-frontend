@@ -11,14 +11,20 @@ export default function PrivateLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isLoading, fetchProducts, fetchCategories, cartProducts } =
-    useStore();
+  const {
+    isLoading,
+    fetchProducts,
+    fetchCategories,
+    cartProducts,
+    fetchBrands,
+  } = useStore();
   useInitMobileDetection();
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, [fetchProducts, fetchCategories]);
+    fetchBrands();
+  }, [fetchProducts, fetchCategories, fetchBrands]);
 
   return (
     <>

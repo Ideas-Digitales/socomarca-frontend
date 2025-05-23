@@ -25,7 +25,7 @@ const CustomTable = <T extends Record<string, any> = any>({
 }: CustomTableProps<T>) => {
   return (
     <div className="w-full">
-      {title && <h3 className="mb-4">{title}</h3>}
+      {title && <h4 className="mb-4 text-xl font-bold">{title}</h4>}
 
       {/* Mantener exactamente la estructura original de la tabla */}
       <div className="overflow-x-auto border-[1px] border-gray-200 border-solid">

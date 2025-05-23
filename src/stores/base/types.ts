@@ -1,5 +1,6 @@
 import { Product, ProductToBuy } from '@/interfaces/product.interface';
 import { Category } from '@/interfaces/category.interface';
+import { Brand } from '@/interfaces/brand.interface';
 
 export interface PaginationLinks {
   first: string | null;
@@ -42,6 +43,9 @@ export interface StoreState {
   // Categorías
   categories: Category[];
 
+  // Marcas
+  brands: Brand[]; // ← Nueva propiedad
+
   // UI
   isLoading: boolean;
   isMobile: boolean;
@@ -79,6 +83,13 @@ export interface ProductsSlice {
 export interface CategoriesSlice {
   setCategories: (categories: Category[]) => void;
   fetchCategories: () => Promise<void>;
+}
+
+// Acciones de marcas
+export interface BrandsSlice {
+  // ← Nueva interfaz
+  setBrands: (brands: Brand[]) => void;
+  fetchBrands: () => Promise<void>;
 }
 
 // Acciones de UI
@@ -129,6 +140,7 @@ export interface SidebarSlice {
 export type Store = StoreState &
   ProductsSlice &
   CategoriesSlice &
+  BrandsSlice & // ← Agregar BrandsSlice
   UiSlice &
   CartSlice &
   PaginationSlice &

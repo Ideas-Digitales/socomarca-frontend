@@ -10,11 +10,13 @@ import { createCategoriesSlice } from './slices/categoriesSlice';
 import { createUiSlice } from './slices/uiSlice';
 import { createPaginationSlice } from './slices/paginationSlice';
 import { createSidebarSlice } from './slices/sidebarSlice';
+import { createBrandsSlice } from './slices/brandsSlice';
 
 // Estado inicial
 const initialState: StoreState = {
   products: [],
   categories: [],
+  brands: [], // ← Agregar brands al estado inicial
   filteredProducts: [],
   isLoading: false,
   searchTerm: '',
@@ -36,6 +38,7 @@ const useStore = create<Store>()((...a) => ({
   ...initialState,
   ...createProductsSlice(...a),
   ...createCategoriesSlice(...a),
+  ...createBrandsSlice(...a), // ← Agregar el brands slice
   ...createUiSlice(...a),
   ...createCartSlice(...a),
   ...createPaginationSlice(...a),

@@ -7,10 +7,12 @@ import { Product } from '@/interfaces/product.interface';
 import DualRangeSlider from './DualRangerSlider';
 
 export default function CategoryFilterDesktop() {
-  const { categories, setFilteredProducts, products } = useStore();
+  const { categories, setFilteredProducts, products, brands } = useStore();
   const [isMainCategoryOpen, setIsMainCategoryOpen] = useState(true);
+  const [isBrandsOpen, setIsBrandsOpen] = useState(false);
   const [isPriceOpen, setIsPriceOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<number[]>([]);
 
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(0);
@@ -50,6 +52,11 @@ export default function CategoryFilterDesktop() {
   // Toggle main category section
   const toggleMainCategory = useCallback(() => {
     setIsMainCategoryOpen((prev) => !prev);
+  }, []);
+
+  // Toggle brands section
+  const toggleBrandsSection = useCallback(() => {
+    setIsBrandsOpen((prev) => !prev);
   }, []);
 
   // Toggle price section
@@ -107,20 +114,29 @@ export default function CategoryFilterDesktop() {
     [maxPrice, lowerPrice]
   );
 
-  // Nueva función: Toggle individual de categorías (sin aplicar filtros inmediatamente)
+  // Toggle individual de categorías
   const toggleCategorySelection = useCallback((categoryId: number) => {
     setSelectedCategories((prev) => {
       if (prev.includes(categoryId)) {
-        // Si ya está seleccionada, la removemos
         return prev.filter((id) => id !== categoryId);
       } else {
-        // Si no está seleccionada, la agregamos
         return [...prev, categoryId];
       }
     });
   }, []);
 
-  // Apply filters (both category and price) - Solo se ejecuta al presionar el botón
+  // Toggle individual de marcas
+  const toggleBrandSelection = useCallback((brandId: number) => {
+    setSelectedBrands((prev) => {
+      if (prev.includes(brandId)) {
+        return prev.filter((id) => id !== brandId);
+      } else {
+        return [...prev, brandId];
+      }
+    });
+  }, []);
+
+  // Apply filters (category, brand, and price)
   const applyFilters = useCallback(() => {
     let filteredResults: Product[] = [...products];
 
@@ -128,6 +144,13 @@ export default function CategoryFilterDesktop() {
     if (selectedCategories.length > 0) {
       filteredResults = filteredResults.filter((product) =>
         selectedCategories.includes(product.category.id)
+      );
+    }
+
+    // Apply brand filter if any brands are selected
+    if (selectedBrands.length > 0) {
+      filteredResults = filteredResults.filter(
+        (product) => product.brand && selectedBrands.includes(product.brand.id)
       );
     }
 
@@ -141,6 +164,7 @@ export default function CategoryFilterDesktop() {
   }, [
     products,
     selectedCategories,
+    selectedBrands,
     lowerPrice,
     upperPrice,
     setFilteredProducts,
@@ -149,6 +173,7 @@ export default function CategoryFilterDesktop() {
   // Función para limpiar todos los filtros
   const clearAllFilters = useCallback(() => {
     setSelectedCategories([]);
+    setSelectedBrands([]);
     setLowerPrice(minPrice);
     setUpperPrice(maxPrice);
   }, [minPrice, maxPrice]);
@@ -182,14 +207,12 @@ export default function CategoryFilterDesktop() {
         <div className="w-full max-h-[40dvh] overflow-y-auto">
           {categories?.map((category) => (
             <div key={category.id} className="w-full">
-              {/* Category header con checkbox */}
               <div
                 className={`flex w-full min-h-[40px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-3 py-2 ${
                   selectedCategories.includes(category.id) ? 'bg-gray-100' : ''
                 }`}
                 onClick={() => toggleCategorySelection(category.id)}
               >
-                {/* Checkbox visual */}
                 <div
                   className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-300 ease-in-out transform ${
                     selectedCategories.includes(category.id)
@@ -229,10 +252,70 @@ export default function CategoryFilterDesktop() {
       </div>
 
       {/* MARCAS section */}
-      <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-t border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200">
+      <div
+        className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-t border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200"
+        onClick={toggleBrandsSection}
+      >
         <span className="font-bold uppercase text-gray-800">Marcas</span>
         <div className="transition-transform duration-300 ease-in-out">
-          <PlusIcon width={24} height={24} className="text-lime-500" />
+          {isBrandsOpen ? (
+            <MinusIcon width={24} height={24} className="text-lime-500" />
+          ) : (
+            <PlusIcon width={24} height={24} className="text-lime-500" />
+          )}
+        </div>
+      </div>
+
+      {/* Brands list */}
+      <div
+        className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
+          isBrandsOpen ? 'max-h-[40dvh] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="w-full max-h-[40dvh] overflow-y-auto">
+          {brands?.map((brand) => (
+            <div key={brand.id} className="w-full">
+              <div
+                className={`flex w-full min-h-[40px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-3 py-2 ${
+                  selectedBrands.includes(brand.id) ? 'bg-gray-100' : ''
+                }`}
+                onClick={() => toggleBrandSelection(brand.id)}
+              >
+                <div
+                  className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-300 ease-in-out transform ${
+                    selectedBrands.includes(brand.id)
+                      ? 'bg-lime-500 border-lime-500 scale-110'
+                      : 'border-gray-300 scale-100 hover:border-lime-300'
+                  }`}
+                >
+                  <div
+                    className={`transition-all duration-200 ${
+                      selectedBrands.includes(brand.id)
+                        ? 'opacity-100 scale-100'
+                        : 'opacity-0 scale-75'
+                    }`}
+                  >
+                    {selectedBrands.includes(brand.id) && (
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-sm text-slate-500 flex-1 transition-colors duration-200">
+                  {brand.name}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -268,7 +351,6 @@ export default function CategoryFilterDesktop() {
         }`}
       >
         <div className="w-full p-3">
-          {/* Dual Range Slider Component - only show if there's an actual range and initialization is complete */}
           {hasPriceRange ? (
             <div className="transition-opacity duration-300">
               <DualRangeSlider
@@ -305,7 +387,6 @@ export default function CategoryFilterDesktop() {
                 value={`$${formatPrice(lowerPrice)}`}
                 onChange={handleLowerPriceChange}
                 onBlur={() => {
-                  // Ensure value is within range on blur
                   if (lowerPrice < minPrice) setLowerPrice(minPrice);
                   if (lowerPrice > upperPrice) setLowerPrice(upperPrice);
                 }}
@@ -320,7 +401,6 @@ export default function CategoryFilterDesktop() {
                 value={`$${formatPrice(upperPrice)}`}
                 onChange={handleUpperPriceChange}
                 onBlur={() => {
-                  // Ensure value is within range on blur
                   if (upperPrice > maxPrice) setUpperPrice(maxPrice);
                   if (upperPrice < lowerPrice) setUpperPrice(lowerPrice);
                 }}
@@ -337,10 +417,11 @@ export default function CategoryFilterDesktop() {
               Aplicar Filtro
             </button>
 
-            {/* Botón para limpiar filtros (opcional) */}
+            {/* Botón para limpiar filtros */}
             <div
               className={`transition-all duration-300 ease-in-out overflow-hidden ${
                 selectedCategories.length > 0 ||
+                selectedBrands.length > 0 ||
                 lowerPrice !== minPrice ||
                 upperPrice !== maxPrice
                   ? 'max-h-12 opacity-100 transform translate-y-0'
@@ -348,6 +429,7 @@ export default function CategoryFilterDesktop() {
               }`}
             >
               {(selectedCategories.length > 0 ||
+                selectedBrands.length > 0 ||
                 lowerPrice !== minPrice ||
                 upperPrice !== maxPrice) && (
                 <button
