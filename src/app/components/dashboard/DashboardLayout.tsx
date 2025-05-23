@@ -89,7 +89,7 @@ const DashboardLayout = <T extends Record<string, any> = any>({
           <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full">
             <CustomTable
               title={config.tableTitle}
-              transacciones={tableData}
+              data={tableData}
               columns={tableColumns}
               paginationMeta={paginationMeta}
               onPageChange={onPageChange}

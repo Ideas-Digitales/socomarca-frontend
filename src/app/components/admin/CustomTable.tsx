@@ -1,30 +1,28 @@
-// TransaccionesTable.tsx actualizado para recibir columnas como props
 import React from 'react';
 import { PaginationMeta } from '@/stores/base/types';
 import Pagination from '../global/Pagination';
 
-// Tipo genérico para las columnas
 export interface TableColumn<T = any> {
   key: keyof T | string;
   label: string;
   render?: (value: any, row: T) => React.ReactNode;
 }
 
-interface TransaccionesTableProps<T = any> {
+interface CustomTableProps<T = any> {
   title?: string;
-  transacciones: T[];
+  data: T[];
   columns?: TableColumn<T>[];
   paginationMeta: PaginationMeta;
   onPageChange: (page: number) => void;
 }
 
-const TransaccionesTable = <T extends Record<string, any> = any>({
+const CustomTable = <T extends Record<string, any> = any>({
   title,
-  transacciones,
+  data,
   columns = [],
   paginationMeta,
   onPageChange,
-}: TransaccionesTableProps<T>) => {
+}: CustomTableProps<T>) => {
   return (
     <div className="w-full">
       {title && <h3 className="mb-4">{title}</h3>}
@@ -45,7 +43,7 @@ const TransaccionesTable = <T extends Record<string, any> = any>({
             </tr>
           </thead>
           <tbody>
-            {transacciones.map((row, rowIndex) => (
+            {data.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
                 className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-100'}
@@ -53,7 +51,10 @@ const TransaccionesTable = <T extends Record<string, any> = any>({
                 {columns.map((column, colIndex) => {
                   const value = row[column.key as keyof T];
                   return (
-                    <td key={colIndex} className="text-sm py-3 px-6">
+                    <td
+                      key={colIndex}
+                      className="text-sm py-3 px-6 text-center"
+                    >
                       {column.render
                         ? column.render(value, row)
                         : String(value || '')}
@@ -71,4 +72,4 @@ const TransaccionesTable = <T extends Record<string, any> = any>({
   );
 };
 
-export default TransaccionesTable;
+export default CustomTable;
