@@ -65,6 +65,7 @@ export default function ClientesMasCompra() {
 
   return (
     <DashboardLayout
+
       config={config}
       tableData={paginatedItems}
       tableColumns={clientesColumns}

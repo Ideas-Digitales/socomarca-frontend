@@ -67,7 +67,7 @@ export default function ProductosMasVentas() {
       paginationMeta={paginationMeta}
       onPageChange={changePage}
       onDownload={() => console.log('Descargando clientes...')}
-      onAmountFilter={() => console.log('Filtrar por montos...')}
+      onCategoryFilter={() => console.log('Filtrar por categorias...')}
       onClientFilter={() => console.log('Filtrar por cliente...')}
       onFilter={() => console.log('Aplicar filtros...')}
     />

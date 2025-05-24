@@ -407,39 +407,41 @@ export default function CategoryFilterDesktop() {
               />
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Botones de acción */}
-          <div className="flex flex-col gap-2">
-            <button
-              className="w-full bg-lime-500 text-white rounded-md py-3 px-12 text-center text-[12px] hover:bg-lime-600 transition-all duration-300 cursor-pointer"
-              onClick={applyFilters}
-            >
-              Aplicar Filtro
-            </button>
+      {/* Botones de acción - Ahora fuera de la sección de precios */}
+      <div className="w-full p-3 mt-auto border-t border-gray-200">
+        <div className="flex flex-col gap-2">
+          <button
+            className="w-full bg-lime-500 text-white rounded-md py-3 px-12 text-center text-[12px] hover:bg-lime-600 transition-all duration-300 cursor-pointer"
+            onClick={applyFilters}
+          >
+            Aplicar Filtro
+          </button>
 
-            {/* Botón para limpiar filtros */}
-            <div
-              className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                selectedCategories.length > 0 ||
-                selectedBrands.length > 0 ||
-                lowerPrice !== minPrice ||
-                upperPrice !== maxPrice
-                  ? 'max-h-12 opacity-100 transform translate-y-0'
-                  : 'max-h-0 opacity-0 transform -translate-y-2'
-              }`}
-            >
-              {(selectedCategories.length > 0 ||
-                selectedBrands.length > 0 ||
-                lowerPrice !== minPrice ||
-                upperPrice !== maxPrice) && (
-                <button
-                  className="w-full bg-gray-200 text-gray-700 rounded-md py-2 px-12 text-center text-[12px] hover:bg-gray-300 transition-all duration-300 cursor-pointer"
-                  onClick={clearAllFilters}
-                >
-                  Limpiar Filtros
-                </button>
-              )}
-            </div>
+          {/* Botón para limpiar filtros */}
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              selectedCategories.length > 0 ||
+              selectedBrands.length > 0 ||
+              lowerPrice !== minPrice ||
+              upperPrice !== maxPrice
+                ? 'max-h-12 opacity-100 transform translate-y-0'
+                : 'max-h-0 opacity-0 transform -translate-y-2'
+            }`}
+          >
+            {(selectedCategories.length > 0 ||
+              selectedBrands.length > 0 ||
+              lowerPrice !== minPrice ||
+              upperPrice !== maxPrice) && (
+              <button
+                className="w-full bg-gray-200 text-gray-700 rounded-md py-2 px-12 text-center text-[12px] hover:bg-gray-300 transition-all duration-300 cursor-pointer"
+                onClick={clearAllFilters}
+              >
+                Limpiar Filtros
+              </button>
+            )}
           </div>
         </div>
       </div>

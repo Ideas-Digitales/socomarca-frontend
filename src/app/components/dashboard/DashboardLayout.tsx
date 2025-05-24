@@ -29,6 +29,7 @@ interface DashboardLayoutProps<T = any> {
   onDownload?: () => void;
   onAmountFilter?: () => void;
   onClientFilter?: () => void;
+  onCategoryFilter?: () => void;
   onFilter?: () => void;
 }
 
@@ -41,6 +42,7 @@ const DashboardLayout = <T extends Record<string, any> = any>({
   onDownload,
   onAmountFilter,
   onClientFilter,
+  onCategoryFilter,
   onFilter,
 }: DashboardLayoutProps<T>) => {
   return (
@@ -59,6 +61,7 @@ const DashboardLayout = <T extends Record<string, any> = any>({
             onDownload={onDownload}
             onAmountFilter={onAmountFilter}
             onClientFilter={onClientFilter}
+            onCategoryFilter={onCategoryFilter}
             onFilter={onFilter}
           />
 
