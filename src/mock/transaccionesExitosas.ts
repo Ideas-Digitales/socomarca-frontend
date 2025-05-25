@@ -4,7 +4,31 @@ export interface TransaccionExitosa {
   monto: number;
   fecha: string;
   acciones: string;
+  categoria: string; // ← NUEVO
 }
+
+export interface CategoriaVenta {
+  categoria: string;
+  subtotal: number;
+  margen: number;
+  venta: number;
+}
+
+
+
+const categoriasProducto = [
+  'Bebidas',
+  'Snacks',
+  'Lácteos',
+  'Carnes',
+  'Panadería',
+  'Congelados',
+  'Frutas y Verduras',
+  'Aseo',
+  'Mascotas',
+  'Licores',
+];
+
 
 // Datos base para generar nombres de clientes aleatorios
 const tiposNegocio = [
@@ -140,6 +164,7 @@ export function generarTransaccionesAleatorias(
       monto: generarMontoAleatorio(),
       fecha: generarFechaAleatoria(),
       acciones: randomChoice(acciones),
+      categoria: randomChoice(categoriasProducto), 
     };
 
     transacciones.push(transaccion);
@@ -178,6 +203,7 @@ export function generarTransaccionesPersonalizadas(config: {
       monto: Math.round(randomBetween(montoMin, montoMax) / 1000) * 1000,
       fecha: generarFechaAleatoria(diasAtras),
       acciones: randomChoice(acciones),
+      categoria: randomChoice(categoriasProducto), 
     };
 
     transacciones.push(transaccion);
@@ -188,4 +214,30 @@ export function generarTransaccionesPersonalizadas(config: {
     const fechaB = new Date(b.fecha.split('/').reverse().join('-'));
     return fechaB.getTime() - fechaA.getTime();
   });
+}
+
+
+export function agruparVentasPorCategoria(
+  transacciones: TransaccionExitosa[]
+): CategoriaVenta[] {
+  const resumen: Record<string, CategoriaVenta> = {};
+
+  transacciones.forEach((t) => {
+    const cat = t.categoria;
+
+    if (!resumen[cat]) {
+      resumen[cat] = {
+        categoria: cat,
+        subtotal: 0,
+        margen: 0,
+        venta: 0,
+      };
+    }
+
+    resumen[cat].subtotal += t.monto;
+    resumen[cat].margen += t.monto * 0.3; // margen simulado 30%
+    resumen[cat].venta += t.monto * 1.3;
+  });
+
+  return Object.values(resumen).sort((a, b) => b.venta - a.venta);
 }
