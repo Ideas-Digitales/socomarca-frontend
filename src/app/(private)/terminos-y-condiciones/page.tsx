@@ -1,10 +1,14 @@
 export default function TerminoCondicionesPage() {
   return (
     <div className="bg-[#f1f5f9] min-h-screen p-6 md:p-12">
-      <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow">
-        <h1 className="text-3xl font-bold mb-8">Términos y condiciones</h1>
+      <div className="max-w-4xl mx-auto bg-white pt-0 shadow">
+        <div className="w-full flex">
+          <div className="h-2 w-1/3 bg-[#267E00]"></div>
+          <div className="h-2 w-2/3 bg-[#6CB409]"></div>
+        </div>
+        <h1 className="text-3xl font-bold mb-8 pt-8 px-8">Términos y condiciones</h1>
 
-        <section className="mb-6">
+        <section className="mb-6 px-8">
           <h2 className="text-lime-600 font-semibold mb-2">1. Introducción</h2>
           <p>
             Bienvenido a SOCOMARCA. Estos Términos y Condiciones regulan el uso de nuestro sitio web y los
@@ -13,7 +17,7 @@ export default function TerminoCondicionesPage() {
           </p>
         </section>
 
-        <section className="mb-6">
+        <section className="mb-6  px-8">
           <h2 className="text-lime-600 font-semibold mb-2">2. Uso del Sitio</h2>
           <h3 className="font-medium">2.1. Elegibilidad</h3>
           <p>
@@ -31,7 +35,7 @@ export default function TerminoCondicionesPage() {
           </p>
         </section>
 
-        <section className="mb-6">
+        <section className="mb-6  px-8">
           <h2 className="text-lime-600 font-semibold mb-2">3. Pedidos y Pagos</h2>
           <h3 className="font-medium">3.1. Procesamiento de Pedidos</h3>
           <ul className="list-disc ml-6 mt-2">
@@ -52,7 +56,7 @@ export default function TerminoCondicionesPage() {
           </p>
         </section>
 
-        <section>
+        <section className="mb-6  px-8 pb-8">
           <h2 className="text-lime-600 font-semibold mb-2">4. Precios y Promociones</h2>
           <ul className="list-disc ml-6 mt-2">
             <li>Los precios publicados en nuestro sitio están en [moneda aplicable] e incluyen/excluyen impuestos según se indique.</li>
