@@ -4,12 +4,13 @@ import {
   PaginationMeta,
   ProductsSlice,
   StoreState,
+  FiltersSlice, // ← Agregar FiltersSlice
 } from '../types';
 import { fetchGetProducts } from '@/services/actions/products.actions';
 import { filterAndRankProducts } from '../utils/searchUtils';
 
 export const createProductsSlice: StateCreator<
-  StoreState & ProductsSlice,
+  StoreState & ProductsSlice & FiltersSlice, // ← Incluir FiltersSlice en el tipo
   [],
   [],
   ProductsSlice
@@ -73,7 +74,12 @@ export const createProductsSlice: StateCreator<
   },
 
   setSearchTerm: (term: string) => {
-    const { products } = get();
+    const { products, clearAllFilters } = get();
+
+    // Si hay un término de búsqueda, limpiar filtros primero
+    if (term.trim()) {
+      clearAllFilters();
+    }
 
     // Apply search term filter
     const filtered = term ? filterAndRankProducts(products, term) : products;

@@ -1,7 +1,16 @@
 import { Product, ProductToBuy } from '@/interfaces/product.interface';
 import { Category } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
-
+export interface StoreSlice {
+  // Métodos individuales de reset
+  resetBrandsState: () => void;
+  resetCategoriesState: () => void;
+  resetProductsState: () => void;
+  resetFiltersState: () => void;
+  // Métodos combinados de reset
+  resetSearchRelatedStates: () => void;
+  resetAllStates: () => void;
+}
 export interface PaginationLinks {
   first: string | null;
   last: string | null;
@@ -33,6 +42,50 @@ export interface PaginationMeta {
   total: number;
 }
 
+export interface FiltersSlice {
+  // Estados de filtros (ya están en StoreState)
+
+  // Acciones para categorías
+  setSelectedCategories: (categories: number[]) => void;
+  toggleCategorySelection: (categoryId: number) => void;
+
+  // Acciones para marcas
+  setSelectedBrands: (brands: number[]) => void;
+  toggleBrandSelection: (brandId: number) => void;
+
+  // Acciones para favoritos
+  setSelectedFavorites: (favorites: number[]) => void;
+  toggleFavoriteSelection: (favoriteId: number) => void;
+
+  // Acciones para precios
+  setPriceRange: (
+    min: number,
+    max: number,
+    lower: number,
+    upper: number
+  ) => void;
+  setLowerPrice: (price: number) => void;
+  setUpperPrice: (price: number) => void;
+  handlePriceRangeChange: (lower: number, upper: number) => void;
+  initializePriceRange: (products: Product[]) => void;
+
+  // Acciones para UI de filtros
+  setMainCategoryOpen: (isOpen: boolean) => void;
+  setBrandsOpen: (isOpen: boolean) => void;
+  setFavoritesOpen: (isOpen: boolean) => void;
+  setPriceOpen: (isOpen: boolean) => void;
+  toggleMainCategory: () => void;
+  toggleBrandsSection: () => void;
+  toggleFavoritesSection: () => void;
+  togglePriceSection: () => void;
+
+  // Acciones principales
+  applyFilters: () => void;
+  clearAllFilters: () => void;
+  resetFiltersState: () => void;
+  hasActiveFilters: () => boolean;
+}
+
 // Estado base del store
 export interface StoreState {
   // Productos
@@ -44,8 +97,22 @@ export interface StoreState {
   categories: Category[];
 
   // Marcas
-  brands: Brand[]; // ← Nueva propiedad
+  brands: Brand[];
+  // Estados de filtros
+  selectedCategories: number[];
+  selectedBrands: number[];
+  selectedFavorites: number[];
+  minPrice: number;
+  maxPrice: number;
+  lowerPrice: number;
+  upperPrice: number;
+  priceInitialized: boolean;
 
+  // Estados de UI de filtros
+  isMainCategoryOpen: boolean;
+  isBrandsOpen: boolean;
+  isFavoritesOpen: boolean;
+  isPriceOpen: boolean;
   // UI
   isLoading: boolean;
   isMobile: boolean;
@@ -140,8 +207,10 @@ export interface SidebarSlice {
 export type Store = StoreState &
   ProductsSlice &
   CategoriesSlice &
-  BrandsSlice & // ← Agregar BrandsSlice
+  BrandsSlice &
+  FiltersSlice &
   UiSlice &
   CartSlice &
   PaginationSlice &
-  SidebarSlice;
+  SidebarSlice &
+  StoreSlice;

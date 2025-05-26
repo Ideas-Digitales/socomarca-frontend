@@ -22,7 +22,6 @@ export default function Logo({
   style,
   alt = 'Logo',
 }: Props) {
-  console.log(width, height, className, href, onClick, style, alt);
   const imageElement = (
     <Image
       src={logo}
@@ -31,8 +30,8 @@ export default function Logo({
       height={height}
       className={className}
       style={{
-        width: width ? `${width}px` : 'auto',
-        height: height ? `${height}px` : 'auto',
+        width: '100%',
+        height: 'auto',
         ...style,
       }}
       onClick={onClick}

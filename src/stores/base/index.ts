@@ -11,12 +11,14 @@ import { createUiSlice } from './slices/uiSlice';
 import { createPaginationSlice } from './slices/paginationSlice';
 import { createSidebarSlice } from './slices/sidebarSlice';
 import { createBrandsSlice } from './slices/brandsSlice';
+import { createStoreSlice } from './slices/storeSlice';
+import { createFiltersSlice } from './slices/filterSlice';
 
 // Estado inicial
 const initialState: StoreState = {
   products: [],
   categories: [],
-  brands: [], // ← Agregar brands al estado inicial
+  brands: [],
   filteredProducts: [],
   isLoading: false,
   searchTerm: '',
@@ -31,6 +33,20 @@ const initialState: StoreState = {
   activeItem: null,
   openSubmenus: [],
   isMobileSidebarOpen: false,
+  // Estados de filtros
+  selectedCategories: [],
+  selectedBrands: [],
+  selectedFavorites: [],
+  minPrice: 0,
+  maxPrice: 0,
+  lowerPrice: 0,
+  upperPrice: 0,
+  priceInitialized: false,
+  // Estados de UI de filtros
+  isMainCategoryOpen: true,
+  isBrandsOpen: false,
+  isFavoritesOpen: false,
+  isPriceOpen: true,
 };
 
 // Crear el store combinando todos los slices
@@ -38,11 +54,13 @@ const useStore = create<Store>()((...a) => ({
   ...initialState,
   ...createProductsSlice(...a),
   ...createCategoriesSlice(...a),
-  ...createBrandsSlice(...a), // ← Agregar el brands slice
+  ...createBrandsSlice(...a),
   ...createUiSlice(...a),
   ...createCartSlice(...a),
   ...createPaginationSlice(...a),
   ...createSidebarSlice(...a),
+  ...createStoreSlice(...a),
+  ...createFiltersSlice(...a),
 }));
 
 // Hook para manejar la detección de dispositivos móviles

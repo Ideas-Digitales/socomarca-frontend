@@ -5,7 +5,8 @@ import useStore from '@/stores/base';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export default function Search() {
-  const { setSearchTerm } = useStore();
+  const { setSearchTerm, resetSearchRelatedStates, searchTerm } = useStore();
+
   const [inputValue, setInputValue] = useState('');
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -20,8 +21,13 @@ export default function Search() {
 
     // Configurar un nuevo timeout
     debounceTimeoutRef.current = setTimeout(() => {
-      setSearchTerm(value);
-    }, 800); // 0.8 segundos
+      // Si el valor está vacío y había un término de búsqueda anterior, resetar
+      if (!value.trim() && searchTerm) {
+        resetSearchRelatedStates();
+      } else if (value.trim()) {
+        setSearchTerm(value);
+      }
+    }, 800);
   };
 
   // Limpiar el timeout cuando el componente se desmonte
@@ -38,8 +44,14 @@ export default function Search() {
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
-    // Ejecutar la búsqueda inmediatamente
-    setSearchTerm(inputValue);
+
+    // Si el input está vacío, resetear estados
+    if (!inputValue.trim()) {
+      resetSearchRelatedStates();
+    } else {
+      // setSearchTerm se encarga de limpiar filtros automáticamente
+      setSearchTerm(inputValue);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -50,7 +62,8 @@ export default function Search() {
 
   const handleClear = () => {
     setInputValue('');
-    setSearchTerm('');
+    // Resetear todos los estados relacionados con la búsqueda
+    resetSearchRelatedStates();
   };
 
   return (
@@ -87,7 +100,7 @@ export default function Search() {
               onClick={handleSearch}
               className="flex py-[9px] px-2 sm:px-[15px] justify-end items-center gap-[10px] button-search cursor-pointer"
             >
-              <MagnifyingGlassIcon color='#fff' width={23} height={24} />
+              <MagnifyingGlassIcon color="#fff" width={23} height={24} />
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { Brand } from '@/interfaces/product.interface';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
 
 interface Props {
   p: {
@@ -21,6 +22,14 @@ export default function CarroCompraCardMobile({
   incrementProductInCart,
   setIdProductoAEliminar,
 }: Props) {
+  const [backgroundImage, setBackgroundImage] = useState(`url(${p.imagen})`);
+  useEffect(() => {
+    const img = new Image();
+    img.src = p.imagen;
+    img.onerror = () => {
+      setBackgroundImage(`url(/assets/global/logo_plant.png)`);
+    };
+  }, [p.imagen]);
   return (
     <div
       key={p.id}
@@ -34,8 +43,13 @@ export default function CarroCompraCardMobile({
       >
         <TrashIcon className="w-5 h-5" />
       </button>
-
-      <img
+      <div
+        className="w-16 h-20 bg-contain rounded bg-no-repeat bg-center"
+        style={{
+          backgroundImage,
+        }}
+      />
+      {/* <img
         src={p.imagen}
         alt={p.name}
         className="w-16 h-20 object-contain rounded"
@@ -45,7 +59,7 @@ export default function CarroCompraCardMobile({
           target.src = 'assets/global/logo_default.png';
           target.classList.add('grayscale', 'opacity-50');
         }}
-      />
+      /> */}
 
       <div className="flex-1 pr-6">
         <p className="text-xs text-slate-400">{p.brand.name}</p>

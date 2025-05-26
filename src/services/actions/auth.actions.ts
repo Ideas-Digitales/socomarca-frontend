@@ -1,6 +1,7 @@
 'use server';
 
 import { LoginResponse } from '@/interfaces/user.interface';
+import { mockResponse } from '@/mock/login';
 import { IS_QA_MODE } from '@/utils/getEnv';
 
 export const fetchLogin = async (
@@ -11,15 +12,7 @@ export const fetchLogin = async (
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         if (rut === '12.312.312-3') {
-          resolve({
-            user: {
-              id: '1',
-              name: 'Maria',
-              email: 'maria@socomarca.cl',
-              rut,
-            },
-            token: 'fake-jwt-token',
-          });
+          resolve(mockResponse);
         } else {
           reject(new Error('Credenciales inválidas'));
         }
@@ -53,7 +46,7 @@ export const fetchLogin = async (
         email: data.user.email,
         rut: data.user.rut,
       },
-      token: data.jwt,
+      token: data.token,
     };
   } catch (error) {
     throw error instanceof Error

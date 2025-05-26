@@ -123,19 +123,18 @@ export default function Header({ carro }: Props) {
           </div>
           {!isTablet && (
             <Logo
-              width={230}
-              height={200}
+              width={368}
+              height={66}
               className="hidden sm:block py-[4px] cursor-pointer"
-              style={{
-                width: 'auto',
-                height: 'auto',
-              }}
               href="/"
             />
           )}
           <div className="flex items-end gap-4">
             <div className="flex flex-row gap-2 sm:gap-4">
-              <Link href="/mi-cuenta?section=compras" className="flex items-center gap-2">
+              <Link
+                href="/mi-cuenta?section=compras"
+                className="flex items-center gap-2"
+              >
                 <ListBulletIcon width={24} height={24} />
                 <span className="font-bold hidden sm:block">
                   Historial de compra

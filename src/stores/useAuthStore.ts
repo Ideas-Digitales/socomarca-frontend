@@ -7,7 +7,7 @@ import { create } from 'zustand';
 interface AuthStoreState {
   isLoggedIn: boolean;
   user: {
-    id: string;
+    id: number;
     name: string;
     email: string;
     rut: string;
@@ -26,7 +26,7 @@ interface AuthStoreState {
 const useAuthStore = create<AuthStoreState>((set) => ({
   isLoggedIn: false,
   user: {
-    id: '',
+    id: 0,
     name: '',
     email: '',
     rut: '',
@@ -51,7 +51,7 @@ const useAuthStore = create<AuthStoreState>((set) => ({
     } catch (error: any) {
       set({
         isLoggedIn: false,
-        user: { id: '', name: '', email: '', rut: '' },
+        user: { id: 0, name: '', email: '', rut: '' },
         token: '',
       });
 
@@ -68,7 +68,7 @@ const useAuthStore = create<AuthStoreState>((set) => ({
   logout: () =>
     set({
       isLoggedIn: false,
-      user: { id: '', name: '', email: '', rut: '' },
+      user: { id: 0, name: '', email: '', rut: '' },
       token: '',
     }),
 }));
