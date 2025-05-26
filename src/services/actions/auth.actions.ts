@@ -18,7 +18,7 @@ export const fetchLogin = async (
               email: 'maria@socomarca.cl',
               rut,
             },
-            jwt: 'fake-jwt-token',
+            token: 'fake-jwt-token',
           });
         } else {
           reject(new Error('Credenciales inválidas'));
@@ -53,7 +53,7 @@ export const fetchLogin = async (
         email: data.user.email,
         rut: data.user.rut,
       },
-      jwt: data.jwt,
+      token: data.jwt,
     };
   } catch (error) {
     throw error instanceof Error
