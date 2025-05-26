@@ -7,5 +7,5 @@ export interface User {
 
 export interface LoginResponse {
   user: User;
-  jwt: string;
+  token: string;
 }
