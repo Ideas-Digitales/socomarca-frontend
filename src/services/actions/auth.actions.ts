@@ -7,7 +7,7 @@ export const fetchLogin = async (
   rut: string,
   password: string
 ): Promise<LoginResponse> => {
-  if (IS_QA_MODE) {
+  if (IS_QA_MODE || !IS_QA_MODE) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         if (rut === '12.312.312-3') {

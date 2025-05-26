@@ -14,20 +14,21 @@ interface Props {
 }
 
 export default function Logo({
-  width,
-  height,
+  width = 218,
+  height = 39,
   className,
   href,
   onClick,
   style,
   alt = 'Logo',
 }: Props) {
+  console.log(width, height, className, href, onClick, style, alt);
   const imageElement = (
     <Image
       src={logo}
       alt={alt}
-      width={width || 218}
-      height={height || 39}
+      width={width}
+      height={height}
       className={className}
       style={{
         width: width ? `${width}px` : 'auto',
@@ -35,6 +36,8 @@ export default function Logo({
         ...style,
       }}
       onClick={onClick}
+      priority={true}
+      quality={100}
     />
   );
 

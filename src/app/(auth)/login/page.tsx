@@ -30,11 +30,11 @@ export default function LoginPage() {
 
    try {
   const result = await login({ rut, password });
+  console.log('Login result:', result);
 
   if (result.success) {
     router.push('/');
   } else {
-    // Esto asume que `result` tiene una estructura diferente si no es success
     const errorMessage =
       result.error ||
       'Error al iniciar sesión';
@@ -52,7 +52,6 @@ export default function LoginPage() {
     setError('Las credenciales ingresadas no son válidas');
   }
 
-  console.error(error);
 } finally {
   setIsLoading(false);
 }
