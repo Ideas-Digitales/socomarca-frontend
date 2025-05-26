@@ -30,7 +30,7 @@ export default function Logo({
       height={height}
       className={className}
       style={{
-        width: '100%',
+        width: 'auto',
         height: 'auto',
         ...style,
       }}

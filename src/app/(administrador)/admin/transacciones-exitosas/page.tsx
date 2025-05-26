@@ -1,10 +1,8 @@
 'use client';
 
-import DashboardLayout, {
-  TableColumn,
-} from '@/app/components/dashboard/DashboardLayout';
+import DashboardLayout from '@/app/components/dashboard/DashboardLayout';
 import { usePagination } from '@/hooks/usePagination';
-import { DashboardConfig } from '@/interfaces/dashboard.interface';
+import { DashboardConfig, TableColumn } from '@/interfaces/dashboard.interface';
 import {
   generarTransaccionesAleatorias,
   TransaccionExitosa,
@@ -39,6 +37,7 @@ export default function TransaccionesExitosas() {
     usePagination(transaccionesFixed);
 
   const config: DashboardConfig = {
+    title: 'Transacciones Exitosas',
     metrics: [
       {
         label: 'Transacciones exitosas',
@@ -58,7 +57,6 @@ export default function TransaccionesExitosas() {
       key: 'monto1',
       label: 'Monto',
       render: (value: number) => `$${value.toLocaleString()}`,
-      
     },
     {
       key: 'monto2',
@@ -76,7 +74,11 @@ export default function TransaccionesExitosas() {
       label: 'Fecha',
       render: (value: string) => value,
     },
-    { key: 'acciones', label: 'Acciones', render: (value: string) => <div className="text-lime-500">{value}</div> },
+    {
+      key: 'acciones',
+      label: 'Acciones',
+      render: (value: string) => <div className="text-lime-500">{value}</div>,
+    },
   ];
 
   return (

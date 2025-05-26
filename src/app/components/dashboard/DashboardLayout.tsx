@@ -4,34 +4,15 @@ import DayPickerComponent from '@/app/components/admin/DayPickerComponent';
 import LineChartContent from '@/app/components/admin/LineChartContent';
 import MetricsCard from './MetricsCard';
 import FilterBar from './FilterBar';
-import { PaginationMeta } from '@/stores/base/types';
-import { DashboardConfig } from '@/interfaces/dashboard.interface';
+import {
+  DashboardLayoutProps,
+} from '@/interfaces/dashboard.interface';
 import CustomTable from '../admin/CustomTable';
 
 const DynamicLineChart = dynamic(() => Promise.resolve(LineChartContent), {
   ssr: false,
   loading: () => <div>Cargando gráfico...</div>,
 });
-
-// Exportar la interfaz para uso en las páginas
-export interface TableColumn<T = any> {
-  key: keyof T | string;
-  label: string;
-  render?: (value: any, row: T) => React.ReactNode;
-}
-
-interface DashboardLayoutProps<T = any> {
-  config: DashboardConfig;
-  tableData?: T[];
-  tableColumns?: TableColumn<T>[];
-  paginationMeta?: PaginationMeta;
-  onPageChange?: (page: number) => void;
-  onDownload?: () => void;
-  onAmountFilter?: () => void;
-  onClientFilter?: () => void;
-  onCategoryFilter?: () => void;
-  onFilter?: () => void;
-}
 
 const DashboardLayout = <T extends Record<string, any> = any>({
   config,

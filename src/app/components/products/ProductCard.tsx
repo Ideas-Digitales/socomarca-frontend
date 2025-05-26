@@ -9,7 +9,6 @@ interface Props {
 }
 
 export default function ProductCard({ product }: Props) {
-  console.log(product);
   const { addProductToCart, isQaMode } = useStore();
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`

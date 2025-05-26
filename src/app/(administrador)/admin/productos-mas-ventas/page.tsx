@@ -1,10 +1,8 @@
 'use client';
 
-import DashboardLayout, {
-  TableColumn,
-} from '@/app/components/dashboard/DashboardLayout';
+import DashboardLayout from '@/app/components/dashboard/DashboardLayout';
 import { usePagination } from '@/hooks/usePagination';
-import { DashboardConfig } from '@/interfaces/dashboard.interface';
+import { DashboardConfig, TableColumn } from '@/interfaces/dashboard.interface';
 import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
 import { useState } from 'react';
 
@@ -30,6 +28,7 @@ export default function ProductosMasVentas() {
     usePagination(productosFixed);
 
   const config: DashboardConfig = {
+    title: 'Productos con más ventas',
     metrics: [
       {
         label: 'Productos con más ventas',

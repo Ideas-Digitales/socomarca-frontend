@@ -1,10 +1,8 @@
 'use client';
 
-import DashboardLayout, {
-  TableColumn,
-} from '@/app/components/dashboard/DashboardLayout';
+import DashboardLayout from '@/app/components/dashboard/DashboardLayout';
 import { usePagination } from '@/hooks/usePagination';
-import { DashboardConfig } from '@/interfaces/dashboard.interface';
+import { DashboardConfig, TableColumn } from '@/interfaces/dashboard.interface';
 import {
   generarTransaccionesAleatorias,
   agruparVentasPorCategoria,
@@ -21,16 +19,19 @@ export default function CategoriasMasVentas() {
   const transacciones = useState(() => generarTransaccionesAleatorias(100))[0];
   const categorias = agruparVentasPorCategoria(transacciones);
 
-  const categoriasConRanking: CategoriaConRanking[] = categorias.map((cat, idx) => ({
-    categoria: cat.categoria,
-    venta: cat.venta,
-    ranking: idx + 1,
-  }));
+  const categoriasConRanking: CategoriaConRanking[] = categorias.map(
+    (cat, idx) => ({
+      categoria: cat.categoria,
+      venta: cat.venta,
+      ranking: idx + 1,
+    })
+  );
 
   const { paginatedItems, paginationMeta, changePage } =
     usePagination(categoriasConRanking);
 
   const config: DashboardConfig = {
+    title: 'Categorías con más ventas',
     metrics: [
       {
         label: 'Categorías con más ventas',

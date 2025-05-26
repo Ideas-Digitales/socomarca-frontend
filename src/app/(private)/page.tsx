@@ -10,7 +10,15 @@ const desktopImage = '/assets/global/banner_desktop.png';
 const mobileImage = '/assets/global/banner_mobile.png';
 
 export default function PrivatePage() {
-  const { isTablet } = useStore();
+  const { isTablet, setSearchTerm, resetSearchRelatedStates } = useStore();
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+
+  const handleClearSearch = () => {
+    resetSearchRelatedStates();
+  };
   return (
     <div className="bg-slate-100 sm:py-7">
       <div className="flex items-center rounded-lg max-w-7xl h-auto max-h-[666px] mx-auto">
@@ -26,7 +34,13 @@ export default function PrivatePage() {
           className="hidden sm:block w-full object-cover py-7 px-4 "
         />
       </div>
-      <Search />
+      <Search
+        className="bg-white md:bg-slate-100"
+        onSearch={handleSearch}
+        onClear={handleClearSearch}
+        placeholder="Busca productos ahora"
+        label="Encuentra justo lo que necesitas con solo un clic en nuestro buscador"
+      />
 
       {isTablet && <GPSPosition />}
       <Image

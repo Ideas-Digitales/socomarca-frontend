@@ -185,7 +185,6 @@ export const createFiltersSlice: StateCreator<
       );
     }
 
-    // Aplicar filtro de favoritos (si tienes esta funcionalidad)
     if (selectedFavorites.length > 0) {
       filteredResults = filteredResults.filter((product) =>
         selectedFavorites.includes(product.id)

@@ -14,6 +14,7 @@ export default function ComunasMasVentas() {
     usePagination(comunasVenta);
 
   const config: DashboardConfig = {
+    title: 'Comunas con más ventas',
     metrics: [
       {
         label: 'Comunas con más ventas',

@@ -1,10 +1,8 @@
 'use client';
 
-import DashboardLayout, {
-  TableColumn,
-} from '@/app/components/dashboard/DashboardLayout';
+import DashboardLayout from '@/app/components/dashboard/DashboardLayout';
 import { usePagination } from '@/hooks/usePagination';
-import { DashboardConfig } from '@/interfaces/dashboard.interface';
+import { DashboardConfig, TableColumn } from '@/interfaces/dashboard.interface';
 import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
 import { useState } from 'react';
 
@@ -30,6 +28,7 @@ export default function ClientesMasCompra() {
     usePagination(clientesFixed);
 
   const config: DashboardConfig = {
+    title: 'Clientes con más compras',
     metrics: [
       {
         label: 'Clientes con más compras',
@@ -65,7 +64,6 @@ export default function ClientesMasCompra() {
 
   return (
     <DashboardLayout
-
       config={config}
       tableData={paginatedItems}
       tableColumns={clientesColumns}

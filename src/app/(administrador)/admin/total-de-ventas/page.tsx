@@ -5,6 +5,9 @@ import { DashboardConfig } from '@/interfaces/dashboard.interface';
 
 export default function TotalDeVentas() {
   const config: DashboardConfig = {
+    showTable: true,
+    tableTitle: 'Total de ventas',
+    title: 'Total de ventas',
     metrics: [
       {
         label: 'Total de compradores',
