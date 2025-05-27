@@ -5,6 +5,7 @@ import { useFilters } from '@/hooks/useFilters';
 import {
   DashboardTableConfig,
   TableColumn,
+  SortOption,
 } from '@/interfaces/dashboard.interface';
 import useStore from '@/stores/base';
 import { useMemo } from 'react';
@@ -14,47 +15,17 @@ interface Producto {
   producto: string;
   SKU: string;
   categoria: string;
+  categoryId: number;
   proveedor: string;
   precio_unitario: number;
   stock: number;
 }
 
 export default function ProductsAdmin() {
-  const { categories, products, productPaginationMeta, setProductPage } = useStore();
+  const { categories, products, productPaginationMeta, setProductPage } =
+    useStore();
 
-  // Transformar datos una sola vez
-  const productosFixed = useMemo(
-    () =>
-      products.map((producto) => ({
-        id: String(producto.id),
-        producto: producto.name,
-        SKU: `SKU-${producto.id}`,
-        categoria: `Categoría ${Math.ceil(Math.random() * 10)}`,
-        proveedor: `Proveedor ${Math.ceil(Math.random() * 5)}`,
-        precio_unitario: producto.price,
-        stock: Math.floor(Math.random() * 1000),
-      })),
-    [products]
-  );
-
-  // Hook para manejar filtros (sin paginación)
-  const { filters, updateCategoryFilter, updateSortOption, updateSearchTerm } =
-    useFilters({
-      data: productosFixed,
-      searchKeys: ['producto', 'SKU', 'categoria', 'proveedor'],
-    });
-
-  // Manejar cambio de página usando el store
-  const handlePageChange = (page: number) => {
-    setProductPage(page);
-  };
-
-  const config: DashboardTableConfig = {
-    title: 'Productos',
-    showTable: true,
-    tableTitle: 'Productos',
-  };
-
+  // Definir las columnas de la tabla
   const productosColumns: TableColumn<Producto>[] = [
     { key: 'id', label: 'ID' },
     { key: 'producto', label: 'Producto' },
@@ -69,6 +40,55 @@ export default function ProductsAdmin() {
     { key: 'stock', label: 'Stock' },
   ];
 
+  // Transformar datos - CORREGIDO
+  const productosFixed = useMemo(
+    () =>
+      products.map((producto) => {
+        return {
+          id: String(producto.id),
+          producto: producto.name,
+          SKU: producto.sku || `SKU-${producto.id}`,
+          categoria: producto.category?.name || 'Sin categoría',
+          categoryId: producto.category?.id || 0,
+          proveedor: producto.brand?.name || 'Sin marca',
+          precio_unitario: producto.price,
+          stock: producto.stock,
+        };
+      }),
+    [products]
+  );
+
+  // Hook para manejar filtros y búsqueda - CORREGIDO
+  const {
+    filters,
+    filteredAndSortedData,
+    updateCategoryFilter,
+    updateSortOption,
+    updateSearchTerm,
+  } = useFilters({
+    data: productosFixed,
+    categoryKey: 'categoryId', // Usar categoryId para filtrar
+    searchKeys: ['producto', 'SKU', 'categoria', 'proveedor'],
+    sortableColumns: productosColumns,
+  });
+
+  // Manejar cambio de ordenamiento
+  const handleSortBy = (newSortOption: SortOption | null) => {
+    console.log('handleSortBy', newSortOption);
+    updateSortOption(newSortOption);
+  };
+
+  // Manejar cambio de página
+  const handlePageChange = (page: number) => {
+    setProductPage(page);
+  };
+
+  const config: DashboardTableConfig = {
+    title: 'Productos',
+    showTable: true,
+    tableTitle: 'Productos',
+  };
+
   const handleProviderFilter = () => {
     console.log('Provider filter clicked');
   };
@@ -80,14 +100,14 @@ export default function ProductsAdmin() {
   return (
     <DashboardTableLayout
       config={config}
-      tableData={productosFixed}
+      tableData={filteredAndSortedData}
       tableColumns={productosColumns}
       productPaginationMeta={productPaginationMeta ?? undefined}
       onPageChange={handlePageChange}
       onFilter={handleFilter}
       onCategoryFilter={updateCategoryFilter}
       onProviderFilter={handleProviderFilter}
-      onSortBy={updateSortOption}
+      onSortBy={handleSortBy}
       categories={categories}
       selectedCategories={filters.selectedCategories}
       selectedSortOption={filters.sortOption}

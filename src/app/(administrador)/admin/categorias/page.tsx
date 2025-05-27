@@ -9,7 +9,7 @@ import {
 import useStore from '@/stores/base';
 import { useMemo } from 'react';
 
-interface Category {
+interface CategoryRow {
   id: string;
   categoria: string;
   rut: string;
@@ -19,37 +19,46 @@ interface Category {
 export default function CategoriesAdmin() {
   const { categories } = useStore();
 
+  // Definir las columnas de la tabla
+  const categoriasColumns: TableColumn<CategoryRow>[] = [
+    { key: 'id', label: 'ID' },
+    { key: 'categoria', label: 'Categoría' },
+    { key: 'rut', label: 'Rut (Path)' },
+    { key: 'createdAt', label: 'Fecha de creación' },
+  ];
+
   // Transformar datos una sola vez
-  const productosFixed = useMemo(
+  const categoriesData = useMemo(
     () =>
       categories.map((category) => ({
         id: String(category.id),
         categoria: category.name,
-        rut: `SKU-${category.id}`,
-        createdAt: `Categoría ${Math.ceil(Math.random() * 10)}`,
+        rut: category.name || `categoria-${category.id}`,
+        createdAt: category.created_at
+          ? new Date(category.created_at).toLocaleDateString()
+          : 'N/A',
       })),
     [categories]
   );
 
-  // Hook para manejar filtros (sin paginación)
-  const { filters, updateCategoryFilter, updateSortOption, updateSearchTerm } =
-    useFilters({
-      data: productosFixed,
-      searchKeys: ['categoria'],
-    });
+  // Hook para manejar filtros y ordenamiento
+  const {
+    filters,
+    filteredAndSortedData,
+    updateCategoryFilter,
+    updateSortOption,
+    updateSearchTerm,
+  } = useFilters({
+    data: categoriesData,
+    searchKeys: ['categoria', 'rut'],
+    sortableColumns: categoriasColumns,
+  });
 
   const config: DashboardTableConfig = {
     title: 'Categorías',
     showTable: true,
     tableTitle: 'Categorías',
   };
-
-  const categoriasColumns: TableColumn<Category>[] = [
-    { key: 'id', label: 'ID' },
-    { key: 'categoria', label: 'Categoría' },
-    { key: 'rut', label: 'Rut (Path)' },
-    { key: 'createdAt', label: 'Fecha de creación' },
-  ];
 
   const handleProviderFilter = () => {
     console.log('Provider filter clicked');
@@ -62,7 +71,7 @@ export default function CategoriesAdmin() {
   return (
     <DashboardTableLayout
       config={config}
-      tableData={productosFixed}
+      tableData={filteredAndSortedData} // Usar datos filtrados y ordenados
       tableColumns={categoriasColumns}
       onFilter={handleFilter}
       onCategoryFilter={updateCategoryFilter}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { SortOption } from '@/interfaces/dashboard.interface';
+import { SortOption, TableColumn } from '@/interfaces/dashboard.interface';
 
 export interface FilterState {
   selectedCategories: number[];
@@ -23,6 +23,7 @@ interface UseFiltersProps<T> {
   categoryKey?: keyof T;
   providerKey?: keyof T;
   searchKeys?: (keyof T)[];
+  sortableColumns?: TableColumn<T>[];
 }
 
 export function useFilters<T extends Record<string, any>>({
@@ -57,7 +58,6 @@ export function useFilters<T extends Record<string, any>>({
     if (filters.selectedCategories.length > 0 && categoryKey) {
       result = result.filter((item) => {
         const categoryValue = item[categoryKey];
-        // Aquí puedes ajustar la lógica según cómo manejes las categorías
         return filters.selectedCategories.includes(Number(categoryValue));
       });
     }
@@ -72,21 +72,49 @@ export function useFilters<T extends Record<string, any>>({
 
     // Aplicar ordenamiento
     if (filters.sortOption) {
-      const sortOption = filters.sortOption;
+      const { key, direction } = filters.sortOption;
+
+      console.log('Aplicando ordenamiento:', key, direction);
+      console.log('Datos antes de ordenar:', result.slice(0, 3));
+
       result.sort((a, b) => {
-        const aValue = a[sortOption.key as keyof T];
-        const bValue = b[sortOption.key as keyof T];
+        const aValue = a[key as keyof T];
+        const bValue = b[key as keyof T];
+
+        // Manejo especial para valores null o undefined
+        if (aValue == null && bValue == null) return 0;
+        if (aValue == null) return direction === 'asc' ? 1 : -1;
+        if (bValue == null) return direction === 'asc' ? -1 : 1;
 
         let comparison = 0;
 
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          comparison = aValue.localeCompare(bValue);
-        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        // Para IDs que son strings pero contienen números
+        if (key === 'id') {
+          const aNum = parseInt(String(aValue), 10);
+          const bNum = parseInt(String(bValue), 10);
+          if (!isNaN(aNum) && !isNaN(bNum)) {
+            comparison = aNum - bNum;
+          } else {
+            comparison = String(aValue).localeCompare(String(bValue));
+          }
+        }
+        // Para números
+        else if (typeof aValue === 'number' && typeof bValue === 'number') {
           comparison = aValue - bValue;
         }
+        // Para strings
+        else if (typeof aValue === 'string' && typeof bValue === 'string') {
+          comparison = aValue.localeCompare(bValue);
+        }
+        // Fallback
+        else {
+          comparison = String(aValue).localeCompare(String(bValue));
+        }
 
-        return sortOption.direction === 'asc' ? comparison : -comparison;
+        return direction === 'asc' ? comparison : -comparison;
       });
+
+      console.log('Datos después de ordenar:', result.slice(0, 3));
     }
 
     return result;
@@ -98,6 +126,7 @@ export function useFilters<T extends Record<string, any>>({
   };
 
   const updateSortOption = (option: SortOption | null) => {
+    console.log('updateSortOption llamado con:', option);
     setFilters((prev) => ({ ...prev, sortOption: option }));
   };
 
