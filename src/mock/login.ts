@@ -1,7 +1,6 @@
 import { LoginResponse } from '@/interfaces/user.interface';
 
 export const mockResponse: LoginResponse = {
-  token: '1|RJ9ssid1tfz2n5EgIxVs1oIHQXb3cGTPnFC3Bfbu7409ea5a',
   user: {
     id: 1,
     name: 'Sebastian Oberbrunner',

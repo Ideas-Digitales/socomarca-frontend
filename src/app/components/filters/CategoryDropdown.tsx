@@ -31,7 +31,7 @@ export default function CategoryDropdown({
         className="bg-gray-100 w-full flex justify-between items-center p-[10px] h-10 text-gray-500 text-md rounded cursor-pointer"
         onClick={toggle}
       >
-        Categorías
+        Categoría
         <ChevronDownIcon
           width={20}
           height={20}
