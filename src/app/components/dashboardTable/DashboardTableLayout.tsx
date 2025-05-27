@@ -1,7 +1,18 @@
-import { DashboardTableLayoutProps } from '@/interfaces/dashboard.interface';
+import {
+  DashboardTableLayoutProps,
+  SortOption,
+} from '@/interfaces/dashboard.interface';
 import CustomTable from '../admin/CustomTable';
 import Search from '../global/Search';
 import FilterOptions from './FilterOptions';
+
+interface ExtendedDashboardTableLayoutProps<T>
+  extends DashboardTableLayoutProps<T> {
+  selectedCategories?: number[];
+  selectedSortOptions?: SortOption[];
+  onSearch?: (searchTerm: string) => void;
+  onClearSearch?: () => void;
+}
 
 const DashboardTableLayout = <T extends Record<string, any> = any>({
   config,
@@ -9,20 +20,24 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   tableColumns,
   paginationMeta,
   onPageChange,
-  // onDownload,
   onFilter,
   onCategoryFilter,
   onProviderFilter,
   onSortBy,
   categories,
-}: DashboardTableLayoutProps<T>) => {
-  const handleSearch = (searchTerm: string) => {
-    console.log('Searching for:', searchTerm);
-    // Implement search logic here
+  selectedCategories = [],
+  selectedSortOptions = [],
+  onSearch,
+  onClearSearch,
+}: ExtendedDashboardTableLayoutProps<T>) => {
+  const handleSearch = (searchTermValue: string) => {
+    console.log('Searching for:', searchTermValue);
+    onSearch?.(searchTermValue);
   };
+
   const handleClearSearch = () => {
     console.log('Search cleared');
-    // Implement clear search logic here
+    onClearSearch?.();
   };
 
   return (
@@ -35,15 +50,19 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           onClear={handleClearSearch}
           placeholder="Busca productos ahora"
         />
-        {/* Filters */}
+
         <FilterOptions
           onFilter={onFilter}
           onCategoryFilter={onCategoryFilter}
           onProviderFilter={onProviderFilter}
           onSortBy={onSortBy}
           categories={categories}
+          selectedCategories={selectedCategories}
+          tableColumns={tableColumns}
+          selectedSortOptions={selectedSortOptions}
         />
       </div>
+
       {config.showTable &&
         tableData.length > 0 &&
         paginationMeta &&

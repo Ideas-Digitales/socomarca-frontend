@@ -12,6 +12,7 @@ interface SearchProps {
   initialValue?: string;
   showLabel?: boolean;
   className?: string;
+  value?: string;
 }
 
 export default function Search({

@@ -24,6 +24,11 @@ export interface TableColumn<T = any> {
   label: string;
   render?: (value: any, row: T) => React.ReactNode;
 }
+export interface SortOption {
+  key: string;
+  label: string;
+  direction: 'asc' | 'desc';
+}
 
 export interface DashboardTableLayoutProps<T = any> {
   config: DashboardTableConfig;
@@ -33,9 +38,9 @@ export interface DashboardTableLayoutProps<T = any> {
   onPageChange?: (page: number) => void;
   onDownload?: () => void;
   onFilter?: () => void;
-  onCategoryFilter?: () => void;
+  onCategoryFilter?: (selectedIds: number[]) => void;
   onProviderFilter?: () => void;
-  onSortBy?: () => void;
+  onSortBy?: (sortOptions: SortOption[]) => void;
   categoryFilterOptions?: string[];
   providerFilterOptions?: string[];
   sortByOptions?: string[];
