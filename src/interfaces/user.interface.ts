@@ -6,6 +6,9 @@ export interface User {
 }
 
 export interface LoginResponse {
-  user: User;
-  token: string;
+  user: User | null;
+  error?: {
+    message: string;
+    status: number;
+  };
 }

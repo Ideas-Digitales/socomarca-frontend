@@ -18,7 +18,7 @@ const DashboardLayout = <T extends Record<string, any> = any>({
   config,
   tableData = [],
   tableColumns,
-  paginationMeta,
+  productPaginationMeta,
   onPageChange,
   onDownload,
   onAmountFilter,
@@ -68,14 +68,14 @@ const DashboardLayout = <T extends Record<string, any> = any>({
       {/* Table Section - Solo cambiar para pasar las columnas */}
       {config.showTable &&
         tableData.length > 0 &&
-        paginationMeta &&
+        productPaginationMeta &&
         onPageChange && (
           <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full">
             <CustomTable
               title={config.tableTitle}
               data={tableData}
               columns={tableColumns}
-              paginationMeta={paginationMeta}
+              productPaginationMeta={productPaginationMeta}
               onPageChange={onPageChange}
             />
           </div>

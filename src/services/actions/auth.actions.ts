@@ -2,13 +2,15 @@
 
 import { LoginResponse } from '@/interfaces/user.interface';
 import { mockResponse } from '@/mock/login';
+import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
+import { removeDots } from '@/stores/base/utils/removeDots';
 import { IS_QA_MODE } from '@/utils/getEnv';
 
 export const fetchLogin = async (
   rut: string,
   password: string
 ): Promise<LoginResponse> => {
-  if (IS_QA_MODE || !IS_QA_MODE) {
+  if (IS_QA_MODE) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         if (rut === '12.312.312-3') {
@@ -20,24 +22,51 @@ export const fetchLogin = async (
     });
   }
 
+  const { setCookie } = await cookiesManagement();
+  const bodyRequest = {
+    rut: removeDots(rut),
+    password,
+  };
+
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ rut, password }),
-      }
-    );
+    const response = await fetch(`${process.env.BACKEND_URL}/auth/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+      body: JSON.stringify(bodyRequest),
+    });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Credenciales inválidas');
+      const errorData = await response.json();
+      return {
+        user: null,
+        error: {
+          message: errorData.message || 'Error en la autenticación',
+          status: response.status,
+        },
+      };
     }
 
     const data = await response.json();
+
+    // Almacenar el token en cookies
+
+    const token = data.token;
+    if (token) {
+      setCookie(token);
+    }
+
+    if (!token || !data.user) {
+      return {
+        user: null,
+        error: {
+          message: 'Usuario inválido',
+          status: 401,
+        },
+      };
+    }
 
     return {
       user: {
@@ -46,9 +75,9 @@ export const fetchLogin = async (
         email: data.user.email,
         rut: data.user.rut,
       },
-      token: data.token,
     };
   } catch (error) {
+    console.log('Error en la autenticación:', error);
     throw error instanceof Error
       ? error
       : new Error('Error en la autenticación');

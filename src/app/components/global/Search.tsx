@@ -40,7 +40,7 @@ export default function Search({
 
   return (
     <div className={className}>
-      <div className="mx-auto w-full">
+      <div className="mx-auto w-full max-w-7xl">
         <div className="flex py-4 px-4 sm:py-[28px] flex-col w-full">
           {showLabel && (
             <label

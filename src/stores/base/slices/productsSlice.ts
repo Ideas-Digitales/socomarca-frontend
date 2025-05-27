@@ -4,13 +4,13 @@ import {
   PaginationMeta,
   ProductsSlice,
   StoreState,
-  FiltersSlice, // ← Agregar FiltersSlice
+  FiltersSlice,
 } from '../types';
 import { fetchGetProducts } from '@/services/actions/products.actions';
 import { filterAndRankProducts } from '../utils/searchUtils';
 
 export const createProductsSlice: StateCreator<
-  StoreState & ProductsSlice & FiltersSlice, // ← Incluir FiltersSlice en el tipo
+  StoreState & ProductsSlice & FiltersSlice,
   [],
   [],
   ProductsSlice
@@ -22,13 +22,13 @@ export const createProductsSlice: StateCreator<
       filteredProducts: searchTerm
         ? filterAndRankProducts(products, searchTerm)
         : products,
-      paginationMeta: meta || get().paginationMeta,
-      paginationLinks: links || get().paginationLinks,
+      productPaginationMeta: meta || get().productPaginationMeta,
+      productPaginationLinks: links || get().productPaginationLinks,
     });
   },
 
   setFilteredProducts: (filteredProducts) => {
-    const currentMeta = get().paginationMeta;
+    const currentMeta = get().productPaginationMeta;
 
     if (!currentMeta) {
       set({ filteredProducts });
@@ -67,8 +67,8 @@ export const createProductsSlice: StateCreator<
 
     set({
       filteredProducts,
-      paginationMeta: updatedMeta,
-      paginationLinks: updatedLinks,
+      productPaginationMeta: updatedMeta,
+      productPaginationLinks: updatedLinks,
       currentPage: 1,
     });
   },
@@ -98,8 +98,8 @@ export const createProductsSlice: StateCreator<
         set({
           products: response.data.data,
           filteredProducts: response.data.data,
-          paginationMeta: response.data.meta,
-          paginationLinks: response.data.links,
+          productPaginationMeta: response.data.meta,
+          productPaginationLinks: response.data.links,
           currentPage: response.data.meta.current_page,
           isLoading: false,
         });

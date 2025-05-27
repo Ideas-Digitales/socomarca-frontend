@@ -3,7 +3,7 @@ import { SortOption } from '@/interfaces/dashboard.interface';
 
 export interface FilterState {
   selectedCategories: number[];
-  sortOptions: SortOption[];
+  sortOption: SortOption | null;
   searchTerm: string;
   selectedProviders: string[];
 }
@@ -12,7 +12,7 @@ export interface UseFiltersReturn<T> {
   filters: FilterState;
   filteredAndSortedData: T[];
   updateCategoryFilter: (selectedIds: number[]) => void;
-  updateSortOptions: (options: SortOption[]) => void;
+  updateSortOption: (option: SortOption | null) => void;
   updateSearchTerm: (term: string) => void;
   updateProviderFilter: (providers: string[]) => void;
   clearFilters: () => void;
@@ -33,7 +33,7 @@ export function useFilters<T extends Record<string, any>>({
 }: UseFiltersProps<T>): UseFiltersReturn<T> {
   const [filters, setFilters] = useState<FilterState>({
     selectedCategories: [],
-    sortOptions: [],
+    sortOption: null,
     searchTerm: '',
     selectedProviders: [],
   });
@@ -71,25 +71,21 @@ export function useFilters<T extends Record<string, any>>({
     }
 
     // Aplicar ordenamiento
-    if (filters.sortOptions.length > 0) {
+    if (filters.sortOption) {
+      const sortOption = filters.sortOption;
       result.sort((a, b) => {
-        for (const sortOption of filters.sortOptions) {
-          const aValue = a[sortOption.key as keyof T];
-          const bValue = b[sortOption.key as keyof T];
+        const aValue = a[sortOption.key as keyof T];
+        const bValue = b[sortOption.key as keyof T];
 
-          let comparison = 0;
+        let comparison = 0;
 
-          if (typeof aValue === 'string' && typeof bValue === 'string') {
-            comparison = aValue.localeCompare(bValue);
-          } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-            comparison = aValue - bValue;
-          }
-
-          if (comparison !== 0) {
-            return sortOption.direction === 'asc' ? comparison : -comparison;
-          }
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          comparison = aValue.localeCompare(bValue);
+        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+          comparison = aValue - bValue;
         }
-        return 0;
+
+        return sortOption.direction === 'asc' ? comparison : -comparison;
       });
     }
 
@@ -101,8 +97,8 @@ export function useFilters<T extends Record<string, any>>({
     setFilters((prev) => ({ ...prev, selectedCategories: selectedIds }));
   };
 
-  const updateSortOptions = (options: SortOption[]) => {
-    setFilters((prev) => ({ ...prev, sortOptions: options }));
+  const updateSortOption = (option: SortOption | null) => {
+    setFilters((prev) => ({ ...prev, sortOption: option }));
   };
 
   const updateSearchTerm = (term: string) => {
@@ -116,7 +112,7 @@ export function useFilters<T extends Record<string, any>>({
   const clearFilters = () => {
     setFilters({
       selectedCategories: [],
-      sortOptions: [],
+      sortOption: null,
       searchTerm: '',
       selectedProviders: [],
     });
@@ -126,7 +122,7 @@ export function useFilters<T extends Record<string, any>>({
     filters,
     filteredAndSortedData,
     updateCategoryFilter,
-    updateSortOptions,
+    updateSortOption,
     updateSearchTerm,
     updateProviderFilter,
     clearFilters,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 // Interface for the component props
 interface DualRangeSliderProps {
@@ -25,169 +25,150 @@ const DualRangeSlider = ({
   const validMin = !isNaN(min) && min >= 0 ? min : 0;
   const validMax = !isNaN(max) && max > validMin ? max : validMin + 1;
 
-  const [initialized, setInitialized] = useState(false);
-  const [lowerPercent, setLowerPercent] = useState(0);
-  const [upperPercent, setUpperPercent] = useState(100);
-  const [lowerValue, setLowerValue] = useState(validMin);
-  const [upperValue, setUpperValue] = useState(validMax);
+  const [lowerValue, setLowerValue] = useState(initialLower ?? validMin);
+  const [upperValue, setUpperValue] = useState(initialUpper ?? validMax);
+  const [isDragging, setIsDragging] = useState<'lower' | 'upper' | null>(null);
 
-  // Define calculation functions using useCallback to avoid dependency issues
-  const calculateLowerPercent = useCallback(
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Normalize values to ensure they're within bounds and properly stepped
+  const normalizeValue = useCallback(
     (value: number) => {
-      return (
-        ((Math.max(validMin, Math.min(value, validMax)) - validMin) /
-          Math.max(1, validMax - validMin)) *
-        100
-      );
-    },
-    [validMin, validMax]
-  );
-
-  const calculateUpperPercent = useCallback(
-    (value: number) => {
-      return (
-        ((Math.max(validMin, Math.min(value, validMax)) - validMin) /
-          Math.max(1, validMax - validMin)) *
-        100
-      );
-    },
-    [validMin, validMax]
-  );
-
-  // Convert percent to actual values - use useCallback for these functions
-  const getLowerValue = useCallback(
-    (percent: number) => {
-      // Apply step to floor the value correctly
-      const rawValue =
-        validMin + (percent / 100) * Math.max(1, validMax - validMin);
-      if (step && step > 0) {
-        return Math.floor(rawValue / step) * step;
+      const bounded = Math.max(validMin, Math.min(value, validMax));
+      if (step > 0) {
+        return Math.round(bounded / step) * step;
       }
-      return Math.floor(rawValue);
+      return bounded;
     },
     [validMin, validMax, step]
   );
 
-  const getUpperValue = useCallback(
-    (percent: number) => {
-      // Apply step to ceiling the value correctly
-      const rawValue =
-        validMin + (percent / 100) * Math.max(1, validMax - validMin);
-      if (step && step > 0) {
-        return Math.ceil(rawValue / step) * step;
-      }
-      return Math.ceil(rawValue);
+  // Convert value to percentage
+  const valueToPercent = useCallback(
+    (value: number) => {
+      return ((value - validMin) / (validMax - validMin)) * 100;
     },
-    [validMin, validMax, step]
+    [validMin, validMax]
   );
 
-  // Initialize component with correct values
+  // Convert mouse position to value
+  const getValueFromMousePosition = useCallback(
+    (clientX: number) => {
+      if (!sliderRef.current) return validMin;
+
+      const rect = sliderRef.current.getBoundingClientRect();
+      const percent = Math.max(
+        0,
+        Math.min(100, ((clientX - rect.left) / rect.width) * 100)
+      );
+      const value = validMin + (percent / 100) * (validMax - validMin);
+      return normalizeValue(value);
+    },
+    [validMin, validMax, normalizeValue]
+  );
+
+  // Handle mouse down on thumbs
+  const handleMouseDown = useCallback(
+    (thumb: 'lower' | 'upper') => (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsDragging(thumb);
+    },
+    []
+  );
+
+  // Handle mouse move
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return;
+
+      const newValue = getValueFromMousePosition(e.clientX);
+
+      if (isDragging === 'lower') {
+        const finalValue = Math.min(newValue, upperValue - step);
+        if (finalValue !== lowerValue) {
+          setLowerValue(finalValue);
+          onChange(finalValue, upperValue);
+        }
+      } else if (isDragging === 'upper') {
+        const finalValue = Math.max(newValue, lowerValue + step);
+        if (finalValue !== upperValue) {
+          setUpperValue(finalValue);
+          onChange(lowerValue, finalValue);
+        }
+      }
+    },
+    [
+      isDragging,
+      getValueFromMousePosition,
+      lowerValue,
+      upperValue,
+      step,
+      onChange,
+    ]
+  );
+
+  // Handle mouse up
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(null);
+  }, []);
+
+  // Handle track click
+  const handleTrackClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (isDragging) return;
+
+      const newValue = getValueFromMousePosition(e.clientX);
+
+      // Determine which thumb is closer
+      const lowerDistance = Math.abs(newValue - lowerValue);
+      const upperDistance = Math.abs(newValue - upperValue);
+
+      if (lowerDistance <= upperDistance) {
+        const finalValue = Math.min(newValue, upperValue - step);
+        setLowerValue(finalValue);
+        onChange(finalValue, upperValue);
+      } else {
+        const finalValue = Math.max(newValue, lowerValue + step);
+        setUpperValue(finalValue);
+        onChange(lowerValue, finalValue);
+      }
+    },
+    [
+      isDragging,
+      getValueFromMousePosition,
+      lowerValue,
+      upperValue,
+      step,
+      onChange,
+    ]
+  );
+
+  // Set up global mouse events
   useEffect(() => {
-    if (!initialized) {
-      // Get valid initial values
-      const validInitialLower =
-        initialLower !== undefined && !isNaN(initialLower)
-          ? Math.max(validMin, Math.min(initialLower, validMax))
-          : validMin;
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = 'none';
 
-      const validInitialUpper =
-        initialUpper !== undefined && !isNaN(initialUpper)
-          ? Math.min(validMax, Math.max(initialUpper, validMin))
-          : validMax;
-
-      // Calculate initial percentages
-      const initialLowerPercent = calculateLowerPercent(validInitialLower);
-      const initialUpperPercent = calculateUpperPercent(validInitialUpper);
-
-      // Set initial states
-      setLowerPercent(initialLowerPercent);
-      setUpperPercent(initialUpperPercent);
-      setLowerValue(validInitialLower);
-      setUpperValue(validInitialUpper);
-      setInitialized(true);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.userSelect = '';
+      };
     }
-  }, [
-    initialized,
-    initialLower,
-    initialUpper,
-    validMin,
-    validMax,
-    calculateLowerPercent,
-    calculateUpperPercent,
-  ]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
-  // Update when props change
+  // Update values when props change
   useEffect(() => {
-    if (initialized) {
-      // Only update if the values have actually changed
-      const newLowerValue =
-        initialLower !== undefined
-          ? Math.max(validMin, Math.min(initialLower, validMax))
-          : lowerValue;
+    const newLower = normalizeValue(initialLower ?? validMin);
+    const newUpper = normalizeValue(initialUpper ?? validMax);
 
-      const newUpperValue =
-        initialUpper !== undefined
-          ? Math.min(validMax, Math.max(initialUpper, validMin))
-          : upperValue;
+    setLowerValue(Math.min(newLower, newUpper - step));
+    setUpperValue(Math.max(newUpper, newLower + step));
+  }, [initialLower, initialUpper, validMin, validMax, normalizeValue, step]);
 
-      // Only update if values changed significantly
-      if (Math.abs(newLowerValue - lowerValue) > 0) {
-        setLowerValue(newLowerValue);
-        setLowerPercent(calculateLowerPercent(newLowerValue));
-      }
-
-      if (Math.abs(newUpperValue - upperValue) > 0) {
-        setUpperValue(newUpperValue);
-        setUpperPercent(calculateUpperPercent(newUpperValue));
-      }
-    }
-  }, [
-    initialized,
-    initialLower,
-    initialUpper,
-    validMin,
-    validMax,
-    lowerValue,
-    upperValue,
-    calculateLowerPercent,
-    calculateUpperPercent,
-  ]);
-
-  // Handle lower thumb movement
-  const handleLowerChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newPercent = parseFloat(e.target.value);
-      // Prevent thumbs from crossing (leave at least 0.5% gap)
-      if (newPercent < upperPercent - 0.5) {
-        setLowerPercent(newPercent);
-        const newValue = getLowerValue(newPercent);
-        setLowerValue(newValue);
-        onChange(newValue, upperValue);
-      }
-    },
-    [upperPercent, getLowerValue, onChange, upperValue]
-  );
-
-  // Handle upper thumb movement
-  const handleUpperChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newPercent = parseFloat(e.target.value);
-      // Prevent thumbs from crossing (leave at least 0.5% gap)
-      if (newPercent > lowerPercent + 0.5) {
-        setUpperPercent(newPercent);
-        const newValue = getUpperValue(newPercent);
-        setUpperValue(newValue);
-        onChange(lowerValue, newValue);
-      }
-    },
-    [lowerPercent, getUpperValue, onChange, lowerValue]
-  );
-
-  // Calculate the step percentage relative to the range
-  const stepPercent = useCallback(() => {
-    if (!step || step <= 0) return 0.1; // Default step percent
-    return (step / Math.max(1, validMax - validMin)) * 100;
-  }, [validMin, validMax, step]);
+  const lowerPercent = valueToPercent(lowerValue);
+  const upperPercent = valueToPercent(upperValue);
 
   return (
     <div className="w-full mb-6 mt-4">
@@ -197,52 +178,48 @@ const DualRangeSlider = ({
         <span>${formatValue(upperValue)}</span>
       </div>
 
-      {/* Slider track */}
-      <div className="relative h-2 mb-6">
+      {/* Slider container */}
+      <div
+        ref={sliderRef}
+        className="relative h-6 mb-6 cursor-pointer"
+        onClick={handleTrackClick}
+      >
         {/* Background track */}
-        <div className="absolute w-full h-2 bg-gray-200 rounded-full"></div>
+        <div className="absolute top-1/2 transform -translate-y-1/2 w-full h-2 bg-gray-200 rounded-full"></div>
 
-        {/* Colored range between thumbs */}
+        {/* Active range */}
         <div
-          className="absolute h-2 bg-lime-500 rounded-full"
+          className="absolute top-1/2 transform -translate-y-1/2 h-2 bg-lime-500 rounded-full pointer-events-none"
           style={{
             left: `${lowerPercent}%`,
             width: `${upperPercent - lowerPercent}%`,
           }}
-        ></div>
-
-        {/* Thumbs */}
-        <div
-          className="absolute w-4 h-4 bg-white border-2 border-lime-500 rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/4 z-20"
-          style={{ left: `${lowerPercent}%` }}
-        ></div>
-
-        <div
-          className="absolute w-4 h-4 bg-white border-2 border-lime-500 rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/4 z-20"
-          style={{ left: `${upperPercent}%` }}
-        ></div>
-
-        {/* Range inputs (invisible but handle the interactions) */}
-        <input
-          type="range"
-          min="0"
-          max="100"
-          step={stepPercent()}
-          value={lowerPercent}
-          onChange={handleLowerChange}
-          className="absolute w-full h-2 opacity-0 cursor-pointer z-10"
         />
 
-        <input
-          type="range"
-          min="0"
-          max="100"
-          step={stepPercent()}
-          value={upperPercent}
-          onChange={handleUpperChange}
-          className="absolute w-full h-2 opacity-0 cursor-pointer z-10"
+        {/* Lower thumb */}
+        <div
+          className={`absolute top-1/2 w-5 h-5 bg-white border-2 border-lime-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-md cursor-grab z-30 ${
+            isDragging === 'lower'
+              ? 'cursor-grabbing scale-110'
+              : 'hover:scale-105'
+          } transition-transform`}
+          style={{ left: `${lowerPercent}%` }}
+          onMouseDown={handleMouseDown('lower')}
+        />
+
+        {/* Upper thumb */}
+        <div
+          className={`absolute top-1/2 w-5 h-5 bg-white border-2 border-lime-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-md cursor-grab z-40 ${
+            isDragging === 'upper'
+              ? 'cursor-grabbing scale-110'
+              : 'hover:scale-105'
+          } transition-transform`}
+          style={{ left: `${upperPercent}%` }}
+          onMouseDown={handleMouseDown('upper')}
         />
       </div>
+
+      {/* Min/Max labels */}
     </div>
   );
 };

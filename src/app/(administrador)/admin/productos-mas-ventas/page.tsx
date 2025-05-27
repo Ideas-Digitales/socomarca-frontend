@@ -24,7 +24,7 @@ export default function ProductosMasVentas() {
     venta: producto.monto,
   }));
 
-  const { paginatedItems, paginationMeta, changePage } =
+  const { paginatedItems, productPaginationMeta, changePage } =
     usePagination(productosFixed);
 
   const config: DashboardConfig = {
@@ -63,7 +63,7 @@ export default function ProductosMasVentas() {
       config={config}
       tableData={paginatedItems}
       tableColumns={productosVentasColumns}
-      paginationMeta={paginationMeta}
+      productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
       onDownload={() => console.log('Descargando clientes...')}
       onCategoryFilter={() => console.log('Filtrar por categorias...')}

@@ -34,13 +34,13 @@ export interface DashboardTableLayoutProps<T = any> {
   config: DashboardTableConfig;
   tableData?: T[];
   tableColumns?: TableColumn<T>[];
-  paginationMeta?: PaginationMeta;
+  productPaginationMeta?: PaginationMeta;
   onPageChange?: (page: number) => void;
   onDownload?: () => void;
   onFilter?: () => void;
   onCategoryFilter?: (selectedIds: number[]) => void;
   onProviderFilter?: () => void;
-  onSortBy?: (sortOptions: SortOption[]) => void;
+  onSortBy?: (option: SortOption | null) => void;
   categoryFilterOptions?: string[];
   providerFilterOptions?: string[];
   sortByOptions?: string[];
@@ -50,7 +50,7 @@ export interface DashboardLayoutProps<T = any> {
   config: DashboardConfig;
   tableData?: T[];
   tableColumns?: TableColumn<T>[];
-  paginationMeta?: PaginationMeta;
+  productPaginationMeta?: PaginationMeta;
   onPageChange?: (page: number) => void;
   onDownload?: () => void;
   onAmountFilter?: () => void;

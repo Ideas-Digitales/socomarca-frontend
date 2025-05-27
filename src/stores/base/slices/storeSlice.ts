@@ -23,8 +23,8 @@ export const createStoreSlice: StateCreator<
     set({
       products: [],
       filteredProducts: [],
-      paginationMeta: null,
-      paginationLinks: null,
+      productPaginationMeta: null,
+      productPaginationLinks: null,
       currentPage: 1,
     });
   },

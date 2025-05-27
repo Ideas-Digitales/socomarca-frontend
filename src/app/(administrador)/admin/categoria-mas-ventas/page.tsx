@@ -27,7 +27,7 @@ export default function CategoriasMasVentas() {
     })
   );
 
-  const { paginatedItems, paginationMeta, changePage } =
+  const { paginatedItems, productPaginationMeta, changePage } =
     usePagination(categoriasConRanking);
 
   const config: DashboardConfig = {
@@ -65,7 +65,7 @@ export default function CategoriasMasVentas() {
       config={config}
       tableData={paginatedItems}
       tableColumns={categoriasVentasColumns}
-      paginationMeta={paginationMeta}
+      productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
       onDownload={() => console.log('Descargar categorías...')}
       onCategoryFilter={() => console.log('Filtrar por categoría...')}

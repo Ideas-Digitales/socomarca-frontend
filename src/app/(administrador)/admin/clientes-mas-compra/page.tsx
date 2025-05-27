@@ -24,7 +24,7 @@ export default function ClientesMasCompra() {
     acciones: cliente.acciones,
   }));
 
-  const { paginatedItems, paginationMeta, changePage } =
+  const { paginatedItems, productPaginationMeta, changePage } =
     usePagination(clientesFixed);
 
   const config: DashboardConfig = {
@@ -67,7 +67,7 @@ export default function ClientesMasCompra() {
       config={config}
       tableData={paginatedItems}
       tableColumns={clientesColumns}
-      paginationMeta={paginationMeta}
+      productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
       onDownload={() => console.log('Descargando clientes...')}
       onAmountFilter={() => console.log('Filtrar por montos...')}

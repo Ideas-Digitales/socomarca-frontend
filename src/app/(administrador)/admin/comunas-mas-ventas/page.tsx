@@ -10,7 +10,7 @@ import { useState } from 'react';
 export default function ComunasMasVentas() {
   const [comunasVenta] = useState(() => generarComunasVentas(20));
 
-  const { changePage, paginatedItems, paginationMeta } =
+  const { changePage, paginatedItems, productPaginationMeta } =
     usePagination(comunasVenta);
 
   const config: DashboardConfig = {
@@ -41,7 +41,7 @@ export default function ComunasMasVentas() {
       config={config}
       tableData={paginatedItems}
       tableColumns={comunasVentasColumns}
-      paginationMeta={paginationMeta}
+      productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
       onDownload={() => console.log('Descargando clientes...')}
       onAmountFilter={() => console.log('Filtrar por montos...')}

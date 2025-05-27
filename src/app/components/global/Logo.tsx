@@ -37,6 +37,7 @@ export default function Logo({
       onClick={onClick}
       priority={true}
       quality={100}
+      unoptimized={true}
     />
   );
 

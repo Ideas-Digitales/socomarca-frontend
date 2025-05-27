@@ -8,11 +8,11 @@ interface Props {
   onFilter?: () => void;
   onCategoryFilter?: (selectedIds: number[]) => void;
   onProviderFilter?: () => void;
-  onSortBy?: (sortOptions: SortOption[]) => void;
+  onSortBy?: (option: SortOption | null) => void;
   categories: Category[];
   selectedCategories?: number[];
   tableColumns?: TableColumn<any>[];
-  selectedSortOptions?: SortOption[];
+  selectedSortOption?: SortOption | null;
 }
 
 export default function FilterOptions({
@@ -23,7 +23,7 @@ export default function FilterOptions({
   categories = [],
   selectedCategories = [],
   tableColumns = [],
-  selectedSortOptions = [],
+  selectedSortOption = null,
 }: Props) {
   return (
     <div className="w-full justify-end flex px-4">
@@ -51,7 +51,7 @@ export default function FilterOptions({
           {onSortBy && tableColumns && tableColumns.length > 0 && (
             <SortDropdown
               tableColumns={tableColumns}
-              selectedOptions={selectedSortOptions}
+              selectedOption={selectedSortOption}
               onSelectionChange={onSortBy}
               className="w-full md:max-w-[134px] md:w-full"
             />
@@ -60,7 +60,7 @@ export default function FilterOptions({
 
         {onFilter && (
           <button
-            className="w-full md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium cursor-pointer hover:bg-gray-100 transition-colors"
+            className="w-full md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium"
             onClick={onFilter}
           >
             Filtrar

@@ -9,64 +9,46 @@ import {
 import useStore from '@/stores/base';
 import { useMemo } from 'react';
 
-interface Producto {
+interface Category {
   id: string;
-  producto: string;
-  SKU: string;
   categoria: string;
-  proveedor: string;
-  precio_unitario: number;
-  stock: number;
+  rut: string;
+  createdAt: string;
 }
 
-export default function ProductsAdmin() {
-  const { categories, products, productPaginationMeta, setProductPage } = useStore();
+export default function CategoriesAdmin() {
+  const { categories } = useStore();
 
   // Transformar datos una sola vez
   const productosFixed = useMemo(
     () =>
-      products.map((producto) => ({
-        id: String(producto.id),
-        producto: producto.name,
-        SKU: `SKU-${producto.id}`,
-        categoria: `Categoría ${Math.ceil(Math.random() * 10)}`,
-        proveedor: `Proveedor ${Math.ceil(Math.random() * 5)}`,
-        precio_unitario: producto.price,
-        stock: Math.floor(Math.random() * 1000),
+      categories.map((category) => ({
+        id: String(category.id),
+        categoria: category.name,
+        rut: `SKU-${category.id}`,
+        createdAt: `Categoría ${Math.ceil(Math.random() * 10)}`,
       })),
-    [products]
+    [categories]
   );
 
   // Hook para manejar filtros (sin paginación)
   const { filters, updateCategoryFilter, updateSortOption, updateSearchTerm } =
     useFilters({
       data: productosFixed,
-      searchKeys: ['producto', 'SKU', 'categoria', 'proveedor'],
+      searchKeys: ['categoria'],
     });
 
-  // Manejar cambio de página usando el store
-  const handlePageChange = (page: number) => {
-    setProductPage(page);
-  };
-
   const config: DashboardTableConfig = {
-    title: 'Productos',
+    title: 'Categorías',
     showTable: true,
-    tableTitle: 'Productos',
+    tableTitle: 'Categorías',
   };
 
-  const productosColumns: TableColumn<Producto>[] = [
+  const categoriasColumns: TableColumn<Category>[] = [
     { key: 'id', label: 'ID' },
-    { key: 'producto', label: 'Producto' },
-    { key: 'SKU', label: 'SKU' },
     { key: 'categoria', label: 'Categoría' },
-    { key: 'proveedor', label: 'Proveedor' },
-    {
-      key: 'precio_unitario',
-      label: 'Precio Unitario',
-      render: (value: number) => `$${value.toLocaleString()}`,
-    },
-    { key: 'stock', label: 'Stock' },
+    { key: 'rut', label: 'Rut (Path)' },
+    { key: 'createdAt', label: 'Fecha de creación' },
   ];
 
   const handleProviderFilter = () => {
@@ -81,9 +63,7 @@ export default function ProductsAdmin() {
     <DashboardTableLayout
       config={config}
       tableData={productosFixed}
-      tableColumns={productosColumns}
-      productPaginationMeta={productPaginationMeta ?? undefined}
-      onPageChange={handlePageChange}
+      tableColumns={categoriasColumns}
       onFilter={handleFilter}
       onCategoryFilter={updateCategoryFilter}
       onProviderFilter={handleProviderFilter}

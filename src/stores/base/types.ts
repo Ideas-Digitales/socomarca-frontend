@@ -124,8 +124,8 @@ export interface StoreState {
   cartProducts: ProductToBuy[];
 
   // Paginación
-  paginationMeta: PaginationMeta | null;
-  paginationLinks: PaginationLinks | null;
+  productPaginationMeta: PaginationMeta | null;
+  productPaginationLinks: PaginationLinks | null;
   currentPage: number;
 
   // Sidebar Navigation
@@ -178,7 +178,7 @@ export interface CartSlice {
 
 // Acciones de paginación
 export interface PaginationSlice {
-  setPage: (page: number) => void;
+  setProductPage: (page: number) => void;
   nextPage: () => void;
   prevPage: () => void;
 }

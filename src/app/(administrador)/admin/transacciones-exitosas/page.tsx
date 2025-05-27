@@ -33,7 +33,7 @@ export default function TransaccionesExitosas() {
     })
   );
 
-  const { paginatedItems, paginationMeta, changePage } =
+  const { paginatedItems, productPaginationMeta, changePage } =
     usePagination(transaccionesFixed);
 
   const config: DashboardConfig = {
@@ -86,7 +86,7 @@ export default function TransaccionesExitosas() {
       config={config}
       tableData={paginatedItems}
       tableColumns={transaccionesColumns}
-      paginationMeta={paginationMeta}
+      productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
       onDownload={() => console.log('Descargando transacciones...')}
       onAmountFilter={() => console.log('Filtrar por montos...')}

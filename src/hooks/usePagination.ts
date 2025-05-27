@@ -10,7 +10,7 @@ export function usePagination<T>(items: T[], itemsPerPage: number = 10) {
     const endIndex = startIndex + itemsPerPage;
     const paginatedItems = items.slice(startIndex, endIndex);
 
-    const paginationMeta: PaginationMeta = {
+    const productPaginationMeta: PaginationMeta = {
       current_page: currentPage,
       from: startIndex + 1,
       last_page: totalPages,
@@ -23,7 +23,7 @@ export function usePagination<T>(items: T[], itemsPerPage: number = 10) {
 
     return {
       paginatedItems,
-      paginationMeta,
+      productPaginationMeta,
       totalPages,
     };
   }, [items, itemsPerPage, currentPage]);

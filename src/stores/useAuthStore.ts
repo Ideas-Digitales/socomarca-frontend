@@ -36,6 +36,10 @@ const useAuthStore = create<AuthStoreState>((set) => ({
     try {
       const response = await fetchLogin(rut, password);
 
+      if (!response.user) {
+        return { success: false, error: 'Credenciales inválidas' };
+      }
+
       set({
         isLoggedIn: true,
         user: {
@@ -44,7 +48,6 @@ const useAuthStore = create<AuthStoreState>((set) => ({
           email: response.user.email,
           rut: response.user.rut,
         },
-        token: response.token,
       });
 
       return { success: true };
@@ -65,6 +68,7 @@ const useAuthStore = create<AuthStoreState>((set) => ({
       throw new Error(error.message || 'Error desconocido');
     }
   },
+  // Función para cerrar sesión
   logout: () =>
     set({
       isLoggedIn: false,

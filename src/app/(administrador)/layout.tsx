@@ -24,12 +24,12 @@ export default function AdministradorLayout({
   const [isMounted, setIsMounted] = useState(false);
 
   useInitMobileDetection();
-  const { isTablet, fetchCategories } = useStore();
+  const { isTablet, fetchCategories, fetchProducts } = useStore();
 
   useEffect(() => {
-    // Cargar categorías al montar el componente
+    fetchProducts();
     fetchCategories();
-  }, [fetchCategories]);
+  }, [fetchProducts, fetchCategories]);
 
   // Efecto para manejar el estado de montaje del componente
   useEffect(() => {

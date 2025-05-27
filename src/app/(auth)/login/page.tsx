@@ -28,34 +28,33 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-   try {
-  const result = await login({ rut, password });
-  console.log('Login result:', result);
+    try {
+      const result = await login({ rut, password });
 
-  if (result.success) {
-    router.push('/');
-  } else {
-    const errorMessage =
-      result.error ||
-      'Error al iniciar sesión';
+      if (result.success) {
+        router.push('/');
+      } else {
+        const errorMessage = result.error || 'Error al iniciar sesión';
 
-    setError(errorMessage);
-  }
-} catch (error: any) {
-  // Si el error es una respuesta del servidor
-  if (error?.response?.status === 422) {
-    const data = error.response.data;
-    const rutError = data?.errors?.rut?.[0];
+        setError(errorMessage);
+      }
+    } catch (error: any) {
+      // Si el error es una respuesta del servidor
+      if (error?.response?.status === 422) {
+        const data = error.response.data;
+        const rutError = data?.errors?.rut?.[0];
 
-    setError(rutError || data?.message || 'Las credenciales ingresadas no son válidas');
-  } else {
-    setError('Las credenciales ingresadas no son válidas');
-  }
-
-} finally {
-  setIsLoading(false);
-}
-
+        setError(
+          rutError ||
+            data?.message ||
+            'Las credenciales ingresadas no son válidas'
+        );
+      } else {
+        setError('Las credenciales ingresadas no son válidas');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -9,7 +9,7 @@ import FilterOptions from './FilterOptions';
 interface ExtendedDashboardTableLayoutProps<T>
   extends DashboardTableLayoutProps<T> {
   selectedCategories?: number[];
-  selectedSortOptions?: SortOption[];
+  selectedSortOption?: SortOption | null;
   onSearch?: (searchTerm: string) => void;
   onClearSearch?: () => void;
 }
@@ -18,7 +18,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   config,
   tableData = [],
   tableColumns,
-  paginationMeta,
+  productPaginationMeta,
   onPageChange,
   onFilter,
   onCategoryFilter,
@@ -26,7 +26,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onSortBy,
   categories,
   selectedCategories = [],
-  selectedSortOptions = [],
+  selectedSortOption = null,
   onSearch,
   onClearSearch,
 }: ExtendedDashboardTableLayoutProps<T>) => {
@@ -59,24 +59,21 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           categories={categories}
           selectedCategories={selectedCategories}
           tableColumns={tableColumns}
-          selectedSortOptions={selectedSortOptions}
+          selectedSortOption={selectedSortOption}
         />
       </div>
 
-      {config.showTable &&
-        tableData.length > 0 &&
-        paginationMeta &&
-        onPageChange && (
-          <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full">
-            <CustomTable
-              title={config.tableTitle}
-              data={tableData}
-              columns={tableColumns}
-              paginationMeta={paginationMeta}
-              onPageChange={onPageChange}
-            />
-          </div>
-        )}
+      {config.showTable && tableData.length > 0 && (
+        <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full">
+          <CustomTable
+            title={config.tableTitle}
+            data={tableData}
+            columns={tableColumns}
+            productPaginationMeta={productPaginationMeta}
+            onPageChange={onPageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };
