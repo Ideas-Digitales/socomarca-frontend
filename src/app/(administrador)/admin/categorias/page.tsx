@@ -71,7 +71,7 @@ export default function CategoriesAdmin() {
   return (
     <DashboardTableLayout
       config={config}
-      tableData={filteredAndSortedData} // Usar datos filtrados y ordenados
+      tableData={filteredAndSortedData}
       tableColumns={categoriasColumns}
       onFilter={handleFilter}
       onCategoryFilter={updateCategoryFilter}

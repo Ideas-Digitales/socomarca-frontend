@@ -74,6 +74,7 @@ export default function Sidebar() {
             width: '50px',
             height: '50px',
           }}
+          unoptimized
         />
         <span className="text-xs w-full">
           Hola <br />

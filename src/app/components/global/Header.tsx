@@ -14,9 +14,9 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import Logo from './Logo';
 
 const imagoLogoUrl = '/assets/global/imagotipo.png';
+const logoUrl = '/assets/global/logo-header.png';
 
 interface Props {
   carro: Product[];
@@ -118,16 +118,20 @@ export default function Header({ carro }: Props) {
                 alt="Imagologo"
                 onClick={() => router.push('/')}
                 className="cursor-pointer"
+                unoptimized
               />
             )}
           </div>
           {!isTablet && (
-            <Logo
-              width={368}
-              height={66}
-              className="hidden sm:block py-[4px] cursor-pointer"
-              href="/"
-            />
+            <Link href="/">
+              <img
+                src={logoUrl}
+                width={368}
+                height={66}
+                style={{ width: '368px', height: '66px' }}
+                className="hidden sm:block py-[4px] cursor-pointer"
+              />
+            </Link>
           )}
           <div className="flex items-end gap-4">
             <div className="flex flex-row gap-2 sm:gap-4">
@@ -186,6 +190,7 @@ export default function Header({ carro }: Props) {
             alt="Imagologo"
             onClick={() => router.push('/')}
             className="cursor-pointer"
+            unoptimized
           />
           <button
             onClick={toggleMobileMenu}
