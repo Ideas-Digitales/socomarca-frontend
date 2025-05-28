@@ -52,6 +52,38 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
 
   return (
     <div className="flex flex-col w-full bg-white">
+      {/* FILTROS SIEMPRE ARRIBA - Primera sección */}
+      <div className="flex flex-col justify-between items-center h-full w-full max-w-7xl px-4 md:px-8 py-4">
+        {onSearch && (
+          <Search
+            showLabel={false}
+            className="w-full"
+            onSearch={handleSearch}
+            onClear={handleClearSearch}
+            placeholder="Busca productos ahora"
+          />
+        )}
+
+        <FilterOptions
+          onCommuneFilter={onCommuneFilter}
+          selectedCommunes={selectedCommunes}
+          onFilter={onFilter}
+          onCategoryFilter={onCategoryFilter}
+          onProviderFilter={onProviderFilter}
+          onSortBy={onSortBy}
+          categories={categories}
+          selectedCategories={selectedCategories}
+          tableColumns={tableColumns}
+          selectedSortOption={selectedSortOption}
+          communes={communes}
+          onAmountFilter={onAmountFilter}
+          amountValue={amountValue}
+          onClientFilter={onClientFilter}
+          clients={clients}
+          selectedClients={selectedClients}
+        />
+      </div>
+
       {/* Header Section con DatePicker y Gráficos (si se especifica) */}
       {(showDatePicker || chartConfig?.showMetricsChart) && (
         <div className="flex flex-col md:flex-row py-7 px-4 md:px-12 items-center gap-7">
@@ -66,16 +98,6 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           {/* Gráfico principal con métricas */}
           {chartConfig?.showMetricsChart && (
             <div className="flex flex-col items-start gap-4 flex-1-0-0 w-full">
-              <FilterOptions
-                onClientFilter={onClientFilter}
-                clients={clients}
-                selectedClients={selectedClients}
-                onCategoryFilter={onCategoryFilter}
-                onAmountFilter={onAmountFilter}
-                amountValue={amountValue}
-                onFilter={onFilter}
-              />
-
               <MetricsCard metrics={chartConfig.metrics || []}>
                 <DynamicLineChart />
               </MetricsCard>
@@ -100,36 +122,6 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           </div>
         </div>
       )}
-
-      {/* Sección de búsqueda y filtros para tabla */}
-      <div className="flex flex-col justify-between items-center h-full w-full max-w-7xl px-4 md:px-8">
-        <Search
-          showLabel={false}
-          className="w-full"
-          onSearch={handleSearch}
-          onClear={handleClearSearch}
-          placeholder="Busca productos ahora"
-        />
-
-        <FilterOptions
-          onCommuneFilter={onCommuneFilter}
-          selectedCommunes={selectedCommunes}
-          onFilter={onFilter}
-          onCategoryFilter={onCategoryFilter}
-          onProviderFilter={onProviderFilter}
-          onSortBy={onSortBy}
-          categories={categories}
-          selectedCategories={selectedCategories}
-          tableColumns={tableColumns}
-          selectedSortOption={selectedSortOption}
-          communes={communes}
-          onAmountFilter={onAmountFilter}
-          amountValue={amountValue}
-          onClientFilter={onClientFilter}
-          clients={clients}
-          selectedClients={selectedClients}
-        />
-      </div>
 
       {/* Sección de tabla */}
       {config.showTable && tableData.length > 0 && (

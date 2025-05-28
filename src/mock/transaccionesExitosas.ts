@@ -14,8 +14,6 @@ export interface CategoriaVenta {
   venta: number;
 }
 
-
-
 const categoriasProducto = [
   'Bebidas',
   'Snacks',

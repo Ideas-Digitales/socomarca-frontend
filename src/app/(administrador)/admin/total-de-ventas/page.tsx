@@ -41,8 +41,8 @@ export default function TotalDeVentas() {
 
   // Configuración de gráficos
   const chartConfig: ChartConfig = {
-    showMetricsChart: true, // Mostrar el gráfico principal con métricas
-    showBottomChart: true, // Mostrar el gráfico inferior
+    showMetricsChart: true,
+    showBottomChart: true,
     metrics: metrics,
     bottomChartTitle: 'Total de ingresos',
     bottomChartValue: '20.000.000',
@@ -75,11 +75,6 @@ export default function TotalDeVentas() {
     // Aquí puedes implementar la lógica de filtros generales
   };
 
-  const handleSearch = (searchTerm: string) => {
-    console.log('Buscar:', searchTerm);
-    // Implementar lógica de búsqueda
-  };
-
   const handleClearSearch = () => {
     console.log('Limpiar búsqueda');
     // Implementar lógica para limpiar búsqueda
@@ -100,7 +95,6 @@ export default function TotalDeVentas() {
       selectedClients={selectedClients}
       amountValue={amountFilter}
       // Funciones de búsqueda
-      onSearch={handleSearch}
       onClearSearch={handleClearSearch}
     />
   );

@@ -8,7 +8,7 @@ interface AmountInputProps {
 export default function AmountFilter({
   value,
   onChange,
-  placeholder = 'Monto',
+  placeholder = 'Montos',
   className = '',
 }: AmountInputProps) {
   return (

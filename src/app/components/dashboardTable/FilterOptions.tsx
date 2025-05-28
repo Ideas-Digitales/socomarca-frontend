@@ -78,8 +78,8 @@ export default function FilterOptions({
   };
 
   return (
-    <div className="w-full justify-end flex px-4">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
+    <div className="w-full justify-end flex">
+      <div className="flex flex-col md:flex-row items-center gap-3 w-full px-4">
         <div className="flex items-center gap-3 flex-1-0-0 flex-col md:flex-row w-full">
           {onAmountFilter && (
             <AmountFilter
