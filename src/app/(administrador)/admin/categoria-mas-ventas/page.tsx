@@ -1,6 +1,6 @@
 'use client';
 
-import DashboardLayout from '@/app/components/dashboard/DashboardLayout';
+import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import { usePagination } from '@/hooks/usePagination';
 import { DashboardConfig, TableColumn } from '@/interfaces/dashboard.interface';
 import {
@@ -61,13 +61,12 @@ export default function CategoriasMasVentas() {
   ];
 
   return (
-    <DashboardLayout
+    <DashboardTableLayout
       config={config}
       tableData={paginatedItems}
       tableColumns={categoriasVentasColumns}
       productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
-      onDownload={() => console.log('Descargar categorías...')}
       onCategoryFilter={() => console.log('Filtrar por categoría...')}
       onClientFilter={() => console.log('Filtrar por cliente...')}
       onFilter={() => console.log('Aplicar filtros...')}

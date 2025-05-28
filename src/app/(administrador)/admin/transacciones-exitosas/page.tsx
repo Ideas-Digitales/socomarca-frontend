@@ -1,6 +1,6 @@
 'use client';
 
-import DashboardLayout from '@/app/components/dashboard/DashboardLayout';
+import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import { usePagination } from '@/hooks/usePagination';
 import { DashboardConfig, TableColumn } from '@/interfaces/dashboard.interface';
 import {
@@ -82,13 +82,12 @@ export default function TransaccionesExitosas() {
   ];
 
   return (
-    <DashboardLayout
+    <DashboardTableLayout
       config={config}
       tableData={paginatedItems}
       tableColumns={transaccionesColumns}
       productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
-      onDownload={() => console.log('Descargando transacciones...')}
       onAmountFilter={() => console.log('Filtrar por montos...')}
       onClientFilter={() => console.log('Filtrar por cliente...')}
       onFilter={() => console.log('Aplicar filtros...')}

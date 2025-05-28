@@ -3,10 +3,13 @@
 import DayPickerComponent from '@/app/components/admin/DayPickerComponent';
 import LineChartContent from '@/app/components/admin/LineChartContent';
 import DescargarDatos from '@/app/components/admin/DescargarDatos';
-import { ChevronDownIcon, MagnifyingGlassIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
+import {
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
+  ShoppingCartIcon,
+} from '@heroicons/react/24/outline';
 
 export default function VistaResumenPorFecha() {
-
   const metricas = [
     { label: 'Total fallidas', value: 30, color: 'text-lime-500' },
     { label: 'Total canceladas', value: 15, color: 'text-slate-400' },
@@ -20,46 +23,32 @@ export default function VistaResumenPorFecha() {
         </div>
 
         <div className="flex flex-col gap-3 flex-1">
-             <div className="flex flex-col md:flex-row py-7 md:px-12 items-center gap-7 justify-end">
-        {/* Filtros deshabilitados temporalmente por falta de handlers */}
+          <div className="flex flex-col md:flex-row py-7 md:px-12 items-center gap-7 justify-end">
+            {/* Filtros deshabilitados temporalmente por falta de handlers */}
 
-          <button
-            className="w-full md:w-1/3 bg-gray-100 flex justify-between items-start p-[10px] h-10 text-gray-500 text-md"
-          
-          >
-            Categorías
-            <ChevronDownIcon width={20} height={20} />
-          </button>
-   
+            <button className="w-full md:w-1/3 bg-gray-100 flex justify-between items-start p-[10px] h-10 text-gray-500 text-md">
+              Categorías
+              <ChevronDownIcon width={20} height={20} />
+            </button>
 
-       
-          <button
-            className="w-full md:w-1/3 bg-gray-100 flex justify-between items-start p-[10px] h-10 text-gray-500 text-md"
-          
-          >
-            Cliente
-            <MagnifyingGlassIcon width={20} height={20} />
-          </button>
-        
+            <button className="w-full md:w-1/3 bg-gray-100 flex justify-between items-start p-[10px] h-10 text-gray-500 text-md">
+              Cliente
+              <MagnifyingGlassIcon width={20} height={20} />
+            </button>
 
-   
-          <button
-            className="w-full md:w-1/3 py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium"
-         
-          >
-            Filtrar
-          </button>
-       
+            <button className="w-full md:w-1/3 py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium">
+              Filtrar
+            </button>
+
             <DescargarDatos />
           </div>
 
           <div className="bg-slate-50 rounded-md px-4 py-3 mx-12">
-         <div className="flex items-center gap-2 text-sm text-slate-800">
-  <ShoppingCartIcon className="w-5 h-5 text-lime-500" />
-  <span className="font-medium">Carrito creado</span>
-  <strong>#20</strong>
-</div>
-
+            <div className="flex items-center gap-2 text-sm text-slate-800">
+              <ShoppingCartIcon className="w-5 h-5 text-lime-500" />
+              <span className="font-medium">Carrito creado</span>
+              <strong>#20</strong>
+            </div>
           </div>
         </div>
       </div>

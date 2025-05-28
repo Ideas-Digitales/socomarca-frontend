@@ -1,7 +1,7 @@
 'use client';
 
 import { TableColumn } from '@/app/components/admin/CustomTable';
-import DashboardLayout from '@/app/components/dashboard/DashboardLayout';
+import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import { usePagination } from '@/hooks/usePagination';
 import { DashboardConfig } from '@/interfaces/dashboard.interface';
 import { ComunaVenta, generarComunasVentas } from '@/mock/comunasVentas';
@@ -37,13 +37,12 @@ export default function ComunasMasVentas() {
   ];
 
   return (
-    <DashboardLayout
+    <DashboardTableLayout
       config={config}
       tableData={paginatedItems}
       tableColumns={comunasVentasColumns}
       productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
-      onDownload={() => console.log('Descargando clientes...')}
       onAmountFilter={() => console.log('Filtrar por montos...')}
       onClientFilter={() => console.log('Filtrar por cliente...')}
       onFilter={() => console.log('Aplicar filtros...')}
