@@ -10,6 +10,7 @@ interface ExtendedDashboardTableLayoutProps<T>
   extends DashboardTableLayoutProps<T> {
   selectedCategories?: number[];
   selectedSortOption?: SortOption | null;
+  selectedCommunes?: string[];
   onSearch?: (searchTerm: string) => void;
   onClearSearch?: () => void;
 }
@@ -27,8 +28,11 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   categories,
   selectedCategories = [],
   selectedSortOption = null,
+  selectedCommunes = [],
   onSearch,
   onClearSearch,
+  onCommuneFilter,
+  communes,
 }: ExtendedDashboardTableLayoutProps<T>) => {
   const handleSearch = (searchTermValue: string) => {
     console.log('Searching for:', searchTermValue);
@@ -52,6 +56,8 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
         />
 
         <FilterOptions
+          onCommuneFilter={onCommuneFilter}
+          selectedCommunes={selectedCommunes}
           onFilter={onFilter}
           onCategoryFilter={onCategoryFilter}
           onProviderFilter={onProviderFilter}
@@ -60,6 +66,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           selectedCategories={selectedCategories}
           tableColumns={tableColumns}
           selectedSortOption={selectedSortOption}
+          communes={communes}
         />
       </div>
 

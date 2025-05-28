@@ -3,6 +3,8 @@ import { SortOption, TableColumn } from '@/interfaces/dashboard.interface';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import CategoryDropdown from '../filters/CategoryDropdown';
 import SortDropdown from '../filters/SortDropdown';
+import CommuneDropdown from '../filters/CommuneDropdown';
+import { Comuna } from '@/mock/comunasVentas';
 
 interface Props {
   onFilter?: () => void;
@@ -13,6 +15,9 @@ interface Props {
   selectedCategories?: number[];
   tableColumns?: TableColumn<any>[];
   selectedSortOption?: SortOption | null;
+  onCommuneFilter?: (selectedIds: string[]) => void;
+  selectedCommunes?: string[];
+  communes?: Comuna[];
 }
 
 export default function FilterOptions({
@@ -24,6 +29,9 @@ export default function FilterOptions({
   selectedCategories = [],
   tableColumns = [],
   selectedSortOption = null,
+  onCommuneFilter,
+  selectedCommunes = [],
+  communes = [],
 }: Props) {
   return (
     <div className="w-full justify-end flex px-4">
@@ -46,6 +54,15 @@ export default function FilterOptions({
               Distribuidor/Proveedor
               <MagnifyingGlassIcon width={20} height={20} />
             </button>
+          )}
+
+          {onCommuneFilter && (
+            <CommuneDropdown
+              communes={communes}
+              selectedIds={selectedCommunes}
+              onSelectionChange={onCommuneFilter}
+              className="w-full md:max-w-[120px] md:w-full"
+            />
           )}
 
           {onSortBy && tableColumns && tableColumns.length > 0 && (

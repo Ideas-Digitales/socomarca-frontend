@@ -1,5 +1,6 @@
 import { PaginationMeta } from '@/stores/base/types';
 import { Category } from './category.interface';
+import { Comuna } from '@/mock/comunasVentas';
 
 export interface MetricCard {
   label: string;
@@ -45,6 +46,8 @@ export interface DashboardTableLayoutProps<T = any> {
   providerFilterOptions?: string[];
   sortByOptions?: string[];
   categories: Category[];
+  onCommuneFilter?: (selectedIds: string[]) => void;
+  communes?: Comuna[];
 }
 export interface DashboardLayoutProps<T = any> {
   config: DashboardConfig;
