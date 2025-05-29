@@ -23,7 +23,7 @@ export default function AuthView({
       }}
     >
       <div className="flex max-w-[704px] w-full py-[36px] px-6 md:px-[128px] flex-col gap-6 justify-center items-center rounded-[24px] bg-white h-full">
-        {showLogo && <Image src={logoUrl} alt="Logo" width={221} height={40} />}
+        {showLogo && <Image src={logoUrl} alt="Logo" width={221} height={40} unoptimized />}
         <div className="text-center">
           {title.length > 0 && (
             <h1 className="text-[36px] font-bold text-[#1E1E2F]">{title}</h1>

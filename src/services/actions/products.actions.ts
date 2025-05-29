@@ -5,7 +5,8 @@ import {
   generateProducts,
   paginateProducts,
 } from '@/mock/products';
-import { BACKEND_URL, IS_QA_MODE, QA_JWT } from '@/utils/getEnv';
+import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
+import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 
 interface ProductsMock {
   data: Product[];
@@ -130,13 +131,24 @@ export const fetchGetProducts = async ({
         error: null,
       };
     } else {
+      const { getCookie } = await cookiesManagement();
+      const cookie = getCookie('token');
+
+      if (!cookie) {
+        return {
+          ok: false,
+          data: null,
+          error: 'Unauthorized: No token provided',
+        };
+      }
+
       const response = await fetch(
         `${BACKEND_URL}/products/?page=${page}&size=${size}`,
         {
           method: 'GET',
           headers: {
             Accept: 'application/json',
-            Authorization: `Bearer ${QA_JWT}`,
+            Authorization: `Bearer ${cookie}`,
           },
         }
       );

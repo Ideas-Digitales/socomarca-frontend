@@ -1,7 +1,8 @@
 'use server';
 
 import { mockBrands } from '@/mock/brands';
-import { BACKEND_URL, IS_QA_MODE, QA_JWT } from '@/utils/getEnv';
+import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
+import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 
 export const fetchGetBrands = async () => {
   try {
@@ -18,11 +19,20 @@ export const fetchGetBrands = async () => {
         error: null,
       };
     } else {
+      const { getCookie } = await cookiesManagement();
+      const cookie = getCookie('token');
+      if (!cookie) {
+        return {
+          ok: false,
+          data: null,
+          error: 'Unauthorized: No token provided',
+        };
+      }
       const response = await fetch(`${BACKEND_URL}/brands`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
-          Authorization: `Bearer ${QA_JWT}`,
+          Authorization: `Bearer ${cookie}`,
         },
       });
 

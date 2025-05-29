@@ -1,5 +1,6 @@
 import { Brand } from '@/interfaces/product.interface';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
 
 interface Props {
   p: {
@@ -21,18 +22,23 @@ export default function CarroCompraCard({
   incrementProductInCart,
   setIdProductoAEliminar,
 }: Props) {
+  const [backgroundImage, setBackgroundImage] = useState(`url(${p.imagen})`);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = p.imagen;
+    img.onerror = () => {
+      setBackgroundImage(`url(/assets/global/logo_plant.png)`);
+    };
+  }, [p.imagen]);
+
   return (
     <tr key={p.id} className="border border-slate-100">
       <td className="px-4 py-4 flex items-center gap-4">
-        <img
-          src={p.imagen}
-          alt={p.name}
-          className="w-12 h-16 object-contain rounded"
-          onError={(e) => {
-            const target = e.currentTarget;
-            target.onerror = null;
-            target.src = 'assets/global/logo_plant.png';
-            target.classList.add('grayscale', 'opacity-50');
+        <div
+          className="w-12 h-16 p-[2px] bg-contain bg-no-repeat bg-center"
+          style={{
+            backgroundImage,
           }}
         />
         <div>

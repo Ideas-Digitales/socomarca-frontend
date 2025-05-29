@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import FacebookIcon from '../icons/FacebookIcon';
 import TwitterIcon from '../icons/TwitterIcon';
@@ -126,33 +125,25 @@ export default function Footer() {
           <span className="text-black font-semibold">socomarca.cl</span>
         </p>
         <div className="flex-col md:flex-row items-center gap-2 mt-2 md:mt-0 opacity-50 hidden md:flex">
-          <Image
-            width={37.8}
-            height={23}
+          <img
             src={masterCardImageUrl}
             alt="MasterCard"
-            style={{ width: 'auto', height: 'auto' }}
+            style={{ width: '37.8px', height: '23px' }}
           />
-          <Image
-            width={65.64}
-            height={16}
+          <img
             src={paypalImageUrl}
             alt="PayPal"
-            style={{ width: 'auto', height: 'auto' }}
+            style={{ width: '65.64px', height: '16px' }}
           />
-          <Image
-            width={38.47}
-            height={12}
+          <img
             src={visaImageUrl}
             alt="Visa"
-            style={{ width: 'auto', height: 'auto' }}
+            style={{ width: '38.47px', height: '12px' }}
           />
-          <Image
-            width={39.59}
-            height={12}
+          <img
             src={americanExpressImageUrl}
             alt="American Express"
-            style={{ width: 'auto', height: 'auto' }}
+            style={{ width: '39.59px', height: '12px' }}
           />
         </div>
       </div>

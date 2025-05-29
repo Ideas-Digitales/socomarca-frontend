@@ -23,6 +23,8 @@ export default function TelefonoInput({
     onChange(e, prefix);
   };
 
+  const borderClass = error ? 'border-red-500' : 'border-gray-300';
+
   return (
     <div>
       <label className="block font-medium">
@@ -32,7 +34,7 @@ export default function TelefonoInput({
         <select
           value={prefix}
           onChange={(e) => setPrefix(e.target.value)}
-          className="bg-[#EBEFF7] border border-gray-300 rounded-l px-2"
+          className={`bg-[#EBEFF7] ${borderClass} rounded-l px-2 border`}
         >
           {opcionesPrefijo.map((op) => (
             <option key={op} value={op}>
@@ -45,7 +47,7 @@ export default function TelefonoInput({
           name={name}
           value={value}
           onChange={handleChange}
-          className="w-full p-2 bg-[#EBEFF7] rounded-r border border-gray-300 border-l-0"
+          className={`w-full p-2 bg-[#EBEFF7] rounded-r border-l-0 ${borderClass} border`}
           {...props}
         />
       </div>

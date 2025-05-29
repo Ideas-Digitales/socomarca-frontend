@@ -14,16 +14,16 @@ export default function ProductsContainer() {
     isTablet,
     filteredProducts,
     isMobile,
-    paginationMeta,
-    paginationLinks,
-    setPage,
+    productPaginationMeta,
+    productPaginationLinks,
+    setProductPage,
     isLoading,
     viewMode,
     setViewMode,
   } = useStore();
 
   const handlePageChange = (pageNumber: number) => {
-    setPage(pageNumber);
+    setProductPage(pageNumber);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -95,10 +95,10 @@ export default function ProductsContainer() {
           </div>
         )}
 
-        {paginationMeta && !isLoading && filteredProducts.length > 0 && (
+        {productPaginationMeta && !isLoading && filteredProducts.length > 0 && (
           <Pagination
-            meta={paginationMeta}
-            links={paginationLinks}
+            meta={productPaginationMeta}
+            links={productPaginationLinks}
             onPageChange={handlePageChange}
           />
         )}

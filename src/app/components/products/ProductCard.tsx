@@ -1,7 +1,7 @@
 import { Product } from '@/interfaces/product.interface';
 import { useEffect, useState } from 'react';
 import useStore from '@/stores/base';
-import { HeartIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeathIconSolid } from '@heroicons/react/24/solid';
 
 interface Props {
@@ -150,7 +150,7 @@ export default function ProductCard({ product }: Props) {
                 }`}
                 onClick={decreaseQuantity}
               >
-                <MinusIcon />
+                -
               </button>
 
               {/* Input de cantidad en lugar del span */}
@@ -173,7 +173,7 @@ export default function ProductCard({ product }: Props) {
                 }`}
                 onClick={increaseQuantity}
               >
-                <PlusIcon />
+                +
               </button>
             </div>
             <button

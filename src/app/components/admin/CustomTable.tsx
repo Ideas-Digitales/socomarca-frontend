@@ -12,15 +12,15 @@ interface CustomTableProps<T = any> {
   title?: string;
   data: T[];
   columns?: TableColumn<T>[];
-  paginationMeta: PaginationMeta;
-  onPageChange: (page: number) => void;
+  productPaginationMeta?: PaginationMeta;
+  onPageChange?: (page: number) => void;
 }
 
 const CustomTable = <T extends Record<string, any> = any>({
   title,
   data,
   columns = [],
-  paginationMeta,
+  productPaginationMeta,
   onPageChange,
 }: CustomTableProps<T>) => {
   return (
@@ -67,7 +67,9 @@ const CustomTable = <T extends Record<string, any> = any>({
         </table>
       </div>
 
-      <Pagination meta={paginationMeta} onPageChange={onPageChange} />
+      {productPaginationMeta && onPageChange && (
+        <Pagination meta={productPaginationMeta} onPageChange={onPageChange} />
+      )}
     </div>
   );
 };

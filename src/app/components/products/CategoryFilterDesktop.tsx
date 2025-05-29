@@ -1,74 +1,60 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
-import { Product } from '@/interfaces/product.interface';
 import DualRangeSlider from './DualRangerSlider';
 
 export default function CategoryFilterDesktop() {
-  const { categories, setFilteredProducts, products, brands } = useStore();
-  const [isMainCategoryOpen, setIsMainCategoryOpen] = useState(true);
-  const [isBrandsOpen, setIsBrandsOpen] = useState(false);
-  const [isPriceOpen, setIsPriceOpen] = useState(true);
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<number[]>([]);
+  const {
+    // Estados de datos
+    categories,
+    brands,
+    products,
 
-  const [minPrice, setMinPrice] = useState<number>(0);
-  const [maxPrice, setMaxPrice] = useState<number>(0);
-  const [lowerPrice, setLowerPrice] = useState<number>(0);
-  const [upperPrice, setUpperPrice] = useState<number>(0);
+    // Estados de filtros
+    selectedCategories,
+    selectedBrands,
+    minPrice,
+    maxPrice,
+    lowerPrice,
+    upperPrice,
+    priceInitialized,
 
-  const initialized = useRef(false);
+    // Estados de UI
+    isMainCategoryOpen,
+    isBrandsOpen,
+    isFavoritesOpen,
+    isPriceOpen,
+
+    // Acciones de filtros
+    toggleCategorySelection,
+    toggleBrandSelection,
+    setLowerPrice,
+    setUpperPrice,
+    handlePriceRangeChange,
+    initializePriceRange,
+
+    // Acciones de UI
+    toggleMainCategory,
+    toggleBrandsSection,
+    toggleFavoritesSection,
+    togglePriceSection,
+
+    // Acciones principales
+    applyFilters,
+    clearAllFilters,
+    hasActiveFilters,
+  } = useStore();
 
   const formatPrice = useCallback((price: number): string => {
     return price.toLocaleString('es-CL');
   }, []);
 
+  // Inicializar rango de precios cuando cambien los productos
   useEffect(() => {
-    if (products && products.length > 0 && !initialized.current) {
-      const validPrices = products
-        .map((product) => product.price || 0)
-        .filter((price) => !isNaN(price) && price >= 0);
-
-      if (validPrices.length > 0) {
-        const min = Math.floor(Math.min(...validPrices));
-        let max = Math.ceil(Math.max(...validPrices));
-
-        if (min === max) {
-          max = min + 1;
-        }
-
-        setMinPrice(min);
-        setMaxPrice(max);
-        setLowerPrice(min);
-        setUpperPrice(max);
-
-        initialized.current = true;
-      }
-    }
-  }, [products]);
-
-  // Toggle main category section
-  const toggleMainCategory = useCallback(() => {
-    setIsMainCategoryOpen((prev) => !prev);
-  }, []);
-
-  // Toggle brands section
-  const toggleBrandsSection = useCallback(() => {
-    setIsBrandsOpen((prev) => !prev);
-  }, []);
-
-  // Toggle price section
-  const togglePriceSection = useCallback(() => {
-    setIsPriceOpen((prev) => !prev);
-  }, []);
-
-  // Handle slider value changes
-  const handlePriceRangeChange = useCallback((lower: number, upper: number) => {
-    setLowerPrice(lower);
-    setUpperPrice(upper);
-  }, []);
+    initializePriceRange(products);
+  }, [products, initializePriceRange]);
 
   // Handle input changes for lower price
   const handleLowerPriceChange = useCallback(
@@ -80,16 +66,11 @@ export default function CategoryFilterDesktop() {
         const numericValue = parseInt(inputValue);
 
         if (!isNaN(numericValue)) {
-          // Ensure the value is between min and upper price
-          const boundedValue = Math.max(
-            minPrice,
-            Math.min(numericValue, upperPrice)
-          );
-          setLowerPrice(boundedValue);
+          setLowerPrice(numericValue);
         }
       }
     },
-    [minPrice, upperPrice]
+    [setLowerPrice]
   );
 
   // Handle input changes for upper price
@@ -102,84 +83,15 @@ export default function CategoryFilterDesktop() {
         const numericValue = parseInt(inputValue);
 
         if (!isNaN(numericValue)) {
-          // Ensure the value is between lower price and max
-          const boundedValue = Math.min(
-            maxPrice,
-            Math.max(numericValue, lowerPrice)
-          );
-          setUpperPrice(boundedValue);
+          setUpperPrice(numericValue);
         }
       }
     },
-    [maxPrice, lowerPrice]
+    [setUpperPrice]
   );
 
-  // Toggle individual de categorías
-  const toggleCategorySelection = useCallback((categoryId: number) => {
-    setSelectedCategories((prev) => {
-      if (prev.includes(categoryId)) {
-        return prev.filter((id) => id !== categoryId);
-      } else {
-        return [...prev, categoryId];
-      }
-    });
-  }, []);
-
-  // Toggle individual de marcas
-  const toggleBrandSelection = useCallback((brandId: number) => {
-    setSelectedBrands((prev) => {
-      if (prev.includes(brandId)) {
-        return prev.filter((id) => id !== brandId);
-      } else {
-        return [...prev, brandId];
-      }
-    });
-  }, []);
-
-  // Apply filters (category, brand, and price)
-  const applyFilters = useCallback(() => {
-    let filteredResults: Product[] = [...products];
-
-    // Apply category filter if any categories are selected
-    if (selectedCategories.length > 0) {
-      filteredResults = filteredResults.filter((product) =>
-        selectedCategories.includes(product.category.id)
-      );
-    }
-
-    // Apply brand filter if any brands are selected
-    if (selectedBrands.length > 0) {
-      filteredResults = filteredResults.filter(
-        (product) => product.brand && selectedBrands.includes(product.brand.id)
-      );
-    }
-
-    // Apply price filter
-    filteredResults = filteredResults.filter((product) => {
-      const price = product.price || 0;
-      return price >= lowerPrice && price <= upperPrice;
-    });
-
-    setFilteredProducts(filteredResults);
-  }, [
-    products,
-    selectedCategories,
-    selectedBrands,
-    lowerPrice,
-    upperPrice,
-    setFilteredProducts,
-  ]);
-
-  // Función para limpiar todos los filtros
-  const clearAllFilters = useCallback(() => {
-    setSelectedCategories([]);
-    setSelectedBrands([]);
-    setLowerPrice(minPrice);
-    setUpperPrice(maxPrice);
-  }, [minPrice, maxPrice]);
-
   // Check if min and max are the same value
-  const hasPriceRange = minPrice !== maxPrice && initialized.current;
+  const hasPriceRange = minPrice !== maxPrice && priceInitialized;
 
   return (
     <div className="flex flex-col items-start bg-white w-[200px] h-full">
@@ -320,10 +232,30 @@ export default function CategoryFilterDesktop() {
       </div>
 
       {/* MIS FAVORITOS section */}
-      <div className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200">
+      <div
+        className="flex w-full h-[48px] p-3 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200"
+        onClick={toggleFavoritesSection}
+      >
         <span className="font-bold uppercase text-gray-800">Mis favoritos</span>
         <div className="transition-transform duration-300 ease-in-out">
-          <PlusIcon width={24} height={24} className="text-lime-500" />
+          {isFavoritesOpen ? (
+            <MinusIcon width={24} height={24} className="text-lime-500" />
+          ) : (
+            <PlusIcon width={24} height={24} className="text-lime-500" />
+          )}
+        </div>
+      </div>
+
+      {/* Favoritos content (placeholder) */}
+      <div
+        className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
+          isFavoritesOpen ? 'max-h-[20dvh] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="w-full p-3">
+          <div className="text-sm text-center text-gray-500">
+            Funcionalidad de favoritos próximamente
+          </div>
         </div>
       </div>
 
@@ -345,7 +277,7 @@ export default function CategoryFilterDesktop() {
       {/* Price range slider and inputs */}
       <div
         className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
-          isPriceOpen && initialized.current
+          isPriceOpen && priceInitialized
             ? 'max-h-96 opacity-100'
             : 'max-h-0 opacity-0'
         }`}
@@ -366,7 +298,7 @@ export default function CategoryFilterDesktop() {
           ) : (
             <div className="mb-6 mt-4 transition-opacity duration-300">
               <div className="text-sm text-center text-gray-500">
-                {initialized.current
+                {priceInitialized
                   ? 'Todos los productos tienen el mismo precio'
                   : 'Cargando precios...'}
               </div>
@@ -384,7 +316,7 @@ export default function CategoryFilterDesktop() {
                 type="text"
                 className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                 placeholder={`$${formatPrice(minPrice)}`}
-                value={`$${formatPrice(lowerPrice)}`}
+                value={`${formatPrice(lowerPrice)}`}
                 onChange={handleLowerPriceChange}
                 onBlur={() => {
                   if (lowerPrice < minPrice) setLowerPrice(minPrice);
@@ -397,8 +329,8 @@ export default function CategoryFilterDesktop() {
               <input
                 type="text"
                 className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
-                placeholder={`$${formatPrice(maxPrice)}`}
-                value={`$${formatPrice(upperPrice)}`}
+                placeholder={`${formatPrice(maxPrice)}`}
+                value={`${formatPrice(upperPrice)}`}
                 onChange={handleUpperPriceChange}
                 onBlur={() => {
                   if (upperPrice > maxPrice) setUpperPrice(maxPrice);
@@ -423,18 +355,12 @@ export default function CategoryFilterDesktop() {
           {/* Botón para limpiar filtros */}
           <div
             className={`transition-all duration-300 ease-in-out overflow-hidden ${
-              selectedCategories.length > 0 ||
-              selectedBrands.length > 0 ||
-              lowerPrice !== minPrice ||
-              upperPrice !== maxPrice
+              hasActiveFilters()
                 ? 'max-h-12 opacity-100 transform translate-y-0'
                 : 'max-h-0 opacity-0 transform -translate-y-2'
             }`}
           >
-            {(selectedCategories.length > 0 ||
-              selectedBrands.length > 0 ||
-              lowerPrice !== minPrice ||
-              upperPrice !== maxPrice) && (
+            {hasActiveFilters() && (
               <button
                 className="w-full bg-gray-200 text-gray-700 rounded-md py-2 px-12 text-center text-[12px] hover:bg-gray-300 transition-all duration-300 cursor-pointer"
                 onClick={clearAllFilters}

@@ -1,11 +1,14 @@
 export interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
   rut: string;
 }
 
 export interface LoginResponse {
-  user: User;
-  jwt: string;
+  user: User | null;
+  error?: {
+    message: string;
+    status: number;
+  };
 }

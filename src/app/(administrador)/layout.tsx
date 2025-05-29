@@ -24,7 +24,12 @@ export default function AdministradorLayout({
   const [isMounted, setIsMounted] = useState(false);
 
   useInitMobileDetection();
-  const { isTablet } = useStore();
+  const { isTablet, fetchCategories, fetchProducts } = useStore();
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
 
   // Efecto para manejar el estado de montaje del componente
   useEffect(() => {
@@ -48,12 +53,12 @@ export default function AdministradorLayout({
       <div className="w-full">
         {/* Sidebar - Solo se renderiza en desktop */}
         {!isTablet && <Sidebar />}
-        
+
         {/* Mobile Sidebar - Solo se renderiza en tablet/mobile */}
         {isTablet && <SidebarMobile />}
 
         {/* Main Content Area */}
-        <div 
+        <div
           className={`flex flex-col relative min-h-dvh ${
             !isTablet ? 'ml-[290px]' : ''
           }`}

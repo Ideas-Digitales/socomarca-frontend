@@ -215,6 +215,7 @@ export default function FinalizarCompraPage() {
               src="/assets/global/logo_webpay.png"
               alt="Webpay"
               className="my-2 w-[40%] max-w-xs"
+              unoptimized
             />
             <p className="text-sm text-neutral-950">
               Pagar con Redcompra

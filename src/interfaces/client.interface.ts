@@ -1,0 +1,1 @@
+// TODO: Preguntar a backend el typado

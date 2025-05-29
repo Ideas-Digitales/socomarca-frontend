@@ -14,8 +14,8 @@ interface Props {
 }
 
 export default function Logo({
-  width,
-  height,
+  width = 218,
+  height = 39,
   className,
   href,
   onClick,
@@ -26,15 +26,18 @@ export default function Logo({
     <Image
       src={logo}
       alt={alt}
-      width={width || 218}
-      height={height || 39}
+      width={width}
+      height={height}
       className={className}
       style={{
-        width: width ? `${width}px` : 'auto',
-        height: height ? `${height}px` : 'auto',
+        width: 'auto',
+        height: 'auto',
         ...style,
       }}
       onClick={onClick}
+      priority={true}
+      quality={100}
+      unoptimized
     />
   );
 

@@ -1,6 +1,6 @@
 import { ProductToBuy } from '@/interfaces/product.interface';
 import useStore from '@/stores/base';
-import { MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 
 interface Props {
@@ -93,7 +93,7 @@ export default function CartProductCard({ product, index }: Props) {
                 }`}
                 onClick={decreaseQuantity}
               >
-                <MinusIcon />
+                -
               </button>
 
               <span className="w-8 h-8 p-1 flex flex-col items-center justify-center">
@@ -109,7 +109,7 @@ export default function CartProductCard({ product, index }: Props) {
                 }`}
                 onClick={increaseQuantity}
               >
-                <PlusIcon />
+                +
               </button>
             </div>
             {/* El total quantity * price */}

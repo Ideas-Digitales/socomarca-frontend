@@ -7,62 +7,72 @@ import { create } from 'zustand';
 interface AuthStoreState {
   isLoggedIn: boolean;
   user: {
-    id: string;
+    id: number;
     name: string;
     email: string;
     rut: string;
   };
   token: string;
-  login: ({ rut, password }: { rut: string; password: string }) => Promise<LoginResult>;
+  login: ({
+    rut,
+    password,
+  }: {
+    rut: string;
+    password: string;
+  }) => Promise<LoginResult>;
   logout: () => void;
 }
 
 const useAuthStore = create<AuthStoreState>((set) => ({
   isLoggedIn: false,
   user: {
-    id: '',
+    id: 0,
     name: '',
     email: '',
     rut: '',
   },
   token: '',
   login: async ({ rut, password }) => {
-  try {
-    const response = await fetchLogin(rut, password);
+    try {
+      const response = await fetchLogin(rut, password);
 
-    set({
-      isLoggedIn: true,
-      user: {
-        id: response.user.id,
-        name: response.user.name,
-        email: response.user.email,
-        rut: response.user.rut,
-      },
-      token: response.jwt,
-    });
+      if (!response.user) {
+        return { success: false, error: 'Credenciales inválidas' };
+      }
 
-    return { success: true };
-  } catch (error: any) {
-    set({
-      isLoggedIn: false,
-      user: { id: '', name: '', email: '', rut: '' },
-      token: '',
-    });
+      set({
+        isLoggedIn: true,
+        user: {
+          id: response.user.id,
+          name: response.user.name,
+          email: response.user.email,
+          rut: response.user.rut,
+        },
+      });
 
-    // Lanzamos el error para que el catch externo lo capture
-    if (error?.response?.status === 422) {
-      const err: any = new Error('Error de validación');
-      err.response = error.response;
-      throw err;
+      return { success: true };
+    } catch (error: any) {
+      set({
+        isLoggedIn: false,
+        user: { id: 0, name: '', email: '', rut: '' },
+        token: '',
+      });
+
+      // Lanzamos el error para que el catch externo lo capture
+      if (error?.response?.status === 422) {
+        const err: any = new Error('Error de validación');
+        err.response = error.response;
+        throw err;
+      }
+
+      throw new Error(error.message || 'Error desconocido');
     }
-
-    throw new Error(error.message || 'Error desconocido');
-  }
-},
+  },
+  // Función para cerrar sesión
   logout: () =>
     set({
       isLoggedIn: false,
-      user: { id: '', name: '', email: '', rut: '' },
+      user: { id: 0, name: '', email: '', rut: '' },
       token: '',
     }),
 }));

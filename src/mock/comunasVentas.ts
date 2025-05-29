@@ -1,3 +1,8 @@
+export interface Comuna {
+  comuna: string;
+  region: string;
+}
+
 export interface ComunaVenta {
   id: string;
   comuna: string;
@@ -6,7 +11,7 @@ export interface ComunaVenta {
 }
 
 // Datos de comunas y regiones de Chile
-const comunasRegiones = [
+export const comunasRegiones = [
   // Región Metropolitana
   { comuna: 'Santiago', region: 'Región Metropolitana' },
   { comuna: 'Las Condes', region: 'Región Metropolitana' },
