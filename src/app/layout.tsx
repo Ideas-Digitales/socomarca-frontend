@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   title: 'Socomarca | Compra rápida',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icons/icon-192x192.png',
-    apple: '/icons/icon-192x192.png',
+    icon: '/icons/logo_plant-192.png',
+    apple: '/icons/logo_plant-192.png',
   },
 };
 
