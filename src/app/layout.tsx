@@ -10,7 +10,16 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Socomarca',
+  title: 'Socomarca | Compra rápida',
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/icons/icon-192x192.png',
+    apple: '/icons/icon-192x192.png',
+  },
+};
+
+export const viewport = {
+  themeColor: 'white',
 };
 
 export default function RootLayout({
