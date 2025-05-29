@@ -29,18 +29,6 @@ export const fetchLogin = async (
   };
 
   try {
-<<<<<<< HEAD
-    const response = await fetch(
-      `${process.env.BACKEND_URL}/auth/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ rut, password }),
-      }
-    );
-=======
     const response = await fetch(`${process.env.BACKEND_URL}/auth/token`, {
       method: 'POST',
       headers: {
@@ -49,7 +37,6 @@ export const fetchLogin = async (
       },
       body: JSON.stringify(bodyRequest),
     });
->>>>>>> develop
 
     if (!response.ok) {
       const errorData = await response.json();
