@@ -161,7 +161,7 @@ export default function ProductCardGrid({ product }: Props) {
             }`}
             onClick={decreaseQuantity}
           >
-            <MinusIcon />
+           -
           </button>
 
           <input
@@ -183,7 +183,7 @@ export default function ProductCardGrid({ product }: Props) {
             }`}
             onClick={increaseQuantity}
           >
-            <PlusIcon />
+           +
           </button>
         </div>
 

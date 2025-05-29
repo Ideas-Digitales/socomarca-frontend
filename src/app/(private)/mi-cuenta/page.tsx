@@ -175,7 +175,7 @@ export default function MiCuentaPage() {
             />
           </Suspense>
 
-          <div className="flex-1 bg-white rounded-lg shadow p-6">
+          <div className="flex-1 h-fit bg-white rounded-lg shadow p-6">
             {selected === "datos" && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Datos personales</h2>

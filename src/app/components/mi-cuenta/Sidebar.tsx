@@ -22,7 +22,7 @@ export default function Sidebar({
   onLogoutClick?: () => void; // opcional
 }) {
   return (
-    <div className="w-full md:w-64 bg-white rounded-lg shadow h-fit">
+    <div className="w-full hidden lg:block md:w-64 bg-white rounded-lg shadow h-fit">
       {items.map(item => (
   <button
   key={item.key}

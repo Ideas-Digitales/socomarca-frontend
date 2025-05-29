@@ -150,7 +150,7 @@ export default function ProductCard({ product }: Props) {
                 }`}
                 onClick={decreaseQuantity}
               >
-                <MinusIcon />
+                -
               </button>
 
               {/* Input de cantidad en lugar del span */}
@@ -173,7 +173,7 @@ export default function ProductCard({ product }: Props) {
                 }`}
                 onClick={increaseQuantity}
               >
-                <PlusIcon />
+                +
               </button>
             </div>
             <button
