@@ -34,10 +34,6 @@ export default function LoginPage() {
       if (result.success) {
         router.push('/');
       } else {
-<<<<<<< HEAD
-        // Esto asume que `result` tiene una estructura diferente si no es success
-=======
->>>>>>> develop
         const errorMessage = result.error || 'Error al iniciar sesión';
 
         setError(errorMessage);
@@ -47,7 +43,6 @@ export default function LoginPage() {
       if (error?.response?.status === 422) {
         const data = error.response.data;
         const rutError = data?.errors?.rut?.[0];
-<<<<<<< HEAD
 
         setError(
           rutError ||
@@ -57,19 +52,6 @@ export default function LoginPage() {
       } else {
         setError('Las credenciales ingresadas no son válidas');
       }
-
-      console.error(error);
-=======
-
-        setError(
-          rutError ||
-            data?.message ||
-            'Las credenciales ingresadas no son válidas'
-        );
-      } else {
-        setError('Las credenciales ingresadas no son válidas');
-      }
->>>>>>> develop
     } finally {
       setIsLoading(false);
     }
