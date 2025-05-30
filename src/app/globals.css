@@ -19,6 +19,10 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+.ProseMirror:focus {
+    outline: none;
+}
+
 .input-search {
   border-radius: var(--Border-Radius-rounded-md, 6px 0px 0px 6px);
   border: 0.5px solid var(--Lime-500, #84CC16);
@@ -32,4 +36,30 @@ body {
 
 .flex-1-0-0 {
   flex: 1 0 0%;
+}
+
+.ProseMirror {
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: 'Poppins', sans-serif;
+  color: #0f172a; /* slate-900 */
+  padding: 0.5rem;
+  min-height: 300px;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.ProseMirror h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.ProseMirror a {
+  color: #3b82f6;
+  text-decoration: underline;
 }
