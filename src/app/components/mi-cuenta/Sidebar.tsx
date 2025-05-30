@@ -1,7 +1,13 @@
 'use client';
 
-import { ArrowRightOnRectangleIcon, ChevronRightIcon, HeartIcon, MapPinIcon, ShoppingBagIcon, UserIcon } from "@heroicons/react/24/outline";
-
+import {
+  ArrowRightOnRectangleIcon,
+  ChevronRightIcon,
+  HeartIcon,
+  MapPinIcon,
+  ShoppingBagIcon,
+  UserIcon,
+} from '@heroicons/react/24/outline';
 
 const items = [
   { key: 'datos', label: 'Datos personales', icon: UserIcon },
@@ -10,7 +16,6 @@ const items = [
   { key: 'compras', label: 'Mis compras', icon: ShoppingBagIcon },
   { key: 'logout', label: 'Cerrar sesión', icon: ArrowRightOnRectangleIcon },
 ];
-
 
 export default function Sidebar({
   selectedKey,
@@ -23,25 +28,25 @@ export default function Sidebar({
 }) {
   return (
     <div className="w-full hidden lg:block md:w-64 bg-white rounded-lg shadow h-fit">
-      {items.map(item => (
-  <button
-  key={item.key}
-  onClick={() =>
-    item.key === 'logout' ? onLogoutClick?.() : onSelect(item.key)
-  }
-  className={`w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium border-b border-b-slate-200 hover:bg-gray-50 ${
-    selectedKey === item.key ? 'bg-lime-100 text-black' : 'text-gray-700'
-  }`}
->
-  <div className="flex items-center gap-3">
-    <item.icon className="w-5 h-5" />
-    <span> {item.label} </span>
-  </div>
-  <ChevronRightIcon className="w-4 h-4 text-gray-600" />
-</button>
-
-))}
-
+      {items.map((item) => (
+        <button
+          key={item.key}
+          onClick={() =>
+            item.key === 'logout' ? onLogoutClick?.() : onSelect(item.key)
+          }
+          className={`w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium border-b border-b-slate-200 hover:bg-gray-50 ${
+            selectedKey === item.key
+              ? 'bg-lime-100 text-black'
+              : 'text-gray-700'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <item.icon className="w-5 h-5" />
+            <span> {item.label} </span>
+          </div>
+          <ChevronRightIcon className="w-4 h-4 text-gray-600" />
+        </button>
+      ))}
     </div>
   );
-} 
+}

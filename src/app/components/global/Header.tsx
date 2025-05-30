@@ -1,9 +1,9 @@
-"use client";
-import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import { Product } from "@/interfaces/product.interface";
-import Link from "next/link";
-import useStore, { useInitMobileDetection } from "@/stores/base";
+'use client';
+import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
+import { Product } from '@/interfaces/product.interface';
+import Link from 'next/link';
+import useStore, { useInitMobileDetection } from '@/stores/base';
 import {
   Bars3Icon,
   HeartIcon,
@@ -12,11 +12,11 @@ import {
   ShoppingCartIcon,
   UserIcon,
   XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
+} from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
 
-const imagoLogoUrl = "/assets/global/imagotipo.png";
-const logoUrl = "/assets/global/logo-header.png";
+const imagoLogoUrl = '/assets/global/imagotipo.png';
+const logoUrl = '/assets/global/logo-header.png';
 
 interface Props {
   carro: Product[];
@@ -39,8 +39,8 @@ export default function Header({ carro }: Props) {
       setIsScrolled(scrollTop > 0);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -51,14 +51,14 @@ export default function Header({ carro }: Props) {
       if (
         mobileMenuRef.current &&
         !mobileMenuRef.current.contains(event.target as Node) &&
-        (event.target as HTMLElement).id !== "menu-toggle-btn"
+        (event.target as HTMLElement).id !== 'menu-toggle-btn'
       ) {
         setMenuMobileOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [abierto]);
 
   useEffect(() => {
@@ -74,21 +74,21 @@ export default function Header({ carro }: Props) {
   const router = useRouter();
 
   const menuItems = [
-    { name: "Inicio", href: "/" },
-    { name: "Datos personales", href: "/mi-cuenta?section=datos" },
-    { name: "Historial de compra", href: "/mis-compras" },
-    { name: "Favoritos", href: "/mi-cuenta?section=favoritos" },
-    { name: "Direcciones", href: "/mi-cuenta?section=direcciones" },
-    { name: "Mis Compras", href: "/mi-cuenta?section=compras" },
-    { name: "Carrito", href: "/carro-de-compra" },
-    { name: "Cerrar sesión", href: "/carro-de-compra" },
+    { name: 'Inicio', href: '/' },
+    { name: 'Datos personales', href: '/mi-cuenta?section=datos' },
+    { name: 'Historial de compra', href: '/mis-compras' },
+    { name: 'Favoritos', href: '/mi-cuenta?section=favoritos' },
+    { name: 'Direcciones', href: '/mi-cuenta?section=direcciones' },
+    { name: 'Mis Compras', href: '/mi-cuenta?section=compras' },
+    { name: 'Carrito', href: '/carro-de-compra' },
+    { name: 'Cerrar sesión', href: '/carro-de-compra' },
   ];
 
   return (
     <>
       <div
         className={`fixed top-0 left-0 w-full bg-white text-black py-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs z-30 transition-shadow duration-300 ${
-          isScrolled ? "shadow-md" : ""
+          isScrolled ? 'shadow-md' : ''
         }`}
       >
         <div className="max-w-7xl px-4 flex justify-between items-center mx-auto">
@@ -123,7 +123,7 @@ export default function Header({ carro }: Props) {
                 width={28}
                 height={34}
                 alt="Imagologo"
-                onClick={() => router.push("/")}
+                onClick={() => router.push('/')}
                 className="cursor-pointer"
                 unoptimized
               />
@@ -135,7 +135,7 @@ export default function Header({ carro }: Props) {
                 src={logoUrl}
                 width={368}
                 height={66}
-                style={{ width: "368px", height: "66px" }}
+                style={{ width: '368px', height: '66px' }}
                 className="hidden sm:block py-[4px] cursor-pointer"
               />
             </Link>
@@ -144,17 +144,20 @@ export default function Header({ carro }: Props) {
             <div className="flex flex-row gap-2 sm:gap-4">
               <Link
                 href="/mi-cuenta?section=compras"
-                className="flex items-center gap-2"
+                className="items-center gap-2 hidden sm:flex"
               >
                 <ListBulletIcon width={24} height={24} />
                 <span className="font-bold hidden sm:block">
                   Historial de compra
                 </span>
               </Link>
-              <Link href="/mi-cuenta?section=favoritos">
+              <Link
+                className="hidden sm:flex"
+                href="/mi-cuenta?section=favoritos"
+              >
                 <HeartIcon width={24} height={24} />
               </Link>
-              <Link href="/mi-cuenta">
+              <Link className="hidden sm:flex" href="/mi-cuenta">
                 <UserIcon width={24} height={24} />
               </Link>
               <Link href="/carro-de-compra">
@@ -177,7 +180,7 @@ export default function Header({ carro }: Props) {
       {menuMobileOpen && (
         <div
           className="fixed inset-0 z-40 transition-opacity duration-300"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.25)" }}
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }}
           aria-hidden="true"
         />
       )}
@@ -186,7 +189,7 @@ export default function Header({ carro }: Props) {
       <div
         ref={mobileMenuRef}
         className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out shadow-lg ${
-          menuMobileOpen ? "translate-x-0" : "-translate-x-full"
+          menuMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
@@ -195,7 +198,7 @@ export default function Header({ carro }: Props) {
             width={28}
             height={34}
             alt="Imagologo"
-            onClick={() => router.push("/")}
+            onClick={() => router.push('/')}
             className="cursor-pointer"
             unoptimized
           />

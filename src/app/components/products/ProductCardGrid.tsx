@@ -4,7 +4,8 @@ import { Product } from '@/interfaces/product.interface';
 import { useEffect, useState } from 'react';
 import useStore from '@/stores/base';
 import { HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeathIconSolid } from '@heroicons/react/24/solid';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface Props {
   product: Product;
@@ -12,6 +13,7 @@ interface Props {
 
 export default function ProductCardGrid({ product }: Props) {
   const { addProductToCart, isQaMode } = useStore();
+  const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [quantity, setQuantity] = useState(0);
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`
@@ -32,9 +34,12 @@ export default function ProductCardGrid({ product }: Props) {
     };
   }, [product.imagen]);
 
-  const [isFavorite, setIsFavorite] = useState(false);
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+  const handleSetFavorite = () => {
+    if (isFavorite(product.id)) {
+      toggleFavorite(product.id);
+    } else {
+      handleAddToList(product);
+    }
   };
 
   const decreaseQuantity = () => {
@@ -51,11 +56,9 @@ export default function ProductCardGrid({ product }: Props) {
     setQuantity(quantity + 1);
   };
 
-  // Nueva función para manejar el cambio en el input
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    // Permitir campo vacío temporalmente
     if (value === '') {
       setQuantity(0);
       return;
@@ -63,12 +66,10 @@ export default function ProductCardGrid({ product }: Props) {
 
     const numericValue = parseInt(value, 10);
 
-    // Validar que sea un número válido
     if (isNaN(numericValue)) {
       return;
     }
 
-    // Limitar a máximo 999 o stock disponible (el menor de los dos)
     const maxAllowed = Math.min(product.stock, 999);
 
     if (numericValue > maxAllowed || numericValue < 0) {
@@ -92,33 +93,36 @@ export default function ProductCardGrid({ product }: Props) {
     return text;
   };
 
+  const isProductFavorite = isFavorite(product.id);
+
   return (
-    <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b">
+    <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b relative">
       {/* Imagen del producto */}
-      <div className="flex items-center justify-center h-[100px] w-full">
+      <div className="flex items-center justify-center h-[100px] w-full relative">
         <div
           className="w-full bg-contain bg-no-repeat bg-center h-[87px]"
           style={{ backgroundImage }}
-        >
-          <div className="rounded-full bg-slate-100 items-center justify-center hidden absolute sm:flex p-[6px]">
-            {!isFavorite ? (
-              <HeartIcon
-                className="cursor-pointer"
-                color="#475569"
-                width={16}
-                height={16}
-                onClick={toggleFavorite}
-              />
-            ) : (
-              <HeathIconSolid
-                className="cursor-pointer"
-                color="#475569"
-                width={16}
-                height={16}
-                onClick={toggleFavorite}
-              />
-            )}
-          </div>
+        />
+
+        {/* Botón de favorito */}
+        <div className="rounded-full bg-slate-100 items-center justify-center flex p-[6px] absolute top-2 right-2">
+          {!isProductFavorite ? (
+            <HeartIcon
+              className="cursor-pointer"
+              color="#475569"
+              width={16}
+              height={16}
+              onClick={handleSetFavorite}
+            />
+          ) : (
+            <HeartIconSolid
+              className="cursor-pointer"
+              color="#ef4444"
+              width={16}
+              height={16}
+              onClick={handleSetFavorite}
+            />
+          )}
         </div>
       </div>
 
@@ -161,7 +165,7 @@ export default function ProductCardGrid({ product }: Props) {
             }`}
             onClick={decreaseQuantity}
           >
-           -
+            -
           </button>
 
           <input
@@ -183,7 +187,7 @@ export default function ProductCardGrid({ product }: Props) {
             }`}
             onClick={increaseQuantity}
           >
-           +
+            +
           </button>
         </div>
 

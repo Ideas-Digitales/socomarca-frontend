@@ -2,9 +2,12 @@
 
 import useStore from '@/stores/base';
 import ProductsContainer from '../components/products/ProductsContainer';
-import CategoryFilterMobile from '../components/products/CategoryFilterMobile';
+import CategoryFilterMobile, {
+  CategoryFilterMobileButton,
+} from '../components/products/CategoryFilterMobile';
 import Search from '../components/global/Search';
 import Caroussel from '../components/global/Caroussel';
+import { useState } from 'react';
 
 const images = [
   '/assets/global/bg-blue.webp',
@@ -14,13 +17,21 @@ const images = [
 
 export default function PrivatePage() {
   const { isTablet, setSearchTerm, resetSearchRelatedStates } = useStore();
-
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
 
   const handleClearSearch = () => {
     resetSearchRelatedStates();
+  };
+
+  const handleOpenFilter = () => {
+    setIsFilterOpen(true);
+  };
+
+  const handleCloseFilter = () => {
+    setIsFilterOpen(false);
   };
 
   const componentSearch = (
@@ -42,7 +53,13 @@ export default function PrivatePage() {
       </div>
 
       <div className="mx-auto space-y-2">
-        {isTablet && <CategoryFilterMobile />}
+        {isTablet && <CategoryFilterMobileButton onOpen={handleOpenFilter} />}
+        {isTablet && (
+          <CategoryFilterMobile
+            isOpen={isFilterOpen}
+            onClose={handleCloseFilter}
+          />
+        )}
 
         <ProductsContainer />
       </div>

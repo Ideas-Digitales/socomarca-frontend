@@ -2,7 +2,8 @@ import { Product } from '@/interfaces/product.interface';
 import { useEffect, useState } from 'react';
 import useStore from '@/stores/base';
 import { HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeathIconSolid } from '@heroicons/react/24/solid';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface Props {
   product: Product;
@@ -10,9 +11,11 @@ interface Props {
 
 export default function ProductCard({ product }: Props) {
   const { addProductToCart, isQaMode } = useStore();
+  const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.imagen})`
   );
+  const [quantity, setQuantity] = useState(0);
 
   const productStock = 100;
 
@@ -21,6 +24,14 @@ export default function ProductCard({ product }: Props) {
     product.price = product.price || 1000;
   }
 
+  const handleSetFavorite = () => {
+    if (isFavorite(product.id)) {
+      toggleFavorite(product.id);
+    } else {
+      handleAddToList(product);
+    }
+  };
+
   useEffect(() => {
     const img = new Image();
     img.src = product.imagen;
@@ -28,12 +39,6 @@ export default function ProductCard({ product }: Props) {
       setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
   }, [product.imagen]);
-
-  const [quantity, setQuantity] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
 
   const decreaseQuantity = () => {
     if (quantity > 0) {
@@ -49,11 +54,9 @@ export default function ProductCard({ product }: Props) {
     setQuantity(quantity + 1);
   };
 
-  // Nueva función para manejar el cambio en el input
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    // Permitir campo vacío temporalmente
     if (value === '') {
       setQuantity(0);
       return;
@@ -61,12 +64,10 @@ export default function ProductCard({ product }: Props) {
 
     const numericValue = parseInt(value, 10);
 
-    // Validar que sea un número válido
     if (isNaN(numericValue)) {
       return;
     }
 
-    // Limitar a máximo 999 o stock disponible (el menor de los dos)
     const maxAllowed = Math.min(product.stock, 999);
 
     if (numericValue > maxAllowed || numericValue < 0) {
@@ -90,25 +91,27 @@ export default function ProductCard({ product }: Props) {
     return text;
   };
 
+  const isProductFavorite = isFavorite(product.id);
+
   return (
     <div className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative">
       <div className="flex items-center gap-[6px]">
         <div className="rounded-full bg-slate-100 items-center justify-center hidden sm:flex p-[6px]">
-          {!isFavorite ? (
+          {!isProductFavorite ? (
             <HeartIcon
               className="cursor-pointer"
               color="#475569"
               width={16}
               height={16}
-              onClick={toggleFavorite}
+              onClick={handleSetFavorite}
             />
           ) : (
-            <HeathIconSolid
+            <HeartIconSolid
               className="cursor-pointer"
-              color="#475569"
+              color="#ef4444"
               width={16}
               height={16}
-              onClick={toggleFavorite}
+              onClick={handleSetFavorite}
             />
           )}
         </div>
@@ -119,10 +122,10 @@ export default function ProductCard({ product }: Props) {
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
         <div className="flex flex-col">
-          <span className="text-[#64748B] text-[12px] font-medium">
+          <span className="text-[#64748B] text-[12px] font-medium text-center sm:text-left">
             {product.brand.name}
           </span>
-          <span className="text-[12px] font-medium">
+          <span className="text-[12px] font-medium text-center sm:text-left">
             {truncateText(product.name, 30)}
           </span>
           <span className="text-lime-500 font-bold text-center text-lg mt-1">
@@ -135,7 +138,7 @@ export default function ProductCard({ product }: Props) {
           </span>
         </div>
         <div className="sm:flex sm:h-[74px] sm:flex-col sm:justify-between sm:items-end sm:gap-[6px] sm:flex-1-0-0 gap-4">
-          <p className="text-[#64748B] text-[10px] font-medium my-2">
+          <p className="text-[#64748B] text-[10px] font-medium my-2 text-center sm:text-left">
             <strong>Stock:</strong> {product.stock} <strong>|</strong>{' '}
             <strong>SKU:</strong> {product.sku}
           </p>
@@ -153,7 +156,6 @@ export default function ProductCard({ product }: Props) {
                 -
               </button>
 
-              {/* Input de cantidad en lugar del span */}
               <input
                 type="number"
                 min="0"
@@ -187,21 +189,21 @@ export default function ProductCard({ product }: Props) {
         </div>
       </div>
       <div className="sm:hidden rounded-full w-[30px] h-[30px] bg-slate-100 absolute right-[14px] top-[12px] flex items-center justify-center">
-        {!isFavorite ? (
+        {!isProductFavorite ? (
           <HeartIcon
             className="cursor-pointer"
             color="#475569"
             width={16}
             height={16}
-            onClick={toggleFavorite}
+            onClick={handleSetFavorite}
           />
         ) : (
-          <HeathIconSolid
+          <HeartIconSolid
             className="cursor-pointer"
-            color="#475569"
+            color="#ef4444"
             width={16}
             height={16}
-            onClick={toggleFavorite}
+            onClick={handleSetFavorite}
           />
         )}
       </div>

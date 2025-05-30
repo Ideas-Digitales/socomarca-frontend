@@ -41,6 +41,7 @@ export default function PrivateLayout({
             children
           )}
         </main>
+
         {/* Footer */}
         <Footer />
       </div>
