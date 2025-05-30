@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../components/admin/Sidebar';
 import SidebarMobile from '../components/admin/SidebarMobile';
 import useStore, { useInitMobileDetection } from '@/stores/base';
-import { SuperAdminDashboardConfig } from '@/configs/sidebarConfigs';
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
@@ -46,14 +45,11 @@ export default function SuperAdministradorLayout({
       <div className="w-full">
         {/* Sidebar - Solo se renderiza en desktop */}
         {!isTablet && (
-          <Sidebar
-            config={SuperAdminDashboardConfig}
-            userName="Alex Mandarino"
-          />
+          <Sidebar configType="super-admin" userName="Alex Mandarino" />
         )}
 
         {/* Mobile Sidebar - Solo se renderiza en tablet/mobile */}
-        {isTablet && <SidebarMobile config={SuperAdminDashboardConfig} />}
+        {isTablet && <SidebarMobile configType="super-admin" />}
 
         {/* Main Content Area */}
         <div

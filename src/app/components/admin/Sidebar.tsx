@@ -1,4 +1,3 @@
-// components/Sidebar.tsx
 'use client';
 
 import Image from 'next/image';
@@ -8,17 +7,17 @@ import Logo from '../global/Logo';
 import HR from '../global/HR';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
-import { SidebarConfig } from '@/interfaces/sidebar.interface';
+import { getSidebarConfig } from '@/configs/sidebarConfigs';
 
 const avatar = '/assets/global/avatar.png';
 
 interface SidebarProps {
-  config: SidebarConfig;
+  configType: 'admin' | 'super-admin';
   userName?: string;
 }
 
 export default function Sidebar({
-  config,
+  configType,
   userName = 'Alex Mandarino',
 }: SidebarProps) {
   const pathname = usePathname();
@@ -33,14 +32,24 @@ export default function Sidebar({
     setActiveItemByUrl,
     setSidebarConfig,
     currentSidebarConfig,
+    openModal,
+    closeModal,
   } = useStore();
 
   // Establecer la configuración del sidebar cuando el componente se monta
   useEffect(() => {
-    if (!currentSidebarConfig || currentSidebarConfig !== config) {
+    try {
+      const config = getSidebarConfig(
+        configType,
+        openModal,
+        closeModal,
+        router
+      );
       setSidebarConfig(config);
+    } catch (error) {
+      console.error('Error setting sidebar config:', error);
     }
-  }, [config, setSidebarConfig, currentSidebarConfig]);
+  }, [configType, setSidebarConfig, openModal, closeModal, router]);
 
   // Detectar y activar el menú correcto basado en la URL actual
   useEffect(() => {
@@ -61,8 +70,9 @@ export default function Sidebar({
       const url = item.url || item.href;
       router.push(url);
       handleMenuClick(index, false);
-    } else {
+    } else if (item.onClick) {
       // Para casos especiales (como "Cerrar sesión" con onClick)
+      item.onClick();
       handleMenuClick(index, false);
     }
   };

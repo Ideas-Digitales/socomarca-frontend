@@ -8,13 +8,13 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 import Logo from '../global/Logo';
 import useStore from '@/stores/base';
-import { SidebarConfig } from '@/interfaces/sidebar.interface';
+import { getSidebarConfig } from '@/configs/sidebarConfigs';
 
 interface SidebarMobileProps {
-  config: SidebarConfig;
+  configType: 'admin' | 'super-admin';
 }
 
-export default function SidebarMobile({ config }: SidebarMobileProps) {
+export default function SidebarMobile({ configType }: SidebarMobileProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -32,14 +32,24 @@ export default function SidebarMobile({ config }: SidebarMobileProps) {
     isSubmenuActive,
     setSidebarConfig,
     currentSidebarConfig,
+    openModal,
+    closeModal,
   } = useStore();
 
   // Establecer la configuración del sidebar cuando el componente se monta
   useEffect(() => {
-    if (!currentSidebarConfig || currentSidebarConfig !== config) {
+    try {
+      const config = getSidebarConfig(
+        configType,
+        openModal,
+        closeModal,
+        router
+      );
       setSidebarConfig(config);
+    } catch (error) {
+      console.error('Error setting sidebar config:', error);
     }
-  }, [config, setSidebarConfig, currentSidebarConfig]);
+  }, [configType, setSidebarConfig, openModal, closeModal, router]);
 
   // Obtener información del submenú activo
   const openSubmenuIndex = openSubmenus.length > 0 ? openSubmenus[0] : null;

@@ -70,7 +70,7 @@ const ListsModal = ({
 
       <div className="flex flex-col sm:flex-row gap-4">
         <button
-          className="bg-slate-500 text-white hover:bg-slate-600 transition-colors ease-in-out duration-300 px-12 py-3 border-[1px] b cursor-pointer rounded"
+          className="bg-slate-500 text-white hover:bg-slate-600 transition-colors ease-in-out duration-300 px-12 py-3 border-[1px] cursor-pointer rounded"
           onClick={onCancel}
         >
           Cancelar

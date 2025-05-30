@@ -5,7 +5,6 @@ import DescargarDatos from '../components/admin/DescargarDatos';
 import Sidebar from '../components/admin/Sidebar';
 import SidebarMobile from '../components/admin/SidebarMobile';
 import useStore, { useInitMobileDetection } from '@/stores/base';
-import { adminDashboardConfig } from '@/configs/sidebarConfigs';
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
@@ -53,12 +52,10 @@ export default function AdministradorLayout({
     <>
       <div className="w-full">
         {/* Sidebar - Solo se renderiza en desktop */}
-        {!isTablet && (
-          <Sidebar config={adminDashboardConfig} userName="Alex Mandarino" />
-        )}
+        {!isTablet && <Sidebar configType="admin" userName="Alex Mandarino" />}
 
         {/* Mobile Sidebar - Solo se renderiza en tablet/mobile */}
-        {isTablet && <SidebarMobile config={adminDashboardConfig} />}
+        {isTablet && <SidebarMobile configType="admin" />}
 
         {/* Main Content Area */}
         <div
