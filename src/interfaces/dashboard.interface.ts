@@ -81,37 +81,3 @@ export interface DashboardTableLayoutProps<T = any> {
   onSearch?: (searchTerm: string) => void;
   onClearSearch?: () => void;
 }
-
-// Configuración legacy (mantener para compatibilidad si es necesario)
-export interface DashboardConfig extends DashboardTableConfig {
-  metrics: MetricCard[];
-  showBottomChart?: boolean;
-}
-
-// Props legacy del DashboardLayout (mantener para referencia durante migración)
-export interface DashboardLayoutProps<T = any> {
-  config: DashboardConfig;
-  tableData?: T[];
-  tableColumns?: TableColumn<T>[];
-  productPaginationMeta?: PaginationMeta;
-  onPageChange?: (page: number) => void;
-  onDownload?: () => void;
-  onAmountFilter?: (amount: string) => void;
-  onClientFilter?: (clientId: number) => void;
-  onCategoryFilter?: (selectedIds: number[]) => void;
-  onFilter?: () => void;
-  clients?: Client[];
-  onProviderFilter?: () => void;
-  onSortBy?: (option: SortOption | null) => void;
-  categoryFilterOptions?: string[];
-  providerFilterOptions?: string[];
-  sortByOptions?: string[];
-  categories?: Category[];
-  onCommuneFilter?: (selectedIds: string[]) => void;
-  communes?: Comuna[];
-  amountValue?: string;
-  selectedCategories?: number[];
-  selectedCommunes?: string[];
-  selectedSortOption?: SortOption | null;
-  amountFilterOptions?: string[];
-}

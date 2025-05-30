@@ -13,6 +13,7 @@ import { createSidebarSlice } from './slices/sidebarSlice';
 import { createBrandsSlice } from './slices/brandsSlice';
 import { createStoreSlice } from './slices/storeSlice';
 import { createFiltersSlice } from './slices/filterSlice';
+import { createModalSlice } from './slices/modalSlice';
 
 // Estado inicial
 const initialState: StoreState = {
@@ -47,6 +48,11 @@ const initialState: StoreState = {
   isBrandsOpen: false,
   isFavoritesOpen: false,
   isPriceOpen: true,
+  // Estados del modal
+  isModalOpen: false,
+  modalTitle: '',
+  modalSize: 'md',
+  modalContent: null,
 };
 
 // Crear el store combinando todos los slices
@@ -61,6 +67,7 @@ const useStore = create<Store>()((...a) => ({
   ...createSidebarSlice(...a),
   ...createStoreSlice(...a),
   ...createFiltersSlice(...a),
+  ...createModalSlice(...a),
 }));
 
 // Hook para manejar la detección de dispositivos móviles

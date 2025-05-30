@@ -1,59 +1,6 @@
 import { StateCreator } from 'zustand';
 import { SidebarSlice, StoreState } from '../types';
-
-// Configuración de menús (debe coincidir con el menú del componente)
-const menuConfig = [
-  {
-    label: 'Reporte de ventas',
-    submenu: [
-      { name: 'Total de ventas', url: '/admin/total-de-ventas' },
-      { name: 'Transacciones exitosas', url: '/admin/transacciones-exitosas' },
-      { name: 'Cliente con más compra', url: '/admin/cliente-mas-compra' },
-      { name: 'Productos con más ventas', url: '/admin/productos-mas-ventas' },
-      { name: 'Comunas con más ventas', url: '/admin/comunas-mas-ventas' },
-      { name: 'Categoría con más ventas', url: '/admin/categoria-mas-ventas' },
-      {
-        name: 'Transacciones fallidas o canceladas',
-        url: '/admin/transacciones-fallidas',
-      },
-    ],
-  },
-  {
-    label: 'Productos',
-    url: '/admin/productos',
-  },
-  {
-    label: 'Categorías',
-    url: '/admin/categorias',
-  },
-  {
-    label: 'Clientes',
-    url: '/admin/clientes',
-  },
-  {
-    label: 'Información del sitio',
-    url: '/admin/informacion-sitio',
-  },
-  {
-    label: 'Términos y condiciones',
-    url: '/admin/terminos-condiciones',
-  },
-  {
-    label: 'Políticas y privacidad',
-    url: '/admin/politicas-privacidad',
-  },
-  {
-    label: 'Preguntas frecuentes',
-    url: '/admin/preguntas-frecuentes',
-  },
-  {
-    label: 'Mensaje para el cliente',
-    url: '/admin/mensaje-cliente',
-  },
-  {
-    label: 'Cerrar sesión',
-  },
-];
+import { SidebarConfig } from '@/interfaces/sidebar.interface';
 
 export const createSidebarSlice: StateCreator<
   StoreState & SidebarSlice,
@@ -61,6 +8,22 @@ export const createSidebarSlice: StateCreator<
   [],
   SidebarSlice
 > = (set, get) => ({
+  // Estados iniciales
+  activeItem: null,
+  openSubmenus: [],
+  isMobileSidebarOpen: false,
+  currentSidebarConfig: null,
+
+  // Acción para establecer la configuración del sidebar
+  setSidebarConfig: (config: SidebarConfig) => {
+    set({
+      currentSidebarConfig: config,
+      // Reset navigation cuando cambia la configuración
+      activeItem: config.defaultActiveItem || null,
+      openSubmenus: [],
+    });
+  },
+
   // Acciones de navegación
   setActiveItem: (item) => {
     set({ activeItem: item });
@@ -88,36 +51,52 @@ export const createSidebarSlice: StateCreator<
     set({ isMobileSidebarOpen: false });
   },
 
-  // Nueva función para activar menú basado en URL
-  // Nueva función para activar menú basado en URL (SIN abrir submenús automáticamente)
+  // Función para activar menú basado en URL
   setActiveItemByUrl: (currentPath: string) => {
+    const { currentSidebarConfig } = get();
+
+    if (!currentSidebarConfig) {
+      console.warn('No sidebar configuration set');
+      return;
+    }
+
     let foundItem = null;
+    const menuItems = currentSidebarConfig.items;
 
     // Buscar en submenús primero
-    for (let menuIndex = 0; menuIndex < menuConfig.length; menuIndex++) {
-      const menuItem = menuConfig[menuIndex];
+    for (let menuIndex = 0; menuIndex < menuItems.length; menuIndex++) {
+      const menuItem = menuItems[menuIndex];
 
-      if (menuItem.submenu) {
+      // Verificar submenús (soportar tanto 'submenu' como 'subItems')
+      const subItems = menuItem.submenu || menuItem.subItems;
+
+      if (subItems) {
         for (
           let submenuIndex = 0;
-          submenuIndex < menuItem.submenu.length;
+          submenuIndex < subItems.length;
           submenuIndex++
         ) {
-          const submenuItem = menuItem.submenu[submenuIndex];
-          if (submenuItem.url === currentPath) {
+          const submenuItem = subItems[submenuIndex];
+          const submenuUrl = submenuItem.url || submenuItem.href;
+
+          if (submenuUrl === currentPath) {
             foundItem = { type: 'submenu' as const, menuIndex, submenuIndex };
             break;
           }
         }
-      } else if (menuItem.url === currentPath) {
-        foundItem = { type: 'menu' as const, menuIndex };
-        break;
+      } else {
+        // Verificar URL del menú principal (soportar tanto 'url' como 'href')
+        const menuUrl = menuItem.url || menuItem.href;
+        if (menuUrl === currentPath) {
+          foundItem = { type: 'menu' as const, menuIndex };
+          break;
+        }
       }
 
       if (foundItem) break;
     }
 
-    // Solo actualizar el item activo, NO abrir submenús automáticamente
+    // Solo actualizar el item activo
     if (foundItem) {
       set({ activeItem: foundItem });
     }
@@ -157,10 +136,22 @@ export const createSidebarSlice: StateCreator<
 
   // Acciones compuestas para facilitar el uso
   handleMenuClick: (menuIndex, hasSubmenu) => {
+    const { currentSidebarConfig } = get();
+
+    if (!currentSidebarConfig) return;
+
     if (hasSubmenu) {
       get().toggleSubmenu(menuIndex);
     } else {
+      const menuItem = currentSidebarConfig.items[menuIndex];
+
+      // Si tiene onClick personalizado, ejecutarlo
+      if (menuItem.onClick) {
+        menuItem.onClick();
+      }
+
       get().setActiveItem({ type: 'menu', menuIndex });
+
       // En móvil, cerrar sidebar al seleccionar un ítem sin submenú
       if (get().isMobile) {
         get().closeMobileSidebar();
@@ -170,6 +161,7 @@ export const createSidebarSlice: StateCreator<
 
   handleSubmenuClick: (menuIndex, submenuIndex) => {
     get().setActiveItem({ type: 'submenu', menuIndex, submenuIndex });
+
     // En móvil, cerrar sidebar al seleccionar submenú
     if (get().isMobile) {
       get().closeMobileSidebar();

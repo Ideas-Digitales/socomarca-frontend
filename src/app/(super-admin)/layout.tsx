@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import DescargarDatos from '../components/admin/DescargarDatos';
 import Sidebar from '../components/admin/Sidebar';
 import SidebarMobile from '../components/admin/SidebarMobile';
 import useStore, { useInitMobileDetection } from '@/stores/base';
-import { adminDashboardConfig } from '@/configs/sidebarConfigs';
+import { SuperAdminDashboardConfig } from '@/configs/sidebarConfigs';
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
@@ -16,7 +15,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-export default function AdministradorLayout({
+export default function SuperAdministradorLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -25,14 +24,8 @@ export default function AdministradorLayout({
   const [isMounted, setIsMounted] = useState(false);
 
   useInitMobileDetection();
-  const { isTablet, fetchCategories, fetchProducts } = useStore();
+  const { isTablet } = useStore();
 
-  useEffect(() => {
-    fetchProducts();
-    fetchCategories();
-  }, [fetchProducts, fetchCategories]);
-
-  // Efecto para manejar el estado de montaje del componente
   useEffect(() => {
     setIsMounted(true);
 
@@ -44,7 +37,6 @@ export default function AdministradorLayout({
     return () => clearTimeout(timer);
   }, []);
 
-  // Mostrar spinner si no está montado o está cargando
   if (!isMounted || isLoading) {
     return <LoadingSpinner />;
   }
@@ -54,11 +46,14 @@ export default function AdministradorLayout({
       <div className="w-full">
         {/* Sidebar - Solo se renderiza en desktop */}
         {!isTablet && (
-          <Sidebar config={adminDashboardConfig} userName="Alex Mandarino" />
+          <Sidebar
+            config={SuperAdminDashboardConfig}
+            userName="Alex Mandarino"
+          />
         )}
 
         {/* Mobile Sidebar - Solo se renderiza en tablet/mobile */}
-        {isTablet && <SidebarMobile config={adminDashboardConfig} />}
+        {isTablet && <SidebarMobile config={SuperAdminDashboardConfig} />}
 
         {/* Main Content Area */}
         <div
@@ -66,7 +61,6 @@ export default function AdministradorLayout({
             !isTablet ? 'ml-[290px]' : ''
           }`}
         >
-          {!isTablet && <DescargarDatos />}
           <main className="flex-grow relative w-full py-[88px]">
             {children}
           </main>

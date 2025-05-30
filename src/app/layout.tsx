@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import NavbarTest from './components/global/NavbarTest';
 import { Poppins } from 'next/font/google';
+import Modal from './components/global/Modal';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body className="font-poppins">
         {children}
         <NavbarTest />
+        <Modal />
       </body>
     </html>
   );

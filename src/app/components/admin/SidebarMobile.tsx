@@ -8,9 +8,13 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 import Logo from '../global/Logo';
 import useStore from '@/stores/base';
-import { menuItems, MenuItem } from '@/lib/menuData';
+import { SidebarConfig } from '@/interfaces/sidebar.interface';
 
-export default function SidebarMobile() {
+interface SidebarMobileProps {
+  config: SidebarConfig;
+}
+
+export default function SidebarMobile({ config }: SidebarMobileProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -26,22 +30,36 @@ export default function SidebarMobile() {
     setActiveItemByUrl,
     isMenuActive,
     isSubmenuActive,
+    setSidebarConfig,
+    currentSidebarConfig,
   } = useStore();
 
+  // Establecer la configuración del sidebar cuando el componente se monta
+  useEffect(() => {
+    if (!currentSidebarConfig || currentSidebarConfig !== config) {
+      setSidebarConfig(config);
+    }
+  }, [config, setSidebarConfig, currentSidebarConfig]);
+
+  // Obtener información del submenú activo
   const openSubmenuIndex = openSubmenus.length > 0 ? openSubmenus[0] : null;
-  const activeSubmenuId =
-    openSubmenuIndex !== null ? menuItems[openSubmenuIndex]?.id : null;
+  const activeSubmenuItem =
+    openSubmenuIndex !== null && currentSidebarConfig
+      ? currentSidebarConfig.items[openSubmenuIndex]
+      : null;
 
   // Detectar y activar el menú correcto basado en la URL actual
   useEffect(() => {
-    setActiveItemByUrl(pathname);
-  }, [pathname, setActiveItemByUrl]);
+    if (currentSidebarConfig) {
+      setActiveItemByUrl(pathname);
+    }
+  }, [pathname, setActiveItemByUrl, currentSidebarConfig]);
 
   // Cerrar con tecla ESC
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (activeSubmenuId) {
+        if (activeSubmenuItem) {
           // Si hay submenu activo, solo cerrarlo (volver al menú principal)
           resetNavigation();
         } else if (isMobileSidebarOpen) {
@@ -55,7 +73,7 @@ export default function SidebarMobile() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [
     isMobileSidebarOpen,
-    activeSubmenuId,
+    activeSubmenuItem,
     closeMobileSidebar,
     resetNavigation,
   ]);
@@ -72,26 +90,35 @@ export default function SidebarMobile() {
     };
   }, [isMobileSidebarOpen]);
 
-  const handleItemClick = (item: MenuItem, index: number) => {
-    if (item.subItems) {
+  const handleItemClick = (item: any, index: number) => {
+    const subItems = item.submenu || item.subItems;
+
+    if (subItems) {
       // Tiene submenu - usar el store para manejarlo
       handleMenuClick(index, true);
     } else {
       // No tiene submenu - navegar directamente
-      if (item.href) {
-        router.push(item.href);
+      const url = item.url || item.href;
+      if (url) {
+        router.push(url);
+      } else if (item.onClick) {
+        // Ejecutar función personalizada (ej: cerrar sesión)
+        item.onClick();
       }
       handleMenuClick(index, false); // Esto cerrará el sidebar automáticamente
     }
   };
 
   const handleSubItemClick = (
-    subItem: { label: string; href: string },
+    subItem: any,
     menuIndex: number,
     subIndex: number
   ) => {
     // Navegar y cerrar
-    router.push(subItem.href);
+    const url = subItem.url || subItem.href;
+    if (url) {
+      router.push(url);
+    }
     handleSubmenuClick(menuIndex, subIndex); // Esto cerrará el sidebar automáticamente
   };
 
@@ -106,6 +133,11 @@ export default function SidebarMobile() {
     closeMobileSidebar();
     resetNavigation();
   };
+
+  // Si no hay configuración, no renderizar nada
+  if (!currentSidebarConfig) {
+    return null;
+  }
 
   return (
     <>
@@ -156,13 +188,14 @@ export default function SidebarMobile() {
 
         {/* Items del menú */}
         <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
-          {menuItems.map((item, index) => {
+          {currentSidebarConfig.items.map((item, index) => {
             const IconComponent = item.icon;
             const isActive = isMenuActive(index);
+            const subItems = item.submenu || item.subItems;
 
             return (
               <button
-                key={item.id}
+                key={item.id || index}
                 onClick={() => handleItemClick(item, index)}
                 className={`w-full flex items-center justify-between px-6 py-4 transition-all ease-in-out duration-300 focus:outline-none group border-b-[1px] border-slate-300 ${
                   isActive
@@ -171,13 +204,15 @@ export default function SidebarMobile() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <IconComponent
-                    className={`w-5 h-5 transition-all ease-in-out duration-300 ${
-                      isActive
-                        ? 'text-lime-700'
-                        : 'text-slate-600 group-hover:text-slate-800'
-                    }`}
-                  />
+                  {IconComponent && (
+                    <IconComponent
+                      className={`w-5 h-5 transition-all ease-in-out duration-300 ${
+                        isActive
+                          ? 'text-lime-700'
+                          : 'text-slate-600 group-hover:text-slate-800'
+                      }`}
+                    />
+                  )}
                   <span
                     className={`font-medium transition-all ease-in-out duration-300 ${
                       isActive
@@ -188,7 +223,7 @@ export default function SidebarMobile() {
                     {item.label}
                   </span>
                 </div>
-                {item.subItems && (
+                {subItems && (
                   <ChevronRightIcon
                     className={`w-5 h-5 transition-all ease-in-out duration-300 ${
                       isActive
@@ -204,7 +239,7 @@ export default function SidebarMobile() {
       </div>
 
       {/* Submenu */}
-      {activeSubmenuId && (
+      {activeSubmenuItem && (
         <div className="fixed top-0 left-0 h-full w-80 bg-slate-100 shadow-2xl z-[60] transform transition-all duration-300 ease-out translate-x-0 animate-in slide-in-from-left">
           {/* Header del submenu */}
           <div className="flex items-center gap-4 p-4 bg-slate-100 border-b-[1px] border-slate-300">
@@ -216,18 +251,15 @@ export default function SidebarMobile() {
               <ChevronLeftIcon width={24} height={24} />
             </button>
             <h2 className="text-lg font-medium uppercase text-[15px] flex-1">
-              {menuItems.find((item) => item.id === activeSubmenuId)?.label}
+              {activeSubmenuItem.label}
             </h2>
           </div>
 
           {/* Items del submenu */}
           <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
-            {menuItems
-              .find((item) => item.id === activeSubmenuId)
-              ?.subItems?.map((subItem, subIndex) => {
-                const menuIndex = menuItems.findIndex(
-                  (item) => item.id === activeSubmenuId
-                );
+            {(activeSubmenuItem.submenu || activeSubmenuItem.subItems)?.map(
+              (subItem, subIndex) => {
+                const menuIndex = openSubmenuIndex!;
                 const isSubActive = isSubmenuActive(menuIndex, subIndex);
 
                 return (
@@ -249,11 +281,12 @@ export default function SidebarMobile() {
                           : 'text-slate-700 group-hover:text-slate-900'
                       }`}
                     >
-                      {subItem.label}
+                      {subItem.name || subItem.label}
                     </span>
                   </button>
                 );
-              })}
+              }
+            )}
           </div>
         </div>
       )}

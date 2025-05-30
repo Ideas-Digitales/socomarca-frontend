@@ -9,6 +9,7 @@ import {
   TableColumn,
 } from '@/interfaces/dashboard.interface';
 import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
+import useStore from '@/stores/base';
 import { useState } from 'react';
 
 interface TransaccionFallida {
@@ -44,6 +45,7 @@ const razonesFalla = [
 ];
 
 export default function TransaccionesFallidas() {
+  const { categories } = useStore();
   // Generar datos simulados de transacciones fallidas
   const [transacciones] = useState(() => {
     const transaccionesBase = generarTransaccionesAleatorias(100);
@@ -170,16 +172,10 @@ export default function TransaccionesFallidas() {
     // Implementar lógica de filtros generales
   };
 
-  const handleSearch = (searchTerm: string) => {
-    console.log('Buscar transacción:', searchTerm);
-    // Implementar lógica de búsqueda por cliente o carrito
-  };
-
   const handleClearSearch = () => {
     console.log('Limpiar búsqueda');
     // Implementar lógica para limpiar búsqueda
   };
-
 
   return (
     <DashboardTableLayout
@@ -189,6 +185,7 @@ export default function TransaccionesFallidas() {
       tableColumns={transaccionesFallidasColumns}
       productPaginationMeta={productPaginationMeta}
       onPageChange={changePage}
+      categories={categories}
       // Props para gráficos (se pasan directamente)
       chartConfig={chartConfig}
       showDatePicker={true}
@@ -203,7 +200,6 @@ export default function TransaccionesFallidas() {
       selectedCategories={selectedCategories}
       amountValue={amountFilter}
       // Funciones de búsqueda
-      onSearch={handleSearch}
       onClearSearch={handleClearSearch}
     />
   );

@@ -1,3 +1,4 @@
+// components/Sidebar.tsx
 'use client';
 
 import Image from 'next/image';
@@ -7,12 +8,19 @@ import Logo from '../global/Logo';
 import HR from '../global/HR';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
-import { MenuItem, menuItems } from '@/lib/menuData';
+import { SidebarConfig } from '@/interfaces/sidebar.interface';
 
 const avatar = '/assets/global/avatar.png';
 
-export default function Sidebar() {
-  const userName = 'Alex Mandarino';
+interface SidebarProps {
+  config: SidebarConfig;
+  userName?: string;
+}
+
+export default function Sidebar({
+  config,
+  userName = 'Alex Mandarino',
+}: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -23,37 +31,59 @@ export default function Sidebar() {
     handleMenuClick,
     handleSubmenuClick,
     setActiveItemByUrl,
+    setSidebarConfig,
+    currentSidebarConfig,
   } = useStore();
+
+  // Establecer la configuración del sidebar cuando el componente se monta
+  useEffect(() => {
+    if (!currentSidebarConfig || currentSidebarConfig !== config) {
+      setSidebarConfig(config);
+    }
+  }, [config, setSidebarConfig, currentSidebarConfig]);
 
   // Detectar y activar el menú correcto basado en la URL actual
   useEffect(() => {
-    setActiveItemByUrl(pathname);
-  }, [pathname, setActiveItemByUrl]);
+    if (currentSidebarConfig) {
+      setActiveItemByUrl(pathname);
+    }
+  }, [pathname, setActiveItemByUrl, currentSidebarConfig]);
 
   // Función para manejar navegación
-  const handleNavigation = (item: MenuItem, index: number) => {
-    if (item.subItems) {
+  const handleNavigation = (item: any, index: number) => {
+    const subItems = item.submenu || item.subItems;
+
+    if (subItems) {
       // Si tiene submenú, solo abrir/cerrar el submenú
       handleMenuClick(index, true);
-    } else if (item.href) {
+    } else if (item.url || item.href) {
       // Si no tiene submenú pero tiene URL, navegar
-      router.push(item.href);
+      const url = item.url || item.href;
+      router.push(url);
       handleMenuClick(index, false);
     } else {
-      // Para casos especiales como "Cerrar sesión"
+      // Para casos especiales (como "Cerrar sesión" con onClick)
       handleMenuClick(index, false);
     }
   };
 
   // Función para manejar navegación de submenús
   const handleSubmenuNavigation = (
-    subItem: { label: string; href: string },
+    subItem: any,
     menuIndex: number,
     subIndex: number
   ) => {
-    router.push(subItem.href);
+    const url = subItem.url || subItem.href;
+    if (url) {
+      router.push(url);
+    }
     handleSubmenuClick(menuIndex, subIndex);
   };
+
+  // Si no hay configuración, no renderizar nada
+  if (!currentSidebarConfig) {
+    return null;
+  }
 
   return (
     <nav className="fixed left-0 top-0 h-screen w-[290px] flex flex-col items-center bg-slate-100 z-10">
@@ -85,11 +115,12 @@ export default function Sidebar() {
 
       {/* Menu - Scrollable area */}
       <div className="w-full flex-1 overflow-y-auto">
-        {menuItems.map((item, index) => {
+        {currentSidebarConfig.items.map((item, index) => {
           const IconComponent = item.icon;
+          const subItems = item.submenu || item.subItems;
 
           return (
-            <div key={item.id} className="flex flex-col w-full">
+            <div key={item.id || index} className="flex flex-col w-full">
               <div
                 className={`flex items-center gap-3 py-4 px-6 text-sm cursor-pointer transition-all ease-in-out duration-500 ${
                   isMenuActive(index)
@@ -99,10 +130,10 @@ export default function Sidebar() {
                 onClick={() => handleNavigation(item, index)}
               >
                 <span className="flex-shrink-0">
-                  <IconComponent className="w-5 h-5" />
+                  {IconComponent && <IconComponent className="w-5 h-5" />}
                 </span>
                 <span className="flex-1">{item.label}</span>
-                {item.subItems && (
+                {subItems && (
                   <span className="flex-shrink-0 transition-transform ease-in-out duration-500">
                     <ChevronRightIcon
                       className={`w-4 h-4 transition-transform duration-200 transform ${
@@ -112,7 +143,7 @@ export default function Sidebar() {
                   </span>
                 )}
               </div>
-              {item.subItems && (
+              {subItems && (
                 <div
                   className={`overflow-hidden transition-all duration-500 ease-in-out ${
                     isSubmenuOpen(index)
@@ -121,7 +152,7 @@ export default function Sidebar() {
                   }`}
                 >
                   <div className="flex flex-col bg-slate-50">
-                    {item.subItems.map((subItem, subIndex) => (
+                    {subItems.map((subItem, subIndex) => (
                       <div
                         key={subIndex}
                         className={`flex items-center gap-3 py-2 px-6 text-sm cursor-pointer transition-colors duration-200 ${
@@ -133,7 +164,7 @@ export default function Sidebar() {
                           handleSubmenuNavigation(subItem, index, subIndex)
                         }
                       >
-                        <span>{subItem.label}</span>
+                        <span>{subItem.name || subItem.label}</span>
                       </div>
                     ))}
                   </div>

@@ -1,6 +1,32 @@
 import { Product, ProductToBuy } from '@/interfaces/product.interface';
 import { Category } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
+import { SidebarConfig } from '@/interfaces/sidebar.interface';
+
+// Tipos para el modal
+export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
+export type ModalContentType = 'confirm' | 'info' | 'form' | 'custom' | null;
+
+export interface ModalSlice {
+  // Estados
+  isModalOpen: boolean;
+  modalTitle: string;
+  modalSize: ModalSize;
+  modalContent: React.ReactNode;
+
+  // Acciones
+  openModal: (
+    content?: string,
+    options?: {
+      title?: string;
+      size?: ModalSize;
+      showCloseButton?: boolean;
+      content?: React.ReactNode;
+    }
+  ) => void;
+  closeModal: () => void;
+}
+
 export interface StoreSlice {
   // Métodos individuales de reset
   resetBrandsState: () => void;
@@ -11,6 +37,7 @@ export interface StoreSlice {
   resetSearchRelatedStates: () => void;
   resetAllStates: () => void;
 }
+
 export interface PaginationLinks {
   first: string | null;
   last: string | null;
@@ -43,8 +70,6 @@ export interface PaginationMeta {
 }
 
 export interface FiltersSlice {
-  // Estados de filtros (ya están en StoreState)
-
   // Acciones para categorías
   setSelectedCategories: (categories: number[]) => void;
   toggleCategorySelection: (categoryId: number) => void;
@@ -98,6 +123,7 @@ export interface StoreState {
 
   // Marcas
   brands: Brand[];
+
   // Estados de filtros
   selectedCategories: number[];
   selectedBrands: number[];
@@ -113,6 +139,7 @@ export interface StoreState {
   isBrandsOpen: boolean;
   isFavoritesOpen: boolean;
   isPriceOpen: boolean;
+
   // UI
   isLoading: boolean;
   isMobile: boolean;
@@ -132,6 +159,12 @@ export interface StoreState {
   activeItem: ActiveItem | null;
   openSubmenus: number[];
   isMobileSidebarOpen: boolean;
+
+  // Estados del modal
+  isModalOpen: boolean;
+  modalTitle: string;
+  modalSize: ModalSize;
+  modalContent: React.ReactNode;
 }
 
 // Acciones de productos
@@ -154,7 +187,6 @@ export interface CategoriesSlice {
 
 // Acciones de marcas
 export interface BrandsSlice {
-  // ← Nueva interfaz
   setBrands: (brands: Brand[]) => void;
   fetchBrands: () => Promise<void>;
 }
@@ -184,20 +216,27 @@ export interface PaginationSlice {
 }
 
 export interface SidebarSlice {
-  //Actions
+  // Estados
+  activeItem: ActiveItem | null;
+  openSubmenus: number[];
+  isMobileSidebarOpen: boolean;
+  currentSidebarConfig: SidebarConfig | null;
+
+  // Acciones básicas
   setActiveItem: (item: ActiveItem | null) => void;
+  setSidebarConfig: (config: SidebarConfig) => void;
   toggleSubmenu: (menuIndex: number) => void;
   closeAllSubmenus: () => void;
   setMobileSidebarOpen: (isOpen: boolean) => void;
   closeMobileSidebar: () => void;
-  setActiveItemByUrl: (currentPath: string) => void; // Nueva función
+  setActiveItemByUrl: (currentPath: string) => void;
 
   // Helpers
   isMenuActive: (menuIndex: number) => boolean;
   isSubmenuActive: (menuIndex: number, submenuIndex: number) => boolean;
   isSubmenuOpen: (menuIndex: number) => boolean;
 
-  // Complex Actions
+  // Acciones compuestas
   handleMenuClick: (menuIndex: number, hasSubmenu: boolean) => void;
   handleSubmenuClick: (menuIndex: number, submenuIndex: number) => void;
   resetNavigation: () => void;
@@ -213,4 +252,5 @@ export type Store = StoreState &
   CartSlice &
   PaginationSlice &
   SidebarSlice &
-  StoreSlice;
+  StoreSlice &
+  ModalSlice;
