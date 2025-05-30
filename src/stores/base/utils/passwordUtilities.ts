@@ -136,7 +136,7 @@ export function generateStrongPassword(
   let uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let lowercase = 'abcdefghijklmnopqrstuvwxyz';
   let numbers = '0123456789';
-  let symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
   // Excluir caracteres similares si se solicita
   if (excludeSimilar) {

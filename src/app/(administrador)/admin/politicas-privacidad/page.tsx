@@ -1,25 +1,25 @@
-'use client'
+'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
-import TextStyle from '@tiptap/extension-text-style'
-import Color from '@tiptap/extension-color'
-import { useState } from 'react'
-import { 
-  BoldIcon, 
-  ItalicIcon, 
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import TextStyle from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
+import { useState } from 'react';
+import {
+  BoldIcon,
+  ItalicIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   LinkIcon,
-  SwatchIcon
-} from '@heroicons/react/24/outline'
+  SwatchIcon,
+} from '@heroicons/react/24/outline';
 
 export default function RichTextEditor() {
-  const [showColorPicker, setShowColorPicker] = useState(false)
-  const [showLinkDialog, setShowLinkDialog] = useState(false)
-  const [linkUrl, setLinkUrl] = useState('')
-  const [customColor, setCustomColor] = useState('#000000')
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
+  const [customColor, setCustomColor] = useState('#000000');
 
   const editor = useEditor({
     extensions: [
@@ -36,35 +36,36 @@ export default function RichTextEditor() {
     content: '<p>Comienza a escribir tu contenido aquí...</p>',
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] p-4',
+        class:
+          'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] p-4',
       },
     },
-  })
+  });
 
   const addLink = () => {
     if (linkUrl) {
-      editor?.chain().focus().setLink({ href: linkUrl }).run()
-      setLinkUrl('')
-      setShowLinkDialog(false)
+      editor?.chain().focus().setLink({ href: linkUrl }).run();
+      setLinkUrl('');
+      setShowLinkDialog(false);
     }
-  }
+  };
 
   const removeLink = () => {
-    editor?.chain().focus().unsetLink().run()
-  }
+    editor?.chain().focus().unsetLink().run();
+  };
 
   const setTextColor = (color: string) => {
-    editor?.chain().focus().setColor(color).run()
-    setShowColorPicker(false)
-  }
+    editor?.chain().focus().setColor(color).run();
+    setShowColorPicker(false);
+  };
 
   const handleCustomColorChange = (color: string) => {
-    setCustomColor(color)
-    editor?.chain().focus().setColor(color).run()
-  }
+    setCustomColor(color);
+    editor?.chain().focus().setColor(color).run();
+  };
 
   if (!editor) {
-    return null
+    return null;
   }
 
   return (
@@ -74,8 +75,7 @@ export default function RichTextEditor() {
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           Políticas de privacidad
         </h1>
-        <p className="text-gray-600">
-        </p>
+        <p className="text-gray-600"></p>
       </div>
 
       {/* Barra de herramientas */}
@@ -90,7 +90,7 @@ export default function RichTextEditor() {
           >
             <BoldIcon className="w-5 h-5" />
           </button>
-          
+
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className={`p-2 rounded hover:bg-gray-200 transition-colors ${
@@ -126,7 +126,7 @@ export default function RichTextEditor() {
                     className="w-full h-10 rounded border border-gray-300 cursor-pointer"
                   />
                 </div>
-                
+
                 {/* Colores predefinidos */}
                 <div className="mb-3">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -134,9 +134,18 @@ export default function RichTextEditor() {
                   </label>
                   <div className="grid grid-cols-6 gap-2">
                     {[
-                      '#000000', '#374151', '#dc2626', '#ea580c', 
-                      '#ca8a04', '#16a34a', '#0ea5e9', '#7c3aed',
-                      '#db2777', '#84cc16', '#06b6d4', '#8b5cf6'
+                      '#000000',
+                      '#374151',
+                      '#dc2626',
+                      '#ea580c',
+                      '#ca8a04',
+                      '#16a34a',
+                      '#0ea5e9',
+                      '#7c3aed',
+                      '#db2777',
+                      '#84cc16',
+                      '#06b6d4',
+                      '#8b5cf6',
                     ].map((color) => (
                       <button
                         key={color}
@@ -148,11 +157,11 @@ export default function RichTextEditor() {
                     ))}
                   </div>
                 </div>
-                
+
                 <button
                   onClick={() => {
-                    editor.chain().focus().unsetColor().run()
-                    setShowColorPicker(false)
+                    editor.chain().focus().unsetColor().run();
+                    setShowColorPicker(false);
                   }}
                   className="w-full text-xs py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded"
                 >
@@ -167,15 +176,17 @@ export default function RichTextEditor() {
             <button
               onClick={() => {
                 if (editor.isActive('link')) {
-                  removeLink()
+                  removeLink();
                 } else {
-                  setShowLinkDialog(!showLinkDialog)
+                  setShowLinkDialog(!showLinkDialog);
                 }
               }}
               className={`p-2 rounded hover:bg-gray-200 transition-colors ${
                 editor.isActive('link') ? 'bg-gray-300' : ''
               }`}
-              title={editor.isActive('link') ? 'Quitar enlace' : 'Agregar enlace'}
+              title={
+                editor.isActive('link') ? 'Quitar enlace' : 'Agregar enlace'
+              }
             >
               <LinkIcon className="w-5 h-5" />
             </button>
@@ -189,7 +200,7 @@ export default function RichTextEditor() {
                   className="w-full px-3 py-2 border border-gray-300 rounded mb-2 text-sm"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      addLink()
+                      addLink();
                     }
                   }}
                 />
@@ -215,11 +226,15 @@ export default function RichTextEditor() {
 
           <select
             onChange={(e) => {
-              const level = parseInt(e.target.value)
+              const level = parseInt(e.target.value);
               if (level === 0) {
-                editor.chain().focus().setParagraph().run()
+                editor.chain().focus().setParagraph().run();
               } else {
-                editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run()
+                editor
+                  .chain()
+                  .focus()
+                  .toggleHeading({ level: level as 1 | 2 | 3 })
+                  .run();
               }
             }}
             className="px-3 py-1 rounded border border-gray-300 text-sm"
@@ -255,8 +270,8 @@ export default function RichTextEditor() {
 
       {/* Editor de contenido */}
       <div className="border border-gray-200 border-t-0 rounded-b-lg">
-        <EditorContent 
-          editor={editor} 
+        <EditorContent
+          editor={editor}
           className="min-h-[400px] focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-opacity-50 rounded-b-lg"
         />
       </div>
@@ -264,11 +279,14 @@ export default function RichTextEditor() {
       {/* Información adicional */}
       <div className="mt-4 text-sm text-gray-500">
         <p>
-          Utiliza las herramientas de la barra superior para dar formato a tu texto. 
-          También puedes usar atajos de teclado como <kbd className="px-1 py-0.5 bg-gray-100 rounded">Ctrl+B</kbd> para negrita, 
-          <kbd className="px-1 py-0.5 bg-gray-100 rounded">Ctrl+I</kbd> para cursiva, etc.
+          Utiliza las herramientas de la barra superior para dar formato a tu
+          texto. También puedes usar atajos de teclado como{' '}
+          <kbd className="px-1 py-0.5 bg-gray-100 rounded">Ctrl+B</kbd> para
+          negrita,
+          <kbd className="px-1 py-0.5 bg-gray-100 rounded">Ctrl+I</kbd> para
+          cursiva, etc.
         </p>
       </div>
     </div>
-  )
+  );
 }

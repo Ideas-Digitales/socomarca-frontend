@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-export default function InformacionSitio() {
-  return (
-    <div className="">Información del sitio</div>
-  )
-}
-=======
 'use client';
 
 import React, { useState, JSX } from 'react';
@@ -230,4 +223,3 @@ export default function ContactForm() {
     </div>
   );
 }
->>>>>>> 3414011d862c0ea831e2b65f95b913a739770ce9
