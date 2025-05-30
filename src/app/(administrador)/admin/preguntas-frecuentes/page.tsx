@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { PlusIcon } from '@heroicons/react/24/solid'
 import QuestionItem from './QuestionItem'
 
 interface Question {

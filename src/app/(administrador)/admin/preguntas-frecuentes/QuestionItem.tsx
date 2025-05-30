@@ -15,7 +15,7 @@ interface Props {
   onChange: (data: { question?: string; content?: string }) => void
 }
 
-export default function QuestionItem({ id, question, content, onChange }: Props) {
+export default function QuestionItem({ question, content, onChange }: Props) {
   const [open, setOpen] = useState(true)
 
   const editor = useEditor({
