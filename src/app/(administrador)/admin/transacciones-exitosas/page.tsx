@@ -7,6 +7,7 @@ import {
   ChartConfig,
   MetricCard,
   TableColumn,
+  AmountRange,
 } from '@/interfaces/dashboard.interface';
 import {
   generarTransaccionesAleatorias,
@@ -41,7 +42,10 @@ export default function TransaccionesExitosas() {
 
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  const [amountFilter, setAmountFilter] = useState<string>('');
+  const [amountFilter, setAmountFilter] = useState<AmountRange>({
+    min: '',
+    max: '',
+  });
 
   const transaccionesFixed = transacciones.map(
     (transaccion: TransaccionExitosa) => ({
@@ -119,9 +123,8 @@ export default function TransaccionesExitosas() {
     },
   ];
 
-  // Handlers para los filtros
-  const handleAmountFilter = (amount: string) => {
-    console.log('Filtrar por montos:', amount);
+  const handleAmountFilter = (amount: AmountRange) => {
+    console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
   };
 

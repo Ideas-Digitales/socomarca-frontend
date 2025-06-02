@@ -38,7 +38,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onClientFilter,
   clients = [],
   selectedClients = [],
-  amountValue = '',
+  amountValue = { min: '', max: '' }, // ✅ Cambio aquí: valor por defecto es AmountRange
 }: DashboardTableLayoutProps<T>) => {
   const handleSearch = (searchTermValue: string) => {
     console.log('Searching for:', searchTermValue);

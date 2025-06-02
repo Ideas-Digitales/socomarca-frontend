@@ -7,6 +7,7 @@ import {
   ChartConfig,
   MetricCard,
   TableColumn,
+  AmountRange,
 } from '@/interfaces/dashboard.interface';
 import { ComunaVenta, generarComunasVentas } from '@/mock/comunasVentas';
 import { useState } from 'react';
@@ -29,7 +30,10 @@ export default function ComunasMasVentas() {
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [selectedCommunes, setSelectedCommunes] = useState<string[]>([]);
-  const [amountFilter, setAmountFilter] = useState<string>('');
+  const [amountFilter, setAmountFilter] = useState<AmountRange>({
+    min: '',
+    max: '',
+  });
 
   const { changePage, paginatedItems, productPaginationMeta } =
     usePagination(comunasVenta);
@@ -80,9 +84,8 @@ export default function ComunasMasVentas() {
     },
   ];
 
-  // Handlers para los filtros
-  const handleAmountFilter = (amount: string) => {
-    console.log('Filtrar por montos:', amount);
+  const handleAmountFilter = (amount: AmountRange) => {
+    console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
   };
 

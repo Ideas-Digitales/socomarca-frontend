@@ -32,7 +32,7 @@ export default function PrivateLayout({
         {/* Navbar */}
         <Header carro={cartProducts} />
 
-        <main className="flex-grow relative w-full py-3 bg-slate-100">
+        <main className="flex-grow relative w-full py-3 bg-slate-100 mt-4">
           {isLoading ? (
             <div className="flex justify-center items-center h-full min-h-[200px]">
               <LoadingSpinner />

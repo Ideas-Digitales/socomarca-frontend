@@ -7,6 +7,7 @@ import {
   ChartConfig,
   MetricCard,
   TableColumn,
+  AmountRange,
 } from '@/interfaces/dashboard.interface';
 import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
 import useStore from '@/stores/base';
@@ -66,7 +67,10 @@ export default function TransaccionesFallidas() {
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [amountFilter, setAmountFilter] = useState<string>('');
+  const [amountFilter, setAmountFilter] = useState<AmountRange>({
+    min: '',
+    max: '',
+  });
 
   const { paginatedItems, productPaginationMeta, changePage } =
     usePagination(transacciones);
@@ -148,9 +152,8 @@ export default function TransaccionesFallidas() {
     },
   ];
 
-  // Handlers para los filtros
-  const handleAmountFilter = (amount: string) => {
-    console.log('Filtrar por montos:', amount);
+  const handleAmountFilter = (amount: AmountRange) => {
+    console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
   };
 

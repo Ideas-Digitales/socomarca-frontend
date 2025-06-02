@@ -3,6 +3,12 @@ import { Category } from './category.interface';
 import { Comuna } from '@/mock/comunasVentas';
 import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
 
+// Interfaz para el rango de montos
+export interface AmountRange {
+  min: string;
+  max: string;
+}
+
 export interface MetricCard {
   label: string;
   value: string | number;
@@ -62,7 +68,7 @@ export interface DashboardTableLayoutProps<T = any> {
   onCommuneFilter?: (selectedIds: string[]) => void;
 
   // Filtros específicos para gráficos
-  onAmountFilter?: (amount: string) => void;
+  onAmountFilter?: (amount: AmountRange) => void; // ✅ Cambio aquí
   onClientFilter?: (clientId: number) => void;
 
   // Datos para filtros
@@ -75,7 +81,7 @@ export interface DashboardTableLayoutProps<T = any> {
   selectedCommunes?: string[];
   selectedSortOption?: SortOption | null;
   selectedClients?: Client[];
-  amountValue?: string;
+  amountValue?: AmountRange; // ✅ Cambio aquí
 
   // Funciones de búsqueda
   onSearch?: (searchTerm: string) => void;

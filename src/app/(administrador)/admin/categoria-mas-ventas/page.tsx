@@ -7,6 +7,7 @@ import {
   ChartConfig,
   MetricCard,
   TableColumn,
+  AmountRange, // ✅ Importar AmountRange
 } from '@/interfaces/dashboard.interface';
 import {
   generarTransaccionesAleatorias,
@@ -39,7 +40,10 @@ export default function CategoriasMasVentas() {
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [amountFilter, setAmountFilter] = useState<string>('');
+  const [amountFilter, setAmountFilter] = useState<AmountRange>({
+    min: '',
+    max: '',
+  });
 
   const categoriasConRanking: CategoriaConRanking[] = categorias.map(
     (cat, idx) => ({
@@ -108,8 +112,8 @@ export default function CategoriasMasVentas() {
   ];
 
   // Handlers para los filtros
-  const handleAmountFilter = (amount: string) => {
-    console.log('Filtrar por montos:', amount);
+  const handleAmountFilter = (amount: AmountRange) => {
+    console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
   };
 
@@ -128,12 +132,31 @@ export default function CategoriasMasVentas() {
 
   const handleFilter = () => {
     console.log('Aplicar filtros generales...');
-    // Implementar lógica de filtros generales
+
+    // Ejemplo de lógica de filtrado usando el rango de montos
+    let filteredCategories = categoriasConRanking;
+
+    // Filtrar por rango de montos si se especifica
+    if (amountFilter.min || amountFilter.max) {
+      const minAmount = amountFilter.min ? parseFloat(amountFilter.min) : 0;
+      const maxAmount = amountFilter.max
+        ? parseFloat(amountFilter.max)
+        : Infinity;
+
+      filteredCategories = filteredCategories.filter(
+        (categoria) =>
+          categoria.venta >= minAmount && categoria.venta <= maxAmount
+      );
+    }
+
+    // Aquí podrías actualizar el estado con los datos filtrados
+    console.log('Categorías filtradas:', filteredCategories);
   };
 
   const handleClearSearch = () => {
     console.log('Limpiar búsqueda');
     // Implementar lógica para limpiar búsqueda
+    setAmountFilter({ min: '', max: '' }); // ✅ Resetear filtro de montos
   };
 
   return (
@@ -156,7 +179,7 @@ export default function CategoriasMasVentas() {
       clients={clients}
       selectedClients={selectedClients}
       selectedCategories={selectedCategories}
-      amountValue={amountFilter}
+      amountValue={amountFilter} // ✅ Ahora es AmountRange
       // Funciones de búsqueda
       onClearSearch={handleClearSearch}
     />

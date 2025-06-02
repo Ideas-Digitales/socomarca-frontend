@@ -7,6 +7,7 @@ import {
   ChartConfig,
   MetricCard,
   TableColumn,
+  AmountRange,
 } from '@/interfaces/dashboard.interface';
 import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
 import { useState } from 'react';
@@ -37,7 +38,10 @@ export default function ProductosMasVentas() {
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [amountFilter, setAmountFilter] = useState<string>('');
+  const [amountFilter, setAmountFilter] = useState<AmountRange>({
+    min: '',
+    max: '',
+  });
 
   const productosFixed = productos.map((producto) => ({
     id: String(producto.id),
@@ -106,8 +110,8 @@ export default function ProductosMasVentas() {
   ];
 
   // Handlers para los filtros
-  const handleAmountFilter = (amount: string) => {
-    console.log('Filtrar por montos:', amount);
+  const handleAmountFilter = (amount: AmountRange) => {
+    console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
   };
 

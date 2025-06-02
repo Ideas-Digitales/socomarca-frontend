@@ -6,6 +6,10 @@ import { Comuna } from '@/mock/comunasVentas';
 import Dropdown, { DropdownOption } from '../filters/Dropdown';
 import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
 import AmountFilter from '../filters/AmountFilter';
+interface AmountRange {
+  min: string;
+  max: string;
+}
 
 interface Props {
   onFilter?: () => void;
@@ -19,8 +23,8 @@ interface Props {
   onCommuneFilter?: (selectedIds: string[]) => void;
   selectedCommunes?: string[];
   communes?: Comuna[];
-  onAmountFilter?: (amount: string) => void;
-  amountValue?: string;
+  onAmountFilter?: (amount: AmountRange) => void;
+  amountValue?: AmountRange;
   clients?: Client[];
   onClientFilter?: (clientId: number) => void;
   selectedClients?: Client[];
@@ -39,7 +43,7 @@ export default function FilterOptions({
   selectedCommunes = [],
   communes = [],
   onAmountFilter,
-  amountValue = '',
+  amountValue = { min: '', max: '' },
   clients = [],
   onClientFilter,
   selectedClients = [],
@@ -144,7 +148,7 @@ export default function FilterOptions({
 
         {onFilter && (
           <button
-            className="w-full md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium"
+            className="w-full cursor-pointer md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium"
             onClick={onFilter}
           >
             Filtrar

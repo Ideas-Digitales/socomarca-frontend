@@ -135,7 +135,7 @@ export default function Header({ carro }: Props) {
                 src={logoUrl}
                 width={368}
                 height={66}
-                style={{ width: '368px', height: '66px' }}
+                style={{ width: 'auto', height: '66px' }}
                 className="hidden sm:block py-[4px] cursor-pointer"
               />
             </Link>

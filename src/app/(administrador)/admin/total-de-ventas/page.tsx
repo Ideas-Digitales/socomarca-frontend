@@ -5,6 +5,7 @@ import {
   ExtendedDashboardTableConfig,
   ChartConfig,
   MetricCard,
+  AmountRange,
 } from '@/interfaces/dashboard.interface';
 import { useState } from 'react';
 
@@ -23,7 +24,10 @@ const clients: Client[] = [
 export default function TotalDeVentas() {
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  const [amountFilter, setAmountFilter] = useState<string>('');
+  const [amountFilter, setAmountFilter] = useState<AmountRange>({
+    min: '',
+    max: '',
+  });
 
   // Definir las métricas
   const metrics: MetricCard[] = [
@@ -56,9 +60,8 @@ export default function TotalDeVentas() {
     showDatePicker: true, // Habilitar el selector de fechas
   };
 
-  // Handlers para los filtros
-  const handleAmountFilter = (amount: string) => {
-    console.log('Filtrar por montos:', amount);
+  const handleAmountFilter = (amount: AmountRange) => {
+    console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
   };
 

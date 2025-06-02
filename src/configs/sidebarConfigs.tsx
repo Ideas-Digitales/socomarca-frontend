@@ -55,7 +55,7 @@ export const getAdminDashboardConfig = (
             name: 'Transacciones exitosas',
             url: '/admin/transacciones-exitosas',
           },
-          { name: 'Cliente con más compra', url: '/admin/cliente-mas-compra' },
+          { name: 'Cliente con más compra', url: '/admin/clientes-mas-compra' },
           {
             name: 'Productos con más ventas',
             url: '/admin/productos-mas-ventas',

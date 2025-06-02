@@ -7,6 +7,7 @@ import {
   ChartConfig,
   MetricCard,
   TableColumn,
+  AmountRange,
 } from '@/interfaces/dashboard.interface';
 import { generarTransaccionesAleatorias } from '@/mock/transaccionesExitosas';
 import { useState } from 'react';
@@ -36,7 +37,10 @@ export default function ClientesMasCompra() {
 
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  const [amountFilter, setAmountFilter] = useState<string>('');
+  const [amountFilter, setAmountFilter] = useState<AmountRange>({
+    min: '',
+    max: '',
+  });
 
   const clientesFixed = clientes.map((cliente) => ({
     id: String(cliente.id),
@@ -107,8 +111,8 @@ export default function ClientesMasCompra() {
   ];
 
   // Handlers para los filtros
-  const handleAmountFilter = (amount: string) => {
-    console.log('Filtrar por montos:', amount);
+  const handleAmountFilter = (amount: AmountRange) => {
+    console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
   };
 
