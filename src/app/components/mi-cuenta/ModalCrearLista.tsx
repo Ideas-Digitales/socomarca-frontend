@@ -1,26 +1,36 @@
 'use client';
 
+import { ListaFavorita } from "@/app/components/mi-cuenta/FavoritosSection";
+
 export default function ModalCrearLista({
   nombre,
   setNombre,
   error,
   setError,
   onClose,
+  agregarLista,
 }: {
   nombre: string;
   setNombre: (v: string) => void;
   error: string;
   setError: (v: string) => void;
   onClose: () => void;
+  agregarLista: (nueva: ListaFavorita) => void;
 }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!nombre.trim()) {
       setError('Este campo es obligatorio');
       return;
     }
 
-    // Aquí puedes guardar la lista si quieres
+    // Lógica para agregar lista vacía
+    agregarLista({
+      nombre,
+      productos: [],
+    });
+
     onClose();
   };
 

@@ -98,7 +98,7 @@ export default function ComprasSection({
                       e.currentTarget.onerror = null;
                       e.currentTarget.src = '/assets/global/logo_plant.png';
                     }}
-                    className="w-12 h-16 object-contain bg-gray-100 rounded"
+                    className="w-12 h-16 object-contain rounded"
                   />
                 ))}
               </div>

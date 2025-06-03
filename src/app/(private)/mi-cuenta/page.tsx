@@ -4,7 +4,7 @@ import Sidebar from "@/app/components/mi-cuenta/Sidebar";
 import { useRouter } from "next/navigation";
 import DatosPersonalesForm from "@/app/components/mi-cuenta/DatosPersonalesForm";
 import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
-import FavoritosSection from "@/app/components/mi-cuenta/FavoritosSection";
+import FavoritosSection, { ListaFavorita } from "@/app/components/mi-cuenta/FavoritosSection";
 import ComprasSection from "@/app/components/mi-cuenta/ComprasSection";
 import DetalleCompra from "@/app/components/mi-cuenta/DetalleCompra";
 import ModalLogout from "@/app/components/mi-cuenta/ModalLogout";
@@ -24,6 +24,7 @@ const SECCIONES_VALIDAS = [
   "detalle-lista",
 ];
 export default function MiCuentaPage() {
+  
   const [selected, setSelected] = useState("datos");
   const [modalListaVisible, setModalListaVisible] = useState(false);
   const [listaSeleccionada, setListaSeleccionada] = useState<any | null>(null);
@@ -47,6 +48,8 @@ export default function MiCuentaPage() {
     rut: "",
   });
 
+  
+
   const [formErrors, setFormErrors] = useState({
     nombre: "",
     primerApellido: "",
@@ -55,23 +58,31 @@ export default function MiCuentaPage() {
     telefono: "",
     rut: "",
   });
-  const listasFavoritas = [
-    {
-      nombre: "Pizzas",
-      productos: [
-        { nombre: "Arroz granel", imagen: "/img/arroz.png", cantidad: 1 },
-        { nombre: "Fideos", imagen: "/img/arroz.png", cantidad: 1 },
-        { nombre: "Aceite", imagen: "/img/arroz.png", cantidad: 1 },
-      ],
-    },
-    {
-      nombre: "Canasta mensual",
-      productos: [
-        { nombre: "Café", imagen: "/img/arroz.png", cantidad: 1 },
-        { nombre: "Pan", imagen: "/img/arroz.png", cantidad: 1 },
-      ],
-    },
-  ];
+
+  
+ const [listasFavoritas, setListasFavoritas] = useState<ListaFavorita[]>([
+  {
+    nombre: "Pizzas",
+    productos: [
+      { nombre: "Arroz granel", imagen: "/img/arroz.png",  precio: 1190, },
+      { nombre: "Fideos", imagen: "/img/arroz.png",  precio: 990, },
+      { nombre: "Aceite", imagen: "/img/arroz.png",  precio: 3590, },
+    ],
+  },
+  {
+    nombre: "Canasta mensual",
+    productos: [
+      { nombre: "Café", imagen: "/img/arroz.png", precio: 1890, },
+      { nombre: "Pan", imagen: "/img/arroz.png", precio: 890, },
+    ],
+  },
+]);
+
+const agregarLista = (nuevaLista: ListaFavorita) => {
+  setListasFavoritas((prev) => [...prev, nuevaLista]);
+};
+
+
   const [busqueda, setBusqueda] = useState("");
 
   const [compras] = useState([
@@ -252,6 +263,7 @@ export default function MiCuentaPage() {
             error={errorNombreLista}
             setError={setErrorNombreLista}
             onClose={() => setModalCrearListaVisible(false)}
+            agregarLista={agregarLista}
           />
         )}
 
