@@ -14,6 +14,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { createLogoutModal } from '@/configs/sidebarConfigs';
 
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 const logoUrl = '/assets/global/logo-header.png';
@@ -30,7 +31,12 @@ export default function Header({ carro }: Props) {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   useInitMobileDetection();
 
-  const { isTablet } = useStore();
+  const { isTablet, closeModal, openModal } = useStore();
+
+  const handleLogout = () => {
+    closeModal();
+    router.push('/login');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,7 +87,6 @@ export default function Header({ carro }: Props) {
     { name: 'Direcciones', href: '/mi-cuenta?section=direcciones' },
     { name: 'Mis Compras', href: '/mi-cuenta?section=compras' },
     { name: 'Carrito', href: '/carro-de-compra' },
-    { name: 'Cerrar sesión', href: '/carro-de-compra' },
   ];
 
   return (
@@ -223,6 +228,18 @@ export default function Header({ carro }: Props) {
                 </Link>
               </li>
             ))}
+            <li
+              className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b border-gray-100"
+              onClick={() => {
+                openModal('logout', {
+                  title: 'Cerrar sesión',
+                  size: 'md',
+                  content: createLogoutModal(handleLogout, closeModal),
+                });
+              }}
+            >
+              Cerrar sesión
+            </li>
           </ul>
         </nav>
       </div>

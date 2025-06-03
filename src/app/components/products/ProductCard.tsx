@@ -128,7 +128,7 @@ export default function ProductCard({ product }: Props) {
           <span className="text-[12px] font-medium text-center sm:text-left">
             {truncateText(product.name, 30)}
           </span>
-          <span className="text-lime-500 font-bold text-center text-lg mt-1">
+          <span className="text-lime-500 font-bold text-center sm:text-left text-lg mt-1">
             {product.price !== null && product.price !== undefined
               ? product.price.toLocaleString('es-CL', {
                   style: 'currency',

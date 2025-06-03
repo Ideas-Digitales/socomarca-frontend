@@ -60,24 +60,33 @@ export default function CartProductCard({ product, index }: Props) {
     }
   );
 
+  const isBrandTruncated = product.brand.name.length > 10;
+  const isNameTruncated = product.name.length > 10;
+
   return (
     <div
-      className={`flex p-3 items-center gap-2 bg-white border-r border-l border-b border-slate-300 relative ${
+      className={`flex w-full p-3 items-center gap-2 bg-white border-r border-l border-b border-slate-300 relative ${
         index === 0 && 'border-t'
       } h-[80px]`}
     >
-      <div className="flex items-center gap-[6px]">
+      <div className="flex items-center">
         <div
           className="w-[45px] h-[46px] p-[2px] bg-contain bg-no-repeat bg-center"
           style={{ backgroundImage }}
         />
       </div>
-      <div className="flex flex-col">
-        <span className="text-[#64748B] text-[12px] font-medium">
-          {product.brand.name}
+      <div className="flex flex-col w-full max-w-[80]">
+        <span
+          className="text-[#64748B] text-[12px] font-medium cursor-help"
+          title={isBrandTruncated ? product.brand.name : undefined}
+        >
+          {truncateText(product.brand.name, 10)}
         </span>
-        <span className="text-[12px] font-medium">
-          {truncateText(product.name, 20)}
+        <span
+          className="text-[12px] font-medium cursor-help"
+          title={isNameTruncated ? product.name : undefined}
+        >
+          {truncateText(product.name, 10)}
         </span>
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">

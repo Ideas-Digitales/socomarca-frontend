@@ -51,8 +51,8 @@ const DualRangeSlider = ({
     [validMin, validMax]
   );
 
-  // Convert mouse position to value
-  const getValueFromMousePosition = useCallback(
+  // Convert position to value (works for both mouse and touch)
+  const getValueFromPosition = useCallback(
     (clientX: number) => {
       if (!sliderRef.current) return validMin;
 
@@ -67,9 +67,9 @@ const DualRangeSlider = ({
     [validMin, validMax, normalizeValue]
   );
 
-  // Handle mouse down on thumbs
-  const handleMouseDown = useCallback(
-    (thumb: 'lower' | 'upper') => (e: React.MouseEvent) => {
+  // Handle start of interaction (mouse down or touch start)
+  const handleInteractionStart = useCallback(
+    (thumb: 'lower' | 'upper') => (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault();
       setIsDragging(thumb);
     },
@@ -81,7 +81,7 @@ const DualRangeSlider = ({
     (e: MouseEvent) => {
       if (!isDragging) return;
 
-      const newValue = getValueFromMousePosition(e.clientX);
+      const newValue = getValueFromPosition(e.clientX);
 
       if (isDragging === 'lower') {
         const finalValue = Math.min(newValue, upperValue - step);
@@ -97,27 +97,59 @@ const DualRangeSlider = ({
         }
       }
     },
-    [
-      isDragging,
-      getValueFromMousePosition,
-      lowerValue,
-      upperValue,
-      step,
-      onChange,
-    ]
+    [isDragging, getValueFromPosition, lowerValue, upperValue, step, onChange]
   );
 
-  // Handle mouse up
-  const handleMouseUp = useCallback(() => {
+  // Handle touch move
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (!isDragging || e.touches.length === 0) return;
+
+      // Only prevent default if we're actually dragging
+      if (isDragging) {
+        e.preventDefault(); // Prevent scrolling
+      }
+
+      const touch = e.touches[0];
+      const newValue = getValueFromPosition(touch.clientX);
+
+      if (isDragging === 'lower') {
+        const finalValue = Math.min(newValue, upperValue - step);
+        if (finalValue !== lowerValue) {
+          setLowerValue(finalValue);
+          onChange(finalValue, upperValue);
+        }
+      } else if (isDragging === 'upper') {
+        const finalValue = Math.max(newValue, lowerValue + step);
+        if (finalValue !== upperValue) {
+          setUpperValue(finalValue);
+          onChange(lowerValue, finalValue);
+        }
+      }
+    },
+    [isDragging, getValueFromPosition, lowerValue, upperValue, step, onChange]
+  );
+
+  // Handle end of interaction
+  const handleInteractionEnd = useCallback(() => {
     setIsDragging(null);
   }, []);
 
-  // Handle track click
+  // Handle track click/tap
   const handleTrackClick = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent | React.TouchEvent) => {
       if (isDragging) return;
 
-      const newValue = getValueFromMousePosition(e.clientX);
+      let clientX: number;
+      if ('touches' in e && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+      } else if ('clientX' in e) {
+        clientX = e.clientX;
+      } else {
+        return;
+      }
+
+      const newValue = getValueFromPosition(clientX);
 
       // Determine which thumb is closer
       const lowerDistance = Math.abs(newValue - lowerValue);
@@ -133,30 +165,44 @@ const DualRangeSlider = ({
         onChange(lowerValue, finalValue);
       }
     },
-    [
-      isDragging,
-      getValueFromMousePosition,
-      lowerValue,
-      upperValue,
-      step,
-      onChange,
-    ]
+    [isDragging, getValueFromPosition, lowerValue, upperValue, step, onChange]
   );
 
-  // Set up global mouse events
+  // Set up global events for both mouse and touch
   useEffect(() => {
     if (isDragging) {
+      // Mouse events
       document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mouseup', handleInteractionEnd);
+
+      // Touch events - use passive: false only when necessary
+      const touchMoveOptions = { passive: false };
+      document.addEventListener('touchmove', handleTouchMove, touchMoveOptions);
+      document.addEventListener('touchend', handleInteractionEnd);
+      document.addEventListener('touchcancel', handleInteractionEnd);
+
+      // Prevent text selection while dragging
       document.body.style.userSelect = 'none';
+      document.body.style.webkitUserSelect = 'none';
+      document.body.style.touchAction = 'none';
 
       return () => {
+        // Clean up mouse events
         document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('mouseup', handleInteractionEnd);
+
+        // Clean up touch events
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleInteractionEnd);
+        document.removeEventListener('touchcancel', handleInteractionEnd);
+
+        // Restore user selection and touch action
         document.body.style.userSelect = '';
+        document.body.style.webkitUserSelect = '';
+        document.body.style.touchAction = '';
       };
     }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, handleMouseMove, handleTouchMove, handleInteractionEnd]);
 
   // Update values when props change
   useEffect(() => {
@@ -181,8 +227,9 @@ const DualRangeSlider = ({
       {/* Slider container */}
       <div
         ref={sliderRef}
-        className="relative h-6 mb-6 cursor-pointer"
+        className="relative h-6 mb-6 cursor-pointer touch-none"
         onClick={handleTrackClick}
+        onTouchStart={handleTrackClick}
       >
         {/* Background track */}
         <div className="absolute top-1/2 transform -translate-y-1/2 w-full h-2 bg-gray-200 rounded-full"></div>
@@ -198,24 +245,26 @@ const DualRangeSlider = ({
 
         {/* Lower thumb */}
         <div
-          className={`absolute top-1/2 w-5 h-5 bg-white border-2 border-lime-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-md cursor-grab z-30 ${
+          className={`absolute top-1/2 w-6 h-6 bg-white border-2 border-lime-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-md cursor-grab z-30 touch-none select-none ${
             isDragging === 'lower'
               ? 'cursor-grabbing scale-110'
-              : 'hover:scale-105'
+              : 'hover:scale-105 active:scale-110'
           } transition-transform`}
           style={{ left: `${lowerPercent}%` }}
-          onMouseDown={handleMouseDown('lower')}
+          onMouseDown={handleInteractionStart('lower')}
+          onTouchStart={handleInteractionStart('lower')}
         />
 
         {/* Upper thumb */}
         <div
-          className={`absolute top-1/2 w-5 h-5 bg-white border-2 border-lime-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-md cursor-grab z-40 ${
+          className={`absolute top-1/2 w-6 h-6 bg-white border-2 border-lime-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-md cursor-grab z-40 touch-none select-none ${
             isDragging === 'upper'
               ? 'cursor-grabbing scale-110'
-              : 'hover:scale-105'
+              : 'hover:scale-105 active:scale-110'
           } transition-transform`}
           style={{ left: `${upperPercent}%` }}
-          onMouseDown={handleMouseDown('upper')}
+          onMouseDown={handleInteractionStart('upper')}
+          onTouchStart={handleInteractionStart('upper')}
         />
       </div>
 

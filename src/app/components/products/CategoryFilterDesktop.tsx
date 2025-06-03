@@ -252,10 +252,14 @@ export default function CategoryFilterDesktop() {
           isFavoritesOpen ? 'max-h-[20dvh] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="w-full p-3">
-          <div className="text-sm text-center text-gray-500">
-            Funcionalidad de favoritos próximamente
-          </div>
+        <div className="w-full p-3 flex items-center gap-2">
+          <input id="favorite-checkbox" type="checkbox" />
+          <label
+            htmlFor="favorite-checkbox"
+            className="text-sm text-slate-500 cursor-pointer"
+          >
+            Mostrar solo favoritos
+          </label>
         </div>
       </div>
 
@@ -313,7 +317,7 @@ export default function CategoryFilterDesktop() {
             <div className="w-1/2">
               <div className="text-xs text-gray-500 mb-1">Desde</div>
               <input
-              disabled
+                disabled
                 type="text"
                 className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                 placeholder={`$${formatPrice(minPrice)}`}
@@ -328,7 +332,7 @@ export default function CategoryFilterDesktop() {
             <div className="w-1/2">
               <div className="text-xs text-gray-500 mb-1">Hasta</div>
               <input
-              disabled
+                disabled
                 type="text"
                 className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                 placeholder={`${formatPrice(maxPrice)}`}

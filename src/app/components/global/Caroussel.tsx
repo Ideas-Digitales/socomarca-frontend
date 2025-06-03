@@ -41,7 +41,7 @@ export default function Carousel({ images }: CarouselProps) {
 
   if (!images || images.length === 0) {
     return (
-      <div className="w-full max-w-7xl h-[344px] mx-auto px-4">
+      <div className="w-full max-w-7xl h-[144px] sm:h-[344px] mx-auto px-4">
         <div className="w-full h-full flex items-center justify-center rounded-lg bg-gray-200">
           <p className="text-gray-500">No hay imágenes para mostrar</p>
         </div>
@@ -50,7 +50,7 @@ export default function Carousel({ images }: CarouselProps) {
   }
 
   return (
-    <div className="w-full max-w-7xl h-[344px] mx-auto relative px-4">
+    <div className="w-full max-w-7xl sm:h-[344px] h-[200px] mx-auto relative px-4">
       {/* Container de imágenes con overflow y bordes redondeados */}
       <div className="w-full h-full overflow-hidden rounded-lg">
         <div
