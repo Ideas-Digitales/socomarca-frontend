@@ -194,7 +194,7 @@ export default function ProductCardGrid({ product }: Props) {
         <button
           onClick={addToCart}
           disabled={quantity === 0}
-          className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] border border-slate-400 text-slate-400 hover:bg-slate-50 h-[32px] text-[12px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:border-lime-500 hover:text-lime-500 transition-all duration-300 ease-in-out"
+          className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] bg-[#84CC16] text-white hover:bg-[#257f00] h-[32px] text-[12px] cursor-pointer  disabled:cursor-not-allowed transition-all duration-300 ease-in-out"
         >
           Agregar al carro
         </button>

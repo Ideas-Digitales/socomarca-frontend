@@ -146,7 +146,7 @@ export default function ProductCard({ product }: Props) {
             <div className="flex gap-1">
               <button
                 disabled={quantity === 0}
-                className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
+                className={`flex w-8 h-8 justify-center items-center rounded-[6px] cursor-pointer ${
                   quantity === 0
                     ? 'bg-slate-200 opacity-50 cursor-not-allowed'
                     : 'bg-slate-100'
@@ -168,7 +168,7 @@ export default function ProductCard({ product }: Props) {
 
               <button
                 disabled={quantity === Math.min(product.stock, 999)}
-                className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
+                className={`flex w-8 h-8 justify-center items-center rounded-[6px] cursor-pointer ${
                   quantity === Math.min(product.stock, 999)
                     ? 'bg-slate-200 opacity-50 cursor-not-allowed'
                     : 'bg-slate-100'
@@ -181,7 +181,7 @@ export default function ProductCard({ product }: Props) {
             <button
               onClick={addToCart}
               disabled={quantity === 0}
-              className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] border border-slate-400 text-slate-400 hover:bg-slate-50 h-[32px] text-[12px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:border-lime-500 hover:text-lime-500 transition-all duration-300 ease-in-out"
+              className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] bg-[#84CC16] text-white hover:bg-[#257f00] h-[32px] text-[12px] cursor-pointer  disabled:cursor-not-allowed transition-all duration-300 ease-in-out"
             >
               Agregar al carro
             </button>
