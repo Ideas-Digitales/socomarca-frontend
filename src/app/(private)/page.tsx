@@ -46,7 +46,7 @@ export default function PrivatePage() {
 
   return (
     <div className="bg-slate-100 sm:py-7">
-      <div className="flex flex-col py-4">
+      <div className="flex flex-col mb-2 sm:py-2 space-y-2">
         {isTablet && componentSearch}
         <Caroussel images={images} />
         {!isTablet && componentSearch}

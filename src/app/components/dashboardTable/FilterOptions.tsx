@@ -6,6 +6,10 @@ import { Comuna } from '@/mock/comunasVentas';
 import Dropdown, { DropdownOption } from '../filters/Dropdown';
 import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
 import AmountFilter from '../filters/AmountFilter';
+import SearchableDropdown, {
+  SearchableOption,
+} from '../filters/SearchableDropdown';
+
 interface AmountRange {
   min: string;
   max: string;
@@ -28,6 +32,7 @@ interface Props {
   clients?: Client[];
   onClientFilter?: (clientId: number) => void;
   selectedClients?: Client[];
+  searchableDropdown?: boolean;
 }
 
 export default function FilterOptions({
@@ -47,6 +52,7 @@ export default function FilterOptions({
   clients = [],
   onClientFilter,
   selectedClients = [],
+  searchableDropdown = false,
 }: Props) {
   // Convertir categorías a DropdownOption
   const categoryOptions: DropdownOption[] = categories.map((category) => ({
@@ -60,8 +66,14 @@ export default function FilterOptions({
     name: commune.comuna,
   }));
 
-  // Convertir clientes a DropdownOption
+  // Convertir clientes a DropdownOption (para Dropdown normal)
   const clientOptions: DropdownOption[] = clients.map((client) => ({
+    id: client.id,
+    name: client.name,
+  }));
+
+  // Convertir clientes a SearchableOption (para SearchableDropdown)
+  const searchableClientOptions: SearchableOption[] = clients.map((client) => ({
     id: client.id,
     name: client.name,
   }));
@@ -76,9 +88,29 @@ export default function FilterOptions({
     onCommuneFilter?.(stringIds);
   };
 
+  // Handler para Dropdown normal de clientes
   const handleClientChange = (selectedIds: (string | number)[]) => {
     const numericIds = selectedIds.map((id) => Number(id));
     onClientFilter?.(numericIds[0]); // Solo toma el primero ya que es selección única
+  };
+
+  // Handler para SearchableDropdown de clientes
+  const handleSearchableClientChange = (option: SearchableOption | null) => {
+    if (option) {
+      onClientFilter?.(option.id as number);
+    } else {
+      // Limpiar selección - usar un valor que indique "sin selección"
+      onClientFilter?.(-1); // Cambiar a -1 para indicar limpieza
+    }
+  };
+
+  // Obtener el cliente seleccionado para SearchableDropdown
+  const getSelectedClient = (): SearchableOption | null => {
+    if (selectedClients.length > 0) {
+      const selected = selectedClients[0];
+      return { id: selected.id, name: selected.name };
+    }
+    return null;
   };
 
   return (
@@ -93,16 +125,26 @@ export default function FilterOptions({
             />
           )}
 
-          {onClientFilter && (
-            <Dropdown
-              options={clientOptions}
-              selectedIds={selectedClients.map((client) => client.id)}
-              onSelectionChange={handleClientChange}
-              placeholder="Cliente"
-              className="w-full md:max-w-[216px] md:w-full"
-              multiple={false} // Solo un cliente
-            />
-          )}
+          {onClientFilter &&
+            (!searchableDropdown ? (
+              <Dropdown
+                options={clientOptions}
+                selectedIds={selectedClients.map((client) => client.id)}
+                onSelectionChange={handleClientChange}
+                placeholder="Cliente"
+                className="w-full md:max-w-[216px] md:w-full"
+                multiple={false}
+              />
+            ) : (
+              <SearchableDropdown
+                options={searchableClientOptions}
+                selectedOption={getSelectedClient()}
+                onSelectionChange={handleSearchableClientChange}
+                placeholder="Buscar cliente"
+                noResultsText="No se encontró el cliente"
+                className="w-full md:max-w-[216px] md:w-full"
+              />
+            ))}
 
           {onCategoryFilter && (
             <Dropdown
@@ -111,7 +153,7 @@ export default function FilterOptions({
               onSelectionChange={handleCategoryChange}
               placeholder="Categoría"
               className="w-full md:max-w-[120px] md:w-full"
-              multiple={true} // Múltiples categorías
+              multiple={true}
             />
           )}
 

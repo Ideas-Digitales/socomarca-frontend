@@ -63,21 +63,17 @@ export default function Sidebar({
     const subItems = item.submenu || item.subItems;
 
     if (subItems) {
-      // Si tiene submenú, solo abrir/cerrar el submenú
       handleMenuClick(index, true);
     } else if (item.url || item.href) {
-      // Si no tiene submenú pero tiene URL, navegar
       const url = item.url || item.href;
       router.push(url);
       handleMenuClick(index, false);
     } else if (item.onClick) {
-      // Para casos especiales (como "Cerrar sesión" con onClick)
       item.onClick();
       handleMenuClick(index, false);
     }
   };
 
-  // Función para manejar navegación de submenús
   const handleSubmenuNavigation = (
     subItem: any,
     menuIndex: number,
@@ -90,7 +86,6 @@ export default function Sidebar({
     handleSubmenuClick(menuIndex, subIndex);
   };
 
-  // Si no hay configuración, no renderizar nada
   if (!currentSidebarConfig) {
     return null;
   }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Product } from '@/interfaces/product.interface';
 import useStore from '@/stores/base';
 import ListsModal from '@/app/components/global/ListsModal';
@@ -18,6 +18,7 @@ const mockLists: List[] = [
 export const useFavorites = () => {
   const { openModal, closeModal } = useStore();
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [lists, setLists] = useState<List[]>(mockLists);
 
   const toggleFavorite = (productId: number) => {
     setFavorites((prev) => {
@@ -35,40 +36,66 @@ export const useFavorites = () => {
     return favorites.has(productId);
   };
 
+  // Función para abrir el modal con las listas actualizadas
+  const openListsModal = useCallback(
+    (product: Product, currentLists: List[]) => {
+      const handleListSelection = (listId: string) => {
+        console.log(`Producto ${product.name} agregado a la lista ${listId}`);
+        // Aquí puedes agregar la lógica real para agregar a la lista
+      };
+
+      const handleCreateNewList = (newListName: string) => {
+        const newList: List = {
+          id: Date.now().toString(), // Usar timestamp para IDs únicos
+          name: newListName,
+        };
+
+        const updatedLists = [...currentLists, newList];
+        setLists(updatedLists);
+
+
+        // Cerrar y reabrir el modal con las listas actualizadas
+        closeModal();
+        setTimeout(() => {
+          openListsModal(product, updatedLists);
+        }, 100);
+      };
+
+      const handleSave = () => {
+        console.log('Guardar cambios en listas');
+        closeModal();
+      };
+
+      const handleCancel = () => {
+        console.log('Cancelar operación');
+        closeModal();
+      };
+
+      openModal('', {
+        title: '',
+        size: 'md',
+        content: (
+          <ListsModal
+            lists={currentLists}
+            product={product}
+            onAddToList={handleListSelection}
+            onCreateNewList={handleCreateNewList}
+            onCancel={handleCancel}
+            onSave={handleSave}
+          />
+        ),
+      });
+    },
+    [openModal, closeModal, setLists]
+  );
+
   const handleAddToList = (product: Product) => {
-    const handleListSelection = (listId: string) => {
-      console.log(`Producto ${product.name} agregado a la lista ${listId}`);
-      // Aquí puedes agregar la lógica real para agregar a la lista
-    };
-
-    const handleCreateNewList = () => {
-      console.log('Crear nueva lista');
-      // Aquí puedes agregar la lógica para crear una nueva lista
-    };
-
-    const handleSave = () => {
-      console.log('Guardar cambios en listas');
-      closeModal();
-    };
-
-    openModal('', {
-      title: '',
-      size: 'md',
-      content: (
-        <ListsModal
-          lists={mockLists}
-          product={product}
-          onAddToList={handleListSelection}
-          onCreateNewList={handleCreateNewList}
-          onCancel={closeModal}
-          onSave={handleSave}
-        />
-      ),
-    });
+    openListsModal(product, lists);
   };
 
   return {
     favorites,
+    lists,
     toggleFavorite,
     isFavorite,
     handleAddToList,

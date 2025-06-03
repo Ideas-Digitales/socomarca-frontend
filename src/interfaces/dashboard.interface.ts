@@ -68,7 +68,7 @@ export interface DashboardTableLayoutProps<T = any> {
   onCommuneFilter?: (selectedIds: string[]) => void;
 
   // Filtros específicos para gráficos
-  onAmountFilter?: (amount: AmountRange) => void; // ✅ Cambio aquí
+  onAmountFilter?: (amount: AmountRange) => void;
   onClientFilter?: (clientId: number) => void;
 
   // Datos para filtros
@@ -81,7 +81,9 @@ export interface DashboardTableLayoutProps<T = any> {
   selectedCommunes?: string[];
   selectedSortOption?: SortOption | null;
   selectedClients?: Client[];
-  amountValue?: AmountRange; // ✅ Cambio aquí
+  amountValue?: AmountRange;
+
+  searchableDropdown?: boolean;
 
   // Funciones de búsqueda
   onSearch?: (searchTerm: string) => void;

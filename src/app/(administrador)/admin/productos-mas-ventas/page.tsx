@@ -117,9 +117,15 @@ export default function ProductosMasVentas() {
 
   const handleClientFilter = (clientId: number) => {
     console.log('Filtrar por cliente:', clientId);
-    const client = clients.find((c) => c.id === clientId);
-    if (client) {
-      setSelectedClients([client]);
+
+    if (clientId === -1 || clientId === 0) {
+      // Limpiar selección
+      setSelectedClients([]);
+    } else {
+      const client = clients.find((c) => c.id === clientId);
+      if (client) {
+        setSelectedClients([client]);
+      }
     }
   };
 
@@ -161,6 +167,7 @@ export default function ProductosMasVentas() {
       amountValue={amountFilter}
       // Funciones de búsqueda
       onClearSearch={handleClearSearch}
+      searchableDropdown={true}
     />
   );
 }

@@ -7,7 +7,7 @@ import {
   ChartConfig,
   MetricCard,
   TableColumn,
-  AmountRange, // ✅ Importar AmountRange
+  AmountRange,
 } from '@/interfaces/dashboard.interface';
 import {
   generarTransaccionesAleatorias,
@@ -80,12 +80,11 @@ export default function CategoriasMasVentas() {
 
   // Configuración de gráficos
   const chartConfig: ChartConfig = {
-    showMetricsChart: true, // Mostrar el gráfico principal con métricas
-    showBottomChart: false, // Mostrar el gráfico inferior
+    showMetricsChart: true,
+    showBottomChart: false,
     metrics: metrics,
   };
 
-  // Configuración del dashboard (usando ExtendedDashboardTableConfig)
   const config: ExtendedDashboardTableConfig = {
     title: 'Categorías con más ventas',
     showTable: true,
@@ -93,7 +92,6 @@ export default function CategoriasMasVentas() {
     showDatePicker: true,
   };
 
-  // Columnas específicas para categorías con ranking
   const categoriasVentasColumns: TableColumn<CategoriaConRanking>[] = [
     {
       key: 'ranking',
@@ -111,17 +109,24 @@ export default function CategoriasMasVentas() {
     },
   ];
 
-  // Handlers para los filtros
   const handleAmountFilter = (amount: AmountRange) => {
     console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
+
+
   };
 
   const handleClientFilter = (clientId: number) => {
     console.log('Filtrar por cliente:', clientId);
-    const client = clients.find((c) => c.id === clientId);
-    if (client) {
-      setSelectedClients([client]);
+
+    if (clientId === -1 || clientId === 0) {
+      // Limpiar selección
+      setSelectedClients([]);
+    } else {
+      const client = clients.find((c) => c.id === clientId);
+      if (client) {
+        setSelectedClients([client]);
+      }
     }
   };
 
@@ -149,14 +154,12 @@ export default function CategoriasMasVentas() {
       );
     }
 
-    // Aquí podrías actualizar el estado con los datos filtrados
     console.log('Categorías filtradas:', filteredCategories);
   };
 
   const handleClearSearch = () => {
     console.log('Limpiar búsqueda');
-    // Implementar lógica para limpiar búsqueda
-    setAmountFilter({ min: '', max: '' }); // ✅ Resetear filtro de montos
+    setAmountFilter({ min: '', max: '' });
   };
 
   return (
@@ -179,8 +182,9 @@ export default function CategoriasMasVentas() {
       clients={clients}
       selectedClients={selectedClients}
       selectedCategories={selectedCategories}
-      amountValue={amountFilter} // ✅ Ahora es AmountRange
+      amountValue={amountFilter}
       // Funciones de búsqueda
+      searchableDropdown={true}
       onClearSearch={handleClearSearch}
     />
   );
