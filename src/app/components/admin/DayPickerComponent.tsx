@@ -35,15 +35,14 @@ export default function DayPickerComponent() {
         className="mb-3"
         modifiersClassNames={{
           selected: 'bg-lime-500 text-white',
-          range_start: 'bg-lime-500 text-white',
-          range_end: 'bg-lime-500 text-white',
-          range_middle: 'bg-lime-200 text-lime-800',
+          range_start: 'bg-lime-500 text-white rounded-full rounded-r-none',
+          range_end: 'bg-lime-500 text-white rounded-full rounded-l-none',
           today: 'text-lime-500 font-bold',
         }}
         classNames={{
           caption: 'text-slate-600',
           head_cell: 'text-slate-400',
-          day: 'rounded-full hover:bg-slate-300 focus:outline-none',
+          day: 'hover:bg-slate-300 focus:outline-none',
           chevron: 'fill-lime-500 text-lime-500 hover:fill-lime-600 rounded',
         }}
       />

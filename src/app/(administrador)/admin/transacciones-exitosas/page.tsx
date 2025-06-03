@@ -78,8 +78,8 @@ export default function TransaccionesExitosas() {
 
   // Configuración de gráficos
   const chartConfig: ChartConfig = {
-    showMetricsChart: true, // Mostrar el gráfico principal con métricas
-    showBottomChart: false, // Mostrar el gráfico inferior
+    showMetricsChart: true,
+    showBottomChart: false,
     metrics: metrics,
   };
 
@@ -88,7 +88,7 @@ export default function TransaccionesExitosas() {
     title: 'Transacciones Exitosas',
     showTable: true,
     tableTitle: 'Lista de Transacciones Exitosas',
-    showDatePicker: true, // Habilitar el selector de fechas
+    showDatePicker: true,
   };
 
   // Definir columnas para transacciones
@@ -130,9 +130,13 @@ export default function TransaccionesExitosas() {
 
   const handleClientFilter = (clientId: number) => {
     console.log('Filtrar por cliente:', clientId);
-    const client = clients.find((c) => c.id === clientId);
-    if (client) {
-      setSelectedClients([client]);
+    if (clientId === -1 || clientId === 0) {
+      setSelectedClients([]);
+    } else {
+      const client = clients.find((c) => c.id === clientId);
+      if (client) {
+        setSelectedClients([client]);
+      }
     }
   };
 
@@ -167,6 +171,7 @@ export default function TransaccionesExitosas() {
       amountValue={amountFilter}
       // Funciones de búsqueda
       onClearSearch={handleClearSearch}
+      searchableDropdown={true}
     />
   );
 }

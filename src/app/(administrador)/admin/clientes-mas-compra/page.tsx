@@ -75,8 +75,8 @@ export default function ClientesMasCompra() {
 
   // Configuración de gráficos
   const chartConfig: ChartConfig = {
-    showMetricsChart: true, // Mostrar el gráfico principal con métricas
-    showBottomChart: false, // Mostrar el gráfico inferior
+    showMetricsChart: true,
+    showBottomChart: false,
     metrics: metrics,
   };
 
@@ -85,7 +85,7 @@ export default function ClientesMasCompra() {
     title: 'Clientes con más compras',
     showTable: true,
     tableTitle: 'Clientes con más compras',
-    showDatePicker: true, // Habilitar el selector de fechas
+    showDatePicker: true,
   };
 
   // Columnas específicas para clientes
@@ -118,15 +118,20 @@ export default function ClientesMasCompra() {
 
   const handleClientFilter = (clientId: number) => {
     console.log('Filtrar por cliente:', clientId);
-    const client = clients.find((c) => c.id === clientId);
-    if (client) {
-      setSelectedClients([client]);
+
+    if (clientId === -1 || clientId === 0) {
+      // Limpiar selección
+      setSelectedClients([]);
+    } else {
+      const client = clients.find((c) => c.id === clientId);
+      if (client) {
+        setSelectedClients([client]);
+      }
     }
   };
 
   const handleFilter = () => {
     console.log('Aplicar filtros generales...');
-    // Implementar lógica de filtros generales
   };
 
   const handleClearSearch = () => {
@@ -155,6 +160,7 @@ export default function ClientesMasCompra() {
       amountValue={amountFilter}
       // Funciones de búsqueda
       onClearSearch={handleClearSearch}
+      searchableDropdown={true}
     />
   );
 }

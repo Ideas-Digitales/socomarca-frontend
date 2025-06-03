@@ -100,8 +100,8 @@ export default function TransaccionesFallidas() {
 
   // Configuración de gráficos
   const chartConfig: ChartConfig = {
-    showMetricsChart: false, // Mostrar el gráfico principal con métricas
-    showBottomChart: true, // Mostrar el gráfico inferior
+    showMetricsChart: false,
+    showBottomChart: true,
     metrics: metrics,
     bottomChartTitle: 'Monto total perdido',
     bottomChartValue: `$${montoTotalPerdido.toLocaleString()}`,
@@ -112,7 +112,7 @@ export default function TransaccionesFallidas() {
     title: 'Transacciones Fallidas',
     showTable: false,
     tableTitle: 'Historial de Transacciones Fallidas',
-    showDatePicker: true, // Habilitar el selector de fechas
+    showDatePicker: true,
   };
 
   // Columnas para transacciones fallidas
@@ -159,9 +159,15 @@ export default function TransaccionesFallidas() {
 
   const handleClientFilter = (clientId: number) => {
     console.log('Filtrar por cliente:', clientId);
-    const client = clients.find((c) => c.id === clientId);
-    if (client) {
-      setSelectedClients([client]);
+
+    if (clientId === -1 || clientId === 0) {
+      // Limpiar selección
+      setSelectedClients([]);
+    } else {
+      const client = clients.find((c) => c.id === clientId);
+      if (client) {
+        setSelectedClients([client]);
+      }
     }
   };
 
@@ -204,6 +210,7 @@ export default function TransaccionesFallidas() {
       amountValue={amountFilter}
       // Funciones de búsqueda
       onClearSearch={handleClearSearch}
+      searchableDropdown={true}
     />
   );
 }

@@ -38,7 +38,8 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onClientFilter,
   clients = [],
   selectedClients = [],
-  amountValue = { min: '', max: '' }, // ✅ Cambio aquí: valor por defecto es AmountRange
+  amountValue = { min: '', max: '' },
+  searchableDropdown,
 }: DashboardTableLayoutProps<T>) => {
   const handleSearch = (searchTermValue: string) => {
     console.log('Searching for:', searchTermValue);
@@ -81,6 +82,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           onClientFilter={onClientFilter}
           clients={clients}
           selectedClients={selectedClients}
+          searchableDropdown={searchableDropdown}
         />
       </div>
 

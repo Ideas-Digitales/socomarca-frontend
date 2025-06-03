@@ -60,8 +60,8 @@ export default function ComunasMasVentas() {
 
   // Configuración de gráficos
   const chartConfig: ChartConfig = {
-    showMetricsChart: true, // Mostrar el gráfico principal con métricas
-    showBottomChart: false, // Mostrar el gráfico inferior
+    showMetricsChart: true,
+    showBottomChart: false,
     metrics: metrics,
   };
 
@@ -70,7 +70,7 @@ export default function ComunasMasVentas() {
     title: 'Comunas con más ventas',
     showTable: true,
     tableTitle: 'Comunas con más ventas',
-    showDatePicker: true, // Habilitar el selector de fechas
+    showDatePicker: true,
   };
 
   // Columnas específicas para comunas
@@ -91,9 +91,15 @@ export default function ComunasMasVentas() {
 
   const handleClientFilter = (clientId: number) => {
     console.log('Filtrar por cliente:', clientId);
-    const client = clients.find((c) => c.id === clientId);
-    if (client) {
-      setSelectedClients([client]);
+
+    if (clientId === -1 || clientId === 0) {
+      // Limpiar selección
+      setSelectedClients([]);
+    } else {
+      const client = clients.find((c) => c.id === clientId);
+      if (client) {
+        setSelectedClients([client]);
+      }
     }
   };
 
@@ -136,6 +142,7 @@ export default function ComunasMasVentas() {
       amountValue={amountFilter}
       // Funciones de búsqueda
       onClearSearch={handleClearSearch}
+      searchableDropdown={true}
     />
   );
 }

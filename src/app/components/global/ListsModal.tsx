@@ -38,7 +38,7 @@ const ListsModal = ({
       </p>
       <HR />
       <h5 className="font-semibold">Mis listas</h5>
-      <ul className="flex flex-col space-y-2">
+      <ul className="flex flex-col space-y-2 max-h-[30dvh] overflow-y-auto">
         {lists.length > 0 ? (
           lists.map((list) => (
             <label

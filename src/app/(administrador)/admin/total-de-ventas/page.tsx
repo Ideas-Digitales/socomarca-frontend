@@ -57,7 +57,7 @@ export default function TotalDeVentas() {
     title: 'Total de ventas',
     showTable: true,
     tableTitle: 'Total de ventas',
-    showDatePicker: true, // Habilitar el selector de fechas
+    showDatePicker: true,
   };
 
   const handleAmountFilter = (amount: AmountRange) => {
@@ -97,6 +97,7 @@ export default function TotalDeVentas() {
       clients={clients}
       selectedClients={selectedClients}
       amountValue={amountFilter}
+      searchableDropdown={true}
       // Funciones de búsqueda
       onClearSearch={handleClearSearch}
     />
