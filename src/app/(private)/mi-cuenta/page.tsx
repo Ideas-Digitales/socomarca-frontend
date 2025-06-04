@@ -4,7 +4,9 @@ import Sidebar from '@/app/components/mi-cuenta/Sidebar';
 import { useRouter } from 'next/navigation';
 import DatosPersonalesForm from '@/app/components/mi-cuenta/DatosPersonalesForm';
 import DireccionesSection from '@/app/components/mi-cuenta/DireccionesSection';
-import FavoritosSection from '@/app/components/mi-cuenta/FavoritosSection';
+import FavoritosSection, {
+  ListaFavorita,
+} from '@/app/components/mi-cuenta/FavoritosSection';
 import ComprasSection from '@/app/components/mi-cuenta/ComprasSection';
 import DetalleCompra from '@/app/components/mi-cuenta/DetalleCompra';
 import ModalLogout from '@/app/components/mi-cuenta/ModalLogout';
@@ -14,26 +16,6 @@ import ModalEditarDireccion from '@/app/components/mi-cuenta/ModalEditarDireccio
 import DetalleListaSection from '@/app/components/mi-cuenta/DetalleListaSection';
 import { Suspense } from 'react';
 import SectionSync from '@/app/components/mi-cuenta/SectionSync';
-
-export interface MockAddressProps {
-  id: number;
-  nombre: string;
-  direccion: string;
-  region: string;
-  comuna: string;
-  telefono: string;
-  esFavorita: boolean;
-}
-
-const mockAddress: MockAddressProps = {
-  id: 1,
-  nombre: 'Casa',
-  direccion: 'Av. Siempre Viva 123',
-  region: 'Región Metropolitana',
-  comuna: 'Santiago',
-  telefono: '987654321',
-  esFavorita: true,
-};
 
 const SECCIONES_VALIDAS = [
   'datos',
@@ -45,7 +27,6 @@ const SECCIONES_VALIDAS = [
 ];
 export default function MiCuentaPage() {
   const [selected, setSelected] = useState('datos');
-  const [address, setAddress] = useState<MockAddressProps | null>(null);
   const [modalListaVisible, setModalListaVisible] = useState(false);
   const [listaSeleccionada, setListaSeleccionada] = useState<any | null>(null);
   const [modalCrearListaVisible, setModalCrearListaVisible] = useState(false);
@@ -76,23 +57,29 @@ export default function MiCuentaPage() {
     telefono: '',
     rut: '',
   });
-  const listasFavoritas = [
+
+  const [listasFavoritas, setListasFavoritas] = useState<ListaFavorita[]>([
     {
       nombre: 'Pizzas',
       productos: [
-        { nombre: 'Arroz granel', imagen: '/img/arroz.png', cantidad: 1 },
-        { nombre: 'Fideos', imagen: '/img/arroz.png', cantidad: 1 },
-        { nombre: 'Aceite', imagen: '/img/arroz.png', cantidad: 1 },
+        { nombre: 'Arroz granel', imagen: '/img/arroz.png', precio: 1190 },
+        { nombre: 'Fideos', imagen: '/img/arroz.png', precio: 990 },
+        { nombre: 'Aceite', imagen: '/img/arroz.png', precio: 3590 },
       ],
     },
     {
       nombre: 'Canasta mensual',
       productos: [
-        { nombre: 'Café', imagen: '/img/arroz.png', cantidad: 1 },
-        { nombre: 'Pan', imagen: '/img/arroz.png', cantidad: 1 },
+        { nombre: 'Café', imagen: '/img/arroz.png', precio: 1890 },
+        { nombre: 'Pan', imagen: '/img/arroz.png', precio: 890 },
       ],
     },
-  ];
+  ]);
+
+  const agregarLista = (nuevaLista: ListaFavorita) => {
+    setListasFavoritas((prev) => [...prev, nuevaLista]);
+  };
+
   const [busqueda, setBusqueda] = useState('');
 
   const [compras] = useState([
@@ -177,28 +164,6 @@ export default function MiCuentaPage() {
     if (validateForm()) {
       alert('Datos guardados correctamente');
     }
-  };
-
-  // FIXME: Este es un ejemplo de cómo manejar la lógica de selección de dirección favorita, se debe terminar.
-  const handleSetFavorite = (addressId: number) => {
-    setAddress((prev) => {
-      if (!prev) return null;
-
-      // Si es la misma dirección, toggle el estado de favorita
-      if (prev.id === addressId) {
-        return {
-          ...prev,
-          esFavorita: !prev.esFavorita,
-        };
-      }
-
-      // Si es diferente dirección, crear nueva instancia como favorita
-      return {
-        ...mockAddress,
-        id: addressId,
-        esFavorita: true,
-      };
-    });
   };
 
   return (
@@ -295,18 +260,17 @@ export default function MiCuentaPage() {
             error={errorNombreLista}
             setError={setErrorNombreLista}
             onClose={() => setModalCrearListaVisible(false)}
+            agregarLista={agregarLista}
           />
         )}
 
         {modalAbierto && (
           <ModalEditarDireccion
-            address={address}
             region={regionSeleccionada}
             setRegion={setRegionSeleccionada}
             comuna={comunaSeleccionada}
             setComuna={setComunaSeleccionada}
             onClose={() => setModalAbierto(false)}
-            handleSetFavorite={handleSetFavorite}
           />
         )}
       </div>

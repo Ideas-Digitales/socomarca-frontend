@@ -1,19 +1,7 @@
 'use client';
 
-import { HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 import { regionesYComunas } from '@/app/components/regionesYComunas';
-import { MockAddressProps } from '@/app/(private)/mi-cuenta/page';
-
-interface ModalEditarDireccionProps {
-  region: string;
-  setRegion: (v: string) => void;
-  comuna: string;
-  setComuna: (v: string) => void;
-  onClose: () => void;
-  address: MockAddressProps | null;
-  handleSetFavorite: (addressId: number) => void;
-}
 
 export default function ModalEditarDireccion({
   region,
@@ -21,62 +9,33 @@ export default function ModalEditarDireccion({
   comuna,
   setComuna,
   onClose,
-  address,
-  handleSetFavorite,
-}: ModalEditarDireccionProps) {
-  // Validación de que address existe
-  if (!address) {
-    return null;
-  }
-
-  const isAddressFavorite = address.esFavorita;
-
-  const handleFavoriteClick = () => {
-    handleSetFavorite(address.id);
-  };
-
+}: {
+  region: string;
+  setRegion: (v: string) => void;
+  comuna: string;
+  setComuna: (v: string) => void;
+  onClose: () => void;
+}) {
   return (
     <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow max-w-2xl w-full relative mx-4">
+      <div className="bg-white p-6 rounded-lg shadow max-w-2xl w-full relative">
         <h2 className="text-xl font-bold mb-4">Editar dirección</h2>
 
-        <div className="text-slate-600 font-medium text-sm cursor-pointer flex items-center gap-2 mb-4">
-          {isAddressFavorite ? (
-            <HeartIconSolid
-              className="cursor-pointer text-red-500"
-              width={16}
-              height={16}
-              onClick={handleFavoriteClick}
-            />
-          ) : (
-            <HeartIcon
-              className="cursor-pointer text-slate-400 hover:text-red-500 transition-colors"
-              width={16}
-              height={16}
-              onClick={handleFavoriteClick}
-            />
-          )}
-          <span
-            onClick={handleFavoriteClick}
-            className="cursor-pointer hover:text-slate-800 transition-colors"
-          >
-            {isAddressFavorite
-              ? 'Dirección principal'
-              : 'Marcar como dirección principal'}
-          </span>
+        <div className="absolute right-6 top-6 text-green-600 font-medium text-sm cursor-pointer flex items-center gap-1">
+          <HeartOutline className="w-4 h-4" />
+          <span>Marcar como dirección principal</span>
         </div>
 
         <form
-          className="flex flex-col gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
           onSubmit={(e) => {
             e.preventDefault();
-            // Aquí puedes agregar la lógica para guardar los cambios
-            console.log('Guardando dirección:', { region, comuna });
+            // Validar y guardar dirección aquí si se desea
             onClose();
           }}
         >
           <div>
-            <label className="block font-medium text-gray-700 mb-1">
+            <label className="block font-medium">
               Región<span className="text-red-500">*</span>
             </label>
             <select
@@ -85,8 +44,7 @@ export default function ModalEditarDireccion({
                 setRegion(e.target.value);
                 setComuna('');
               }}
-              className="w-full p-3 bg-gray-100 rounded-md border border-gray-200 focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-colors"
-              required
+              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
             >
               <option value="">Selecciona una región</option>
               {Object.keys(regionesYComunas).map((r) => (
@@ -95,23 +53,23 @@ export default function ModalEditarDireccion({
                 </option>
               ))}
             </select>
+
             {region === '' && (
               <p className="text-red-500 text-sm mt-1">
-                Debe seleccionar una región.
+                No ha seleccionado una región.
               </p>
             )}
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700 mb-1">
+            <label className="block font-medium">
               Comuna<span className="text-red-500">*</span>
             </label>
             <select
               value={comuna}
               onChange={(e) => setComuna(e.target.value)}
-              className="w-full p-3 bg-gray-100 rounded-md border border-gray-200 focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
               disabled={!region}
-              required
             >
               <option value="">Selecciona una comuna</option>
               {(region ? regionesYComunas[region] : []).map((com) => (
@@ -120,62 +78,43 @@ export default function ModalEditarDireccion({
                 </option>
               ))}
             </select>
-            {region && comuna === '' && (
+
+            {comuna === '' && (
               <p className="text-red-500 text-sm mt-1">
-                Debe seleccionar una comuna.
+                No ha seleccionado una comuna.
               </p>
             )}
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700 mb-1">
+            <label className="block font-medium">
               Dirección<span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              defaultValue={address.direccion}
-              className="w-full p-3 bg-gray-100 rounded-md border border-gray-200 focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-colors"
-              placeholder="Ej: Av. Siempre Viva 123"
-              required
+              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
             />
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700 mb-1">
-              Detalle de la dirección
-            </label>
+            <label className="block font-medium">Detalle de la dirección</label>
             <input
               type="text"
-              className="w-full p-3 bg-gray-100 rounded-md border border-gray-200 focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-colors"
-              placeholder="Ej: Departamento 301, Torre A"
+              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
             />
           </div>
 
-          <div>
-            <label className="block font-medium text-gray-700 mb-1">
-              Teléfono<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="tel"
-              defaultValue={address.telefono}
-              className="w-full p-3 bg-gray-100 rounded-md border border-gray-200 focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-colors"
-              placeholder="987654321"
-              pattern="[0-9]{9}"
-              required
-            />
-          </div>
-
-          <div className="flex gap-3 mt-6">
+          <div className="col-span-2 flex gap-2 mt-4">
             <button
               type="submit"
-              className="flex-1 bg-lime-500 hover:bg-lime-600 text-white px-6 py-3 rounded-md font-medium transition-colors"
+              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
             >
-              Guardar cambios
+              Guardar
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3 rounded-md font-medium transition-colors"
+              className="border border-gray-300 text-gray-700 px-6 py-2 rounded"
             >
               Cancelar
             </button>
