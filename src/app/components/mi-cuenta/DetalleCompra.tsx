@@ -1,16 +1,18 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { Compra } from './ComprasSection';
+import { usePagination } from '@/hooks/usePagination';
+import Pagination from '../global/Pagination';
 
-export default function DetalleCompra({
-  pedido,
-}: {
-  pedido: Compra;
-}) {
+export default function DetalleCompra({ pedido }: { pedido: Compra }) {
+  console.log('DetalleCompra', pedido);
   const router = useRouter();
+  const { paginatedItems, productPaginationMeta, changePage } = usePagination(
+    pedido.productos
+  );
 
   return (
-    <div className="bg-[#f1f5f9] p-4 rounded min-h-screen">
+    <div className="p-4 rounded min-h-screen">
       <h2 className="text-lg font-bold mb-2">Pedido Nº {pedido.numero}</h2>
       <p className="text-sm text-gray-500 mb-4">
         Pedido entregado el {pedido.fecha}
@@ -21,7 +23,7 @@ export default function DetalleCompra({
 
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          {pedido.productos.map((p, i) => (
+          {paginatedItems.map((p, i) => (
             <div
               key={i}
               className="flex items-center justify-between bg-white p-4 rounded shadow"
@@ -48,6 +50,12 @@ export default function DetalleCompra({
               </div>
             </div>
           ))}
+          {productPaginationMeta && changePage && (
+            <Pagination
+              meta={productPaginationMeta}
+              onPageChange={changePage}
+            />
+          )}
         </div>
 
         <div className="bg-white p-6 rounded shadow h-fit">

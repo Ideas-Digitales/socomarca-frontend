@@ -22,37 +22,18 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Logo y descripción */}
-        <div className="flex flex-col items-start gap-[10px]">
-          <h1 className="text-lime-600 text-xl font-bold">
+        <div className="flex flex-col items-start justify-center gap-[10px] text-start">
+          <h1 className="text-lime-600 text-xl font-bold w-full flex justify-center md:justify-start">
             <Logo />
           </h1>
           <p className="text-gray-500">
-            Vivamus tristique odio sit amet velit semper, eu posuere turpis
-            interdum. <br />
-            Cras egestas purus
+            En Socomarca ofrecemos precios mayoristas, productos seleccionados y
+            despacho confiable. Para que tu energía esté donde importa: en tus
+            clientes.
           </p>
-          {/* Redes sociales */}
-          <div className="flex items-start gap-1">
-            <div className="w-[38px] h-[38px] flex justify-center items-center">
-              <FacebookIcon width={16} height={16} />
-            </div>
-            <div className="w-[38px] h-[38px] flex justify-center items-center">
-              <TwitterIcon width={16} height={13} />
-            </div>
-            <div className="w-[38px] h-[38px] flex justify-center items-center">
-              <InstagramIcon width={13} height={13} />
-            </div>
-            <div className="w-[38px] h-[38px] flex justify-center items-center">
-              <PinterestIcon width={16} height={16} />
-            </div>
-            <div className="w-[38px] h-[38px] flex justify-center items-center">
-              <YoutubeIcon width={16} height={12} />
-            </div>
-          </div>
         </div>
-
         {/* Categoría */}
-        <div className="space-y-1">
+        <div className="space-y-1 hidden md:block">
           <h3 className="text-gray-500 font-bold">Categoría</h3>
           <ul className="space-y-1">
             <li>Despensa</li>
@@ -63,7 +44,6 @@ export default function Footer() {
             <li>Confites</li>
           </ul>
         </div>
-
         {/* Atención al cliente */}
         <div className="space-y-1">
           <h3 className="text-gray-500 font-bold">Atención al cliente</h3>
@@ -85,7 +65,6 @@ export default function Footer() {
             </li>
           </ul>
         </div>
-
         {/* Contacto */}
         <div className="flex flex-col items-start gap-[10px]">
           <h3 className="text-gray-500 font-bold">Contacto</h3>
@@ -114,6 +93,24 @@ export default function Footer() {
                 <span className="text-slate-400">contacto@socomarca.cl</span>
               </p>
             </div>
+          </div>
+        </div>{' '}
+        {/* Redes sociales */}
+        <div className="flex items-center justify-center md:justify-start gap-1">
+          <div className="w-[38px] h-[38px] flex justify-center items-center">
+            <FacebookIcon width={16} height={16} />
+          </div>
+          <div className="w-[38px] h-[38px] flex justify-center items-center">
+            <TwitterIcon width={16} height={13} />
+          </div>
+          <div className="w-[38px] h-[38px] flex justify-center items-center">
+            <InstagramIcon width={13} height={13} />
+          </div>
+          <div className="w-[38px] h-[38px] flex justify-center items-center">
+            <PinterestIcon width={16} height={16} />
+          </div>
+          <div className="w-[38px] h-[38px] flex justify-center items-center">
+            <YoutubeIcon width={16} height={12} />
           </div>
         </div>
       </div>

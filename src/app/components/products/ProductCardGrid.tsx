@@ -1,39 +1,30 @@
-"use client";
+'use client';
 
-import { Product } from "@/interfaces/product.interface";
-import { useEffect, useState } from "react";
-import useStore from "@/stores/base";
-import { HeartIcon } from "@heroicons/react/24/outline";
-import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
-import { useFavorites } from "@/hooks/useFavorites";
-import { fetchPostAddToCart } from "@/services/actions/cart.actions";
+import { Product } from '@/interfaces/product.interface';
+import { useEffect, useState } from 'react';
+import { HeartIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { useFavorites } from '@/hooks/useFavorites';
+import { fetchPostAddToCart } from '@/services/actions/cart.actions';
 
 interface Props {
   product: Product;
 }
 
 export default function ProductCardGrid({ product }: Props) {
-  const { addProductToCart, isQaMode } = useStore();
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [quantity, setQuantity] = useState(0);
   const [backgroundImage, setBackgroundImage] = useState(
-    `url(${product.imagen})`
+    `url(${product.image})`
   );
-
-  const productStock = 0;
-
-  if (!isQaMode) {
-    product.stock = productStock;
-    product.price = product.price || 0;
-  }
 
   useEffect(() => {
     const img = new Image();
-    img.src = product.imagen;
+    img.src = product.image;
     img.onerror = () => {
       setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
-  }, [product.imagen]);
+  }, [product.image]);
 
   const handleSetFavorite = () => {
     if (isFavorite(product.id)) {
@@ -60,7 +51,7 @@ export default function ProductCardGrid({ product }: Props) {
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    if (value === "") {
+    if (value === '') {
       setQuantity(0);
       return;
     }
@@ -81,21 +72,20 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   const addToCart = async () => {
-    console.log("Añadiendo al carrito:", product.id, quantity);
+    console.log('Añadiendo al carrito:', product.id, quantity);
     if (quantity > 0) {
       const response = await fetchPostAddToCart({
         product_id: product.id,
         quantity,
-        unit: "kg",
+        unit: 'kg',
       });
 
-      
       if (response.ok) {
-        console.log("Producto añadido al carrito:", response.data);
+        console.log('Producto añadido al carrito:', response.data);
         // Aquí podrías mostrar un toast, actualizar el estado global del carrito, etc.
         setQuantity(0);
       } else {
-        console.error("Error al añadir al carrito:", response.error);
+        console.error('Error al añadir al carrito:', response.error);
         // Aquí podrías mostrar un mensaje de error al usuario
       }
     }
@@ -103,7 +93,7 @@ export default function ProductCardGrid({ product }: Props) {
 
   const truncateText = (text: string, maxLength: number) => {
     if (text.length > maxLength) {
-      return text.substring(0, maxLength) + "...";
+      return text.substring(0, maxLength) + '...';
     }
     return text;
   };
@@ -151,11 +141,11 @@ export default function ProductCardGrid({ product }: Props) {
         </span>
         <span className="text-lime-500 font-bold text-center text-lg mt-1">
           {product.price !== null && product.price !== undefined
-            ? product.price.toLocaleString("es-CL", {
-                style: "currency",
-                currency: "CLP",
+            ? product.price.toLocaleString('es-CL', {
+                style: 'currency',
+                currency: 'CLP',
               })
-            : "$0"}
+            : '$0'}
         </span>
       </div>
 
@@ -175,8 +165,8 @@ export default function ProductCardGrid({ product }: Props) {
             disabled={quantity === 0}
             className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
               quantity === 0
-                ? "bg-slate-200 opacity-50 cursor-not-allowed"
-                : "bg-slate-100 text-slate-950"
+                ? 'bg-slate-200 opacity-50 cursor-not-allowed'
+                : 'bg-slate-100 text-slate-950'
             }`}
             onClick={decreaseQuantity}
           >
@@ -197,8 +187,8 @@ export default function ProductCardGrid({ product }: Props) {
             disabled={quantity === Math.min(product.stock, 999)}
             className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
               quantity === Math.min(product.stock, 999)
-                ? "bg-slate-200 opacity-50 cursor-not-allowed"
-                : "bg-slate-100  text-slate-950"
+                ? 'bg-slate-200 opacity-50 cursor-not-allowed'
+                : 'bg-slate-100  text-slate-950'
             }`}
             onClick={increaseQuantity}
           >

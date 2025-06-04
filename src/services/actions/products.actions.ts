@@ -158,6 +158,7 @@ export const fetchGetProducts = async ({
       }
 
       const data = await response.json();
+      console.log(data)
 
       return {
         ok: true,

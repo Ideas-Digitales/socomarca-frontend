@@ -10,19 +10,12 @@ interface Props {
 }
 
 export default function ProductCard({ product }: Props) {
-  const { addProductToCart, isQaMode } = useStore();
+  const { addProductToCart } = useStore();
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [backgroundImage, setBackgroundImage] = useState(
-    `url(${product.imagen})`
+    `url(${product.image})`
   );
   const [quantity, setQuantity] = useState(0);
-
-  const productStock = 100;
-
-  if (!isQaMode) {
-    product.stock = productStock;
-    product.price = product.price || 1000;
-  }
 
   const handleSetFavorite = () => {
     if (isFavorite(product.id)) {
@@ -34,11 +27,11 @@ export default function ProductCard({ product }: Props) {
 
   useEffect(() => {
     const img = new Image();
-    img.src = product.imagen;
+    img.src = product.image;
     img.onerror = () => {
       setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
-  }, [product.imagen]);
+  }, [product.image]);
 
   const decreaseQuantity = () => {
     if (quantity > 0) {

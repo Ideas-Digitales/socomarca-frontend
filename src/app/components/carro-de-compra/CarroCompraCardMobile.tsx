@@ -1,16 +1,9 @@
-import { Brand } from '@/interfaces/product.interface';
+import { ProductToBuy } from '@/interfaces/product.interface';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 
 interface Props {
-  p: {
-    id: number;
-    name: string;
-    brand: Brand;
-    imagen: string;
-    price: number;
-    quantity: number;
-  };
+  p: ProductToBuy;
   decrementProductInCart: (id: number) => void;
   incrementProductInCart: (id: number) => void;
   setIdProductoAEliminar: (id: number) => void;
@@ -22,14 +15,14 @@ export default function CarroCompraCardMobile({
   incrementProductInCart,
   setIdProductoAEliminar,
 }: Props) {
-  const [backgroundImage, setBackgroundImage] = useState(`url(${p.imagen})`);
+  const [backgroundImage, setBackgroundImage] = useState(`url(${p.image})`);
   useEffect(() => {
     const img = new Image();
-    img.src = p.imagen;
+    img.src = p.image;
     img.onerror = () => {
       setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
-  }, [p.imagen]);
+  }, [p.image]);
   return (
     <div
       key={p.id}
@@ -50,7 +43,7 @@ export default function CarroCompraCardMobile({
         }}
       />
       {/* <img
-        src={p.imagen}
+        src={p.image}
         alt={p.name}
         className="w-16 h-20 object-contain rounded"
         onError={(e) => {

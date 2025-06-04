@@ -17,17 +17,17 @@ export default function CartProductCard({ product, index }: Props) {
   } = useStore();
 
   const [backgroundImage, setBackgroundImage] = useState(
-    `url(${product.imagen})`
+    `url(${product.image})`
   );
 
   useEffect(() => {
-    // Verificar si la imagen existe
+    // Verificar si la image existe
     const img = new Image();
-    img.src = product.imagen;
+    img.src = product.image;
     img.onerror = () => {
       setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
-  }, [product.imagen]);
+  }, [product.image]);
 
   const decreaseQuantity = () => {
     if (product.quantity > 0) {

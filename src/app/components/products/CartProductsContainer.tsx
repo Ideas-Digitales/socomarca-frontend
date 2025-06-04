@@ -5,14 +5,6 @@ import Link from 'next/link';
 import CartProductCard from './CartProductCard';
 import { fetchGetCart } from '@/services/actions/cart.actions';
 
-interface ProductInCart {
-  id: number;
-  product_id: number;
-  quantity: number;
-  price: string;
-  subtotal: number;
-}
-
 export default function CartProductsContainer() {
   const [products, setProducts] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState('');

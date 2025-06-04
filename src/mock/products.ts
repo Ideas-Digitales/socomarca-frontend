@@ -18,41 +18,33 @@ const CATEGORIES: Category[] = [
 ];
 
 const SUBCATEGORIES: Subcategory[] = [
-  { id: 1, name: 'Cereales y Granos', category_id: 1 },
-  { id: 2, name: 'Legumbres', category_id: 1 },
-  { id: 3, name: 'Pastas', category_id: 1 },
-  { id: 4, name: 'Verduras Frescas', category_id: 2 },
-  { id: 5, name: 'Tubérculos', category_id: 2 },
-  { id: 6, name: 'Carnes Rojas', category_id: 3 },
-  { id: 7, name: 'Aves', category_id: 3 },
-  { id: 8, name: 'Pescados', category_id: 3 },
-  { id: 9, name: 'Leches', category_id: 4 },
-  { id: 10, name: 'Quesos', category_id: 4 },
-  { id: 11, name: 'Yogures', category_id: 4 },
-  { id: 12, name: 'Jugos', category_id: 5 },
-  { id: 13, name: 'Refrescos', category_id: 5 },
-  { id: 14, name: 'Aguas', category_id: 5 },
+  { id: 1, name: 'Cereales y Granos' },
+  { id: 2, name: 'Legumbres' },
+  { id: 3, name: 'Pastas' },
+  { id: 4, name: 'Verduras Frescas' },
+  { id: 5, name: 'Tubérculos' },
+  { id: 6, name: 'Carnes Rojas' },
+  { id: 7, name: 'Aves' },
+  { id: 8, name: 'Pescados' },
+  { id: 9, name: 'Leches' },
+  { id: 10, name: 'Quesos' },
+  { id: 11, name: 'Yogures' },
+  { id: 12, name: 'Jugos' },
+  { id: 13, name: 'Refrescos' },
+  { id: 14, name: 'Aguas' },
 ];
 
 const BRANDS: Brand[] = [
-  { id: 1, name: 'Marca Premium', logo_url: 'assets/brands/premium-logo.png' },
-  { id: 2, name: 'DeliciFood', logo_url: 'assets/brands/delicifood-logo.png' },
-  { id: 3, name: 'NutriVida', logo_url: 'assets/brands/nutrivida-logo.png' },
-  { id: 4, name: 'Orgánico Plus', logo_url: 'assets/brands/organico-logo.png' },
-  { id: 5, name: 'SaludMax', logo_url: 'assets/brands/saludmax-logo.png' },
-  { id: 6, name: 'FreshMart', logo_url: 'assets/brands/freshmart-logo.png' },
-  {
-    id: 7,
-    name: 'SuperNatural',
-    logo_url: 'assets/brands/supernatural-logo.png',
-  },
-  { id: 8, name: 'BioSelect', logo_url: 'assets/brands/bioselect-logo.png' },
-  { id: 9, name: 'PureTaste', logo_url: 'assets/brands/puretaste-logo.png' },
-  {
-    id: 10,
-    name: 'GreenChoice',
-    logo_url: 'assets/brands/greenchoice-logo.png',
-  },
+  { id: 1, name: 'Marca Premium' },
+  { id: 2, name: 'DeliciFood' },
+  { id: 3, name: 'NutriVida' },
+  { id: 4, name: 'Orgánico Plus' },
+  { id: 5, name: 'SaludMax' },
+  { id: 6, name: 'FreshMart' },
+  { id: 7, name: 'SuperNatural' },
+  { id: 8, name: 'BioSelect' },
+  { id: 9, name: 'PureTaste' },
+  { id: 10, name: 'GreenChoice' },
 ];
 
 const PRODUCT_NAMES = {
@@ -100,6 +92,17 @@ const PRODUCT_NAMES = {
   ],
 };
 
+const UNITS = [
+  'kg',
+  'g',
+  'unidad',
+  'litro',
+  'ml',
+  'paquete',
+  'caja',
+  'bandeja',
+];
+
 // Utility functions
 const getRandomElement = <T>(array: T[]): T => {
   return array[Math.floor(Math.random() * array.length)];
@@ -128,15 +131,57 @@ const generateSKU = (
   return `${categoryCode}-${productCode}-${numericCode}`;
 };
 
+// Mapeo de categorías a subcategorías basado en IDs
+const CATEGORY_SUBCATEGORY_MAP: Record<number, number[]> = {
+  1: [1, 2, 3], // Alimentos Básicos: Cereales, Legumbres, Pastas
+  2: [4, 5], // Verduras y Hortalizas: Verduras Frescas, Tubérculos
+  3: [6, 7, 8], // Carnes y Proteínas: Carnes Rojas, Aves, Pescados
+  4: [9, 10, 11], // Lácteos: Leches, Quesos, Yogures
+  5: [12, 13, 14], // Bebidas: Jugos, Refrescos, Aguas
+  6: [], // Snacks y Dulces (sin subcategorías definidas)
+  7: [], // Cuidado Personal (sin subcategorías definidas)
+  8: [], // Limpieza del Hogar (sin subcategorías definidas)
+};
+
 const getSubcategoriesByCategory = (categoryId: number): Subcategory[] => {
-  return SUBCATEGORIES.filter((sub) => sub.category_id === categoryId);
+  const subcategoryIds = CATEGORY_SUBCATEGORY_MAP[categoryId] || [];
+  return SUBCATEGORIES.filter((sub) => subcategoryIds.includes(sub.id));
+};
+
+const getUnitByCategory = (categoryId: number): string => {
+  switch (categoryId) {
+    case 1: // Alimentos Básicos
+      return getRandomElement(['kg', 'g', 'paquete']);
+    case 2: // Verduras y Hortalizas
+      return getRandomElement(['kg', 'g', 'unidad', 'bandeja']);
+    case 3: // Carnes y Proteínas
+      return getRandomElement(['kg', 'g', 'bandeja']);
+    case 4: // Lácteos
+      return getRandomElement(['litro', 'ml', 'unidad', 'paquete']);
+    case 5: // Bebidas
+      return getRandomElement(['litro', 'ml']);
+    case 6: // Snacks y Dulces
+      return getRandomElement(['g', 'unidad', 'paquete', 'caja']);
+    case 7: // Cuidado Personal
+      return getRandomElement(['ml', 'unidad']);
+    case 8: // Limpieza del Hogar
+      return getRandomElement(['litro', 'ml', 'unidad']);
+    default:
+      return getRandomElement(UNITS);
+  }
 };
 
 // Main generator functions
 export const generateProduct = (id: number): Product => {
   const category = getRandomElement(CATEGORIES);
   const availableSubcategories = getSubcategoriesByCategory(category.id);
-  const subcategory = getRandomElement(availableSubcategories);
+
+  // Si no hay subcategorías para esta categoría, usar una subcategoría aleatoria
+  const subcategory =
+    availableSubcategories.length > 0
+      ? getRandomElement(availableSubcategories)
+      : getRandomElement(SUBCATEGORIES);
+
   const brand = getRandomElement(BRANDS);
 
   // Seleccionar nombre basado en la categoría
@@ -161,18 +206,24 @@ export const generateProduct = (id: number): Product => {
   const price = getRandomPrice();
   const stock = getRandomNumber(0, 200);
   const status = stock > 0 && Math.random() > 0.1; // 90% de productos activos
+  const unit = getUnitByCategory(category.id);
+  const is_favorite = Math.random() > 0.7; // 30% de probabilidad de ser favorito
 
   return {
     id,
-    name: `${productName} ${getRandomNumber(100, 999)}g`,
+    name: `${productName} ${getRandomNumber(100, 999)}${
+      unit === 'unidad' ? ' unidades' : unit
+    }`,
     price,
     stock,
     sku,
-    imagen: `assets/products/product-${id}.jpg`,
+    image: `assets/products/product-${id}.jpg`,
     category,
     subcategory,
     brand,
     status,
+    unit,
+    is_favorite,
   };
 };
 
@@ -189,7 +240,6 @@ export const generateProductToBuy = (
   return {
     ...product,
     quantity: quantity || getRandomNumber(1, 5),
-    is_favorite: Math.random() > 0.7, // 30% de probabilidad de ser favorito
   };
 };
 
