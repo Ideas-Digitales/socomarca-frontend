@@ -3,6 +3,7 @@
 export interface ProductoFavorito {
   nombre: string;
   imagen: string;
+  precio: number;
 }
 
 export interface ListaFavorita {
@@ -16,7 +17,7 @@ export default function FavoritosSection({
   setNombreNuevaLista,
   setErrorNombreLista,
   setModalCrearListaVisible,
-  setSelected
+  setSelected,
 }: {
   listasFavoritas: ListaFavorita[];
   setListaSeleccionada: (lista: ListaFavorita) => void;
@@ -27,7 +28,7 @@ export default function FavoritosSection({
    setSelected: (v: string) => void;
 }) {
   return (
-    <div className="bg-[#f1f5f9] p-4 rounded">
+    <div className=" p-4 rounded">
       <h2 className="text-xl font-bold mb-6">Mis favoritos</h2>
 
       <div className="space-y-4 mb-6">
@@ -64,7 +65,7 @@ export default function FavoritosSection({
                     (e.currentTarget as HTMLImageElement).src =
                       '/assets/global/logo_plant.png';
                   }}
-                  className="w-12 h-16 object-contain bg-gray-100 rounded"
+                  className="w-12 h-16 object-contain rounded"
                 />
               ))}
             </div>

@@ -53,7 +53,7 @@ const [errorNombre, setErrorNombre] = useState('');
   };
 
   return (
-    <div className="bg-slate-50 h-fit p-6">
+    <div className="h-fit p-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <button
@@ -95,17 +95,17 @@ const [errorNombre, setErrorNombre] = useState('');
           {productos.map((prod, idx) => (
             <div
               key={idx}
-              className="bg-white rounded flex items-center justify-between px-4 py-2 shadow-sm"
+              className="bg-white rounded flex items-center justify-between border border-slate-200 px-4 py-2 shadow-sm"
             >
               <div className="flex items-center gap-4">
                 <input type="checkbox" />
                 <img
                   src={prod.imagen}
                   alt={prod.nombre}
-                  className="w-14 h-16 object-contain bg-gray-100 rounded"
+                  className="w-14 h-16 object-contain rounded"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
-                    e.currentTarget.src = '/assets/global/logo_default.png';
+                    e.currentTarget.src = '/assets/global/logo_plant.png';
                   }}
                 />
                 <div className="text-sm">
