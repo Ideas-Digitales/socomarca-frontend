@@ -185,10 +185,10 @@ export default function FinalizarCompraPage() {
         <aside className="w-full lg:w-1/3 bg-white rounded-lg shadow p-6">
           <h3 className="text-xl font-bold mb-4">Tu Orden</h3>
 
-          <div className="flex justify-between text-green-600 border-t-slate-200 border-t py-5">
-            <Link href="#" className="underline">
+          <div className="flex justify-between border-t-slate-200 border-t py-5">
+            <span>
               Productos (19)
-            </Link>
+            </span>
             <span className="text-black">$29.583</span>
           </div>
           <div className="flex justify-between border-t-slate-200 border-t py-5 ">
