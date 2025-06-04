@@ -1,6 +1,5 @@
 'use client';
 
-import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 import { regionesYComunas } from '@/app/components/regionesYComunas';
 
 export default function ModalEditarDireccion({
@@ -17,14 +16,9 @@ export default function ModalEditarDireccion({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] flex justify-center items-center z-50 px-4 sm:px-0">
       <div className="bg-white p-6 rounded-lg shadow max-w-2xl w-full relative">
         <h2 className="text-xl font-bold mb-4">Editar dirección</h2>
-
-        <div className="absolute right-6 top-6 text-green-600 font-medium text-sm cursor-pointer flex items-center gap-1">
-          <HeartOutline className="w-4 h-4" />
-          <span>Marcar como dirección principal</span>
-        </div>
 
         <form
           className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
@@ -86,7 +80,7 @@ export default function ModalEditarDireccion({
             )}
           </div>
 
-          <div>
+          <div className="md:col-span-1">
             <label className="block font-medium">
               Dirección<span className="text-red-500">*</span>
             </label>
@@ -96,7 +90,7 @@ export default function ModalEditarDireccion({
             />
           </div>
 
-          <div>
+          <div className="md:col-span-1">
             <label className="block font-medium">Detalle de la dirección</label>
             <input
               type="text"
@@ -104,7 +98,7 @@ export default function ModalEditarDireccion({
             />
           </div>
 
-          <div className="col-span-2 flex gap-2 mt-4">
+          <div className="col-span-1 md:col-span-2 flex gap-2 mt-4">
             <button
               type="submit"
               className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
