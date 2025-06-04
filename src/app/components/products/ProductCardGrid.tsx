@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { Product } from '@/interfaces/product.interface';
-import { useEffect, useState } from 'react';
-import useStore from '@/stores/base';
-import { HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
-import { useFavorites } from '@/hooks/useFavorites';
+import { Product } from "@/interfaces/product.interface";
+import { useEffect, useState } from "react";
+import useStore from "@/stores/base";
+import { HeartIcon } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
+import { useFavorites } from "@/hooks/useFavorites";
+import { fetchPostAddToCart } from "@/services/actions/cart.actions";
 
 interface Props {
   product: Product;
@@ -19,11 +20,11 @@ export default function ProductCardGrid({ product }: Props) {
     `url(${product.imagen})`
   );
 
-  const productStock = 10022;
+  const productStock = 0;
 
   if (!isQaMode) {
     product.stock = productStock;
-    product.price = product.price || 1000;
+    product.price = product.price || 0;
   }
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function ProductCardGrid({ product }: Props) {
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    if (value === '') {
+    if (value === "") {
       setQuantity(0);
       return;
     }
@@ -79,16 +80,30 @@ export default function ProductCardGrid({ product }: Props) {
     }
   };
 
-  const addToCart = () => {
+  const addToCart = async () => {
+    console.log("Añadiendo al carrito:", product.id, quantity);
     if (quantity > 0) {
-      addProductToCart(product, quantity);
-      setQuantity(0);
+      const response = await fetchPostAddToCart({
+        product_id: product.id,
+        quantity,
+        unit: "kg",
+      });
+
+      
+      if (response.ok) {
+        console.log("Producto añadido al carrito:", response.data);
+        // Aquí podrías mostrar un toast, actualizar el estado global del carrito, etc.
+        setQuantity(0);
+      } else {
+        console.error("Error al añadir al carrito:", response.error);
+        // Aquí podrías mostrar un mensaje de error al usuario
+      }
     }
   };
 
   const truncateText = (text: string, maxLength: number) => {
     if (text.length > maxLength) {
-      return text.substring(0, maxLength) + '...';
+      return text.substring(0, maxLength) + "...";
     }
     return text;
   };
@@ -136,11 +151,11 @@ export default function ProductCardGrid({ product }: Props) {
         </span>
         <span className="text-lime-500 font-bold text-center text-lg mt-1">
           {product.price !== null && product.price !== undefined
-            ? product.price.toLocaleString('es-CL', {
-                style: 'currency',
-                currency: 'CLP',
+            ? product.price.toLocaleString("es-CL", {
+                style: "currency",
+                currency: "CLP",
               })
-            : '$0'}
+            : "$0"}
         </span>
       </div>
 
@@ -160,8 +175,8 @@ export default function ProductCardGrid({ product }: Props) {
             disabled={quantity === 0}
             className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
               quantity === 0
-                ? 'bg-slate-200 opacity-50 cursor-not-allowed'
-                : 'bg-slate-100 text-slate-950'
+                ? "bg-slate-200 opacity-50 cursor-not-allowed"
+                : "bg-slate-100 text-slate-950"
             }`}
             onClick={decreaseQuantity}
           >
@@ -182,8 +197,8 @@ export default function ProductCardGrid({ product }: Props) {
             disabled={quantity === Math.min(product.stock, 999)}
             className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
               quantity === Math.min(product.stock, 999)
-                ? 'bg-slate-200 opacity-50 cursor-not-allowed'
-                : 'bg-slate-100  text-slate-950'
+                ? "bg-slate-200 opacity-50 cursor-not-allowed"
+                : "bg-slate-100  text-slate-950"
             }`}
             onClick={increaseQuantity}
           >
@@ -196,7 +211,7 @@ export default function ProductCardGrid({ product }: Props) {
           disabled={quantity === 0}
           className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] bg-[#84CC16] text-white hover:bg-[#257f00] h-[32px] text-[12px] cursor-pointer  disabled:cursor-not-allowed transition-all duration-300 ease-in-out"
         >
-          Agregar al carro
+          Agregar al carro 2
         </button>
       </div>
     </div>
