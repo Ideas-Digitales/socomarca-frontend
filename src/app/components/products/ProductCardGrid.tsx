@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useFavorites } from '@/hooks/useFavorites';
-import { fetchPostAddToCart } from '@/services/actions/cart.actions';
+import useStore from '@/stores/base';
 
 interface Props {
   product: Product;
@@ -13,6 +13,7 @@ interface Props {
 
 export default function ProductCardGrid({ product }: Props) {
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
+  const { addProductToCart } = useStore();
   const [quantity, setQuantity] = useState(0);
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
@@ -74,20 +75,9 @@ export default function ProductCardGrid({ product }: Props) {
   const addToCart = async () => {
     console.log('Añadiendo al carrito:', product.id, quantity);
     if (quantity > 0) {
-      const response = await fetchPostAddToCart({
-        product_id: product.id,
-        quantity,
-        unit: 'kg',
-      });
+      const response = addProductToCart(product.id, quantity, 'kg');
 
-      if (response.ok) {
-        console.log('Producto añadido al carrito:', response.data);
-        // Aquí podrías mostrar un toast, actualizar el estado global del carrito, etc.
-        setQuantity(0);
-      } else {
-        console.error('Error al añadir al carrito:', response.error);
-        // Aquí podrías mostrar un mensaje de error al usuario
-      }
+      console.log(response, 'Respuesta al añadir al carrito');
     }
   };
 

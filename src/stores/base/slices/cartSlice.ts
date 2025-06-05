@@ -1,6 +1,6 @@
-import { Product } from '@/interfaces/product.interface';
 import { StateCreator } from 'zustand';
 import { CartSlice, StoreState } from '../types';
+import { fetchPostAddToCart } from '@/services/actions/cart.actions';
 
 export const createCartSlice: StateCreator<
   StoreState & CartSlice,
@@ -8,19 +8,47 @@ export const createCartSlice: StateCreator<
   [],
   CartSlice
 > = (set, get) => ({
-  addProductToCart: (product: Product, quantity) => {
-    const { cartProducts } = get();
-    const existingProduct = cartProducts.find((item) => item.id === product.id);
-    if (existingProduct) {
-      const updatedCart = cartProducts.map((item) =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + quantity }
-          : item
-      );
-      set({ cartProducts: updatedCart });
-    } else {
-      const newProduct = { ...product, quantity };
-      set({ cartProducts: [...cartProducts, newProduct] });
+  addProductToCart: async (
+    product_id: number,
+    quantity: number,
+    unit: string
+  ) => {
+    try {
+      set({
+        isCartLoading: true,
+      });
+      const response = await fetchPostAddToCart({
+        product_id,
+        quantity,
+        unit,
+      });
+      console.log('Response from addProductToCart:', response);
+
+      if (response.ok && response.data) {
+        set({
+          cartProducts: response.data.items,
+        });
+        return {
+          ok: true,
+        };
+      } else {
+        console.error('Error adding product to cart:', response.error);
+        return {
+          ok: false,
+        };
+      }
+    } catch (error) {
+      set({
+        cartProducts: [],
+      });
+      return {
+        ok: false,
+      };
+      console.error('Error in addProductToCart:', error);
+    } finally {
+      set({
+        isCartLoading: false,
+      });
     }
   },
 

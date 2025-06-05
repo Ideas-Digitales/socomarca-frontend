@@ -11,7 +11,6 @@ export interface Product {
   status: boolean;
   unit: string;
   is_favorite: boolean;
-  
 }
 
 export interface Category {
@@ -31,4 +30,19 @@ export interface Brand {
 
 export interface ProductToBuy extends Product {
   quantity: number;
+}
+
+export interface ProductCart {
+  id: number;
+  user_id: number;
+  product_id: number;
+  quantity: number;
+  price: string;
+  unit: string;
+  subtotal: number;
+}
+
+export interface Cart {
+  items: ProductCart[];
+  total: number;
 }

@@ -9,7 +9,7 @@ interface AddToCartPayload {
   unit: string;
 }
 
-interface CartItem {
+export interface CartItem {
   id: number;
   user_id: number;
   product_id: number;
@@ -19,7 +19,7 @@ interface CartItem {
   subtotal: number;
 }
 
-interface CartResponse {
+export interface CartResponse {
   items: CartItem[];
   total: number;
 }

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function ProductCard({ product }: Props) {
-  const { addProductToCart } = useStore();
+  const { addProductToCart, isCartLoading } = useStore();
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
@@ -70,9 +70,10 @@ export default function ProductCard({ product }: Props) {
     }
   };
 
-  const addToCart = () => {
+  const addToCart = async () => {
     if (quantity > 0) {
-      addProductToCart(product, quantity);
+      const response = addProductToCart(product.id, quantity, 'kg');
+      console.log(response);
       setQuantity(0);
     }
   };

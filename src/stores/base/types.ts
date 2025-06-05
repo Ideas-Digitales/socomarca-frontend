@@ -1,7 +1,8 @@
-import { Product, ProductToBuy } from '@/interfaces/product.interface';
+import { Product } from '@/interfaces/product.interface';
 import { Category } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
+import { CartItem } from '@/services/actions/cart.actions';
 
 // Tipos para el modal
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -148,7 +149,8 @@ export interface StoreState {
   viewMode: 'grid' | 'list';
 
   // Carrito
-  cartProducts: ProductToBuy[];
+  cartProducts: CartItem[];
+  isCartLoading: boolean;
 
   // Paginación
   productPaginationMeta: PaginationMeta | null;
@@ -200,7 +202,11 @@ export interface UiSlice {
 
 // Acciones de carrito
 export interface CartSlice {
-  addProductToCart: (product: Product, quantity: number) => void;
+  addProductToCart: (
+    product_id: number,
+    quantity: number,
+    unit: string
+  ) => void;
   incrementProductInCart: (productId: number) => void;
   decrementProductInCart: (productId: number) => void;
   removeProductFromCart: (productId: number) => void;
