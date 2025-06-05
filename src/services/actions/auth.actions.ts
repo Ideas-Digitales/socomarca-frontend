@@ -85,3 +85,36 @@ export const fetchLogin = async (
       : new Error('Error en la autenticación');
   }
 };
+
+export const sendRecoveryEmail = async (rut: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await fetch(`${process.env.BACKEND_URL}/auth/restore`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+      body: JSON.stringify({ rut: removeDots(rut) }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data.message || 'No se pudo enviar el correo de recuperación',
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Correo de recuperación enviado',
+    };
+  } catch (error) {
+    console.error('Error al enviar correo de recuperación:', error);
+    return {
+      success: false,
+      message: 'Ocurrió un error inesperado',
+    };
+  }
+};
