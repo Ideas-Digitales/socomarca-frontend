@@ -72,7 +72,7 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   const addToCart = async () => {
-    console.log('Añadiendo al carrito:', product.id, quantity);
+    console.log('Añadiendo al carrito:', product.id, quantity, product.unit );
     if (quantity > 0) {
       const response = await fetchPostAddToCart({
         product_id: product.id,
