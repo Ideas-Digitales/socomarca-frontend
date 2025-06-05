@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function CartsProductsMobile() {
   const { cartProducts } = useStore();
 
-  const total = cartProducts.reduce((acc, p) => acc + p.price * p.quantity, 0);
+  // const total = cartProducts.reduce((acc, p) => acc + p.price * p.quantity, 0);
   const itemCount = cartProducts.reduce((acc, product) => {
     return acc + product.quantity;
   }, 0);
@@ -21,12 +21,12 @@ export default function CartsProductsMobile() {
               ? `[${itemCount}] Productos`
               : `[${itemCount}] Producto`}
           </span>
-          <span className="text-2xl font-bold">
+          {/* <span className="text-2xl font-bold">
             {total.toLocaleString('es-CL', {
               style: 'currency',
               currency: 'CLP',
             })}
-          </span>
+          </span> */}
       </div>
         </Link>
       <Link href="/carro-de-compra">

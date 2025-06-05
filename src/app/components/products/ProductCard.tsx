@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function ProductCard({ product }: Props) {
-  const { addProductToCart, isCartLoading } = useStore();
+  const { addProductToCart } = useStore();
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
