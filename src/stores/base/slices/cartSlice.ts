@@ -1,7 +1,9 @@
-import { StateCreator } from "zustand";
-import { CartSlice, StoreState } from "../types";
-import { fetchGetCart } from "@/services/actions/cart.actions";
-import { fetchPostAddToCart } from '@/services/actions/cart.actions';
+import { StateCreator } from 'zustand';
+import { CartSlice, StoreState } from '../types';
+import {
+  fetchGetCart,
+  fetchPostAddToCart,
+} from '@/services/actions/cart.actions';
 
 export const createCartSlice: StateCreator<
   StoreState & CartSlice,
@@ -23,28 +25,54 @@ export const createCartSlice: StateCreator<
         quantity,
         unit,
       });
-      console.log('Response from addProductToCart:', response);
 
       if (response.ok && response.data) {
-        set({
-          cartProducts: response.data.items,
-        });
+
+        await get().fetchCartProducts();
+
         return {
           ok: true,
         };
       } else {
+
         return {
           ok: false,
         };
       }
     } catch (error) {
-      set({
-        cartProducts: [],
-      });
+      console.error('Error in addProductToCart:', error);
+
       return {
         ok: false,
       };
-      console.error('Error in addProductToCart:', error);
+    } finally {
+      set({
+        isCartLoading: false,
+      });
+    }
+  },
+
+  fetchCartProducts: async () => {
+    set({
+      isCartLoading: true,
+    });
+    try {
+      const response = await fetchGetCart();
+
+      if (response.ok && response.data) {
+        set({
+          cartProducts: response.data.items,
+        });
+      } else {
+        set({
+          cartProducts: [],
+        });
+      }
+    } catch (error) {
+      console.error('Error in getCartProducts:', error);
+      set({
+        cartProducts: [],
+      });
     } finally {
       set({
         isCartLoading: false,
@@ -92,32 +120,6 @@ export const createCartSlice: StateCreator<
     const { cartProducts } = get();
     const updatedCart = cartProducts.filter((item) => item.id !== productId);
     set({ cartProducts: updatedCart });
-  },
-
-  fetchCartFromServer: async () => {
-    try {
-      const response = await fetchGetCart();
-      if (response.ok && response.data) {
-        const enriched = response.data.items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          stock: item.stock,
-          sku: item.sku,
-          image: item.image,
-          category: item.category,
-          subcategory: item.subcategory,
-          brand: item.brand,
-          status: item.status,
-          unit: item.unit,
-          is_favorite: item.is_favorite,
-          quantity: item.quantity,
-        }));
-        set({ cartProducts: enriched });
-      }
-    } catch (error) {
-      console.error("Error al cargar el carrito:", error);
-    }
   },
 
   clearCart: () => {

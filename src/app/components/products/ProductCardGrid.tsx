@@ -75,9 +75,14 @@ export default function ProductCardGrid({ product }: Props) {
   const addToCart = async () => {
     console.log('Añadiendo al carrito:', product.id, quantity, product.unit );
     if (quantity > 0) {
-      const response = addProductToCart(product.id, quantity, 'kg');
+      const response = await addProductToCart(product.id, quantity, 'kg');
 
-      console.log(response, 'Respuesta al añadir al carrito');
+      if (response.ok) {
+        console.log('Producto añadido al carrito:', product.id);
+        setQuantity(0); // Reset quantity after adding to cart
+      } else {
+        console.error('Error al añadir el producto al carrito:', response);
+      }
     }
   };
 

@@ -3,22 +3,21 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import CartProductCard from './CartProductCard';
-import { fetchGetCart } from '@/services/actions/cart.actions';
+import useStore from '@/stores/base';
 
 export default function CartProductsContainer() {
-  const [products, setProducts] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState('');
   const [totalItems, setTotalItems] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { cartProducts, isCartLoading } = useStore();
 
   //aqui va el useEffect para obtener los productos del carro
 
   useEffect(() => {
-    const total = products.reduce((acc, product) => {
+    const total = cartProducts.reduce((acc, product) => {
       return acc + Number(product.subtotal);
     }, 0);
 
-    const itemCount = products.reduce((acc, product) => {
+    const itemCount = cartProducts.reduce((acc, product) => {
       return acc + product.quantity;
     }, 0);
 
@@ -29,15 +28,15 @@ export default function CartProductsContainer() {
       })
     );
     setTotalItems(itemCount);
-  }, [products]);
+  }, [cartProducts]);
 
   return (
     <>
       <div className="bg-white w-full max-h-[800px] overflow-y-auto flex-col items-start p-3">
-        {loading ? (
+        {isCartLoading ? (
           <div className="text-sm text-slate-500">Cargando...</div>
-        ) : products.length > 0 ? (
-          products.map((product, index) => (
+        ) : cartProducts.length > 0 ? (
+          cartProducts.map((product, index) => (
             <CartProductCard
               key={product.id + '-' + index}
               product={product}
@@ -53,7 +52,7 @@ export default function CartProductsContainer() {
         )}
       </div>
 
-      {products.length > 0 && (
+      {cartProducts.length > 0 && (
         <div className="w-full bg-amber-50 h-[136px] flex flex-col justify-center items-start">
           <div className="flex w-full p-4 flex-col justify-center items-start gap-1">
             <div className="flex w-full items-center justify-between">

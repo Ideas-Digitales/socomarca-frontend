@@ -1,7 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Product } from '@/interfaces/product.interface';
 import Link from 'next/link';
 import useStore, { useInitMobileDetection } from '@/stores/base';
 import {
@@ -15,12 +14,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { createLogoutModal } from '@/configs/sidebarConfigs';
+import { CartItem } from '@/services/actions/cart.actions';
 
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 const logoUrl = '/assets/global/logo-header.png';
 
 interface Props {
-  carro: Product[];
+  carro: CartItem[];
 }
 
 export default function Header({ carro }: Props) {

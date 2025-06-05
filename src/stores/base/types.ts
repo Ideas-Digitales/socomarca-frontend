@@ -206,13 +206,13 @@ export interface CartSlice {
     product_id: number,
     quantity: number,
     unit: string
-  ) => void;
+  ) => Promise<{ ok: boolean }>;
   incrementProductInCart: (productId: number) => void;
   decrementProductInCart: (productId: number) => void;
   removeProductFromCart: (productId: number) => void;
   removeAllQuantityByProductId: (productId: number) => void;
   clearCart: () => void;
-  fetchCartFromServer: () => Promise<void>;
+  fetchCartProducts: () => Promise<void>;
 }
 
 // Acciones de paginación

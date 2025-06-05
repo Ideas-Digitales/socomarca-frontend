@@ -27,6 +27,7 @@ const initialState: StoreState = {
   isTablet: false,
   viewMode: 'grid',
   cartProducts: [],
+  isCartLoading: false,
   productPaginationMeta: null,
   productPaginationLinks: null,
   currentPage: 1,

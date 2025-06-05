@@ -2,7 +2,6 @@
 
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
-import { ProductToBuy } from '@/interfaces/product.interface';
 
 interface AddToCartPayload {
   product_id: number;
@@ -21,7 +20,7 @@ export interface CartItem {
 }
 
 export interface CartResponse {
-  items: ProductToBuy[];
+  items: CartItem[];
   total: number;
 }
 
@@ -59,24 +58,18 @@ export const fetchPostAddToCart = async (
         error: 'Unauthorized: No token found',
       };
     }
-    
-    console.log('payload:', typeof String(payload.product_id), payload.product_id);
 
     type CartPayload = {
       product_id: string;
       quantity: string;
       unit: string;
-    }
+    };
 
-    const payloadToString:CartPayload = {
+    const payloadToString: CartPayload = {
       product_id: String(payload.product_id),
       quantity: String(payload.quantity),
       unit: payload.unit,
-    }
-
-    console.log('payloadToString:', typeof payloadToString.product_id, payloadToString.product_id);
-    console.log('payloadToString:', typeof payloadToString.quantity, payloadToString.quantity);
-    console.log('payloadToString:', typeof payloadToString.unit, payloadToString.unit);
+    };
 
     const response = await fetch(`${BACKEND_URL}/cart/items`, {
       method: 'POST',
@@ -113,7 +106,6 @@ export const fetchPostAddToCart = async (
 
 export const fetchGetCart = async (): Promise<ActionResult<CartResponse>> => {
   try {
-
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
 
@@ -132,8 +124,6 @@ export const fetchGetCart = async (): Promise<ActionResult<CartResponse>> => {
         Authorization: `Bearer ${token}`,
       },
     });
-
-    console.log('GET response:', response);
 
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);

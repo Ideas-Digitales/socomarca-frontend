@@ -17,6 +17,7 @@ export default function PrivateLayout({
     fetchCategories,
     cartProducts,
     fetchBrands,
+    fetchCartProducts,
   } = useStore();
   useInitMobileDetection();
 
@@ -24,7 +25,8 @@ export default function PrivateLayout({
     fetchProducts();
     fetchCategories();
     fetchBrands();
-  }, [fetchProducts, fetchCategories, fetchBrands]);
+    fetchCartProducts();
+  }, [fetchProducts, fetchCategories, fetchBrands, fetchCartProducts]);
 
   return (
     <>
