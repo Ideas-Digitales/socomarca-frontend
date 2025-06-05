@@ -21,7 +21,6 @@ export default function CartProductCard({ product, index }: Props) {
   );
 
   useEffect(() => {
-    // Verificar si la image existe
     const img = new Image();
     img.src = product.image;
     img.onerror = () => {
@@ -60,7 +59,7 @@ export default function CartProductCard({ product, index }: Props) {
     }
   );
 
-  const isBrandTruncated = product.brand.name.length > 10;
+  const isBrandTruncated = product.brand?.name.length > 10;
   const isNameTruncated = product.name.length > 10;
 
   return (

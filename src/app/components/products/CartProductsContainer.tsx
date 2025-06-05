@@ -11,29 +11,7 @@ export default function CartProductsContainer() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadCart = async () => {
-      const response = await fetchGetCart();
-      if (response.ok && response.data) {
-        const enriched = response.data.items.map((item) => ({
-          id: item.product_id,
-          quantity: item.quantity,
-          price: Number(item.price),
-          stock: 100, // mock
-          name: `Producto #${item.product_id}`,
-          sku: `SKU-${item.product_id}`,
-          imagen: '/placeholder.png',
-          brand: { name: 'Marca' },
-          category: { name: 'Categoría' },
-          subtotal: item.subtotal,
-        }));
-        setProducts(enriched);
-      }
-      setLoading(false);
-    };
-
-    loadCart();
-  }, []);
+  //aqui va el useEffect para obtener los productos del carro
 
   useEffect(() => {
     const total = products.reduce((acc, product) => {

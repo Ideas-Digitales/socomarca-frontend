@@ -2,6 +2,7 @@
 
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
+import { ProductToBuy } from '@/interfaces/product.interface';
 
 interface AddToCartPayload {
   product_id: number;
@@ -20,7 +21,7 @@ export interface CartItem {
 }
 
 export interface CartResponse {
-  items: CartItem[];
+  items: ProductToBuy[];
   total: number;
 }
 
@@ -58,15 +59,33 @@ export const fetchPostAddToCart = async (
         error: 'Unauthorized: No token found',
       };
     }
+    
+    console.log('payload:', typeof String(payload.product_id), payload.product_id);
 
-    const response = await fetch(`${BACKEND_URL}/carts`, {
+    type CartPayload = {
+      product_id: string;
+      quantity: string;
+      unit: string;
+    }
+
+    const payloadToString:CartPayload = {
+      product_id: String(payload.product_id),
+      quantity: String(payload.quantity),
+      unit: payload.unit,
+    }
+
+    console.log('payloadToString:', typeof payloadToString.product_id, payloadToString.product_id);
+    console.log('payloadToString:', typeof payloadToString.quantity, payloadToString.quantity);
+    console.log('payloadToString:', typeof payloadToString.unit, payloadToString.unit);
+
+    const response = await fetch(`${BACKEND_URL}/cart/items`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payloadToString),
     });
 
     console.log('POST response:', response);
@@ -94,36 +113,6 @@ export const fetchPostAddToCart = async (
 
 export const fetchGetCart = async (): Promise<ActionResult<CartResponse>> => {
   try {
-    if (IS_QA_MODE) {
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      return {
-        ok: true,
-        data: {
-          items: [
-            {
-              id: 1,
-              user_id: 3,
-              product_id: 7,
-              quantity: 2,
-              price: '1000.00',
-              unit: 'UN',
-              subtotal: 2000,
-            },
-            {
-              id: 3,
-              user_id: 3,
-              product_id: 7,
-              quantity: 6,
-              price: '1000.00',
-              unit: 'UN',
-              subtotal: 6000,
-            },
-          ],
-          total: 8000,
-        },
-        error: null,
-      };
-    }
 
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
@@ -136,7 +125,7 @@ export const fetchGetCart = async (): Promise<ActionResult<CartResponse>> => {
       };
     }
 
-    const response = await fetch(`${BACKEND_URL}/carts`, {
+    const response = await fetch(`${BACKEND_URL}/cart`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',

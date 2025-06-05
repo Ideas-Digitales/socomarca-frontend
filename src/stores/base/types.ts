@@ -212,6 +212,7 @@ export interface CartSlice {
   removeProductFromCart: (productId: number) => void;
   removeAllQuantityByProductId: (productId: number) => void;
   clearCart: () => void;
+  fetchCartFromServer: () => Promise<void>;
 }
 
 // Acciones de paginación

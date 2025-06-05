@@ -1,5 +1,6 @@
-import { StateCreator } from 'zustand';
-import { CartSlice, StoreState } from '../types';
+import { StateCreator } from "zustand";
+import { CartSlice, StoreState } from "../types";
+import { fetchGetCart } from "@/services/actions/cart.actions";
 import { fetchPostAddToCart } from '@/services/actions/cart.actions';
 
 export const createCartSlice: StateCreator<
@@ -32,7 +33,6 @@ export const createCartSlice: StateCreator<
           ok: true,
         };
       } else {
-        console.error('Error adding product to cart:', response.error);
         return {
           ok: false,
         };
@@ -92,6 +92,32 @@ export const createCartSlice: StateCreator<
     const { cartProducts } = get();
     const updatedCart = cartProducts.filter((item) => item.id !== productId);
     set({ cartProducts: updatedCart });
+  },
+
+  fetchCartFromServer: async () => {
+    try {
+      const response = await fetchGetCart();
+      if (response.ok && response.data) {
+        const enriched = response.data.items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          stock: item.stock,
+          sku: item.sku,
+          image: item.image,
+          category: item.category,
+          subcategory: item.subcategory,
+          brand: item.brand,
+          status: item.status,
+          unit: item.unit,
+          is_favorite: item.is_favorite,
+          quantity: item.quantity,
+        }));
+        set({ cartProducts: enriched });
+      }
+    } catch (error) {
+      console.error("Error al cargar el carrito:", error);
+    }
   },
 
   clearCart: () => {
