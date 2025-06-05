@@ -55,9 +55,11 @@ export const fetchLogin = async (
 
     // Almacenar el token en cookies
 
-    const token = data.token;
+    const { token, user } = data;
+    const roles = user?.roles || [];
     if (token) {
-      setCookie(token);
+      setCookie(token, 'token');
+      setCookie(roles.join(','), 'role');
     }
 
     if (!token || !data.user) {
@@ -86,7 +88,9 @@ export const fetchLogin = async (
   }
 };
 
-export const sendRecoveryEmail = async (rut: string): Promise<{ success: boolean; message: string }> => {
+export const sendRecoveryEmail = async (
+  rut: string
+): Promise<{ success: boolean; message: string }> => {
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/auth/restore`, {
       method: 'POST',

@@ -2,13 +2,13 @@ import { cookies } from 'next/headers';
 
 export const cookiesManagement = async () => {
   const cookieStore = await cookies();
-  const setCookie = (cookie: string): boolean => {
+  const setCookie = (cookie: string, cookieName: string): boolean => {
     if (!cookie || typeof cookie !== 'string') {
       return false;
     }
 
     cookieStore.set({
-      name: 'token',
+      name: cookieName,
       value: cookie,
     });
 
