@@ -16,9 +16,11 @@ interface AuthStoreState {
   login: ({
     rut,
     password,
+    role,
   }: {
     rut: string;
     password: string;
+    role?: string;
   }) => Promise<LoginResult>;
   logout: () => void;
 }
@@ -32,9 +34,9 @@ const useAuthStore = create<AuthStoreState>((set) => ({
     rut: '',
   },
   token: '',
-  login: async ({ rut, password }) => {
+  login: async ({ rut, password, role }) => {
     try {
-      const response = await fetchLogin(rut, password);
+      const response = await fetchLogin(rut, password, role);
 
       if (!response.user) {
         return { success: false, error: 'Credenciales inválidas' };

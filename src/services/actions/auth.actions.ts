@@ -8,7 +8,8 @@ import { IS_QA_MODE } from '@/utils/getEnv';
 
 export const fetchLogin = async (
   rut: string,
-  password: string
+  password: string,
+  role?: string
 ): Promise<LoginResponse> => {
   if (IS_QA_MODE) {
     return new Promise((resolve, reject) => {
@@ -26,6 +27,7 @@ export const fetchLogin = async (
   const bodyRequest = {
     rut: removeDots(rut),
     password,
+    role: role || null,
   };
 
   try {
