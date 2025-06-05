@@ -82,14 +82,11 @@ export default function ProductsContainer() {
             }
           `}
           >
-            {filteredProducts.map((product) =>
+            {filteredProducts.map((product, index) =>
               viewMode === 'list' ? (
-                <ProductCard key={product.id + product.unit + product.price} product={product} />
+                <ProductCard key={index} product={product} />
               ) : (
-                <ProductCardGrid
-                  key={product.id + product.unit + product.price}
-                  product={product}
-                />
+                <ProductCardGrid key={index} product={product} />
               )
             )}
           </div>
