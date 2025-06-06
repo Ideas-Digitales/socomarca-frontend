@@ -112,6 +112,16 @@ export const getAdminDashboardConfig = (
         url: '/admin/mensaje-cliente',
       },
       {
+        id: 'Regiones y comunas',
+        label: 'Regiones y comunas',
+        url: '/admin/regiones',
+      },
+      {
+        id: 'Transbank',
+        label: 'Transbank',
+        url: '/admin/transbank',
+      },
+      {
         id: 'cerrar-sesion',
         label: 'Cerrar sesión',
         onClick: () => {
@@ -122,6 +132,7 @@ export const getAdminDashboardConfig = (
           });
         },
       },
+      
     ],
   };
 };

@@ -1,5 +1,5 @@
 export const regionesYComunas: Record<string, string[]> = {
-  "Región de Arica y Parinacota": [
+  /*"Región de Arica y Parinacota": [
     "Arica",
     "Camarones",
     "Putre",
@@ -89,7 +89,8 @@ export const regionesYComunas: Record<string, string[]> = {
     "Panquehue",
     "Putaendo",
     "Santa María"
-  ],
+  ],*/
+
   "Región Metropolitana de Santiago": [
     "Santiago",
     "Cerrillos",
@@ -140,6 +141,7 @@ export const regionesYComunas: Record<string, string[]> = {
     "Padre Hurtado",
     "Peñaflor"
   ],
+  
   "Región del Libertador General Bernardo O'Higgins": [
     "Rancagua",
     "Codegua",
