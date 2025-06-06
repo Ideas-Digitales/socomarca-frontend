@@ -1,7 +1,7 @@
-import { CartItem } from '@/services/actions/cart.actions';
+import { CartItem } from '@/interfaces/product.interface';
 import useStore from '@/stores/base';
 import { TrashIcon } from '@heroicons/react/24/outline';
-// import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   product: CartItem;
@@ -11,22 +11,22 @@ interface Props {
 export default function CartProductCard({ product, index }: Props) {
   const {
     removeProductFromCart,
-    // incrementProductInCart,
+    incrementProductInCart,
     decrementProductInCart,
     removeAllQuantityByProductId,
   } = useStore();
 
-  // const [backgroundImage, setBackgroundImage] = useState(
-  //   `url(${product.image})`
-  // );
+  const [backgroundImage, setBackgroundImage] = useState(
+    `url(${product.image})`
+  );
 
-  // useEffect(() => {
-  //   const img = new Image();
-  //   img.src = product.image;
-  //   img.onerror = () => {
-  //     setBackgroundImage(`url(/assets/global/logo_plant.png)`);
-  //   };
-  // }, [product.image]);
+  useEffect(() => {
+    const img = new Image();
+    img.src = product.image;
+    img.onerror = () => {
+      setBackgroundImage(`url(/assets/global/logo_plant.png)`);
+    };
+  }, [product.image]);
 
   const decreaseQuantity = () => {
     if (product.quantity > 0) {
@@ -38,29 +38,29 @@ export default function CartProductCard({ product, index }: Props) {
     }
   };
 
-  // const increaseQuantity = () => {
-  //   if (product.quantity < product.stock) {
-  //     incrementProductInCart(product.id);
-  //   }
-  // };
+  const increaseQuantity = () => {
+    if (product.quantity < product.stock) {
+      incrementProductInCart(product.id);
+    }
+  };
 
-  // const truncateText = (text: string, maxLength: number) => {
-  //   if (text.length > maxLength) {
-  //     return text.substring(0, maxLength) + '...';
-  //   }
-  //   return text;
-  // };
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + '...';
+    }
+    return text;
+  };
 
-  // const totalPrice = (product.price * product.quantity).toLocaleString(
-  //   'es-CL',
-  //   {
-  //     style: 'currency',
-  //     currency: 'CLP',
-  //   }
-  // );
+  const totalPrice = (product.price * product.quantity).toLocaleString(
+    'es-CL',
+    {
+      style: 'currency',
+      currency: 'CLP',
+    }
+  );
 
-  // const isBrandTruncated = product.brand?.name.length > 10;
-  // const isNameTruncated = product.name.length > 10;
+  const isBrandTruncated = product.brand?.name.length > 10;
+  const isNameTruncated = product.name.length > 10;
 
   return (
     <div
@@ -69,24 +69,24 @@ export default function CartProductCard({ product, index }: Props) {
       } h-[80px]`}
     >
       <div className="flex items-center">
-        {/* <div
+        <div
           className="w-[45px] h-[46px] p-[2px] bg-contain bg-no-repeat bg-center"
           style={{ backgroundImage }}
-        /> */}
+        />
       </div>
       <div className="flex flex-col w-full max-w-[80]">
-        {/* <span
+        <span
           className="text-[#64748B] text-[12px] font-medium cursor-help"
           title={isBrandTruncated ? product.brand.name : undefined}
         >
           {truncateText(product.brand.name, 10)}
-        </span> */}
-        {/* <span
+        </span>
+        <span
           className="text-[12px] font-medium cursor-help"
           title={isNameTruncated ? product.name : undefined}
         >
           {truncateText(product.name, 10)}
-        </span> */}
+        </span>
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
         <div className="flex h-[74px] justify-between items-center gap-[6px] flex-1-0-0">
@@ -108,7 +108,7 @@ export default function CartProductCard({ product, index }: Props) {
                 {product.quantity}
               </span>
 
-              {/* <button
+              <button
                 disabled={product.quantity === product.stock}
                 className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
                   product.quantity === product.stock
@@ -118,11 +118,10 @@ export default function CartProductCard({ product, index }: Props) {
                 onClick={increaseQuantity}
               >
                 +
-              </button> */}
+              </button>
             </div>
             {/* El total quantity * price */}
-            {/* <span className="text-[12px] font-bold">{totalPrice}</span> */}
-
+            <span className="text-[12px] font-bold">{totalPrice}</span>
             <TrashIcon
               className="cursor-pointer"
               onClick={() => removeAllQuantityByProductId(product.id)}

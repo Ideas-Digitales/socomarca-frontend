@@ -1,8 +1,7 @@
-import { Product } from '@/interfaces/product.interface';
+import { CartItem, Product } from '@/interfaces/product.interface';
 import { Category } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
-import { CartItem } from '@/services/actions/cart.actions';
 
 // Tipos para el modal
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';

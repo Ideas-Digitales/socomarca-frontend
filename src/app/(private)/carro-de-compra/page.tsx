@@ -3,8 +3,8 @@ import { useState, useMemo } from 'react';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import useStore from '@/stores/base';
-// import CarroCompraCard from '@/app/components/carro-de-compra/CarroCompraCard';
-// import CarroCompraCardMobile from '@/app/components/carro-de-compra/CarroCompraCardMobile';
+import CarroCompraCard from '@/app/components/carro-de-compra/CarroCompraCard';
+import CarroCompraCardMobile from '@/app/components/carro-de-compra/CarroCompraCardMobile';
 import Pagination from '@/app/components/global/Pagination';
 
 const ITEMS_PER_PAGE = 10; // Productos por página
@@ -14,8 +14,8 @@ export default function CarroDeCompraPage() {
   const {
     cartProducts,
     removeAllQuantityByProductId,
-    // decrementProductInCart,
-    // incrementProductInCart,
+    decrementProductInCart,
+    incrementProductInCart,
   } = useStore();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,7 +35,7 @@ export default function CarroDeCompraPage() {
       current_page: currentPage,
       from: totalProducts > 0 ? startIndex + 1 : 0,
       last_page: totalPages,
-      links: [], // No necesitamos los links del meta para esta implementación
+      links: [],
       path: '/carro-de-compra',
       per_page: ITEMS_PER_PAGE,
       to: Math.min(endIndex, totalProducts),
@@ -55,10 +55,10 @@ export default function CarroDeCompraPage() {
     return { meta, links, paginatedProducts };
   }, [cartProducts, currentPage]);
 
-  // const subtotal = cartProducts.reduce(
-  //   (acc, p) => acc + p.price * p.quantity,
-  //   0
-  // );
+  const subtotal = cartProducts.reduce(
+    (acc, p) => acc + p.price * p.quantity,
+    0
+  );
 
   const backHome = () => {
     router.push('/');
@@ -163,15 +163,15 @@ export default function CarroDeCompraPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {/* {paginationData.paginatedProducts.map((p) => (
+                      {paginationData.paginatedProducts.map((p, index) => (
                         <CarroCompraCard
                           decrementProductInCart={decrementProductInCart}
                           incrementProductInCart={incrementProductInCart}
-                          key={p.id}
+                          key={index}
                           p={p}
                           setIdProductoAEliminar={setIdProductoAEliminar}
                         />
-                      ))} */}
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -179,15 +179,15 @@ export default function CarroDeCompraPage() {
 
               {/* Layout en tarjetas para móviles */}
               <div className="lg:hidden flex flex-col gap-4 max-h-[60dvh] overflow-y-auto">
-                {/* {paginationData.paginatedProducts.map((p) => (
+                {paginationData.paginatedProducts.map((p, index) => (
                   <CarroCompraCardMobile
                     decrementProductInCart={decrementProductInCart}
                     incrementProductInCart={incrementProductInCart}
                     p={p}
-                    key={p.id}
+                    key={index}
                     setIdProductoAEliminar={setIdProductoAEliminar}
                   />
-                ))} */}
+                ))}
               </div>
 
               {/* PAGINACIÓN */}
@@ -218,14 +218,14 @@ export default function CarroDeCompraPage() {
                   Resumen de compra
                 </h3>
               </div>
-              {/* <div className="flex justify-between mb-2 pb-3 border-b-[1px] border-b-slate-100">
+              <div className="flex justify-between mb-2 pb-3 border-b-[1px] border-b-slate-100">
                 <span>Subtotal</span>
                 <span>${subtotal.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between font-bold mb-2">
                 <span>Total todo medio de pago</span>
                 <span>${subtotal.toLocaleString('es-CL')}</span>
-              </div> */}
+              </div>
               <p className="text-xs text-gray-500 mb-4">
                 Impuestos y envíos calculados al finalizar la compra
               </p>
