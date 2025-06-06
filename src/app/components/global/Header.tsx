@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { createLogoutModal } from '@/configs/sidebarConfigs';
-import { CartItem } from '@/services/actions/cart.actions';
+import { CartItem } from '@/interfaces/product.interface';
 
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 const logoUrl = '/assets/global/logo-header.png';

@@ -2,21 +2,12 @@
 
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
+import { CartItem } from '@/interfaces/product.interface';
 
 interface AddToCartPayload {
   product_id: number;
   quantity: number;
   unit: string;
-}
-
-export interface CartItem {
-  id: number;
-  user_id: number;
-  product_id: number;
-  quantity: number;
-  price: string;
-  unit: string;
-  subtotal: number;
 }
 
 export interface CartResponse {

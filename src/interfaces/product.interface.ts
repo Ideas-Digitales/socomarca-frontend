@@ -46,3 +46,12 @@ export interface Cart {
   items: ProductCart[];
   total: number;
 }
+
+export interface CartItem extends ProductToBuy {
+  subtotal: number;
+}
+
+export interface CartResponse {
+  items: CartItem[];
+  total: number;
+}
