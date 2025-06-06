@@ -133,7 +133,7 @@ export default function DetalleListaSection({
 
                 <button
                   onClick={() => {
-                    setProductoAEliminar(1);
+                    setProductoAEliminar(idx);
                     setModalVisible(true);
                   }}
                   className="text-red-500 hover:text-red-700"
@@ -162,7 +162,9 @@ export default function DetalleListaSection({
         descripcion={
           eliminarLista
             ? 'Esta acción eliminará la lista y todos sus productos.'
-            : '¿Estás seguro que deseas eliminar este producto?'
+            : productoAEliminar !== null 
+              ? `"${productos[productoAEliminar]?.nombre}" se quitará de tu lista.`
+              : '¿Estás seguro que deseas eliminar este producto?'
         }
         onCancel={() => {
           setModalVisible(false);

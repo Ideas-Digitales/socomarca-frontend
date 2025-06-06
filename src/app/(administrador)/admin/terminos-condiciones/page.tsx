@@ -263,7 +263,7 @@ export default function RichTextEditor() {
 
       {/* Información adicional */}
       <div className="mt-4 text-sm text-gray-500">
-        <p>
+        <p className='hidden lg:block'>
           Utiliza las herramientas de la barra superior para dar formato a tu texto. 
           También puedes usar atajos de teclado como <kbd className="px-1 py-0.5 bg-gray-100 rounded">Ctrl+B</kbd> para negrita, 
           <kbd className="px-1 py-0.5 bg-gray-100 rounded">Ctrl+I</kbd> para cursiva, etc.
