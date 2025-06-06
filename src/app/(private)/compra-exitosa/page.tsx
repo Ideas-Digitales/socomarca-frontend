@@ -1,18 +1,18 @@
-"use client";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
+'use client';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
 
 export default function CompraExitosaPage() {
   const router = useRouter();
 
   // Simulación de datos
-  const numeroOrden = "95491147";
+  const numeroOrden = '95491147';
   const totalCompra = 36250;
-  const direccion = "Los alamos #444 Providencia, Región Metropolitana";
+  const direccion = 'Los alamos #444 Providencia, Región Metropolitana';
 
   return (
-    <div className="bg-[#f5faf5] min-h-[60vh] flex justify-center py-6 md:py-10 px-4">
-      <div className="bg-white max-w-2xl h-fit md:mt-10 p-8 rounded-lg text-center shadow">
+    <div className="min-h-[60vh] bg-[#84CC160D] flex justify-center py-6 md:py-10 p-4">
+      <div className="max-w-2xl h-fit md:mt-10 p-8 rounded-lg text-center">
         <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
           ¡Gracias por tu compra!
         </h1>
@@ -22,12 +22,12 @@ export default function CompraExitosaPage() {
           Número de orden: <span className="text-red-500">{numeroOrden}</span>
         </p>
         <p className="mb-2 text-lg">
-          Total de la compra: ${totalCompra.toLocaleString("es-CL")}
+          Total de la compra: ${totalCompra.toLocaleString('es-CL')}
         </p>
         <p className="mb-6 text-lg">{`Dirección de envío: ${direccion}`}</p>
 
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push('/')}
           className="bg-lime-500 hover:bg-lime-600 text-white py-2 px-6 rounded text-lg"
         >
           Volver al Home

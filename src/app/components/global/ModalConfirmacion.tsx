@@ -19,7 +19,7 @@ export default function ModalConfirmacion({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4 sm:px-0">
       <div className="bg-white rounded-lg shadow p-6 max-w-md w-full">
         <div className="flex items-start gap-3">
           <Icon className="w-6 h-6 text-red-500 mt-1" />

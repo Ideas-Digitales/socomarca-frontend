@@ -27,7 +27,6 @@ const categoriasProducto = [
   'Licores',
 ];
 
-
 // Datos base para generar nombres de clientes aleatorios
 const tiposNegocio = [
   'Restaurant',
@@ -91,7 +90,7 @@ const complementos = [
   'Natural',
 ];
 
-const acciones = ['Ver pedido', 'Ver detalles', 'Procesar', 'Revisar'];
+const acciones = ['Ver detalles'];
 
 // Función para generar un número aleatorio entre min y max
 function randomBetween(min: number, max: number): number {
@@ -162,7 +161,7 @@ export function generarTransaccionesAleatorias(
       monto: generarMontoAleatorio(),
       fecha: generarFechaAleatoria(),
       acciones: randomChoice(acciones),
-      categoria: randomChoice(categoriasProducto), 
+      categoria: randomChoice(categoriasProducto),
     };
 
     transacciones.push(transaccion);
@@ -201,7 +200,7 @@ export function generarTransaccionesPersonalizadas(config: {
       monto: Math.round(randomBetween(montoMin, montoMax) / 1000) * 1000,
       fecha: generarFechaAleatoria(diasAtras),
       acciones: randomChoice(acciones),
-      categoria: randomChoice(categoriasProducto), 
+      categoria: randomChoice(categoriasProducto),
     };
 
     transacciones.push(transaccion);
@@ -213,7 +212,6 @@ export function generarTransaccionesPersonalizadas(config: {
     return fechaB.getTime() - fechaA.getTime();
   });
 }
-
 
 export function agruparVentasPorCategoria(
   transacciones: TransaccionExitosa[]

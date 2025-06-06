@@ -25,7 +25,7 @@ export default function FavoritosSection({
   setNombreNuevaLista: (v: string) => void;
   setErrorNombreLista: (v: string) => void;
   setModalCrearListaVisible: (v: boolean) => void;
-   setSelected: (v: string) => void;
+  setSelected: (v: string) => void;
 }) {
   return (
     <div className=" p-4 rounded">
@@ -35,40 +35,42 @@ export default function FavoritosSection({
         {listasFavoritas.map((lista, i) => (
           <div
             key={i}
-            className="bg-white rounded p-4 shadow-sm border border-[#e4eaf1]"
+            className="bg-white rounded p-4 shadow-sm border border-[#e4eaf1] sm:flex sm:justify-between"
           >
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h3 className="font-semibold text-lg">{lista.nombre}</h3>
-                <p className="text-sm text-gray-500">
-                  {lista.productos.length} Productos
-                </p>
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h3 className="font-semibold text-lg">{lista.nombre}</h3>
+                  <p className="text-sm text-gray-500">
+                    {lista.productos.length} Productos
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={() => {
-                  setListaSeleccionada(lista);
-                  setSelected("detalle-lista")                  //
-                }}
-                className="text-sm text-lime-600 flex items-center gap-1 hover:underline cursor-pointer"
-              >
-                Revisar lista <span className="text-lg">›</span>
-              </button>
-            </div>
 
-            <div className="flex gap-2 overflow-x-auto mt-2">
-              {lista.productos.map((prod, j) => (
-                <img
-                  key={j}
-                  src={prod.imagen}
-                  alt={prod.nombre}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      '/assets/global/logo_plant.png';
-                  }}
-                  className="w-12 h-16 object-contain rounded"
-                />
-              ))}
+              <div className="flex gap-2 overflow-x-auto mt-2">
+                {lista.productos.map((prod, j) => (
+                  <img
+                    key={j}
+                    src={prod.imagen}
+                    alt={prod.nombre}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        '/assets/global/logo_plant.png';
+                    }}
+                    className="w-12 h-16 object-contain rounded"
+                  />
+                ))}
+              </div>
             </div>
+            <button
+              onClick={() => {
+                setListaSeleccionada(lista);
+                setSelected('detalle-lista'); //
+              }}
+              className="text-sm text-slate-500 flex items-center gap-1 hover:underline cursor-pointer justify-center"
+            >
+              Revisar lista <span className="text-lg">›</span>
+            </button>
           </div>
         ))}
       </div>

@@ -93,7 +93,7 @@ export default function MiCuentaPage() {
           nombre: 'Arroz Gl laminado 1 kg.',
           marca: 'Miraflores',
           imagen: '/img/arroz.png',
-          precio:299,
+          precio: 299,
           cantidad: 33,
         },
         {
@@ -351,9 +351,9 @@ export default function MiCuentaPage() {
             />
           </Suspense>
 
-          <div className="flex-1 h-fit bg-white rounded-lg shadow p-6">
+          <div className="flex-1 h-fit rounded-lg sm:p-6">
             {selected === 'datos' && (
-              <div>
+              <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-bold mb-4">Datos personales</h2>
                 <DatosPersonalesForm
                   formData={formData}
@@ -367,11 +367,13 @@ export default function MiCuentaPage() {
 
             {/* Resto de secciones (direcciones, favoritos, compras...) igual que antes */}
             {selected === 'direcciones' && (
-              <DireccionesSection
-                favoritaIndex={favoritaIndex}
-                setFavoritaIndex={setFavoritaIndex}
-                setModalAbierto={setModalAbierto}
-              />
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <DireccionesSection
+                  favoritaIndex={favoritaIndex}
+                  setFavoritaIndex={setFavoritaIndex}
+                  setModalAbierto={setModalAbierto}
+                />
+              </div>
             )}
             {selected === 'favoritos' && (
               <FavoritosSection
@@ -386,15 +388,17 @@ export default function MiCuentaPage() {
             )}
 
             {selected === 'detalle-lista' && listaSeleccionada && (
-              <DetalleListaSection
-                lista={listaSeleccionada}
-                onVolver={() => {
-                  setSelected('favoritos');
-                  const params = new URLSearchParams(window.location.search);
-                  params.set('section', 'favoritos');
-                  router.replace(`?${params.toString()}`, { scroll: false });
-                }}
-              />
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <DetalleListaSection
+                  lista={listaSeleccionada}
+                  onVolver={() => {
+                    setSelected('favoritos');
+                    const params = new URLSearchParams(window.location.search);
+                    params.set('section', 'favoritos');
+                    router.replace(`?${params.toString()}`, { scroll: false });
+                  }}
+                />
+              </div>
             )}
 
             {selected === 'compras' && (

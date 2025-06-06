@@ -1,6 +1,7 @@
 'use client';
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
+import VerPedido from '@/app/components/dashboardTable/VerPedido';
 import { usePagination } from '@/hooks/usePagination';
 import {
   ExtendedDashboardTableConfig,
@@ -23,6 +24,7 @@ interface TransaccionExitosaFormatted {
   monto3: number;
   fecha: string;
   acciones: string;
+  originalData?: TransaccionExitosa; // Agregamos referencia a los datos originales
 }
 
 export interface Client {
@@ -39,7 +41,9 @@ const clients: Client[] = [
 
 export default function TransaccionesExitosas() {
   const [transacciones] = useState(() => generarTransaccionesAleatorias(100));
-
+  const [currentView, setCurrentView] = useState<'table' | 'details'>('table');
+  const [detailSelected, setDetailSelected] =
+    useState<TransaccionExitosa | null>(null);
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [amountFilter, setAmountFilter] = useState<AmountRange>({
@@ -47,7 +51,7 @@ export default function TransaccionesExitosas() {
     max: '',
   });
 
-  const transaccionesFixed = transacciones.map(
+  const transaccionesFixed: TransaccionExitosaFormatted[] = transacciones.map(
     (transaccion: TransaccionExitosa) => ({
       id: String(transaccion.id),
       cliente: transaccion.cliente,
@@ -56,6 +60,7 @@ export default function TransaccionesExitosas() {
       monto3: transaccion.monto,
       fecha: transaccion.fecha,
       acciones: transaccion.acciones,
+      originalData: transaccion, // Guardamos la referencia original
     })
   );
 
@@ -91,6 +96,14 @@ export default function TransaccionesExitosas() {
     showDatePicker: true,
   };
 
+  // Función para manejar el clic en detalles
+  const handleViewDetails = (transaccion: TransaccionExitosaFormatted) => {
+    if (transaccion.originalData) {
+      setDetailSelected(transaccion.originalData);
+      setCurrentView('details');
+    }
+  };
+
   // Definir columnas para transacciones
   const transaccionesColumns: TableColumn<TransaccionExitosaFormatted>[] = [
     { key: 'id', label: 'ID' },
@@ -119,9 +132,23 @@ export default function TransaccionesExitosas() {
     {
       key: 'acciones',
       label: 'Acciones',
-      render: (value: string) => <div className="text-lime-500">{value}</div>,
+      render: (value: string, row: TransaccionExitosaFormatted) => (
+        <div
+          onClick={() => handleViewDetails(row)}
+          className="text-lime-500 cursor-pointer hover:text-lime-600"
+        >
+          {value}
+        </div>
+      ),
     },
   ];
+
+  const changeView = (view: 'table' | 'details') => {
+    setCurrentView(view);
+    if (view === 'table') {
+      setDetailSelected(null);
+    }
+  };
 
   const handleAmountFilter = (amount: AmountRange) => {
     console.log('Filtrar por rango de montos:', amount);
@@ -150,7 +177,7 @@ export default function TransaccionesExitosas() {
     // Implementar lógica para limpiar búsqueda
   };
 
-  return (
+  const DashboardTableLayoutComponent = (
     <DashboardTableLayout
       config={config}
       // Datos de la tabla
@@ -173,5 +200,15 @@ export default function TransaccionesExitosas() {
       onClearSearch={handleClearSearch}
       searchableDropdown={true}
     />
+  );
+
+  return (
+    <>
+      {currentView === 'table' ? (
+        DashboardTableLayoutComponent
+      ) : (
+        <VerPedido detailSelected={detailSelected} changeView={changeView} />
+      )}
+    </>
   );
 }
