@@ -1,7 +1,7 @@
 'use client';
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
-import VerPedido from '@/app/components/dashboardTable/VerPedido';
+import VerPedidoOverlay from '@/app/components/dashboardTable/VerPedidoOverlay';
 import { usePagination } from '@/hooks/usePagination';
 import {
   ExtendedDashboardTableConfig,
@@ -24,7 +24,7 @@ interface TransaccionExitosaFormatted {
   monto3: number;
   fecha: string;
   acciones: string;
-  originalData?: TransaccionExitosa; // Agregamos referencia a los datos originales
+  originalData?: TransaccionExitosa;
 }
 
 export interface Client {
@@ -41,9 +41,12 @@ const clients: Client[] = [
 
 export default function TransaccionesExitosas() {
   const [transacciones] = useState(() => generarTransaccionesAleatorias(100));
-  const [currentView, setCurrentView] = useState<'table' | 'details'>('table');
+
+  // Estados para el overlay deslizante
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [detailSelected, setDetailSelected] =
     useState<TransaccionExitosa | null>(null);
+
   // Estados para manejar filtros
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [amountFilter, setAmountFilter] = useState<AmountRange>({
@@ -60,7 +63,7 @@ export default function TransaccionesExitosas() {
       monto3: transaccion.monto,
       fecha: transaccion.fecha,
       acciones: transaccion.acciones,
-      originalData: transaccion, // Guardamos la referencia original
+      originalData: transaccion,
     })
   );
 
@@ -88,7 +91,7 @@ export default function TransaccionesExitosas() {
     metrics: metrics,
   };
 
-  // Configuración del dashboard (usando ExtendedDashboardTableConfig)
+  // Configuración del dashboard
   const config: ExtendedDashboardTableConfig = {
     title: 'Transacciones Exitosas',
     showTable: true,
@@ -96,12 +99,21 @@ export default function TransaccionesExitosas() {
     showDatePicker: true,
   };
 
-  // Función para manejar el clic en detalles
+  // Función para abrir el overlay con detalles
   const handleViewDetails = (transaccion: TransaccionExitosaFormatted) => {
     if (transaccion.originalData) {
       setDetailSelected(transaccion.originalData);
-      setCurrentView('details');
+      setIsOverlayOpen(true);
     }
+  };
+
+  // Función para cerrar el overlay
+  const handleCloseOverlay = () => {
+    setIsOverlayOpen(false);
+    // Pequeño delay para la animación antes de limpiar los datos
+    setTimeout(() => {
+      setDetailSelected(null);
+    }, 300);
   };
 
   // Definir columnas para transacciones
@@ -135,20 +147,13 @@ export default function TransaccionesExitosas() {
       render: (value: string, row: TransaccionExitosaFormatted) => (
         <div
           onClick={() => handleViewDetails(row)}
-          className="text-lime-500 cursor-pointer hover:text-lime-600"
+          className="text-lime-500 cursor-pointer hover:text-lime-600 transition-colors"
         >
           {value}
         </div>
       ),
     },
   ];
-
-  const changeView = (view: 'table' | 'details') => {
-    setCurrentView(view);
-    if (view === 'table') {
-      setDetailSelected(null);
-    }
-  };
 
   const handleAmountFilter = (amount: AmountRange) => {
     console.log('Filtrar por rango de montos:', amount);
@@ -169,46 +174,39 @@ export default function TransaccionesExitosas() {
 
   const handleFilter = () => {
     console.log('Aplicar filtros generales...');
-    // Implementar lógica de filtros generales
   };
 
   const handleClearSearch = () => {
     console.log('Limpiar búsqueda');
-    // Implementar lógica para limpiar búsqueda
   };
 
-  const DashboardTableLayoutComponent = (
-    <DashboardTableLayout
-      config={config}
-      // Datos de la tabla
-      tableData={paginatedItems}
-      tableColumns={transaccionesColumns}
-      productPaginationMeta={productPaginationMeta}
-      onPageChange={changePage}
-      // Props para gráficos (se pasan directamente)
-      chartConfig={chartConfig}
-      showDatePicker={true}
-      // Filtros específicos
-      onAmountFilter={handleAmountFilter}
-      onClientFilter={handleClientFilter}
-      onFilter={handleFilter}
-      // Datos para filtros
-      clients={clients}
-      selectedClients={selectedClients}
-      amountValue={amountFilter}
-      // Funciones de búsqueda
-      onClearSearch={handleClearSearch}
-      searchableDropdown={true}
-    />
-  );
-
   return (
-    <>
-      {currentView === 'table' ? (
-        DashboardTableLayoutComponent
-      ) : (
-        <VerPedido detailSelected={detailSelected} changeView={changeView} />
-      )}
-    </>
+    <div className="relative">
+      {/* Vista principal - siempre visible */}
+      <DashboardTableLayout
+        config={config}
+        tableData={paginatedItems}
+        tableColumns={transaccionesColumns}
+        productPaginationMeta={productPaginationMeta}
+        onPageChange={changePage}
+        chartConfig={chartConfig}
+        showDatePicker={true}
+        onAmountFilter={handleAmountFilter}
+        onClientFilter={handleClientFilter}
+        onFilter={handleFilter}
+        clients={clients}
+        selectedClients={selectedClients}
+        amountValue={amountFilter}
+        onClearSearch={handleClearSearch}
+        searchableDropdown={true}
+      />
+
+      {/* Overlay deslizante */}
+      <VerPedidoOverlay
+        isOpen={isOverlayOpen}
+        detailSelected={detailSelected}
+        onClose={handleCloseOverlay}
+      />
+    </div>
   );
 }

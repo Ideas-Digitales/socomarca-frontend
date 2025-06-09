@@ -1,40 +1,20 @@
-import { CartItem } from '@/interfaces/product.interface';
+import {
+  Product,
+  CartItem,
+  CartResponse,
+} from '@/interfaces/product.interface';
 import { generateProducts } from './products';
-import { generateTransactionProducts } from './generateData';
+import { TransaccionExitosa } from './transaccionesExitosas';
+import {
+  randomChoice,
+  randomBetween,
+  getRandomNumber,
+} from '@/stores/base/utils/generators';
 
-export interface TransaccionExitosa {
-  id: number;
-  cliente: string;
-  monto: number;
-  fecha: string;
-  acciones: string;
-  categoria: string;
+// Funciones auxiliares que necesitas importar o definir aquí
 
-  productos: CartItem[];
-}
-
-export interface CategoriaVenta {
-  categoria: string;
-  subtotal: number;
-  margen: number;
-  venta: number;
-}
-
-export const categoriasProducto = [
-  'Bebidas',
-  'Snacks',
-  'Lácteos',
-  'Carnes',
-  'Panadería',
-  'Congelados',
-  'Frutas y Verduras',
-  'Aseo',
-  'Mascotas',
-  'Licores',
-];
-
-// Datos base para generar nombres de clientes aleatorios
-export const tiposNegocio = [
+// Constantes que necesitas importar de tu archivo original o definir aquí
+const tiposNegocio = [
   'Restaurant',
   'Cafetería',
   'Minimarket',
@@ -52,7 +32,7 @@ export const tiposNegocio = [
   'Deli',
 ];
 
-export const nombresBase = [
+const nombresBase = [
   'El Rincón',
   'La Esquina',
   'Don José',
@@ -96,19 +76,22 @@ const complementos = [
   'Natural',
 ];
 
+const categoriasProducto = [
+  'Bebidas',
+  'Snacks',
+  'Lácteos',
+  'Carnes',
+  'Panadería',
+  'Congelados',
+  'Frutas y Verduras',
+  'Aseo',
+  'Mascotas',
+  'Licores',
+];
+
 const acciones = ['Ver detalles'];
 
-// Función para generar un número aleatorio entre min y max
-function randomBetween(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// Función para seleccionar elemento aleatorio de un array
-function randomChoice<T>(array: T[]): T {
-  return array[Math.floor(Math.random() * array.length)];
-}
-
-// Función para generar nombre de cliente aleatorio
+// Funciones auxiliares originales
 function generarNombreCliente(): string {
   const tipo = randomChoice(tiposNegocio);
   const nombre = randomChoice(nombresBase);
@@ -118,7 +101,6 @@ function generarNombreCliente(): string {
   return `${tipo} ${nombre}${complemento}`;
 }
 
-// Función para generar fecha aleatoria en un rango
 function generarFechaAleatoria(diasAtras: number = 30): string {
   const hoy = new Date();
   const fechaAleatoria = new Date(
@@ -132,35 +114,85 @@ function generarFechaAleatoria(diasAtras: number = 30): string {
   return `${dia}/${mes}/${año}`;
 }
 
-// Función para generar monto aleatorio
 function generarMontoAleatorio(): number {
-  // Generar montos entre 50,000 y 2,000,000 con tendencia hacia valores medios
   const base = Math.random();
   let monto: number;
 
   if (base < 0.7) {
-    // 70% de probabilidad: montos entre 100k y 800k
     monto = randomBetween(100000, 800000);
   } else if (base < 0.9) {
-    // 20% de probabilidad: montos entre 50k y 100k
     monto = randomBetween(50000, 100000);
   } else {
-    // 10% de probabilidad: montos altos entre 800k y 2M
     monto = randomBetween(800000, 2000000);
   }
 
-  // Redondear a miles
   return Math.round(monto / 1000) * 1000;
 }
 
-// Función principal para generar transacciones aleatorias
+// Tus funciones del carrito
+export const generatePurchasedCartItem = (product: Product): CartItem => {
+  const quantity = getRandomNumber(1, 8);
+  const subtotal = product.price * quantity;
+
+  return {
+    ...product,
+    quantity,
+    subtotal,
+  };
+};
+
+export const generatePurchasedCart = (
+  productPool?: Product[],
+  itemCount?: number
+): CartItem[] => {
+  const availableProducts = productPool || generateProducts(100);
+  const count = itemCount || getRandomNumber(2, 8);
+
+  const selectedProducts = availableProducts
+    .sort(() => Math.random() - 0.5)
+    .slice(0, count)
+    .filter((product) => product.status && product.stock > 0);
+
+  return selectedProducts.map(generatePurchasedCartItem);
+};
+
+export const generateCompletedCart = (
+  productPool?: Product[],
+  itemCount?: number
+): CartResponse => {
+  const items = generatePurchasedCart(productPool, itemCount);
+  const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+  return {
+    items,
+    total,
+  };
+};
+
+export const generatePurchaseHistory = (
+  transactionCount: number = 10,
+  productPool?: Product[]
+): CartResponse[] => {
+  const products = productPool || generateProducts(150);
+
+  return Array.from({ length: transactionCount }, () =>
+    generateCompletedCart(products)
+  );
+};
+
+export const generateTransactionProducts = (
+  productPool?: Product[]
+): CartItem[] => {
+  return generatePurchasedCart(productPool, getRandomNumber(2, 6));
+};
+
 export function generarTransaccionesAleatorias(
   cantidad: number = 100,
-  idInicial: number = 18900000
+  idInicial: number = 18900000,
+  productPool?: Product[]
 ): TransaccionExitosa[] {
   const transacciones: TransaccionExitosa[] = [];
-  // Generar pool de productos una sola vez para eficiencia
-  const products = generateProducts(200);
+  const products = productPool || generateProducts(200);
 
   for (let i = 0; i < cantidad; i++) {
     const transaccion: TransaccionExitosa = {
@@ -170,13 +202,12 @@ export function generarTransaccionesAleatorias(
       fecha: generarFechaAleatoria(),
       acciones: randomChoice(acciones),
       categoria: randomChoice(categoriasProducto),
-      productos: generateTransactionProducts(products), // Cambiar aquí
+      productos: generateTransactionProducts(products),
     };
 
     transacciones.push(transaccion);
   }
 
-  // Ordenar por fecha (más recientes primero)
   return transacciones.sort((a, b) => {
     const fechaA = new Date(a.fecha.split('/').reverse().join('-'));
     const fechaB = new Date(b.fecha.split('/').reverse().join('-'));
@@ -184,13 +215,13 @@ export function generarTransaccionesAleatorias(
   });
 }
 
-// Función para generar datos con configuración personalizada
 export function generarTransaccionesPersonalizadas(config: {
   cantidad?: number;
   idInicial?: number;
   montoMin?: number;
   montoMax?: number;
   diasAtras?: number;
+  productPool?: Product[];
 }): TransaccionExitosa[] {
   const {
     cantidad = 100,
@@ -198,11 +229,11 @@ export function generarTransaccionesPersonalizadas(config: {
     montoMin = 50000,
     montoMax = 2000000,
     diasAtras = 30,
+    productPool,
   } = config;
 
   const transacciones: TransaccionExitosa[] = [];
-  // Generar pool de productos una sola vez para eficiencia
-  const products = generateProducts(200);
+  const products = productPool || generateProducts(200);
 
   for (let i = 0; i < cantidad; i++) {
     const transaccion: TransaccionExitosa = {
@@ -212,7 +243,7 @@ export function generarTransaccionesPersonalizadas(config: {
       fecha: generarFechaAleatoria(diasAtras),
       acciones: randomChoice(acciones),
       categoria: randomChoice(categoriasProducto),
-      productos: generateTransactionProducts(products), // Agregar esta línea
+      productos: generateTransactionProducts(products),
     };
 
     transacciones.push(transaccion);
@@ -223,29 +254,4 @@ export function generarTransaccionesPersonalizadas(config: {
     const fechaB = new Date(b.fecha.split('/').reverse().join('-'));
     return fechaB.getTime() - fechaA.getTime();
   });
-}
-
-export function agruparVentasPorCategoria(
-  transacciones: TransaccionExitosa[]
-): CategoriaVenta[] {
-  const resumen: Record<string, CategoriaVenta> = {};
-
-  transacciones.forEach((t) => {
-    const cat = t.categoria;
-
-    if (!resumen[cat]) {
-      resumen[cat] = {
-        categoria: cat,
-        subtotal: 0,
-        margen: 0,
-        venta: 0,
-      };
-    }
-
-    resumen[cat].subtotal += t.monto;
-    resumen[cat].margen += t.monto * 0.3; // margen simulado 30%
-    resumen[cat].venta += t.monto * 1.3;
-  });
-
-  return Object.values(resumen).sort((a, b) => b.venta - a.venta);
 }

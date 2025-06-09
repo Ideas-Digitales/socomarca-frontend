@@ -1,7 +1,7 @@
 'use client';
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
-import VerPedido from '@/app/components/dashboardTable/VerPedido';
+import VerPedidoOverlay from '@/app/components/dashboardTable/VerPedidoOverlay';
 import { usePagination } from '@/hooks/usePagination';
 import {
   ExtendedDashboardTableConfig,
@@ -41,7 +41,8 @@ const clients: Client[] = [
 
 export default function TransaccionesFallidas() {
   const [transacciones] = useState(() => generarTransaccionesAleatorias(100));
-  const [currentView, setCurrentView] = useState<'table' | 'details'>('table');
+  // Estados para el overlay deslizante
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [detailSelected, setDetailSelected] =
     useState<TransaccionExitosa | null>(null);
   // Estados para manejar filtros
@@ -95,15 +96,6 @@ export default function TransaccionesFallidas() {
     tableTitle: 'Lista de Transacciones Fallidas',
     showDatePicker: true,
   };
-
-  // Función para manejar el clic en detalles
-  const handleViewDetails = (transaccion: TransaccionExitosaFormatted) => {
-    if (transaccion.originalData) {
-      setDetailSelected(transaccion.originalData);
-      setCurrentView('details');
-    }
-  };
-
   // Definir columnas para transacciones
   const transaccionesColumns: TableColumn<TransaccionExitosaFormatted>[] = [
     { key: 'id', label: 'ID' },
@@ -143,11 +135,20 @@ export default function TransaccionesFallidas() {
     },
   ];
 
-  const changeView = (view: 'table' | 'details') => {
-    setCurrentView(view);
-    if (view === 'table') {
-      setDetailSelected(null);
+  const handleViewDetails = (transaccion: TransaccionExitosaFormatted) => {
+    if (transaccion.originalData) {
+      setDetailSelected(transaccion.originalData);
+      setIsOverlayOpen(true);
     }
+  };
+
+  // Función para cerrar el overlay
+  const handleCloseOverlay = () => {
+    setIsOverlayOpen(false);
+    // Pequeño delay para la animación antes de limpiar los datos
+    setTimeout(() => {
+      setDetailSelected(null);
+    }, 300);
   };
 
   const handleAmountFilter = (amount: AmountRange) => {
@@ -177,38 +178,35 @@ export default function TransaccionesFallidas() {
     // Implementar lógica para limpiar búsqueda
   };
 
-  const DashboardTableLayoutComponent = (
-    <DashboardTableLayout
-      config={config}
-      // Datos de la tabla
-      tableData={paginatedItems}
-      tableColumns={transaccionesColumns}
-      productPaginationMeta={productPaginationMeta}
-      onPageChange={changePage}
-      // Props para gráficos (se pasan directamente)
-      chartConfig={chartConfig}
-      showDatePicker={true}
-      // Filtros específicos
-      onAmountFilter={handleAmountFilter}
-      onClientFilter={handleClientFilter}
-      onFilter={handleFilter}
-      // Datos para filtros
-      clients={clients}
-      selectedClients={selectedClients}
-      amountValue={amountFilter}
-      // Funciones de búsqueda
-      onClearSearch={handleClearSearch}
-      searchableDropdown={true}
-    />
-  );
-
   return (
-    <>
-      {currentView === 'table' ? (
-        DashboardTableLayoutComponent
-      ) : (
-        <VerPedido detailSelected={detailSelected} changeView={changeView} />
-      )}
-    </>
+    <div className="relative">
+      <DashboardTableLayout
+        config={config}
+        // Datos de la tabla
+        tableData={paginatedItems}
+        tableColumns={transaccionesColumns}
+        productPaginationMeta={productPaginationMeta}
+        onPageChange={changePage}
+        // Props para gráficos (se pasan directamente)
+        chartConfig={chartConfig}
+        showDatePicker={true}
+        // Filtros específicos
+        onAmountFilter={handleAmountFilter}
+        onClientFilter={handleClientFilter}
+        onFilter={handleFilter}
+        // Datos para filtros
+        clients={clients}
+        selectedClients={selectedClients}
+        amountValue={amountFilter}
+        // Funciones de búsqueda
+        onClearSearch={handleClearSearch}
+        searchableDropdown={true}
+      />
+      <VerPedidoOverlay
+        isOpen={isOverlayOpen}
+        detailSelected={detailSelected}
+        onClose={handleCloseOverlay}
+      />
+    </div>
   );
 }

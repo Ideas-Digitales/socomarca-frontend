@@ -217,7 +217,7 @@ export const generateProduct = (id: number): Product => {
     price,
     stock,
     sku,
-    image: `assets/products/product-${id}.jpg`,
+    image: `/assets/global/logo_plant.png`,
     category,
     subcategory,
     brand,
