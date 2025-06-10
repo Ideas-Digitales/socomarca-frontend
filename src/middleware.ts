@@ -39,7 +39,7 @@ export default async function middleware(request: NextRequest) {
   if (pathname === '/') {
     // Verificar autenticación primero
     if (!token || !userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
     // Solo los clientes pueden ver la ruta raíz, otros roles redirigir
@@ -50,7 +50,7 @@ export default async function middleware(request: NextRequest) {
     } else if (userRole === 'superadmin') {
       return NextResponse.redirect(new URL('/super-admin/users', request.url));
     } else {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }
 
@@ -61,7 +61,7 @@ export default async function middleware(request: NextRequest) {
       pathname.startsWith('/admin') ||
       pathname.startsWith('/super-admin');
 
-    const loginUrl = isAdminRoute ? '/login-admin' : '/login';
+    const loginUrl = isAdminRoute ? '/auth/login-admin' : '/auth/login';
     return NextResponse.redirect(new URL(loginUrl, request.url));
   }
 
