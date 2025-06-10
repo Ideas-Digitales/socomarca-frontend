@@ -45,11 +45,11 @@ export default function SuperAdministradorLayout({
       <div className="w-full">
         {/* Sidebar - Solo se renderiza en desktop */}
         {!isTablet && (
-          <Sidebar configType="super-admin" userName="Alex Mandarino" />
+          <Sidebar configType="superadmin" userName="Alex Mandarino" />
         )}
 
         {/* Mobile Sidebar - Solo se renderiza en tablet/mobile */}
-        {isTablet && <SidebarMobile configType="super-admin" />}
+        {isTablet && <SidebarMobile configType="superadmin" />}
 
         {/* Main Content Area */}
         <div

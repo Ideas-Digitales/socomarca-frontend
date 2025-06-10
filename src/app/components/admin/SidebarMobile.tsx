@@ -11,7 +11,7 @@ import useStore from '@/stores/base';
 import { getSidebarConfig } from '@/configs/sidebarConfigs';
 
 interface SidebarMobileProps {
-  configType: 'admin' | 'super-admin';
+  configType: 'admin' | 'superadmin';
 }
 
 export default function SidebarMobile({ configType }: SidebarMobileProps) {

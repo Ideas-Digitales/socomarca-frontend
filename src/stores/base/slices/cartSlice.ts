@@ -27,14 +27,10 @@ export const createCartSlice: StateCreator<
       });
 
       if (response.ok && response.data) {
-
-        await get().fetchCartProducts();
-
         return {
           ok: true,
         };
       } else {
-
         return {
           ok: false,
         };

@@ -6,5 +6,6 @@ export const mockResponse: LoginResponse = {
     name: 'Sebastian Oberbrunner',
     rut: '23843925-6',
     email: 'paul.sporer@example.org',
+    roles: ['admin', 'superadmin', 'cliente'],
   },
 };

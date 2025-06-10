@@ -149,6 +149,7 @@ export async function logoutAction() {
 
     // Opcional: eliminar la cookie si la setea el frontend
     deleteCookie('token');
+    deleteCookie('role');
   } catch (error) {
     console.error('Logout failed:', error);
   }

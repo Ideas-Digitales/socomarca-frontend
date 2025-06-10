@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function ProductCard({ product }: Props) {
-  const { addProductToCart } = useStore();
+  const { addProductToCart, isQaMode } = useStore();
   const [isLoading, setIsLoading] = useState(false);
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [backgroundImage, setBackgroundImage] = useState(
@@ -74,11 +74,16 @@ export default function ProductCard({ product }: Props) {
   const addToCart = async () => {
     setIsLoading(true);
     if (quantity > 0) {
+      if (isQaMode) {
+        setQuantity(0);
+        setIsLoading(false);
+        return;
+      }
+
       const response = await addProductToCart(product.id, quantity, 'kg');
 
       if (response.ok) {
         setQuantity(0);
-      } else {
       }
     }
     setIsLoading(false);

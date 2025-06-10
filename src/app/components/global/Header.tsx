@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { createLogoutModal } from '@/configs/sidebarConfigs';
 import { CartItem } from '@/interfaces/product.interface';
+import { logoutAction } from '@/services/actions/auth.actions';
 
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 const logoUrl = '/assets/global/logo-header.png';
@@ -33,9 +34,10 @@ export default function Header({ carro }: Props) {
 
   const { isTablet, closeModal, openModal } = useStore();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutAction();
     closeModal();
-    router.push('/login');
+    router.push('/auth/login');
   };
 
   useEffect(() => {

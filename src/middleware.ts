@@ -1,82 +1,115 @@
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Definición de roles
 type UserRole = 'cliente' | 'admin' | 'superadmin';
 
-// Rutas públicas que no requieren autenticación
-const publicRoutes = [
-  '/login',
-  '/login-admin',
-  '/recuperar',
-  '/recuperar-admin',
-  '/auth',
-];
-
-// Función para verificar si una ruta es pública
-function isPublicRoute(path: string): boolean {
-  return publicRoutes.some(
-    (route) => path === route || path.startsWith(route + '/')
-  );
-}
-
-// Función para verificar acceso según la ruta y rol
-function hasAccess(path: string, userRole: UserRole): boolean {
-  // Rutas de admin - solo admin y superadmin
-  if (path.startsWith('/admin') || path.startsWith('/admin')) {
-    return ['admin', 'superadmin'].includes(userRole);
-  }
-
-  // Rutas de super admin - solo superadmin
-  if (path.startsWith('/super-admin')) {
-    return userRole === 'superadmin';
-  }
-
-  // Rutas privadas - todos los roles autenticados
-  if (path.startsWith('/private')) {
-    return ['cliente', 'admin', 'superadmin'].includes(userRole);
-  }
-
-  // Para cualquier otra ruta protegida, permitir solo usuarios autenticados
-  return ['cliente', 'admin', 'superadmin'].includes(userRole);
-}
-
 export default async function middleware(request: NextRequest) {
+  // Saltar middleware en modo QA
   if (process.env.QA_MODE === 'true') {
     return NextResponse.next();
   }
 
-  const path = request.nextUrl.pathname;
+  const pathname = request.nextUrl.pathname;
 
-  // Si es ruta pública, permitir acceso
-  if (isPublicRoute(path)) {
+  // ========== RUTAS COMPLETAMENTE PÚBLICAS ==========
+  const publicPaths = [
+    '/login',
+    '/login-admin',
+    '/recuperar',
+    '/recuperar-admin',
+    '/auth',
+    '/acceso-denegado',
+  ];
+
+  // Si es una ruta pública, permitir siempre
+  if (
+    publicPaths.some(
+      (path) => pathname === path || pathname.startsWith(path + '/')
+    )
+  ) {
     return NextResponse.next();
   }
 
-  // Obtener cookies
+  // ========== OBTENER DATOS DE AUTENTICACIÓN ==========
   const { getCookie } = await cookiesManagement();
   const token = getCookie('token');
   const userRole = getCookie('role') as UserRole;
 
-  // Verificar autenticación
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // ========== MANEJAR RUTA RAÍZ ==========
+  if (pathname === '/') {
+    // Verificar autenticación primero
+    if (!token || !userRole) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Solo los clientes pueden ver la ruta raíz, otros roles redirigir
+    if (userRole === 'cliente') {
+      return NextResponse.next(); // Permitir acceso a la página principal de (private)
+    } else if (userRole === 'admin') {
+      return NextResponse.redirect(new URL('/admin/total-de-ventas', request.url));
+    } else if (userRole === 'superadmin') {
+      return NextResponse.redirect(new URL('/super-admin/users', request.url));
+    } else {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
 
-  // Verificar si tiene rol válido
-  if (!userRole) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // ========== VERIFICAR AUTENTICACIÓN ==========
+  if (!token || !userRole) {
+    // Determinar a qué login redirigir según la ruta
+    const isAdminRoute =
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/super-admin');
+
+    const loginUrl = isAdminRoute ? '/login-admin' : '/login';
+    return NextResponse.redirect(new URL(loginUrl, request.url));
   }
 
-  // Verificar acceso según rol
-  if (!hasAccess(path, userRole)) {
+  // ========== VERIFICAR ROLES Y PERMISOS ==========
+  let hasPermission = false;
+
+  // Rutas para ADMIN únicamente
+  if (pathname.startsWith('/admin')) {
+    hasPermission = userRole === 'admin';
+  }
+  // Rutas para SUPERADMIN únicamente
+  else if (pathname.startsWith('/super-admin')) {
+    hasPermission = userRole === 'superadmin';
+  }
+  // Rutas para CLIENTE únicamente - todas las rutas de la carpeta (private)
+  else if (
+    pathname.startsWith('/carro-de-compra') ||
+    pathname.startsWith('/compra-exitosa') ||
+    pathname.startsWith('/compra-fallida') ||
+    pathname.startsWith('/direcciones') ||
+    pathname.startsWith('/favoritos') ||
+    pathname.startsWith('/finalizar-compra') ||
+    pathname.startsWith('/gracias') ||
+    pathname.startsWith('/medios-de-pago') ||
+    pathname.startsWith('/mi-cuenta') ||
+    pathname.startsWith('/mis-compras') ||
+    pathname.startsWith('/politica-de-privacidad') ||
+    pathname.startsWith('/preguntas-frecuentes') ||
+    pathname.startsWith('/repetir-compra') ||
+    pathname.startsWith('/revisar-pedido') ||
+    pathname.startsWith('/terminos-y-condiciones')
+  ) {
+    hasPermission = userRole === 'cliente';
+  }
+  // Otras rutas protegidas - denegar por defecto
+  else {
+    hasPermission = false;
+  }
+
+  // Si no tiene permisos, redirigir a acceso denegado
+  if (!hasPermission) {
     return NextResponse.redirect(new URL('/acceso-denegado', request.url));
   }
 
+  // Permitir acceso
   return NextResponse.next();
 }
 
-// Configuración del matcher
 export const config = {
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|eot|css|js|map)$).*)',

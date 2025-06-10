@@ -12,7 +12,7 @@ import { getSidebarConfig } from '@/configs/sidebarConfigs';
 const avatar = '/assets/global/avatar.png';
 
 interface SidebarProps {
-  configType: 'admin' | 'super-admin';
+  configType: 'admin' | 'superadmin';
   userName?: string;
 }
 
