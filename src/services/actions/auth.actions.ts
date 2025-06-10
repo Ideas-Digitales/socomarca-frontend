@@ -122,3 +122,33 @@ export const sendRecoveryEmail = async (
     };
   }
 };
+
+
+
+export async function logoutAction() {
+   const { getCookie, deleteCookie } = await cookiesManagement();
+      const cookie = getCookie('token');
+
+  if (!cookie) {
+    console.warn('No token found in cookies');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/auth/token`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${cookie}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Failed to revoke token', await response.text());
+    }
+
+    // Opcional: eliminar la cookie si la setea el frontend
+    deleteCookie('token');
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+}

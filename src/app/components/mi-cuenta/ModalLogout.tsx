@@ -1,4 +1,5 @@
 'use client';
+import { logoutAction } from '@/services/actions/auth.actions';
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 
@@ -9,10 +10,11 @@ export default function ModalLogout({
 }) {
   const router = useRouter();
 
-  const handleLogout = () => {
-    router.push('/login');
-    onClose();
-  };
+const handleLogout = async () => {
+  await logoutAction();
+  router.push('/login');
+  onClose();
+};
 
   return (
     <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] flex justify-center items-center z-50">
