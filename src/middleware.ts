@@ -13,11 +13,10 @@ export default async function middleware(request: NextRequest) {
 
   // ========== RUTAS COMPLETAMENTE PÚBLICAS ==========
   const publicPaths = [
-    '/login',
-    '/login-admin',
+    '/auth/login',
+    '/auth/login-admin',
     '/recuperar',
     '/recuperar-admin',
-    '/auth',
     '/acceso-denegado',
   ];
 
@@ -47,7 +46,7 @@ export default async function middleware(request: NextRequest) {
   if (pathname === '/') {
     // Verificar autenticación primero
     if (!token || !userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
     // Solo los clientes pueden ver la ruta raíz, otros roles redirigir
@@ -58,7 +57,7 @@ export default async function middleware(request: NextRequest) {
     } else if (userRole === 'superadmin') {
       return NextResponse.redirect(new URL('/super-admin/users', request.url));
     } else {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }
 
