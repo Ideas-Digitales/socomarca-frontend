@@ -12,7 +12,7 @@ export default function ModalLogout({
 
 const handleLogout = async () => {
   await logoutAction();
-  router.push('/login');
+  router.push('/auth/login');
   onClose();
 };
 

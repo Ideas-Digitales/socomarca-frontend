@@ -141,7 +141,7 @@ export const regionesYComunas: Record<string, string[]> = {
     "Padre Hurtado",
     "Peñaflor"
   ],
-  
+  /*
   "Región del Libertador General Bernardo O'Higgins": [
     "Rancagua",
     "Codegua",
@@ -366,5 +366,5 @@ export const regionesYComunas: Record<string, string[]> = {
     "Timaukel",
     "Natales",
     "Torres del Paine"
-  ]
+  ]*/
 };
