@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import DescargarDatos from '../components/admin/DescargarDatos';
 import Sidebar from '../components/admin/Sidebar';
 import SidebarMobile from '../components/admin/SidebarMobile';
+import DescargarDatos from '../components/admin/DescargarDatos';
 import useStore, { useInitMobileDetection } from '@/stores/base';
+import useAuthStore from '@/stores/useAuthStore';
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
@@ -15,7 +16,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-export default function AdministradorLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -25,13 +26,19 @@ export default function AdministradorLayout({
 
   useInitMobileDetection();
   const { isTablet, fetchCategories, fetchProducts } = useStore();
+  const { getUserRole } = useAuthStore();
+
+  // Obtener el rol del usuario
+  const userRole = (getUserRole() as 'admin' | 'superadmin') || 'admin';
 
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
-  }, [fetchProducts, fetchCategories]);
+    // Solo fetchear para admin regular, no para superadmin
+    if (userRole === 'admin') {
+      fetchProducts();
+      fetchCategories();
+    }
+  }, [fetchProducts, fetchCategories, userRole]);
 
-  // Efecto para manejar el estado de montaje del componente
   useEffect(() => {
     setIsMounted(true);
 
@@ -43,7 +50,6 @@ export default function AdministradorLayout({
     return () => clearTimeout(timer);
   }, []);
 
-  // Mostrar spinner si no está montado o está cargando
   if (!isMounted || isLoading) {
     return <LoadingSpinner />;
   }
@@ -52,10 +58,21 @@ export default function AdministradorLayout({
     <>
       <div className="w-full">
         {/* Sidebar - Solo se renderiza en desktop */}
-        {!isTablet && <Sidebar configType="admin" userName="Alex Mandarino" />}
+        {!isTablet && (
+          <Sidebar
+            configType={userRole} // Usar el rol real como configType
+            userRole={userRole}
+            userName="Alex Mandarino"
+          />
+        )}
 
         {/* Mobile Sidebar - Solo se renderiza en tablet/mobile */}
-        {isTablet && <SidebarMobile configType="admin" />}
+        {isTablet && (
+          <SidebarMobile
+            configType={userRole} // Usar el rol real como configType
+            userRole={userRole}
+          />
+        )}
 
         {/* Main Content Area */}
         <div
@@ -63,8 +80,14 @@ export default function AdministradorLayout({
             !isTablet ? 'ml-[290px]' : ''
           }`}
         >
-          {!isTablet && <DescargarDatos />}
-          <main className="flex-grow relative w-full py-[88px]">
+          {/* DescargarDatos solo para admin regular y desktop */}
+          {!isTablet && userRole === 'admin' && <DescargarDatos />}
+
+          <main
+            className={`flex-grow relative w-full ${
+              !isTablet && userRole === 'admin' ? 'py-[88px]' : 'py-[30px]'
+            }`}
+          >
             {children}
           </main>
         </div>

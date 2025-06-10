@@ -44,8 +44,8 @@ export const getSidebarConfig = (
   closeModal: () => void,
   router: { push: (url: string) => void }
 ): SidebarConfig => {
+  console.log('🔧 getSidebarConfig called with userRole:', userRole);
   const handleLogout = async () => {
-    console.log('Cerrando sesión...');
     await logoutAction();
     closeModal();
     router.push('/auth/login');
@@ -134,14 +134,22 @@ export const getSidebarConfig = (
     {
       id: 'users',
       label: 'Usuarios',
-      url: '/users',
+      url: '/super-admin/users',
     },
     {
       id: 'create-user',
       label: 'Crear nuevo usuario',
-      url: '/create-user',
+      url: '/super-admin/create-user',
     },
   ];
+
+  // Debug: verificar qué items se están agregando
+  console.log('🔧 Items Debug:', {
+    userRole,
+    isSuperadmin: userRole === 'superadmin',
+    superAdminItemsLength: superAdminItems.length,
+    willAddSuperAdminItems: userRole === 'superadmin',
+  });
 
   // Item de cerrar sesión (siempre presente)
   const logoutItem = {
@@ -156,12 +164,11 @@ export const getSidebarConfig = (
     },
   };
 
-  // Construir la configuración final
+  // Construir la configuración final usando el userRole pasado como parámetro
   const items = [
     ...baseItems,
     ...(userRole === 'superadmin' ? superAdminItems : []),
     logoutItem,
   ];
-
   return { items };
 };

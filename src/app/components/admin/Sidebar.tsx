@@ -13,6 +13,7 @@ const avatar = '/assets/global/avatar.png';
 
 interface SidebarProps {
   configType: 'admin' | 'superadmin';
+  userRole: 'admin' | 'superadmin';
   userName?: string;
 }
 
@@ -38,17 +39,21 @@ export default function Sidebar({
 
   // Establecer la configuración del sidebar cuando el componente se monta
   useEffect(() => {
-    try {
-      const config = getSidebarConfig(
-        configType,
-        openModal,
-        closeModal,
-        router
-      );
-      setSidebarConfig(config);
-    } catch (error) {
-      console.error('Error setting sidebar config:', error);
-    }
+    const loadSidebarConfig = async () => {
+      try {
+        const config = await getSidebarConfig(
+          configType,
+          openModal,
+          closeModal,
+          router
+        );
+        setSidebarConfig(config);
+      } catch (error) {
+        console.error('Error setting sidebar config:', error);
+      }
+    };
+
+    loadSidebarConfig();
   }, [configType, setSidebarConfig, openModal, closeModal, router]);
 
   // Detectar y activar el menú correcto basado en la URL actual

@@ -12,6 +12,7 @@ import { getSidebarConfig } from '@/configs/sidebarConfigs';
 
 interface SidebarMobileProps {
   configType: 'admin' | 'superadmin';
+  userRole: 'admin' | 'superadmin';
 }
 
 export default function SidebarMobile({ configType }: SidebarMobileProps) {
@@ -38,17 +39,21 @@ export default function SidebarMobile({ configType }: SidebarMobileProps) {
 
   // Establecer la configuración del sidebar cuando el componente se monta
   useEffect(() => {
-    try {
-      const config = getSidebarConfig(
-        configType,
-        openModal,
-        closeModal,
-        router
-      );
-      setSidebarConfig(config);
-    } catch (error) {
-      console.error('Error setting sidebar config:', error);
-    }
+    const loadSidebarConfig = async () => {
+      try {
+        const config = await getSidebarConfig(
+          configType,
+          openModal,
+          closeModal,
+          router
+        );
+        setSidebarConfig(config);
+      } catch (error) {
+        console.error('Error setting sidebar config:', error);
+      }
+    };
+
+    loadSidebarConfig();
   }, [configType, setSidebarConfig, openModal, closeModal, router]);
 
   // Obtener información del submenú activo
