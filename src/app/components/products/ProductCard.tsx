@@ -1,7 +1,7 @@
 import { Product } from '@/interfaces/product.interface';
 import { useEffect, useState } from 'react';
 import useStore from '@/stores/base';
-import { HeartIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useFavorites } from '@/hooks/useFavorites';
 
@@ -11,6 +11,7 @@ interface Props {
 
 export default function ProductCard({ product }: Props) {
   const { addProductToCart } = useStore();
+  const [isLoading, setIsLoading] = useState(false);
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
@@ -71,11 +72,16 @@ export default function ProductCard({ product }: Props) {
   };
 
   const addToCart = async () => {
+    setIsLoading(true);
     if (quantity > 0) {
-      const response = addProductToCart(product.id, quantity, 'kg');
-      console.log(response);
-      setQuantity(0);
+      const response = await addProductToCart(product.id, quantity, 'kg');
+
+      if (response.ok) {
+        setQuantity(0);
+      } else {
+      }
     }
+    setIsLoading(false);
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -177,7 +183,13 @@ export default function ProductCard({ product }: Props) {
               disabled={quantity === 0}
               className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] bg-[#84CC16] text-white hover:bg-[#257f00] h-[32px] text-[12px] cursor-pointer  disabled:cursor-not-allowed transition-all duration-300 ease-in-out"
             >
-              Agregar al carro
+              {isLoading ? (
+                <span className="animate-spin">
+                  <ArrowPathIcon width={16} />
+                </span>
+              ) : (
+                'Agregar al carro'
+              )}
             </button>
           </div>
         </div>

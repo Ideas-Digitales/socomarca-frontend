@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   rut: string;
+  roles: string[] | null;
 }
 
 export interface LoginResponse {

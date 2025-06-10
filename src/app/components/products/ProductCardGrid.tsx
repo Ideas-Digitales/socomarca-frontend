@@ -2,7 +2,7 @@
 
 import { Product } from '@/interfaces/product.interface';
 import { useEffect, useState } from 'react';
-import { HeartIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useFavorites } from '@/hooks/useFavorites';
 import useStore from '@/stores/base';
@@ -15,6 +15,7 @@ export default function ProductCardGrid({ product }: Props) {
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const { addProductToCart } = useStore();
   const [quantity, setQuantity] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
   );
@@ -73,17 +74,17 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   const addToCart = async () => {
-    console.log('Añadiendo al carrito:', product.id, quantity, product.unit );
+    setIsLoading(true);
     if (quantity > 0) {
       const response = await addProductToCart(product.id, quantity, 'kg');
 
       if (response.ok) {
-        console.log('Producto añadido al carrito:', product.id);
-        setQuantity(0); // Reset quantity after adding to cart
+        setQuantity(0);
       } else {
-        console.error('Error al añadir el producto al carrito:', response);
+        console.error('Error adding product to cart');
       }
     }
+    setIsLoading(false);
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -193,10 +194,16 @@ export default function ProductCardGrid({ product }: Props) {
 
         <button
           onClick={addToCart}
-          disabled={quantity === 0}
+          disabled={quantity === 0 || product.stock === 0 || isLoading}
           className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] bg-[#84CC16] text-white hover:bg-[#257f00] h-[32px] text-[12px] cursor-pointer  disabled:cursor-not-allowed transition-all duration-300 ease-in-out"
         >
-          Agregar al carro 2
+          {isLoading ? (
+            <span className="animate-spin">
+              <ArrowPathIcon width={16} />
+            </span>
+          ) : (
+            'Agregar al carro'
+          )}
         </button>
       </div>
     </div>

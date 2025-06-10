@@ -2,7 +2,7 @@ import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Definición de roles
-type UserRole = 'colaborador' | 'administrador' | 'superadmin';
+type UserRole = 'cliente' | 'admin' | 'superadmin';
 
 // Rutas públicas que no requieren autenticación
 const publicRoutes = [
@@ -22,23 +22,23 @@ function isPublicRoute(path: string): boolean {
 
 // Función para verificar acceso según la ruta y rol
 function hasAccess(path: string, userRole: UserRole): boolean {
-  // Rutas de administrador - solo admin y superadmin
-  if (path.startsWith('/admin') || path.startsWith('/administrador')) {
-    return ['administrador', 'superadmin'].includes(userRole);
+  // Rutas de admin - solo admin y superadmin
+  if (path.startsWith('/admin') || path.startsWith('/admin')) {
+    return ['admin', 'superadmin'].includes(userRole);
   }
 
-  // Rutas de super administrador - solo superadmin
+  // Rutas de super admin - solo superadmin
   if (path.startsWith('/super-admin')) {
     return userRole === 'superadmin';
   }
 
   // Rutas privadas - todos los roles autenticados
   if (path.startsWith('/private')) {
-    return ['colaborador', 'administrador', 'superadmin'].includes(userRole);
+    return ['cliente', 'admin', 'superadmin'].includes(userRole);
   }
 
   // Para cualquier otra ruta protegida, permitir solo usuarios autenticados
-  return ['colaborador', 'administrador', 'superadmin'].includes(userRole);
+  return ['cliente', 'admin', 'superadmin'].includes(userRole);
 }
 
 export default async function middleware(request: NextRequest) {

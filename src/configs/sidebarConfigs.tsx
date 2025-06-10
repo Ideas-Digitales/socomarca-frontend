@@ -2,7 +2,10 @@ import { SidebarConfig } from '@/interfaces/sidebar.interface';
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 // Función para crear el modal de logout que acepta las funciones como parámetros
-export const createLogoutModal = (onLogout: () => void, onCancel: () => void) => (
+export const createLogoutModal = (
+  onLogout: () => void,
+  onCancel: () => void
+) => (
   <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] flex justify-center items-center z-50">
     <div className="bg-white p-6 rounded-lg shadow max-w-md w-full">
       <div className="flex items-start gap-2 mb-4">
@@ -122,6 +125,16 @@ export const getAdminDashboardConfig = (
         url: '/admin/transbank',
       },
       {
+        id: 'users',
+        label: 'Usuarios',
+        url: '/users',
+      },
+      {
+        id: 'create-user',
+        label: 'Crear nuevo usuario',
+        url: '/create-user',
+      },
+      {
         id: 'cerrar-sesion',
         label: 'Cerrar sesión',
         onClick: () => {
@@ -132,7 +145,6 @@ export const getAdminDashboardConfig = (
           });
         },
       },
-      
     ],
   };
 };

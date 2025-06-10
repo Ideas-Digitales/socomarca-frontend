@@ -10,11 +10,11 @@ interface Props {
 
 export default function CartProductCard({ product, index }: Props) {
   const {
-    removeProductFromCart,
-    incrementProductInCart,
-    decrementProductInCart,
+    addProductToCart,
     removeAllQuantityByProductId,
   } = useStore();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
@@ -28,20 +28,27 @@ export default function CartProductCard({ product, index }: Props) {
     };
   }, [product.image]);
 
-  const decreaseQuantity = () => {
-    if (product.quantity > 0) {
-      decrementProductInCart(product.id);
-    }
+  const decreaseQuantity = async () => {
+    setIsLoading(true);
+    if (product.quantity > 1) {
+      const response = await addProductToCart(product.id, -1, 'kg');
+      if (!response.ok) {
+        console.error('Error decrementing product in cart:');
+      }
 
-    if (product.quantity === 1) {
-      removeProductFromCart(product.id);
+      setIsLoading(false);
     }
   };
 
-  const increaseQuantity = () => {
+  const increaseQuantity = async () => {
+    setIsLoading(true);
     if (product.quantity < product.stock) {
-      incrementProductInCart(product.id);
+      const response = await addProductToCart(product.id, 1, 'kg');
+      if (!response.ok) {
+        console.error('Error adding product to cart:');
+      }
     }
+    setIsLoading(false);
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -93,7 +100,7 @@ export default function CartProductCard({ product, index }: Props) {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
             <div className="flex">
               <button
-                disabled={product.quantity === 0}
+                disabled={product.quantity === 0 || isLoading}
                 className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
                   product.quantity === 0
                     ? 'bg-slate-200 opacity-50 cursor-not-allowed'
@@ -101,7 +108,7 @@ export default function CartProductCard({ product, index }: Props) {
                 }`}
                 onClick={decreaseQuantity}
               >
-                -
+                <span className="w-full">-</span>
               </button>
 
               <span className="w-8 h-8 p-1 flex flex-col items-center justify-center">
@@ -109,7 +116,7 @@ export default function CartProductCard({ product, index }: Props) {
               </span>
 
               <button
-                disabled={product.quantity === product.stock}
+                disabled={product.quantity === product.stock || isLoading}
                 className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
                   product.quantity === product.stock
                     ? 'bg-slate-200 opacity-50 cursor-not-allowed'
@@ -117,7 +124,7 @@ export default function CartProductCard({ product, index }: Props) {
                 }`}
                 onClick={increaseQuantity}
               >
-                +
+                <span className="w-full">+</span>
               </button>
             </div>
             {/* El total quantity * price */}

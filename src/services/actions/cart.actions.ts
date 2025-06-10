@@ -15,6 +15,11 @@ export interface CartResponse {
   total: number;
 }
 
+export type CartPayload = {
+  product_id: string;
+  quantity: string;
+  unit: string;
+};
 interface ActionResult<T> {
   ok: boolean;
   data: T | null;
@@ -50,11 +55,7 @@ export const fetchPostAddToCart = async (
       };
     }
 
-    type CartPayload = {
-      product_id: string;
-      quantity: string;
-      unit: string;
-    };
+    console.log('Adding to cart with payload:', payload);
 
     const payloadToString: CartPayload = {
       product_id: String(payload.product_id),

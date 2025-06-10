@@ -78,6 +78,7 @@ export const fetchLogin = async (
         name: data.user.name,
         email: data.user.email,
         rut: data.user.rut,
+        roles: data.user.roles || [],
       },
     };
   } catch (error) {

@@ -11,6 +11,7 @@ interface AuthStoreState {
     name: string;
     email: string;
     rut: string;
+    roles: string[] | null;
   };
   token: string;
   login: ({
@@ -23,6 +24,7 @@ interface AuthStoreState {
     role?: string;
   }) => Promise<LoginResult>;
   logout: () => void;
+  getUserRole: () => string | null;
 }
 
 const useAuthStore = create<AuthStoreState>((set) => ({
@@ -32,6 +34,7 @@ const useAuthStore = create<AuthStoreState>((set) => ({
     name: '',
     email: '',
     rut: '',
+    roles: [],
   },
   token: '',
   login: async ({ rut, password, role }) => {
@@ -49,6 +52,7 @@ const useAuthStore = create<AuthStoreState>((set) => ({
           name: response.user.name,
           email: response.user.email,
           rut: response.user.rut,
+          roles: response.user.roles,
         },
       });
 
@@ -56,7 +60,7 @@ const useAuthStore = create<AuthStoreState>((set) => ({
     } catch (error: any) {
       set({
         isLoggedIn: false,
-        user: { id: 0, name: '', email: '', rut: '' },
+        user: { id: 0, name: '', email: '', rut: '', roles: [] },
         token: '',
       });
 
@@ -74,9 +78,14 @@ const useAuthStore = create<AuthStoreState>((set) => ({
   logout: () =>
     set({
       isLoggedIn: false,
-      user: { id: 0, name: '', email: '', rut: '' },
+      user: { id: 0, name: '', email: '', rut: '', roles: [] },
       token: '',
     }),
+  // Función para obtener el rol del usuario
+  getUserRole: () => {
+    const user: AuthStoreState['user'] = useAuthStore.getState().user;
+    return user.roles && user.roles.length > 0 ? user.roles[0] : null;
+  },
 }));
 
 export default useAuthStore;
