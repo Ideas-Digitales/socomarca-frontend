@@ -12,6 +12,7 @@ export default function CartProductCard({ product, index }: Props) {
   const {
     addProductToCart,
     removeAllQuantityByProductId,
+    removeProductFromCart,
   } = useStore();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +32,7 @@ export default function CartProductCard({ product, index }: Props) {
   const decreaseQuantity = async () => {
     setIsLoading(true);
     if (product.quantity > 1) {
-      const response = await addProductToCart(product.id, -1, 'kg');
+      const response = await removeProductFromCart(product);
       if (!response.ok) {
         console.error('Error decrementing product in cart:');
       }

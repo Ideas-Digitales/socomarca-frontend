@@ -109,7 +109,7 @@ export default function LoginPage() {
           </button>
           <Link
             className="text-[12px] font-medium recover-link"
-            href={'/recuperar-admin'}
+            href={'/auth/recuperar-admin'}
           >
             ¿Olvidaste tu contraseña?
           </Link>

@@ -17,7 +17,7 @@ export default function DetalleCompra({ pedido }: { pedido: Compra }) {
       <p className="text-sm text-gray-500 mb-4">
         Pedido entregado el {pedido.fecha}
       </p>
-      <p className="text-green-600 font-medium mb-6">
+      <p className="text-lime-500 font-medium mb-6">
         {pedido.productos.length} Productos
       </p>
 
@@ -41,7 +41,7 @@ export default function DetalleCompra({ pedido }: { pedido: Compra }) {
                 <div>
                   <p className="text-sm font-medium text-gray-500">{p.marca}</p>
                   <p className="font-semibold">{p.nombre}</p>
-                  <p className="text-green-600 font-bold">${p.precio}</p>
+                  <p className="text-lime-500 font-bold">${p.precio}</p>
                 </div>
               </div>
               <div className="text-right">

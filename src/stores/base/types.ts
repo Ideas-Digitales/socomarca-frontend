@@ -208,10 +208,10 @@ export interface CartSlice {
   ) => Promise<{ ok: boolean }>;
   incrementProductInCart: (productId: number) => void;
   decrementProductInCart: (productId: number) => void;
-  removeProductFromCart: (productId: number) => void;
   removeAllQuantityByProductId: (productId: number) => void;
   clearCart: () => void;
   fetchCartProducts: () => Promise<void>;
+  removeProductFromCart: (product: CartItem) => Promise<{ ok: boolean }>;
 }
 
 // Acciones de paginación

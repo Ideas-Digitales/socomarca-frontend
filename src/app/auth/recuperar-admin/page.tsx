@@ -42,7 +42,7 @@ export default function RecuperarContraseñaPage() {
       <div className="flex flex-col items-center gap-[10px] w-full"></div>
       <p className="text-[12px] font-medium">
         ¿Ya tienes cuenta?{' '}
-        <Link href="/login-admin" className="text-lime-500 cursor-pointer">
+        <Link href="/auth/login-admin" className="text-lime-500 cursor-pointer">
           Iniciar sesión
         </Link>
       </p>

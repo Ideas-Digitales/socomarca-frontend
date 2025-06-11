@@ -19,7 +19,6 @@ export const createBrandsSlice: StateCreator<
       const response = await fetchGetBrands();
 
       if (response.ok && response.data) {
-        console.log('Marcas obtenidas:', response.data, response.ok);
         set({
           brands: response.data.data || response.data,
           isLoading: false,

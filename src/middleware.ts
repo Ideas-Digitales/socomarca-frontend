@@ -15,8 +15,8 @@ export default async function middleware(request: NextRequest) {
   const publicPaths = [
     '/auth/login',
     '/auth/login-admin',
-    '/recuperar',
-    '/recuperar-admin',
+    '/auth/recuperar',
+    '/auth/recuperar-admin',
     '/acceso-denegado',
   ];
 
@@ -34,14 +34,6 @@ export default async function middleware(request: NextRequest) {
   const token = getCookie('token');
   const userRole = getCookie('role') as UserRole;
 
-  // Debug: agregar logs temporales
-  console.log('🔍 Debug Middleware:', {
-    pathname,
-    token: !!token,
-    userRole,
-    timestamp: new Date().toISOString(),
-  });
-
   // ========== MANEJAR RUTA RAÍZ ==========
   if (pathname === '/') {
     // Verificar autenticación primero
@@ -53,7 +45,9 @@ export default async function middleware(request: NextRequest) {
     if (userRole === 'cliente') {
       return NextResponse.next(); // Permitir acceso a la página principal de (private)
     } else if (userRole === 'admin') {
-      return NextResponse.redirect(new URL('/admin/total-de-ventas', request.url));
+      return NextResponse.redirect(
+        new URL('/admin/total-de-ventas', request.url)
+      );
     } else if (userRole === 'superadmin') {
       return NextResponse.redirect(new URL('/super-admin/users', request.url));
     } else {
@@ -65,8 +59,7 @@ export default async function middleware(request: NextRequest) {
   if (!token || !userRole) {
     // Determinar a qué login redirigir según la ruta
     const isAdminRoute =
-      pathname.startsWith('/admin') ||
-      pathname.startsWith('/super-admin');
+      pathname.startsWith('/admin') || pathname.startsWith('/super-admin');
 
     const loginUrl = isAdminRoute ? '/auth/login-admin' : '/auth/login';
     return NextResponse.redirect(new URL(loginUrl, request.url));
@@ -78,12 +71,10 @@ export default async function middleware(request: NextRequest) {
   // Rutas para ADMIN y SUPERADMIN (superadmin puede acceder a todo lo de admin)
   if (pathname.startsWith('/admin')) {
     hasPermission = userRole === 'admin' || userRole === 'superadmin';
-    console.log('👨‍💼 Admin route check:', { hasPermission, userRole, pathname });
   }
   // Rutas para SUPERADMIN únicamente
   else if (pathname.startsWith('/super-admin')) {
     hasPermission = userRole === 'superadmin';
-    console.log('🦸‍♂️ Superadmin route check:', { hasPermission, userRole, pathname });
   }
   // Rutas para CLIENTE únicamente - todas las rutas de la carpeta (private)
   else if (
@@ -104,15 +95,11 @@ export default async function middleware(request: NextRequest) {
     pathname.startsWith('/terminos-y-condiciones')
   ) {
     hasPermission = userRole === 'cliente';
-    console.log('👤 Client route check:', { hasPermission, userRole, pathname });
   }
   // Otras rutas protegidas - denegar por defecto
   else {
     hasPermission = false;
-    console.log('❌ Unknown route, denying access:', { pathname, userRole });
   }
-
-  console.log('🚪 Final permission check:', { hasPermission, pathname, userRole });
 
   // Si no tiene permisos, redirigir a acceso denegado
   if (!hasPermission) {

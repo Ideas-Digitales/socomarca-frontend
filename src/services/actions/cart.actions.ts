@@ -96,6 +96,68 @@ export const fetchPostAddToCart = async (
   }
 };
 
+export const fetchDeleteCartItem = async (
+  itemId: number,
+  quantity: number,
+  unit: string
+): Promise<ActionResult<any>> => {
+  try {
+    if (IS_QA_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return {
+        ok: true,
+        data: {
+          message: 'Producto eliminado del carrito (mock)',
+          item_id: itemId,
+          quantity,
+          unit,
+        },
+        error: null,
+      };
+    }
+
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token found',
+      };
+    }
+
+    // TODO: Aún no está el endpoint de eliminar un producto del carrito
+    const response = await fetch(`${BACKEND_URL}/cart/items/${itemId}`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ product_id: itemId, quantity, unit }),
+    });
+    const result = await response.json();
+    console.log('DELETE response:', response, result);
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+
+    return {
+      ok: true,
+      data: result.data,
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error deleting cart item:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+};
+
 export const fetchGetCart = async (): Promise<ActionResult<CartResponse>> => {
   try {
     const { getCookie } = await cookiesManagement();

@@ -1,3 +1,5 @@
+// TODO: Preguntar si el color green es el correcto, o si debe ser lime.!!!!
+
 export default function PoliticaPrivacidadPage() {
   return (
     <div className="bg-[#f1f5f9] min-h-screen p-6 md:p-12">

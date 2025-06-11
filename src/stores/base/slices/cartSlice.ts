@@ -1,9 +1,11 @@
 import { StateCreator } from 'zustand';
 import { CartSlice, StoreState } from '../types';
 import {
+  fetchDeleteCartItem,
   fetchGetCart,
   fetchPostAddToCart,
 } from '@/services/actions/cart.actions';
+import { CartItem } from '@/interfaces/product.interface';
 
 export const createCartSlice: StateCreator<
   StoreState & CartSlice,
@@ -95,22 +97,32 @@ export const createCartSlice: StateCreator<
     set({ cartProducts: updatedCart });
   },
 
-  removeProductFromCart: (productId: number) => {
-    const { cartProducts } = get();
-    const updatedCart = cartProducts.reduce<typeof cartProducts>(
-      (acc, item) => {
-        if (item.id === productId) {
-          if (item.quantity > 1) {
-            acc.push({ ...item, quantity: item.quantity - 1 });
-          }
-        } else {
-          acc.push({ ...item });
-        }
-        return acc;
-      },
-      []
-    );
-    set({ cartProducts: updatedCart });
+  removeProductFromCart: async (product: CartItem) => {
+    try {
+      set({
+        isCartLoading: true,
+      });
+      const response = await fetchDeleteCartItem(product.id, 1, product.unit);
+      if (response.ok && response.data) {
+        await get().fetchCartProducts();
+        return {
+          ok: true,
+        };
+      } else {
+        return {
+          ok: false,
+        };
+      }
+    } catch (error) {
+      console.error('Error in removeProductFromCart:', error);
+      return {
+        ok: false,
+      };
+    } finally {
+      set({
+        isCartLoading: false,
+      });
+    }
   },
 
   removeAllQuantityByProductId: (productId: number) => {
