@@ -1,14 +1,18 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RegionComunaSelector from '@/app/components/RegionComunaSelector';
 import { useRouter } from 'next/navigation';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import Image from 'next/image';
 import TelefonoInput from '@/app/components/global/TelefonoInput';
 import useStore from '@/stores/base';
+import TerminosYCondicionesContent from '@/app/components/global/TerminosYCondicionesContent';
+import {getUserData} from '@/services/actions/user.actions';
+import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
+  const [loadingUser, setLoadingUser] = useState(true);
   const { openModal } = useStore();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
@@ -88,59 +92,29 @@ export default function FinalizarCompraPage() {
   };
 
   const goNext = () => {
-    router.push('/compra-exitosa');
+    router.push('/redirect');
   };
 
-  const TerminosYCondicionesContent = () => {
-    return (
-      <div className="flex flex-col gap-[30px]">
-        <h3 className="text-2xl font-bold">Términos y condiciones</h3>
-        <div className="flex items-start justify-start gap-[14px] flex-1-0-0 flex-wrap max-h-[60dvh] overflow-y-auto">
-          <h4 className="text-lime-500 font-bold">1. Introducción</h4>
-          <p>
-            Bienvenido a SOCOMARCA. Estos Términos y Condiciones regulan el uso
-            de nuestro sitio web y los servicios ofrecidos para la compra de
-            productos. Al acceder y utilizar nuestro sitio, aceptas estar sujeto
-            a estos términos. Si no estás de acuerdo con ellos, por favor, no
-            utilices nuestro sitio.
-          </p>
-          <h4 className="text-lime-500 font-bold">2. Uso del Sitio</h4>
-          <p>
-            2.1. Elegibilidad El sitio está destinado exclusivamente para
-            empresas y/o profesionales que realicen compras mayoristas. Al
-            utilizar este sitio, declaras que: Eres mayor de edad y tienes la
-            capacidad legal para celebrar contratos vinculantes. Representas a
-            una empresa o entidad comercial válida. 2.2. Registro Para realizar
-            compras, deberás crear una cuenta. Es tu responsabilidad
-            proporcionar información veraz, completa y actualizada. Nos
-            reservamos el derecho de suspender o eliminar cuentas en caso de
-            incumplimiento de estos términos.
-          </p>
-          <h4 className="text-lime-500 font-bold">3. Pedidos y Pagos</h4>
-          <p>
-            3.1. Procesamiento de Pedidos Todos los pedidos están sujetos a
-            disponibilidad de inventario y confirmación de pago. Nos reservamos
-            el derecho de cancelar pedidos en caso de errores en precios,
-            disponibilidad o cualquier otra circunstancia que lo justifique.
-            3.2. Métodos de Pago Aceptamos pagos mediante [especificar métodos
-            de pago, por ejemplo, transferencia bancaria, tarjetas de
-            crédito/débito, etc.]. Los pagos deben realizarse en su totalidad
-            antes del despacho de los productos. 3.3. Facturación
-            Proporcionaremos facturas válidas conforme a las leyes aplicables.
-            Asegúrate de ingresar correctamente los datos fiscales necesarios.
-          </p>
-          <h4 className="text-lime-500 font-bold">4. Precios y Promociones</h4>
-          <p>
-            Los precios publicados en nuestro sitio están en [moneda aplicable]
-            e incluyen/excluyen impuestos según se indique.
-            <br />
-            Las promociones y descuentos son válidos únicamente durante el
-            período especificado y están sujetos a disponibilidad.
-          </p>
-        </div>
-      </div>
-    );
+  useEffect(() => {
+  const fetchUserData = async () => {
+    try {
+      const userData = await getUserData();
+      setFormData((prev) => ({
+        ...prev,
+        nombre: userData.name || '',
+        rut: userData.rut || '',
+        correo: userData.email || '',
+        telefono: userData.phone || '',
+      }));
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoadingUser(false);
+    }
   };
+  fetchUserData();
+}, []);
+
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen p-4">
@@ -148,97 +122,129 @@ export default function FinalizarCompraPage() {
         {/* Formulario de facturación */}
         <div className="w-full lg:w-2/3 bg-white rounded-lg shadow p-6 h-fit">
           <h2 className="text-2xl font-bold mb-6">Datos de facturación</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-medium">
-                Nombre completo<span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-              />
-            </div>
-            <div>
-              <label className="block font-medium">
-                Rut<span className="text-red-400">*</span>
-              </label>
-              <RutInput
-                className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                name="rut"
-                value={formData.rut}
-                onChange={handleRutChange}
-                onValidationChange={handleRutValidation}
-                errorMessage="RUT inválido"
-              />
-            </div>
-            <div>
-              <label className="block font-medium">
-                Correo electrónico<span className="text-red-400">*</span>
-              </label>
-              <input
-                type="email"
-                name="correo"
-                value={formData.correo}
-                onChange={handleChange}
-                className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-              />
-              {errors.correo && (
-                <p className="text-red-500 text-sm mt-1">{errors.correo}</p>
-              )}
-            </div>
-            <div>
-              <TelefonoInput
-                name="telefono"
-                value={formData.telefono}
-                onChange={(e, prefijo) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    telefono: e.target.value,
-                    telefonoCompleto: `${prefijo}${e.target.value}`,
-                  }))
-                }
-                error={errors.telefono}
-              />
+          {loadingUser ?
+          (
+    <div className="flex items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  )
+          : (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label className="block font-medium">
+        Nombre completo
+      </label>
+      <input
+        type="text"
+        name="nombre"
+        value={formData.nombre}
+        onChange={handleChange}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
 
-              {errors.telefono && (
-                <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>
-              )}
-            </div>
-            <RegionComunaSelector
-              region={formData.region}
-              comuna={formData.comuna}
-              onChange={(field, value) =>
-                setFormData((prev) => ({ ...prev, [field]: value }))
-              }
-            />
-            <div>
-              <label className="block font-medium">
-                Dirección<span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                name="direccion"
-                value={formData.direccion}
-                onChange={handleChange}
-                className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-              />
-            </div>
-            <div>
-              <label className="block font-medium">
-                Detalles de la dirección
-              </label>
-              <input
-                type="text"
-                name="detallesDireccion"
-                value={formData.detallesDireccion}
-                onChange={handleChange}
-                className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-              />
-            </div>
-          </div>
+    <div>
+      <label className="block font-medium">
+        Rut
+      </label>
+      <RutInput
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        name="rut"
+        value={formData.rut}
+        onChange={handleRutChange}
+        onValidationChange={handleRutValidation}
+        errorMessage="RUT inválido"
+        disabled
+      />
+    </div>
+
+    <div>
+      <label className="block font-medium">
+        Correo electrónico
+      </label>
+      <input
+        type="email"
+        name="correo"
+        value={formData.correo}
+        onChange={handleChange}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+      {errors.correo && (
+        <p className="text-red-500 text-sm mt-1">{errors.correo}</p>
+      )}
+    </div>
+
+    <div>
+      <label className="block font-medium">
+        Teléfono
+      </label>
+       <input
+        type="text"
+        name="telefono"
+        value={'+56 ' + formData.telefono}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+      {errors.telefono && (
+        <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>
+      )}
+    </div>
+
+     <div>
+      <label className="block font-medium">
+        Región
+      </label>
+       <input
+        type="text"
+        name="region"
+        value={formData.region}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
+      <div>
+      <label className="block font-medium">
+        Comuna
+      </label>
+       <input
+        type="text"
+        name="comuna"
+        value={formData.comuna}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
+
+    <div>
+      <label className="block font-medium">
+        Dirección
+      </label>
+      <input
+        type="text"
+        name="direccion"
+        value={formData.direccion}
+        onChange={handleChange}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
+
+    <div>
+      <label className="block font-medium">Detalles de la dirección</label>
+      <input
+        type="text"
+        name="detallesDireccion"
+        value={formData.detallesDireccion}
+        onChange={handleChange}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
+  </div>
+)}
+
         </div>
 
         {/* Resumen de la orden */}

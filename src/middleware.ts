@@ -80,6 +80,8 @@ export default async function middleware(request: NextRequest) {
   else if (
     pathname.startsWith('/carro-de-compra') ||
     pathname.startsWith('/compra-exitosa') ||
+    pathname.startsWith('/redirect') ||
+    pathname.startsWith('/webpay') ||
     pathname.startsWith('/compra-fallida') ||
     pathname.startsWith('/direcciones') ||
     pathname.startsWith('/favoritos') ||
