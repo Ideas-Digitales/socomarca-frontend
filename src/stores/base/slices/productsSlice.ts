@@ -6,8 +6,12 @@ import {
   StoreState,
   FiltersSlice,
 } from '../types';
-import { fetchGetProducts } from '@/services/actions/products.actions';
+import {
+  fetchGetProducts,
+  fetchSearchProductsByFilters,
+} from '@/services/actions/products.actions';
 import { filterAndRankProducts } from '../utils/searchUtils';
+import { FetchSearchProductsByFiltersProps } from '@/interfaces/product.interface';
 
 export const createProductsSlice: StateCreator<
   StoreState & ProductsSlice & FiltersSlice,
@@ -73,25 +77,40 @@ export const createProductsSlice: StateCreator<
     });
   },
 
-  setSearchTerm: (term: string) => {
-    const { products, clearAllFilters } = get();
+  setSearchTerm: async (
+    terms: FetchSearchProductsByFiltersProps & { page?: number; size?: number }
+  ) => {
+    try {
+      const searchParams = {
+        ...terms,
+        page: terms.page || 1,
+        size: terms.size || 9,
+      };
 
-    // Si hay un término de búsqueda, limpiar filtros primero
-    if (term.trim()) {
-      clearAllFilters();
+      const response = await fetchSearchProductsByFilters(searchParams);
+
+      if (response.ok && response.data) {
+        const products = response.data.data;
+
+        set({
+          searchTerm: terms.value || '',
+          filteredProducts: products,
+          productPaginationMeta: response.data.meta,
+          productPaginationLinks: response.data.links,
+          currentPage: response.data.meta.current_page,
+          isLoadingProducts: false,
+        });
+      } else {
+        console.error('Error en la respuesta del servidor:', response.error);
+      }
+    } catch (error: any) {
+      console.error('Error in setSearchTerm:', error);
     }
-
-    // Apply search term filter
-    const filtered = term ? filterAndRankProducts(products, term) : products;
-
-    set({ searchTerm: term });
-
-    get().setFilteredProducts(filtered);
   },
 
   fetchProducts: async (page = 1, size = 9) => {
     try {
-      set({ isLoading: true });
+      set({ isLoadingProducts: true });
       const response = await fetchGetProducts({ page, size });
 
       if (response.ok && response.data) {
@@ -101,15 +120,15 @@ export const createProductsSlice: StateCreator<
           productPaginationMeta: response.data.meta,
           productPaginationLinks: response.data.links,
           currentPage: response.data.meta.current_page,
-          isLoading: false,
+          isLoadingProducts: false,
         });
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
-        set({ isLoading: false });
+        set({ isLoadingProducts: false });
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      set({ isLoading: false });
+      set({ isLoadingProducts: false });
     }
   },
 });

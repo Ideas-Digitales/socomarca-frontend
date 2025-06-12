@@ -80,7 +80,11 @@ export default function ProductCard({ product }: Props) {
         return;
       }
 
-      const response = await addProductToCart(product.id, quantity, 'kg');
+      const response = await addProductToCart(
+        product.id,
+        quantity,
+        product.unit
+      );
 
       if (response.ok) {
         setQuantity(0);

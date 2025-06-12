@@ -1,4 +1,8 @@
-import { CartItem, Product } from '@/interfaces/product.interface';
+import {
+  CartItem,
+  Product,
+  SearchWithPaginationProps,
+} from '@/interfaces/product.interface';
 import { Category } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
@@ -115,6 +119,7 @@ export interface FiltersSlice {
 export interface StoreState {
   // Productos
   products: Product[];
+  isLoadingProducts: boolean;
   filteredProducts: Product[];
   searchTerm: string;
 
@@ -175,7 +180,7 @@ export interface ProductsSlice {
     meta?: PaginationMeta,
     links?: PaginationLinks
   ) => void;
-  setSearchTerm: (term: string) => void;
+  setSearchTerm: (terms: SearchWithPaginationProps) => void;
   fetchProducts: (page?: number, size?: number) => Promise<void>;
   setFilteredProducts: (filteredProducts: Product[]) => void;
 }

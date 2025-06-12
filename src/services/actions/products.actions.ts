@@ -1,5 +1,8 @@
 'use server';
-import { Product } from '@/interfaces/product.interface';
+import {
+  Product,
+  SearchWithPaginationProps,
+} from '@/interfaces/product.interface';
 import {
   PaginatedResult,
   generateProducts,
@@ -158,7 +161,6 @@ export const fetchGetProducts = async ({
       }
 
       const data = await response.json();
-      console.log(data)
 
       return {
         ok: true,
@@ -168,6 +170,148 @@ export const fetchGetProducts = async ({
     }
   } catch (error) {
     console.log('Error fetching products:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+};
+
+export const fetchSearchProductsByFilters = async (
+  filters: SearchWithPaginationProps
+) => {
+  try {
+    if (IS_QA_MODE) {
+      // Simular delay de red
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const allProducts = getCachedProducts();
+
+      // Aplicar filtros según el tipo
+      let filteredProducts = allProducts;
+
+      if (filters.field && filters.value) {
+        const searchTerm = filters.value.toLowerCase();
+        filteredProducts = allProducts.filter((product) => {
+          switch (filters.field) {
+            case 'name':
+              return product.name.toLowerCase().includes(searchTerm);
+            case 'category_id':
+              return product.category.id.toString() === filters.value;
+            case 'subcategory_id':
+              return product.subcategory.id.toString() === filters.value;
+            case 'sales':
+              // Implementar lógica de ventas si es necesario
+              return true;
+            default:
+              return product.name.toLowerCase().includes(searchTerm);
+          }
+        });
+      }
+
+      // Aplicar filtros de rango de precio si existen
+      if (filters.min !== undefined || filters.max !== undefined) {
+        filteredProducts = filteredProducts.filter((product) => {
+          const price =
+            typeof product.price === 'string'
+              ? parseFloat(product.price)
+              : product.price;
+          const min = filters.min !== undefined ? filters.min : 0;
+          const max = filters.max !== undefined ? filters.max : Infinity;
+          return price >= min && price <= max;
+        });
+      }
+
+      // Aplicar ordenamiento si existe
+      if (filters.sort) {
+        filteredProducts.sort((a, b) => {
+          const aPrice =
+            typeof a.price === 'string' ? parseFloat(a.price) : a.price;
+          const bPrice =
+            typeof b.price === 'string' ? parseFloat(b.price) : b.price;
+
+          switch (filters.sort) {
+            case 'asc':
+              return aPrice - bPrice;
+            case 'desc':
+              return bPrice - aPrice;
+            default:
+              return 0;
+          }
+        });
+      }
+
+      const page = filters.page || 1;
+      const size = filters.size || 20;
+      const paginatedData = paginateProducts(filteredProducts, page, size);
+      const response = createLaravelStyleResponse(paginatedData);
+
+      return {
+        ok: true,
+        data: response,
+        error: null,
+      };
+    } else {
+      const { getCookie } = await cookiesManagement();
+      const cookie = getCookie('token');
+
+      if (!cookie) {
+        return {
+          ok: false,
+          data: null,
+          error: 'Unauthorized: No token provided',
+        };
+      }
+
+      // Construir query parameters
+      const page = filters.page || 1;
+      const per_page = filters.size || 20;
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        per_page: per_page.toString(),
+      });
+
+      // Construir el body solo con los filtros
+      const filterObject = {
+        field: filters.field,
+        value: filters.value,
+        operator: filters.operator,
+        ...(filters.min !== undefined && { min: filters.min }),
+        ...(filters.max !== undefined && { max: filters.max }),
+        ...(filters.sort && { sort: filters.sort }),
+      };
+
+      const requestBody = {
+        filters: [filterObject],
+      };
+
+      const response = await fetch(
+        `${BACKEND_URL}/products/search?${queryParams}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${cookie}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      return {
+        ok: true,
+        data,
+        error: null,
+      };
+    }
+  } catch (error: any) {
+    console.log('Error fetching products by filters:', error);
     return {
       ok: false,
       data: null,

@@ -11,7 +11,7 @@ export default function PoliticaPrivacidadPage() {
         <h1 className="text-3xl font-bold mb-8">Política y privacidad</h1>
 
         <section className="mb-6">
-          <h2 className="text-green-600 font-semibold mb-2">Información que es recogida.</h2>
+          <h2 className="text-lime-500 font-semibold mb-2">Información que es recogida.</h2>
           <p>
             Nuestro sitio web podrá recoger información personal por ejemplo: Nombre, información de contacto como su dirección de correo 
             electrónico e información demográfica. Así mismo cuando sea necesario podrá ser requerida información específica para procesar 
@@ -20,7 +20,7 @@ export default function PoliticaPrivacidadPage() {
         </section>
 
         <section className="mb-6">
-          <h2 className="text-green-600 font-semibold mb-2">Uso de la información recogida</h2>
+          <h2 className="text-lime-500 font-semibold mb-2">Uso de la información recogida</h2>
           <p>
             Nuestro sitio web emplea la información con el fin de proporcionar el mejor servicio posible, particularmente para mantener un 
             registro de usuarios, de pedidos en caso que aplique, y mejorar nuestros productos y servicios. Es posible que sean enviados 
@@ -31,7 +31,7 @@ export default function PoliticaPrivacidadPage() {
         </section>
 
         <section className="mb-6">
-          <h2 className="text-green-600 font-semibold mb-2">Cookies</h2>
+          <h2 className="text-lime-500 font-semibold mb-2">Cookies</h2>
           <p>
             Una cookie se refiere a un fichero que es enviado con la finalidad de solicitar permiso para almacenarse en su ordenador, al 
             aceptar dicho fichero se crea y la cookie sirve entonces para tener información respecto al tráfico web, y también facilita las 
@@ -41,7 +41,7 @@ export default function PoliticaPrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-green-600 font-semibold mb-2">Enlaces a Terceros</h2>
+          <h2 className="text-lime-500 font-semibold mb-2">Enlaces a Terceros</h2>
           <p>
             Este sitio web pudiera contener enlaces a otros sitios que pudieran ser de su interés. Una vez que usted dé clic en estos enlaces 
             y abandone nuestra página, ya no tenemos control sobre el sitio al que es redirigido y por lo tanto no somos responsables de los 

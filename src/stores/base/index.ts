@@ -21,6 +21,7 @@ const initialState: StoreState = {
   categories: [],
   brands: [],
   filteredProducts: [],
+  isLoadingProducts: false,
   isLoading: false,
   searchTerm: '',
   isMobile: false,

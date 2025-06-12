@@ -44,7 +44,7 @@ export default function CartProductCard({ product, index }: Props) {
   const increaseQuantity = async () => {
     setIsLoading(true);
     if (product.quantity < product.stock) {
-      const response = await addProductToCart(product.id, 1, 'kg');
+      const response = await addProductToCart(product.id, 1, product.unit);
       if (!response.ok) {
         console.error('Error adding product to cart:');
       }

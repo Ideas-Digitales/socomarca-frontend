@@ -55,3 +55,21 @@ export interface CartResponse {
   items: CartItem[];
   total: number;
 }
+
+type Operator = 'fulltext' | '=';
+type Field = 'name' | 'category_id' | 'subcategory_id' | 'sales' | 'brand_id';
+
+export interface FetchSearchProductsByFiltersProps {
+  field?: Field;
+  value?: string;
+  operator?: Operator;
+  min?: number;
+  max?: number;
+  sort?: 'asc' | 'desc';
+}
+
+export interface SearchWithPaginationProps
+  extends FetchSearchProductsByFiltersProps {
+  page?: number;
+  size?: number;
+}
