@@ -36,9 +36,8 @@ export default function CartProductCard({ product, index }: Props) {
       if (!response.ok) {
         console.error('Error decrementing product in cart:');
       }
-
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   const increaseQuantity = async () => {

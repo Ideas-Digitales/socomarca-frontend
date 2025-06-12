@@ -74,7 +74,6 @@ export const fetchPostAddToCart = async (
     });
 
     const data = await response.json();
-    console.log('POST data:', data);
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
@@ -124,25 +123,28 @@ export const fetchDeleteCartItem = async (
         error: 'Unauthorized: No token found',
       };
     }
-
-    // TODO: Aún no está el endpoint de eliminar un producto del carrito
-    const response = await fetch(`${BACKEND_URL}/cart/items/${itemId}`, {
+    const payload = {
+      product_id: itemId,
+      quantity: quantity,
+      unit: unit,
+    };
+    const response = await fetch(`${BACKEND_URL}/cart/items`, {
       method: 'DELETE',
       headers: {
+        'Content-Type': 'application/json',
         Accept: 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ product_id: itemId, quantity, unit }),
+      body: JSON.stringify(payload),
     });
-    const result = await response.json();
-    console.log('DELETE response:', response, result);
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
+    const data = await response.json();
 
     return {
       ok: true,
-      data: result.data,
+      data,
       error: null,
     };
   } catch (error) {
