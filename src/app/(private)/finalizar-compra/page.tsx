@@ -1,10 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import RegionComunaSelector from '@/app/components/RegionComunaSelector';
 import { useRouter } from 'next/navigation';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import Image from 'next/image';
-import TelefonoInput from '@/app/components/global/TelefonoInput';
 import useStore from '@/stores/base';
 import TerminosYCondicionesContent from '@/app/components/global/TerminosYCondicionesContent';
 import {getUserData} from '@/services/actions/user.actions';
