@@ -6,10 +6,9 @@ import { BACKEND_URL } from '@/utils/getEnv';
 export async function createOrderFromCart() {
   const { getCookie } = await cookiesManagement();
   const token = getCookie('token');
-  const userId = getCookie('userId');
 
-  if (!token || !userId) {
-    throw new Error('Faltan las cookies necesarias');
+  if (!token) {
+    throw new Error('Token no disponible');
   }
 
   const headers = {
@@ -18,34 +17,22 @@ export async function createOrderFromCart() {
     Accept: 'application/json',
   };
 
-  // Crear orden
-  const orderRes = await fetch(`${BACKEND_URL}/orders/create-from-cart?user_id=${userId}`, {
-    method: 'POST',
-    headers
-  });
-
-  const orderJson = await orderRes.json();
-  console.log('Respuesta creación orden:', orderJson);
-
-  if (!orderJson.ok) {
-    throw new Error(`Error al crear orden: ${orderJson.message || 'Desconocido'}`);
-  }
-console.log('Orden creada con éxito:', orderJson);
-  const orderId = orderJson.data?.order?.id;
-  if (!orderId) throw new Error('No se recibió el ID de la orden');
-
-  // Crear url de pago
-  const payRes = await fetch(`${BACKEND_URL}/orders/pay?user_id=${userId}&order_id=${orderId}`, {
+  const res = await fetch(`${BACKEND_URL}/orders/pay`, {
     method: 'POST',
     headers,
   });
 
-  const payJson = await payRes.json();
-  console.log('Respuesta pago orden:', payJson);
-
-  if (!payRes.ok) {
-    throw new Error(`Error al iniciar pago: ${payJson.message || 'Desconocido'}`);
+  const json = await res.json();
+console.log('Respuesta de crear orden:', json);
+  if (!res.ok) {
+    throw new Error(json.message || 'Error al crear la orden y generar el pago');
   }
-console.log('Pago iniciado con éxito:', payJson);
-  return payJson;
+
+  const { payment_url, token: webpayToken } = json.data;
+
+  if (!payment_url || !webpayToken) {
+    throw new Error('No se obtuvo la URL ni el token de pago');
+  }
+
+  return { payment_url, token: webpayToken };
 }
