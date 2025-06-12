@@ -55,13 +55,13 @@ export const fetchPostAddToCart = async (
       };
     }
 
-    console.log('Adding to cart with payload:', payload);
-
     const payloadToString: CartPayload = {
       product_id: String(payload.product_id),
       quantity: String(payload.quantity),
       unit: payload.unit,
     };
+
+    console.log('POST payload:', payloadToString);
 
     const response = await fetch(`${BACKEND_URL}/cart/items`, {
       method: 'POST',
@@ -73,13 +73,11 @@ export const fetchPostAddToCart = async (
       body: JSON.stringify(payloadToString),
     });
 
-    console.log('POST response:', response);
-
+    const data = await response.json();
+    console.log('POST data:', data);
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
-
-    const data = await response.json();
 
     return {
       ok: true,
@@ -142,7 +140,6 @@ export const fetchDeleteCartItem = async (
       throw new Error(`Error HTTP: ${response.status}`);
     }
 
-
     return {
       ok: true,
       data: result.data,
@@ -178,12 +175,12 @@ export const fetchGetCart = async (): Promise<ActionResult<CartResponse>> => {
         Authorization: `Bearer ${token}`,
       },
     });
+    const result = await response.json();
+    console.log(result);
 
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
-
-    const result = await response.json();
 
     return {
       ok: true,

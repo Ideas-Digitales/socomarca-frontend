@@ -76,7 +76,11 @@ export default function ProductCardGrid({ product }: Props) {
   const addToCart = async () => {
     setIsLoading(true);
     if (quantity > 0) {
-      const response = await addProductToCart(product.id, quantity, 'kg');
+      const response = await addProductToCart(
+        product.id,
+        quantity,
+        product.unit
+      );
 
       if (response.ok) {
         setQuantity(0);

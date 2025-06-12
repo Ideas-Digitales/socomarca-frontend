@@ -8,6 +8,7 @@ import CategoryFilterMobile, {
 import Search from '../components/global/Search';
 import Caroussel from '../components/global/Caroussel';
 import { useState } from 'react';
+import { SearchWithPaginationProps } from '@/interfaces/product.interface';
 
 const images = [
   '/assets/global/bg-blue.webp',
@@ -19,7 +20,15 @@ export default function PrivatePage() {
   const { isTablet, setSearchTerm, resetSearchRelatedStates } = useStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const handleSearch = (term: string) => {
-    setSearchTerm(term);
+    const searchParams: SearchWithPaginationProps = {
+      field: 'name',
+      value: term,
+      operator: 'fulltext',
+      page: 1,
+      size: 9,
+    };
+
+    setSearchTerm(searchParams);
   };
 
   const handleClearSearch = () => {

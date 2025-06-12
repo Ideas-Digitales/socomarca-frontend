@@ -17,7 +17,7 @@ export default function ProductsContainer() {
     productPaginationMeta,
     productPaginationLinks,
     setProductPage,
-    isLoading,
+    isLoadingProducts,
     viewMode,
     setViewMode,
   } = useStore();
@@ -64,7 +64,7 @@ export default function ProductsContainer() {
           </div>
         )}
 
-        {isLoading ? (
+        {isLoadingProducts ? (
           <div className="flex justify-center items-center min-h-[200px]">
             <p>Cargando productos...</p>
           </div>
@@ -92,13 +92,15 @@ export default function ProductsContainer() {
           </div>
         )}
 
-        {productPaginationMeta && !isLoading && filteredProducts.length > 0 && (
-          <Pagination
-            meta={productPaginationMeta}
-            links={productPaginationLinks}
-            onPageChange={handlePageChange}
-          />
-        )}
+        {productPaginationMeta &&
+          !isLoadingProducts &&
+          filteredProducts.length > 0 && (
+            <Pagination
+              meta={productPaginationMeta}
+              links={productPaginationLinks}
+              onPageChange={handlePageChange}
+            />
+          )}
       </div>
 
       {isTablet && <CartsProductsMobile />}
