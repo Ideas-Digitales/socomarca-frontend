@@ -1,38 +1,22 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import TextStyle from '@tiptap/extension-text-style'
-import Color from '@tiptap/extension-color'
-import Link from '@tiptap/extension-link'
-import { PlusIcon, MinusIcon } from '@heroicons/react/24/solid'
+import { useState, useRef } from 'react';
+import { Editor } from '@tinymce/tinymce-react';
+import { PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 
 interface Props {
-  id: string
-  question: string
-  content: string
-  onChange: (data: { question?: string; content?: string }) => void
+  id: string;
+  question: string;
+  content: string;
+  onChange: (data: { question?: string; content?: string }) => void;
 }
 
 export default function QuestionItem({ question, content, onChange }: Props) {
-  const [open, setOpen] = useState(true)
-
-  const editor = useEditor({
-    extensions: [StarterKit, TextStyle, Color, Link],
-    content,
-    editorProps: {
-      attributes: {
-        class: 'prose max-w-none border !border-gray-50 min-h-[120px] focus:outline-none bg-white rounded-md p-4',
-      },
-    },
-    onUpdate({ editor }) {
-      onChange({ content: editor.getHTML() })
-    },
-  })
+  const [open, setOpen] = useState(true);
+  const editorRef = useRef<any>(null);
 
   return (
-    <div className=" rounded">
+    <div className="rounded border border-gray-100">
       <div
         onClick={() => setOpen(!open)}
         className="cursor-pointer flex justify-between items-center px-4 py-3 bg-gray-50 hover:bg-gray-100"
@@ -43,7 +27,7 @@ export default function QuestionItem({ question, content, onChange }: Props) {
           className="text-sm font-medium w-full bg-transparent border-none focus:outline-none"
           placeholder="Escribe la pregunta aquí..."
         />
-        <button>
+        <button type="button">
           {open ? (
             <MinusIcon className="w-4 h-4 text-gray-500" />
           ) : (
@@ -51,7 +35,38 @@ export default function QuestionItem({ question, content, onChange }: Props) {
           )}
         </button>
       </div>
-      {open && editor && <EditorContent editor={editor} />}
+
+      {open && (
+        <div className="p-4 bg-white">
+          <Editor
+            apiKey="hcf5zec5hrqni246ht1fqdo73okwo1ky2bb5eklu89p0lp57"
+            onInit={(_, editor) => (editorRef.current = editor)}
+            initialValue={content}
+            onEditorChange={(newContent) => onChange({ content: newContent })}
+            init={{
+              height: 200,
+              menubar: false,
+              language: 'es',
+              directionality: 'ltr',
+              body_class: 'editor-ltr',
+              plugins: [
+                'link', 'lists', 'advlist', 'autolink', 'charmap',
+                'anchor', 'insertdatetime', 'table', 'wordcount', 'help'
+              ],
+              toolbar:
+                'undo redo | blocks | bold italic underline forecolor | ' +
+                'alignleft aligncenter alignright alignjustify | bullist numlist | link | removeformat',
+              content_style: `
+                body.editor-ltr {
+                  direction: ltr;
+                  font-family: Helvetica, Arial, sans-serif;
+                  font-size: 14px;
+                }
+              `,
+            }}
+          />
+        </div>
+      )}
     </div>
-  )
+  );
 }

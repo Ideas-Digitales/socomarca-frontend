@@ -12,10 +12,9 @@ export default function RedireccionandoPago() {
     const createOrderAndRedirect = async () => {
       try {
         await createOrderFromCart();
-        router.push('/webpay'); // Ruta temporal o la que corresponda
+        router.push('/webpay'); 
       } catch (error) {
         console.error('Error al crear la orden:', error);
-        // Podrías redirigir a un error o mostrar mensaje
       }
     };
 
@@ -23,7 +22,7 @@ export default function RedireccionandoPago() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f1f5f9] text-center p-6">
+    <div className="flex flex-col items-center justify-center bg-[#f1f5f9] text-center p-6">
       <div className="bg-white p-8 rounded-lg shadow-md">
         <LoadingSpinner />
         <h2 className="text-xl font-bold mb-2">Redireccionando al portal de pago...</h2>

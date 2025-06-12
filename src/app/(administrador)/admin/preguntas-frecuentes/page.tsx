@@ -14,7 +14,7 @@ export default function FaqEditor() {
     {
       id: crypto.randomUUID(),
       question: '¿Cuál es el valor por envío?',
-      content: '<p>Lorem ipsum dolor sit amet...</p>',
+      content: 'Escribe la respuesta aquí...',
     },
   ]);
 
@@ -51,9 +51,9 @@ export default function FaqEditor() {
           Preguntas frecuentes
         </h1>
         <div className="flex gap-4 flex-col py-4 w-full sm:w-auto sm:flex-row">
-          <button className="px-4 py-2 border rounded text-sm w-full">
+          {/*<button className="px-4 py-2 border rounded text-sm w-full">
             Desactivar página
-          </button>
+          </button>*/}
           <button
             onClick={handleSave}
             className="px-4 py-2 bg-lime-500 text-white rounded text-sm"

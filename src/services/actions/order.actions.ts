@@ -18,34 +18,23 @@ export async function createOrderFromCart() {
     Accept: 'application/json',
   };
 
-  // 1. Crear orden
+  // Crear orden
   const orderRes = await fetch(`${BACKEND_URL}/orders/create-from-cart?user_id=${userId}`, {
     method: 'POST',
-    headers,
-    body: JSON.stringify({
-      name: 'Juan Perez',
-      rut: '12345678-9',
-      email: 'juan.perez@gmail.com',
-      phone: '999999999',
-      address: 'Calle 123',
-      region_id: 1,
-      municipality_id: 1,
-      billing_address: 'Calle 123',
-      billing_address_details: 'Apt 123',
-    }),
+    headers
   });
 
   const orderJson = await orderRes.json();
   console.log('Respuesta creación orden:', orderJson);
 
-  if (!orderRes.ok) {
+  if (!orderJson.ok) {
     throw new Error(`Error al crear orden: ${orderJson.message || 'Desconocido'}`);
   }
-
+console.log('Orden creada con éxito:', orderJson);
   const orderId = orderJson.data?.order?.id;
   if (!orderId) throw new Error('No se recibió el ID de la orden');
 
-  // 2. Llamar a /orders/pay
+  // Crear url de pago
   const payRes = await fetch(`${BACKEND_URL}/orders/pay?user_id=${userId}&order_id=${orderId}`, {
     method: 'POST',
     headers,
@@ -57,6 +46,6 @@ export async function createOrderFromCart() {
   if (!payRes.ok) {
     throw new Error(`Error al iniciar pago: ${payJson.message || 'Desconocido'}`);
   }
-
+console.log('Pago iniciado con éxito:', payJson);
   return payJson;
 }
