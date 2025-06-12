@@ -40,9 +40,6 @@ export default function QuestionItem({ question, content, onChange }: Props) {
         <div className="p-4 bg-white">
           <Editor
             apiKey="hcf5zec5hrqni246ht1fqdo73okwo1ky2bb5eklu89p0lp57"
-            onInit={(_, editor) => (editorRef.current = editor)}
-            initialValue={content}
-            onEditorChange={(newContent) => onChange({ content: newContent })}
             init={{
               height: 200,
               menubar: false,
@@ -64,6 +61,7 @@ export default function QuestionItem({ question, content, onChange }: Props) {
                 }
               `,
             }}
+             initialValue="Comienza a escribir tu respuesta aquí..."
           />
         </div>
       )}

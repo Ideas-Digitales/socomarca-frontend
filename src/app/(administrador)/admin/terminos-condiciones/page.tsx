@@ -18,9 +18,6 @@ export default function RichTextEditor() {
       {/* Editor TinyMCE */}
       <Editor
         apiKey="hcf5zec5hrqni246ht1fqdo73okwo1ky2bb5eklu89p0lp57"
-        onInit={(_, editor) => (editorRef.current = editor)}
-        initialValue={content}
-        onEditorChange={(newValue) => setContent(newValue)}
         init={{
           height: 500,
           menubar: false,
@@ -43,7 +40,9 @@ export default function RichTextEditor() {
               font-size: 14px;
             }
           `,
+          
         }}
+        initialValue="Comienza a escribir tu contenido aquí..."
       />
 
       {/* Información adicional */}
