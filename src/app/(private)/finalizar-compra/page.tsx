@@ -10,6 +10,7 @@ import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
+  const cartProducts = useStore((state) => state.cartProducts);
   const [loadingUser, setLoadingUser] = useState(true);
   const { openModal } = useStore();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,6 +68,28 @@ export default function FinalizarCompraPage() {
   const handleRutChange = (value: string) => {
     setFormData((prev) => ({ ...prev, rut: value }));
   };
+
+  const totalQuantity = cartProducts.reduce((sum, item) => sum + item.quantity, 0);
+
+const totalAmount = cartProducts.reduce(
+  (sum, item) => sum + item.quantity * item.price,
+  0
+);
+const shippingCost = totalAmount * 0.1;
+const formattedShipping = shippingCost.toLocaleString('es-CL', {
+  style: 'currency',
+  currency: 'CLP',
+});
+const subtotal = cartProducts.reduce(
+  (sum, item) => sum + item.quantity * item.price,
+  0
+);
+
+const shipping = subtotal * 0.1;
+const total = subtotal + shipping;
+
+const formatCLP = (value: number) =>
+  value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
 
   // Manejador para la validación del RUT
   const handleRutValidation = (isValid: boolean) => {
@@ -250,20 +273,20 @@ export default function FinalizarCompraPage() {
           <h3 className="text-xl font-bold mb-4">Tu Orden</h3>
 
           <div className="flex justify-between border-t-slate-200 border-t py-5">
-            <span>Productos (19)</span>
-            <span className="text-black">$29.583</span>
+            <span>Productos ({totalQuantity})</span>
+            <span className="text-black"></span>
           </div>
           <div className="flex justify-between border-t-slate-200 border-t py-5 ">
             <span className="font-bold">Subtotal</span>
-            <span className="font-bold">$29.583</span>
+            <span className="font-bold">{subtotal.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</span>
           </div>
           <div className="flex justify-between mb-5">
             <span>Costos de envío</span>
-            <span>$3.000</span>
+            <span>{formattedShipping}</span>
           </div>
           <div className="flex justify-between font-bold text-lg  border-t-slate-200 border-t py-5">
             <span>Total a pagar</span>
-            <span>$32.583</span>
+            <span>{formatCLP(total)}</span>
           </div>
 
           <div className="mb-4 border-t-slate-200 border-t py-5">
