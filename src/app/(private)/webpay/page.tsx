@@ -1,17 +1,17 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function WebpayReturnPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const token_ws = searchParams.get('token_ws');
+    const params = new URLSearchParams(window.location.search);
+    const token_ws = params.get('token_ws');
     setToken(token_ws);
-  }, [searchParams]);
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
