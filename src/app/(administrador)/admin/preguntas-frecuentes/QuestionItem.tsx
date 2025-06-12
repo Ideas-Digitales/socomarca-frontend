@@ -13,7 +13,6 @@ interface Props {
 
 export default function QuestionItem({ question, content, onChange }: Props) {
   const [open, setOpen] = useState(true);
-  const editorRef = useRef<any>(null);
 
   return (
     <div className="rounded border border-gray-100">

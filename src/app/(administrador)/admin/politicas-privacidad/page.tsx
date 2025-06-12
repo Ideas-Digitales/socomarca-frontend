@@ -4,8 +4,6 @@ import { Editor } from '@tinymce/tinymce-react';
 import { useRef, useState } from 'react';
 
 export default function RichTextEditor() {
-  const editorRef = useRef<any>(null);
-  const [content, setContent] = useState('<p>Comienza a escribir tu contenido aquí...</p>');
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen" dir="ltr">
