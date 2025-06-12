@@ -1,7 +1,6 @@
 'use client';
 
 import { Editor } from '@tinymce/tinymce-react';
-import { useRef, useState } from 'react';
 
 export default function RichTextEditor() {
 

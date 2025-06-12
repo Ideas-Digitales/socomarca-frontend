@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 
@@ -11,7 +11,7 @@ interface Props {
   onChange: (data: { question?: string; content?: string }) => void;
 }
 
-export default function QuestionItem({ question, content, onChange }: Props) {
+export default function QuestionItem({ question, onChange }: Props) {
   const [open, setOpen] = useState(true);
 
   return (
