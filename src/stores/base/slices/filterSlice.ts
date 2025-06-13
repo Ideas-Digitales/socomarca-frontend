@@ -97,10 +97,9 @@ export const createFiltersSlice: StateCreator<
     set({ lowerPrice: lower, upperPrice: upper });
   },
 
-  // CORREGIDO: Inicializar rango de precios basado en productos mostrados
+  // Inicializar rango de precios basado en productos mostrados
   initializePriceRange: (products) => {
     if (!products || products.length === 0) {
-      // Si no hay productos, mantener valores mínimos
       set({
         minPrice: 0,
         maxPrice: 1000,
@@ -111,41 +110,38 @@ export const createFiltersSlice: StateCreator<
       return;
     }
 
-    const validPrices = products
-      .map((product) => product.price || 0)
-      .filter((price) => !isNaN(price) && price >= 0);
+    const allPrices = products.map((product) => {
+      let price = product.price;
+
+      // Convertir string a number si es necesario
+      if (typeof price === 'string') {
+        price = parseFloat((price as string).replace(/[^\d.,]/g, '').replace(',', '.'));
+      }
+
+      return price;
+    });
+
+    const validPrices = allPrices.filter(
+      (price) => !isNaN(price) && price >= 0
+    );
 
     if (validPrices.length > 0) {
       const min = Math.floor(Math.min(...validPrices));
       let max = Math.ceil(Math.max(...validPrices));
 
+      // Asegurar que max > min
       if (min === max) {
-        max = min + 1000; // Dar un rango mínimo
+        max = min + 100;
       }
 
-      const { priceInitialized, lowerPrice, upperPrice } = get();
-
-      // CORREGIDO: Siempre actualizar min/max, pero preservar lower/upper si ya están configurados
-      if (!priceInitialized) {
-        set({
-          minPrice: min,
-          maxPrice: max,
-          lowerPrice: min,
-          upperPrice: max,
-          priceInitialized: true,
-        });
-      } else {
-        // Actualizar rangos pero mantener selección del usuario si está dentro del nuevo rango
-        const newLowerPrice = Math.max(min, Math.min(lowerPrice, max));
-        const newUpperPrice = Math.min(max, Math.max(upperPrice, min));
-
-        set({
-          minPrice: min,
-          maxPrice: max,
-          lowerPrice: newLowerPrice,
-          upperPrice: newUpperPrice,
-        });
-      }
+      // Siempre resetear la selección cuando se actualiza el rango
+      set({
+        minPrice: min,
+        maxPrice: max,
+        lowerPrice: min,
+        upperPrice: max,
+        priceInitialized: true,
+      });
     }
   },
 
@@ -186,7 +182,7 @@ export const createFiltersSlice: StateCreator<
     set({ isPriceOpen: !isPriceOpen });
   },
 
-  // FUNCIÓN PRINCIPAL - APLICAR FILTROS CON BACKEND
+  // Aplicar filtros con conexión al backend
   applyFilters: async () => {
     const {
       selectedCategories,
@@ -205,41 +201,29 @@ export const createFiltersSlice: StateCreator<
 
       // Construir parámetros de búsqueda
       const searchParams: SearchWithPaginationProps = {
-        page: 1, // Resetear a primera página
+        page: 1,
         size: productPaginationMeta?.per_page || 9,
       };
 
       // Determinar filtro principal para el backend
       let hasBackendFilter = false;
 
-      // Prioridad 1: Filtro por categorías (usar la primera categoría seleccionada)
       if (selectedCategories.length > 0) {
         searchParams.field = 'category_id';
         searchParams.value = selectedCategories[0].toString();
         searchParams.operator = '=';
         hasBackendFilter = true;
-      }
-      // Prioridad 2: Filtro por marcas (si no hay categorías)
-      else if (selectedBrands.length > 0) {
+      } else if (selectedBrands.length > 0) {
         searchParams.field = 'brand_id';
         searchParams.value = selectedBrands[0].toString();
         searchParams.operator = '=';
         hasBackendFilter = true;
       }
 
-      // Agregar filtros de precio si están activos
-      const hasPriceFilter = lowerPrice > minPrice || upperPrice < maxPrice;
-      if (hasPriceFilter) {
-        searchParams.min = lowerPrice;
-        searchParams.max = upperPrice;
-      }
-
-      // Si no hay filtros de backend, usar todos los productos
       let response;
-      if (hasBackendFilter || hasPriceFilter) {
+      if (hasBackendFilter) {
         response = await fetchSearchProductsByFilters(searchParams);
       } else {
-        // Si no hay filtros de backend, usar fetchProducts normal
         const { fetchProducts } = get();
         await fetchProducts(1, searchParams.size);
         set({ isLoadingProducts: false });
@@ -249,16 +233,16 @@ export const createFiltersSlice: StateCreator<
       if (response.ok && response.data) {
         let filteredProducts = response.data.data;
 
-        // FILTROS ADICIONALES DEL LADO CLIENTE
+        // Filtros del lado cliente
 
-        // Filtrar por múltiples categorías (si hay más de una seleccionada)
+        // Filtrar por múltiples categorías
         if (selectedCategories.length > 1) {
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedCategories.includes(product.category.id)
           );
         }
 
-        // Filtrar por múltiples marcas (si hay más de una seleccionada)
+        // Filtrar por múltiples marcas
         if (selectedBrands.length > 1) {
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedBrands.includes(product.brand.id)
@@ -273,10 +257,24 @@ export const createFiltersSlice: StateCreator<
           );
         }
 
-        // CORREGIDO: Actualizar rango de precios basado en productos filtrados
+        // Filtrar por precio del lado cliente
+        const hasPriceFilter = lowerPrice > minPrice || upperPrice < maxPrice;
+        if (hasPriceFilter) {
+          filteredProducts = filteredProducts.filter((product: Product) => {
+            let price = product.price;
+            if (typeof price === 'string') {
+              price = parseFloat(
+                (price as string).replace(/[^\d.,]/g, '').replace(',', '.')
+              );
+            }
+            return price >= lowerPrice && price <= upperPrice;
+          });
+        }
+
+        // Actualizar rango de precios basado en productos filtrados
         initializePriceRange(filteredProducts);
 
-        // Actualizar estado con productos filtrados
+        // Actualizar estado
         const updatedMeta = {
           ...response.data.meta,
           total: filteredProducts.length,
@@ -295,14 +293,6 @@ export const createFiltersSlice: StateCreator<
           currentPage: 1,
           isLoadingProducts: false,
         });
-
-        console.log('Filtros aplicados:', {
-          categorias: selectedCategories,
-          marcas: selectedBrands,
-          favoritos: selectedFavorites,
-          precio: { min: lowerPrice, max: upperPrice },
-          resultados: filteredProducts.length,
-        });
       } else {
         console.error('Error aplicando filtros:', response.error);
         set({ isLoadingProducts: false });
@@ -313,7 +303,7 @@ export const createFiltersSlice: StateCreator<
     }
   },
 
-  // CORREGIDO: Limpiar todos los filtros y recargar productos
+  // Limpiar todos los filtros
   clearAllFilters: async () => {
     const { fetchProducts, productPaginationMeta } = get();
 
@@ -323,13 +313,11 @@ export const createFiltersSlice: StateCreator<
       selectedBrands: [],
       selectedFavorites: [],
       searchTerm: '',
-      // NO resetear precios aquí, se actualizarán cuando se carguen los productos
     });
 
     // Recargar productos originales
     try {
       await fetchProducts(1, productPaginationMeta?.per_page || 9);
-      console.log('Filtros limpiados y productos recargados');
     } catch (error) {
       console.error('Error al limpiar filtros:', error);
     }
