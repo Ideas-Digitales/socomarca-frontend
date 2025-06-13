@@ -24,7 +24,6 @@ async function getAuthData(
 
     const response = await fetch(url.toString(), {
       headers: {
-        // Pasar las cookies del request original
         Cookie: request.headers.get('cookie') || '',
       },
     });
