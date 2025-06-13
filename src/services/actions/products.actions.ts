@@ -201,6 +201,9 @@ export const fetchSearchProductsByFilters = async (
               return product.category.id.toString() === filters.value;
             case 'subcategory_id':
               return product.subcategory.id.toString() === filters.value;
+            case 'brand_id':
+              // NUEVO: Soporte para filtros por marca
+              return product.brand.id.toString() === filters.value;
             case 'sales':
               // Implementar lógica de ventas si es necesario
               return true;
@@ -272,19 +275,34 @@ export const fetchSearchProductsByFilters = async (
         per_page: per_page.toString(),
       });
 
-      // Construir el body solo con los filtros
-      const filterObject = {
-        field: filters.field,
-        value: filters.value,
-        operator: filters.operator,
-        ...(filters.min !== undefined && { min: filters.min }),
-        ...(filters.max !== undefined && { max: filters.max }),
+      // Construir el body con mejor soporte para múltiples filtros
+      const filterObjects = [];
+
+      // Filtro principal (field, value, operator)
+      if (filters.field && filters.value) {
+        filterObjects.push({
+          field: filters.field,
+          value: filters.value,
+          operator: filters.operator || '=',
+        });
+      }
+
+      // Filtro de precio como objeto separado
+      if (filters.min !== undefined || filters.max !== undefined) {
+        filterObjects.push({
+          field: 'price',
+          min: filters.min,
+          max: filters.max,
+          operator: 'range',
+        });
+      }
+
+      const requestBody = {
+        filters: filterObjects,
         ...(filters.sort && { sort: filters.sort }),
       };
 
-      const requestBody = {
-        filters: [filterObject],
-      };
+      console.log('Enviando filtros al backend:', requestBody);
 
       const response = await fetch(
         `${BACKEND_URL}/products/search?${queryParams}`,

@@ -1,8 +1,20 @@
 import { StateCreator } from 'zustand';
-import { StoreSlice, StoreState, BrandsSlice, CategoriesSlice, ProductsSlice, FiltersSlice } from '../types';
+import {
+  StoreSlice,
+  StoreState,
+  BrandsSlice,
+  CategoriesSlice,
+  ProductsSlice,
+  FiltersSlice,
+} from '../types';
 
 export const createStoreSlice: StateCreator<
-  StoreState & StoreSlice & BrandsSlice & CategoriesSlice & ProductsSlice & FiltersSlice,
+  StoreState &
+    StoreSlice &
+    BrandsSlice &
+    CategoriesSlice &
+    ProductsSlice &
+    FiltersSlice,
   [],
   [],
   StoreSlice
@@ -46,26 +58,28 @@ export const createStoreSlice: StateCreator<
     });
   },
 
-  resetSearchRelatedStates: () => {
-    const { resetBrandsState, resetCategoriesState, resetProductsState, resetFiltersState } = get();
-    
-    // Resetear todos los estados relacionados con la búsqueda
-    resetBrandsState();
-    resetCategoriesState();
-    resetProductsState();
-    resetFiltersState();
-    
-    // También resetear el término de búsqueda
+  // CORREGIDO: Resetear estados y recargar productos
+  resetSearchRelatedStates: async () => {
+    const { fetchProducts, productPaginationMeta } = get();
+
     set({
       searchTerm: '',
+      selectedCategories: [],
+      selectedBrands: [],
+      selectedFavorites: [],
       isLoading: false,
     });
+
+    try {
+      await fetchProducts(1, productPaginationMeta?.per_page || 9);
+      console.log('Estados de búsqueda reseteados y productos recargados');
+    } catch (error) {
+      console.error('Error al resetear estados de búsqueda:', error);
+    }
   },
 
-  resetAllStates: () => {
+  resetAllStates: async () => {
     const { resetSearchRelatedStates } = get();
-    
-    resetSearchRelatedStates();
-    
+    await resetSearchRelatedStates();
   },
 });

@@ -7,6 +7,9 @@ import useStore from '@/stores/base';
 import TerminosYCondicionesContent from '@/app/components/global/TerminosYCondicionesContent';
 import {getUserData} from '@/services/actions/user.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
+import ShippingAddressSelect from '@/app/components/user/ShippingAddressSelect';
+
+
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
@@ -15,15 +18,16 @@ export default function FinalizarCompraPage() {
   const { openModal } = useStore();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
-    nombre: '',
-    rut: '',
-    correo: '',
-    telefono: '',
-    region: '',
-    comuna: '',
-    direccion: '',
-    detallesDireccion: '',
-  });
+  nombre: '',
+  rut: '',
+  correo: '',
+  telefono: '',
+  region: '',
+  comuna: '',
+  direccion: '',
+  detallesDireccion: '',
+  shippingAddressId: null as number | null, 
+});
   const [aceptaTerminos, setAceptaTerminos] = useState(true);
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAceptaTerminos(e.target.checked);
@@ -112,9 +116,16 @@ const formatCLP = (value: number) =>
     });
   };
 
-  const goNext = () => {
-    router.push('/redirect');
-  };
+ const goNext = () => {
+  if (!formData.shippingAddressId) {
+    alert('Debes seleccionar una dirección de envío');
+    return;
+  }
+
+  localStorage.setItem('selectedAddressId', formData.shippingAddressId.toString());
+  router.push('/redirect');
+};
+
 
   useEffect(() => {
   const fetchUserData = async () => {
@@ -213,7 +224,7 @@ const formatCLP = (value: number) =>
       )}
     </div>
 
-     <div>
+    {/* <div>
       <label className="block font-medium">
         Región
       </label>
@@ -262,7 +273,18 @@ const formatCLP = (value: number) =>
         className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
         disabled
       />
-    </div>
+    </div>*/}
+
+ <div className="col-span-2 mt-8">
+    <h2 className="text-2xl font-bold mb-2">Información de envío</h2>
+  </div>
+
+  <div className="col-span-2">
+    <ShippingAddressSelect
+      selectedAddressId={formData.shippingAddressId}
+      onChange={(id) => setFormData({ ...formData, shippingAddressId: id })}
+    />
+  </div>
   </div>
 )}
 

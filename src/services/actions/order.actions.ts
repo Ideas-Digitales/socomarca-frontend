@@ -3,7 +3,7 @@
 import { cookiesManagement } from "@/stores/base/utils/cookiesManagement";
 import { BACKEND_URL } from "@/utils/getEnv";
 
-export async function createOrderFromCart() {
+export async function createOrderFromCart({ shippingAddressId }: { shippingAddressId: number }) {
   const { getCookie } = await cookiesManagement();
   const token = getCookie("token");
 
@@ -20,16 +20,14 @@ export async function createOrderFromCart() {
   const res = await fetch(`${BACKEND_URL}/orders/pay`, {
     method: "POST",
     headers,
-    body: JSON.stringify({
-      address_id: 13,
-    }),
+    body: JSON.stringify({ address_id: shippingAddressId }),
   });
 
   const json = await res.json();
-  console.log("Respuesta de crear orden:", json);
+  console.log('Respuesta de crear orden:', json);
   if (!res.ok) {
     throw new Error(
-      json.message || "Error al crear la orden y generar el pago"
+      json.message || 'Error al crear la orden y generar el pago'
     );
   }
 
