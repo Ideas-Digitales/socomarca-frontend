@@ -1,6 +1,10 @@
 import { StateCreator } from 'zustand';
 import { FiltersSlice, StoreState, ProductsSlice } from '../types';
-import { Product } from '@/interfaces/product.interface';
+import {
+  Product,
+  SearchWithPaginationProps,
+} from '@/interfaces/product.interface';
+import { fetchSearchProductsByFilters } from '@/services/actions/products.actions';
 
 export const createFiltersSlice: StateCreator<
   StoreState & FiltersSlice & ProductsSlice,
@@ -93,30 +97,51 @@ export const createFiltersSlice: StateCreator<
     set({ lowerPrice: lower, upperPrice: upper });
   },
 
+  // Inicializar rango de precios basado en productos mostrados
   initializePriceRange: (products) => {
-    const { priceInitialized } = get();
+    if (!products || products.length === 0) {
+      set({
+        minPrice: 0,
+        maxPrice: 1000,
+        lowerPrice: 0,
+        upperPrice: 1000,
+        priceInitialized: true,
+      });
+      return;
+    }
 
-    if (products && products.length > 0 && !priceInitialized) {
-      const validPrices = products
-        .map((product) => product.price || 0)
-        .filter((price) => !isNaN(price) && price >= 0);
+    const allPrices = products.map((product) => {
+      let price = product.price;
 
-      if (validPrices.length > 0) {
-        const min = Math.floor(Math.min(...validPrices));
-        let max = Math.ceil(Math.max(...validPrices));
-
-        if (min === max) {
-          max = min + 1;
-        }
-
-        set({
-          minPrice: min,
-          maxPrice: max,
-          lowerPrice: min,
-          upperPrice: max,
-          priceInitialized: true,
-        });
+      // Convertir string a number si es necesario
+      if (typeof price === 'string') {
+        price = parseFloat((price as string).replace(/[^\d.,]/g, '').replace(',', '.'));
       }
+
+      return price;
+    });
+
+    const validPrices = allPrices.filter(
+      (price) => !isNaN(price) && price >= 0
+    );
+
+    if (validPrices.length > 0) {
+      const min = Math.floor(Math.min(...validPrices));
+      let max = Math.ceil(Math.max(...validPrices));
+
+      // Asegurar que max > min
+      if (min === max) {
+        max = min + 100;
+      }
+
+      // Siempre resetear la selección cuando se actualiza el rango
+      set({
+        minPrice: min,
+        maxPrice: max,
+        lowerPrice: min,
+        upperPrice: max,
+        priceInitialized: true,
+      });
     }
   },
 
@@ -157,59 +182,145 @@ export const createFiltersSlice: StateCreator<
     set({ isPriceOpen: !isPriceOpen });
   },
 
-  // Aplicar todos los filtros
-  applyFilters: () => {
+  // Aplicar filtros con conexión al backend
+  applyFilters: async () => {
     const {
-      products,
       selectedCategories,
       selectedBrands,
       selectedFavorites,
       lowerPrice,
       upperPrice,
-      setFilteredProducts,
+      minPrice,
+      maxPrice,
+      productPaginationMeta,
+      initializePriceRange,
     } = get();
 
-    let filteredResults: Product[] = [...products];
+    try {
+      set({ isLoadingProducts: true });
 
-    // Aplicar filtro de categorías
-    if (selectedCategories.length > 0) {
-      filteredResults = filteredResults.filter((product) =>
-        selectedCategories.includes(product.category.id)
-      );
+      // Construir parámetros de búsqueda
+      const searchParams: SearchWithPaginationProps = {
+        page: 1,
+        size: productPaginationMeta?.per_page || 9,
+      };
+
+      // Determinar filtro principal para el backend
+      let hasBackendFilter = false;
+
+      if (selectedCategories.length > 0) {
+        searchParams.field = 'category_id';
+        searchParams.value = selectedCategories[0].toString();
+        searchParams.operator = '=';
+        hasBackendFilter = true;
+      } else if (selectedBrands.length > 0) {
+        searchParams.field = 'brand_id';
+        searchParams.value = selectedBrands[0].toString();
+        searchParams.operator = '=';
+        hasBackendFilter = true;
+      }
+
+      let response;
+      if (hasBackendFilter) {
+        response = await fetchSearchProductsByFilters(searchParams);
+      } else {
+        const { fetchProducts } = get();
+        await fetchProducts(1, searchParams.size);
+        set({ isLoadingProducts: false });
+        return;
+      }
+
+      if (response.ok && response.data) {
+        let filteredProducts = response.data.data;
+
+        // Filtros del lado cliente
+
+        // Filtrar por múltiples categorías
+        if (selectedCategories.length > 1) {
+          filteredProducts = filteredProducts.filter((product: Product) =>
+            selectedCategories.includes(product.category.id)
+          );
+        }
+
+        // Filtrar por múltiples marcas
+        if (selectedBrands.length > 1) {
+          filteredProducts = filteredProducts.filter((product: Product) =>
+            selectedBrands.includes(product.brand.id)
+          );
+        }
+
+        // Filtrar por favoritos
+        if (selectedFavorites.length > 0) {
+          filteredProducts = filteredProducts.filter(
+            (product: Product) =>
+              product.is_favorite && selectedFavorites.includes(product.id)
+          );
+        }
+
+        // Filtrar por precio del lado cliente
+        const hasPriceFilter = lowerPrice > minPrice || upperPrice < maxPrice;
+        if (hasPriceFilter) {
+          filteredProducts = filteredProducts.filter((product: Product) => {
+            let price = product.price;
+            if (typeof price === 'string') {
+              price = parseFloat(
+                (price as string).replace(/[^\d.,]/g, '').replace(',', '.')
+              );
+            }
+            return price >= lowerPrice && price <= upperPrice;
+          });
+        }
+
+        // Actualizar rango de precios basado en productos filtrados
+        initializePriceRange(filteredProducts);
+
+        // Actualizar estado
+        const updatedMeta = {
+          ...response.data.meta,
+          total: filteredProducts.length,
+          to: Math.min(filteredProducts.length, response.data.meta.per_page),
+          from: filteredProducts.length > 0 ? 1 : 0,
+          last_page: Math.max(
+            1,
+            Math.ceil(filteredProducts.length / response.data.meta.per_page)
+          ),
+        };
+
+        set({
+          filteredProducts,
+          productPaginationMeta: updatedMeta,
+          productPaginationLinks: response.data.links,
+          currentPage: 1,
+          isLoadingProducts: false,
+        });
+      } else {
+        console.error('Error aplicando filtros:', response.error);
+        set({ isLoadingProducts: false });
+      }
+    } catch (error) {
+      console.error('Error en applyFilters:', error);
+      set({ isLoadingProducts: false });
     }
-
-    // Aplicar filtro de marcas
-    if (selectedBrands.length > 0) {
-      filteredResults = filteredResults.filter(
-        (product) => product.brand && selectedBrands.includes(product.brand.id)
-      );
-    }
-
-    if (selectedFavorites.length > 0) {
-      filteredResults = filteredResults.filter((product) =>
-        selectedFavorites.includes(product.id)
-      );
-    }
-
-    // Aplicar filtro de precio
-    filteredResults = filteredResults.filter((product) => {
-      const price = product.price || 0;
-      return price >= lowerPrice && price <= upperPrice;
-    });
-
-    setFilteredProducts(filteredResults);
   },
 
   // Limpiar todos los filtros
-  clearAllFilters: () => {
-    const { minPrice, maxPrice } = get();
+  clearAllFilters: async () => {
+    const { fetchProducts, productPaginationMeta } = get();
+
+    // Resetear estados de filtros
     set({
       selectedCategories: [],
       selectedBrands: [],
       selectedFavorites: [],
-      lowerPrice: minPrice,
-      upperPrice: maxPrice,
+      searchTerm: '',
     });
+
+    // Recargar productos originales
+    try {
+      await fetchProducts(1, productPaginationMeta?.per_page || 9);
+    } catch (error) {
+      console.error('Error al limpiar filtros:', error);
+    }
   },
 
   // Resetear completamente el estado de filtros

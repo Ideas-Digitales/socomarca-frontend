@@ -164,13 +164,7 @@ export default function CarroDeCompraPage() {
                     </thead>
                     <tbody>
                       {paginationData.paginatedProducts.map((p, index) => (
-                        <CarroCompraCard
-                          decrementProductInCart={decrementProductInCart}
-                          incrementProductInCart={incrementProductInCart}
-                          key={index}
-                          p={p}
-                          setIdProductoAEliminar={setIdProductoAEliminar}
-                        />
+                        <CarroCompraCard key={index} p={p} />
                       ))}
                     </tbody>
                   </table>

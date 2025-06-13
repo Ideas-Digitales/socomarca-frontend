@@ -32,7 +32,6 @@ export async function getUserData() {
     throw new Error(`Failed to fetch user data: ${res.statusText}`);
   }
 const data = await res.json();
-console.log('User data:', data);
 return data;
 
 }

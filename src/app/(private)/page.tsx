@@ -19,7 +19,13 @@ const images = [
 export default function PrivatePage() {
   const { isTablet, setSearchTerm, resetSearchRelatedStates } = useStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   const handleSearch = (term: string) => {
+    if (!term || term.trim() === '') {
+      handleClearSearch();
+      return;
+    }
+
     const searchParams: SearchWithPaginationProps = {
       field: 'name',
       value: term,
@@ -31,8 +37,8 @@ export default function PrivatePage() {
     setSearchTerm(searchParams);
   };
 
-  const handleClearSearch = () => {
-    resetSearchRelatedStates();
+  const handleClearSearch = async () => {
+    await resetSearchRelatedStates();
   };
 
   const handleOpenFilter = () => {

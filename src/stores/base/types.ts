@@ -216,7 +216,7 @@ export interface CartSlice {
   removeAllQuantityByProductId: (productId: number) => void;
   clearCart: () => void;
   fetchCartProducts: () => Promise<void>;
-  removeProductFromCart: (product: CartItem) => Promise<{ ok: boolean }>;
+  removeProductFromCart: (product: CartItem, quantity: number) => Promise<{ ok: boolean }>;
 }
 
 // Acciones de paginación

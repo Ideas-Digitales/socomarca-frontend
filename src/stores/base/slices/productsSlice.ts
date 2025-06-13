@@ -21,21 +21,29 @@ export const createProductsSlice: StateCreator<
 > = (set, get) => ({
   setProducts: (products, meta?: PaginationMeta, links?: PaginationLinks) => {
     const searchTerm = get().searchTerm;
+    const { initializePriceRange } = get();
+
+    const finalProducts = searchTerm
+      ? filterAndRankProducts(products, searchTerm)
+      : products;
+
     set({
       products,
-      filteredProducts: searchTerm
-        ? filterAndRankProducts(products, searchTerm)
-        : products,
+      filteredProducts: finalProducts,
       productPaginationMeta: meta || get().productPaginationMeta,
       productPaginationLinks: links || get().productPaginationLinks,
     });
+
+    initializePriceRange(finalProducts);
   },
 
   setFilteredProducts: (filteredProducts) => {
     const currentMeta = get().productPaginationMeta;
+    const { initializePriceRange } = get();
 
     if (!currentMeta) {
       set({ filteredProducts });
+      initializePriceRange(filteredProducts);
       return;
     }
 
@@ -75,12 +83,16 @@ export const createProductsSlice: StateCreator<
       productPaginationLinks: updatedLinks,
       currentPage: 1,
     });
+
+    initializePriceRange(filteredProducts);
   },
 
   setSearchTerm: async (
     terms: FetchSearchProductsByFiltersProps & { page?: number; size?: number }
   ) => {
     try {
+      const { initializePriceRange } = get();
+
       const searchParams = {
         ...terms,
         page: terms.page || 1,
@@ -100,6 +112,8 @@ export const createProductsSlice: StateCreator<
           currentPage: response.data.meta.current_page,
           isLoadingProducts: false,
         });
+
+        initializePriceRange(products);
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
       }
@@ -111,17 +125,23 @@ export const createProductsSlice: StateCreator<
   fetchProducts: async (page = 1, size = 9) => {
     try {
       set({ isLoadingProducts: true });
+      const { initializePriceRange } = get();
+
       const response = await fetchGetProducts({ page, size });
 
       if (response.ok && response.data) {
+        const products = response.data.data;
+
         set({
-          products: response.data.data,
-          filteredProducts: response.data.data,
+          products: products,
+          filteredProducts: products,
           productPaginationMeta: response.data.meta,
           productPaginationLinks: response.data.links,
           currentPage: response.data.meta.current_page,
           isLoadingProducts: false,
         });
+
+        initializePriceRange(products);
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
         set({ isLoadingProducts: false });
