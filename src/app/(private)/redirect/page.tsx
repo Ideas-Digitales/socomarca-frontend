@@ -4,14 +4,18 @@ import { useEffect } from 'react';
 import { createOrderFromCart } from '@/services/actions/order.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 
-
 export default function RedireccionandoPago() {
   useEffect(() => {
     const createOrderAndRedirect = async () => {
       try {
-        const { payment_url, token } = await createOrderFromCart();
+        const id = localStorage.getItem('selectedAddressId');
+        if (!id) {
+          throw new Error('No se encontró una dirección de envío seleccionada');
+        }
 
-        // Crear formulario oculto
+        const shippingAddressId = Number(id);
+        const { payment_url, token } = await createOrderFromCart({ shippingAddressId });
+
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = payment_url;
@@ -35,7 +39,7 @@ export default function RedireccionandoPago() {
   return (
     <div className="flex flex-col items-center justify-center bg-[#f1f5f9] text-center p-6">
       <div className="bg-white p-8 rounded-lg shadow-md">
-       <LoadingSpinner />
+        <LoadingSpinner />
         <h2 className="text-xl font-bold mb-2 mt-5">Redireccionando al portal de pago...</h2>
         <p className="text-gray-600">Estamos creando tu orden y preparando el pago con WebPay.</p>
       </div>
