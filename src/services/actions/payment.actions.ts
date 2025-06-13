@@ -31,5 +31,5 @@ export async function getWebpayPaymentDetail(token_ws: string) {
    *   "data": { "order": { ... }, "payment_status": "AUTHORIZED", ... }
    * }
    */
-  return json.data;
+  return json;
 }
