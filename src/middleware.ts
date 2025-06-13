@@ -208,7 +208,28 @@ export default async function middleware(request: NextRequest) {
     hasPermission = userRole === 'admin' || userRole === 'superadmin';
   } else if (routePermissions.superadmin) {
     hasPermission = userRole === 'superadmin';
-  } else if (routePermissions.cliente) {
+  }
+  // Rutas para CLIENTE únicamente - todas las rutas de la carpeta (private)
+  else if (
+    pathname.startsWith('/carro-de-compra') ||
+    pathname.startsWith('/compra-exitosa') ||
+    pathname.startsWith('/redirect') ||
+    pathname.startsWith('/webpay') ||
+    pathname.startsWith('/confirmacion-pago') ||
+    pathname.startsWith('/compra-fallida') ||
+    pathname.startsWith('/direcciones') ||
+    pathname.startsWith('/favoritos') ||
+    pathname.startsWith('/finalizar-compra') ||
+    pathname.startsWith('/gracias') ||
+    pathname.startsWith('/medios-de-pago') ||
+    pathname.startsWith('/mi-cuenta') ||
+    pathname.startsWith('/mis-compras') ||
+    pathname.startsWith('/politica-de-privacidad') ||
+    pathname.startsWith('/preguntas-frecuentes') ||
+    pathname.startsWith('/repetir-compra') ||
+    pathname.startsWith('/revisar-pedido') ||
+    pathname.startsWith('/terminos-y-condiciones')
+  ) {
     hasPermission = userRole === 'cliente';
   } else {
     // Para rutas no definidas explícitamente, permitir si está autenticado

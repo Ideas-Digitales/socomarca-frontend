@@ -5,25 +5,30 @@ import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import Image from 'next/image';
 import useStore from '@/stores/base';
 import TerminosYCondicionesContent from '@/app/components/global/TerminosYCondicionesContent';
-import { getUserData } from '@/services/actions/user.actions';
+import {getUserData} from '@/services/actions/user.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
+import ShippingAddressSelect from '@/app/components/user/ShippingAddressSelect';
+
+
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
   const cartProducts = useStore((state) => state.cartProducts);
   const [loadingUser, setLoadingUser] = useState(true);
   const { openModal } = useStore();
+  const [direccionError, setDireccionError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
-    nombre: '',
-    rut: '',
-    correo: '',
-    telefono: '',
-    region: '',
-    comuna: '',
-    direccionId: 0,
-    detallesDireccion: '',
-  });
+  nombre: '',
+  rut: '',
+  correo: '',
+  telefono: '',
+  region: '',
+  comuna: '',
+  direccion: '',
+  detallesDireccion: '',
+  shippingAddressId: null as number | null, 
+});
   const [aceptaTerminos, setAceptaTerminos] = useState(true);
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAceptaTerminos(e.target.checked);
@@ -69,30 +74,27 @@ export default function FinalizarCompraPage() {
     setFormData((prev) => ({ ...prev, rut: value }));
   };
 
-  const totalQuantity = cartProducts.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+  const totalQuantity = cartProducts.reduce((sum, item) => sum + item.quantity, 0);
 
-  const totalAmount = cartProducts.reduce(
-    (sum, item) => sum + item.quantity * item.price,
-    0
-  );
-  const shippingCost = totalAmount * 0.1;
-  const formattedShipping = shippingCost.toLocaleString('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-  });
-  const subtotal = cartProducts.reduce(
-    (sum, item) => sum + item.quantity * item.price,
-    0
-  );
+const totalAmount = cartProducts.reduce(
+  (sum, item) => sum + item.quantity * item.price,
+  0
+);
+const shippingCost = totalAmount * 0.1;
+const formattedShipping = shippingCost.toLocaleString('es-CL', {
+  style: 'currency',
+  currency: 'CLP',
+});
+const subtotal = cartProducts.reduce(
+  (sum, item) => sum + item.quantity * item.price,
+  0
+);
 
-  const shipping = subtotal * 0.1;
-  const total = subtotal + shipping;
+const shipping = subtotal * 0.1;
+const total = subtotal + shipping;
 
-  const formatCLP = (value: number) =>
-    value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
+const formatCLP = (value: number) =>
+  value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
 
   // Manejador para la validación del RUT
   const handleRutValidation = (isValid: boolean) => {
@@ -115,31 +117,39 @@ export default function FinalizarCompraPage() {
     });
   };
 
-  const goNext = () => {
-    router.push('/redirect');
-  };
+const goNext = () => {
+  if (!formData.shippingAddressId) {
+    setDireccionError('Debes seleccionar una dirección de envío.');
+    return;
+  }
+
+  setDireccionError(''); 
+  localStorage.setItem('selectedAddressId', formData.shippingAddressId.toString());
+  router.push('/redirect');
+};
+
+
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userData = await getUserData();
-        setFormData((prev) => ({
-          ...prev,
-          nombre: userData.name || '',
-          rut: userData.rut || '',
-          correo: userData.email || '',
-          telefono: userData.phone || '',
-          direccionId: userData.billing_address.id || 0,
-        }));
-        console.log('Datos del usuario:', userData);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-    fetchUserData();
-  }, []);
+  const fetchUserData = async () => {
+    try {
+      const userData = await getUserData();
+      setFormData((prev) => ({
+        ...prev,
+        nombre: userData.name || '',
+        rut: userData.rut || '',
+        correo: userData.email || '',
+        telefono: userData.phone || '',
+      }));
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+  fetchUserData();
+}, []);
+
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen p-4">
@@ -147,114 +157,147 @@ export default function FinalizarCompraPage() {
         {/* Formulario de facturación */}
         <div className="w-full lg:w-2/3 bg-white rounded-lg shadow p-6 h-fit">
           <h2 className="text-2xl font-bold mb-6">Datos de facturación</h2>
-          {loadingUser ? (
-            <div className="flex items-center justify-center">
-              <LoadingSpinner />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block font-medium">Nombre completo</label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleChange}
-                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  disabled
-                />
-              </div>
+          {loadingUser ?
+          (
+    <div className="flex items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  )
+          : (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label className="block font-medium">
+        Nombre completo
+      </label>
+      <input
+        type="text"
+        name="nombre"
+        value={formData.nombre}
+        onChange={handleChange}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
 
-              <div>
-                <label className="block font-medium">Rut</label>
-                <RutInput
-                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  name="rut"
-                  value={formData.rut}
-                  onChange={handleRutChange}
-                  onValidationChange={handleRutValidation}
-                  errorMessage="RUT inválido"
-                  disabled
-                />
-              </div>
+    <div>
+      <label className="block font-medium">
+        Rut
+      </label>
+      <RutInput
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        name="rut"
+        value={formData.rut}
+        onChange={handleRutChange}
+        onValidationChange={handleRutValidation}
+        errorMessage="RUT inválido"
+        disabled
+      />
+    </div>
 
-              <div>
-                <label className="block font-medium">Correo electrónico</label>
-                <input
-                  type="email"
-                  name="correo"
-                  value={formData.correo}
-                  onChange={handleChange}
-                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  disabled
-                />
-                {errors.correo && (
-                  <p className="text-red-500 text-sm mt-1">{errors.correo}</p>
-                )}
-              </div>
+    <div>
+      <label className="block font-medium">
+        Correo electrónico
+      </label>
+      <input
+        type="email"
+        name="correo"
+        value={formData.correo}
+        onChange={handleChange}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+      {errors.correo && (
+        <p className="text-red-500 text-sm mt-1">{errors.correo}</p>
+      )}
+    </div>
 
-              <div>
-                <label className="block font-medium">Teléfono</label>
-                <input
-                  type="text"
-                  name="telefono"
-                  value={'+56 ' + formData.telefono}
-                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  disabled
-                />
-                {errors.telefono && (
-                  <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>
-                )}
-              </div>
+    <div>
+      <label className="block font-medium">
+        Teléfono
+      </label>
+       <input
+        type="text"
+        name="telefono"
+        value={'+56 ' + formData.telefono}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+      {errors.telefono && (
+        <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>
+      )}
+    </div>
 
-              <div>
-                <label className="block font-medium">Región</label>
-                <input
-                  type="text"
-                  name="region"
-                  value={formData.region}
-                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  disabled
-                />
-              </div>
-              <div>
-                <label className="block font-medium">Comuna</label>
-                <input
-                  type="text"
-                  name="comuna"
-                  value={formData.comuna}
-                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  disabled
-                />
-              </div>
+    {/* <div>
+      <label className="block font-medium">
+        Región
+      </label>
+       <input
+        type="text"
+        name="region"
+        value={formData.region}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
+      <div>
+      <label className="block font-medium">
+        Comuna
+      </label>
+       <input
+        type="text"
+        name="comuna"
+        value={formData.comuna}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
 
-              <div>
-                <label className="block font-medium">Dirección</label>
-                <input
-                  type="text"
-                  name="direccion"
-                  value={formData.direccionId}
-                  onChange={handleChange}
-                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  disabled
-                />
-              </div>
+    <div>
+      <label className="block font-medium">
+        Dirección
+      </label>
+      <input
+        type="text"
+        name="direccion"
+        value={formData.direccion}
+        onChange={handleChange}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>
 
-              <div>
-                <label className="block font-medium">
-                  Detalles de la dirección
-                </label>
-                <input
-                  type="text"
-                  name="detallesDireccion"
-                  value={formData.detallesDireccion}
-                  onChange={handleChange}
-                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  disabled
-                />
-              </div>
-            </div>
-          )}
+    <div>
+      <label className="block font-medium">Detalles de la dirección</label>
+      <input
+        type="text"
+        name="detallesDireccion"
+        value={formData.detallesDireccion}
+        onChange={handleChange}
+        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+        disabled
+      />
+    </div>*/}
+
+ <div className="col-span-2 mt-8">
+    <h2 className="text-2xl font-bold mb-2">Información de envío</h2>
+  </div>
+
+  <div className="col-span-2">
+  <ShippingAddressSelect
+    selectedAddressId={formData.shippingAddressId}
+    onChange={(id) => {
+      setFormData({ ...formData, shippingAddressId: id });
+      if (id) setDireccionError('');
+    }}
+  />
+  {direccionError && (
+    <p className="text-red-500 text-sm mt-1">{direccionError}</p>
+  )}
+</div>
+
+  </div>
+)}
+
         </div>
 
         {/* Resumen de la orden */}
@@ -267,12 +310,7 @@ export default function FinalizarCompraPage() {
           </div>
           <div className="flex justify-between border-t-slate-200 border-t py-5 ">
             <span className="font-bold">Subtotal</span>
-            <span className="font-bold">
-              {subtotal.toLocaleString('es-CL', {
-                style: 'currency',
-                currency: 'CLP',
-              })}
-            </span>
+            <span className="font-bold">{subtotal.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</span>
           </div>
           <div className="flex justify-between mb-5">
             <span>Costos de envío</span>
