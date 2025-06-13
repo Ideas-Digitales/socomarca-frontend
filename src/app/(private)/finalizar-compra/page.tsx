@@ -16,6 +16,7 @@ export default function FinalizarCompraPage() {
   const cartProducts = useStore((state) => state.cartProducts);
   const [loadingUser, setLoadingUser] = useState(true);
   const { openModal } = useStore();
+  const [direccionError, setDireccionError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
   nombre: '',
@@ -116,15 +117,17 @@ const formatCLP = (value: number) =>
     });
   };
 
- const goNext = () => {
+const goNext = () => {
   if (!formData.shippingAddressId) {
-    alert('Debes seleccionar una dirección de envío');
+    setDireccionError('Debes seleccionar una dirección de envío.');
     return;
   }
 
+  setDireccionError(''); 
   localStorage.setItem('selectedAddressId', formData.shippingAddressId.toString());
   router.push('/redirect');
 };
+
 
 
   useEffect(() => {
@@ -280,11 +283,18 @@ const formatCLP = (value: number) =>
   </div>
 
   <div className="col-span-2">
-    <ShippingAddressSelect
-      selectedAddressId={formData.shippingAddressId}
-      onChange={(id) => setFormData({ ...formData, shippingAddressId: id })}
-    />
-  </div>
+  <ShippingAddressSelect
+    selectedAddressId={formData.shippingAddressId}
+    onChange={(id) => {
+      setFormData({ ...formData, shippingAddressId: id });
+      if (id) setDireccionError('');
+    }}
+  />
+  {direccionError && (
+    <p className="text-red-500 text-sm mt-1">{direccionError}</p>
+  )}
+</div>
+
   </div>
 )}
 
