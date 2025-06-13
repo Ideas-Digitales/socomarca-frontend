@@ -24,7 +24,7 @@ export default function ConfirmacionPagoPage() {
   useEffect(() => {
     const token_ws = new URLSearchParams(window.location.search).get('token_ws');
     if (!token_ws) {
-      setEstado({ status: 'error', message: 'Token no recibido en la URL' });
+      setEstado({ status: 'error', message: 'No se pudo completar la operación de pago.' });
       return;
     }
 

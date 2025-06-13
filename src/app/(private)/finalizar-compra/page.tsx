@@ -17,6 +17,7 @@ export default function FinalizarCompraPage() {
   const [loadingUser, setLoadingUser] = useState(true);
   const { openModal } = useStore();
   const [direccionError, setDireccionError] = useState('');
+  const [terminosError, setTerminosError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
   nombre: '',
@@ -118,14 +119,28 @@ const formatCLP = (value: number) =>
   };
 
 const goNext = () => {
+  let hasError = false;
+
   if (!formData.shippingAddressId) {
     setDireccionError('Debes seleccionar una dirección de envío.');
-    return;
+    hasError = true;
+  } else {
+    setDireccionError('');
   }
 
-  setDireccionError(''); 
-  localStorage.setItem('selectedAddressId', formData.shippingAddressId.toString());
-  router.push('/redirect');
+  if (!aceptaTerminos) {
+    setTerminosError('Debes aceptar los términos y condiciones.');
+    hasError = true;
+  } else {
+    setTerminosError('');
+  }
+
+  if (hasError) return;
+
+  if (formData.shippingAddressId !== null) {
+    localStorage.setItem('selectedAddressId', formData.shippingAddressId.toString());
+    router.push('/redirect');
+  }
 };
 
 
@@ -342,25 +357,30 @@ const goNext = () => {
           </div>
 
           <div className="text-sm text-gray-600 mb-4">
-            <input
-              type="checkbox"
-              name="acepta"
-              id="acepta"
-              className="mr-2"
-              checked={aceptaTerminos}
-              onChange={handleCheckboxChange}
-            />
-            Todos los derechos reservados tankandtrailco.cl
-            <br />
-            Al comprar aceptas los{' '}
-            <span
-              onClick={handleOpenModal}
-              className="text-lime-500 cursor-pointer"
-            >
-              términos y condiciones
-            </span>{' '}
-            de tankandtrailco.cl
-          </div>
+  <input
+    type="checkbox"
+    name="acepta"
+    id="acepta"
+    className="mr-2"
+    checked={aceptaTerminos}
+    onChange={handleCheckboxChange}
+  />
+  Todos los derechos reservados tankandtrailco.cl
+  <br />
+  Al comprar aceptas los{' '}
+  <span
+    onClick={handleOpenModal}
+    className="text-lime-500 cursor-pointer"
+  >
+    términos y condiciones
+  </span>{' '}
+  de tankandtrailco.cl
+
+  {terminosError && (
+    <p className="text-red-500 text-sm mt-1">{terminosError}</p>
+  )}
+</div>
+
 
           <button
             onClick={goNext}
