@@ -82,6 +82,7 @@ export default async function middleware(request: NextRequest) {
     pathname.startsWith('/compra-exitosa') ||
     pathname.startsWith('/redirect') ||
     pathname.startsWith('/webpay') ||
+    pathname.startsWith('/confirmacion-pago') ||
     pathname.startsWith('/compra-fallida') ||
     pathname.startsWith('/direcciones') ||
     pathname.startsWith('/favoritos') ||

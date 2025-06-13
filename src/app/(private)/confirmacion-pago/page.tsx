@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function WebpayReturnPage() {
+export default function confirmacionPagoPage() {
   const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
 
