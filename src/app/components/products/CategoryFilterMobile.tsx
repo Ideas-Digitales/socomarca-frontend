@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import {
   AdjustmentsHorizontalIcon,
   XMarkIcon,
   MinusIcon,
   PlusIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
@@ -60,9 +61,23 @@ export default function CategoryFilterMobile({
     hasActiveFilters,
   } = useStore();
 
+  // Estados locales para búsqueda
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  const [brandSearchTerm, setBrandSearchTerm] = useState('');
+
   const formatPrice = useCallback((price: number): string => {
     return price.toLocaleString('es-CL');
   }, []);
+
+  // Filtrar categorías por término de búsqueda
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
+  );
+
+  // Filtrar marcas por término de búsqueda
+  const filteredBrands = brands.filter((brand) =>
+    brand.name.toLowerCase().includes(brandSearchTerm.toLowerCase())
+  );
 
   // Inicializar rango de precios cuando cambien los productos
   useEffect(() => {
@@ -122,6 +137,14 @@ export default function CategoryFilterMobile({
     };
   }, [isOpen]);
 
+  // Reset search terms when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCategorySearchTerm('');
+      setBrandSearchTerm('');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -177,52 +200,72 @@ export default function CategoryFilterMobile({
                   : 'max-h-0 opacity-0'
               }`}
             >
-              <div className="w-full max-h-[40vh] overflow-y-auto">
-                {categories?.map((category) => (
-                  <div key={category.id} className="w-full">
-                    <div
-                      className={`flex w-full min-h-[48px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-4 py-3 ${
-                        selectedCategories.includes(category.id)
-                          ? 'bg-gray-100'
-                          : ''
-                      }`}
-                      onClick={() => toggleCategorySelection(category.id)}
-                    >
+              {/* Search input for categories */}
+              <div className="p-4 border-b border-gray-100">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar categoría..."
+                    value={categorySearchTerm}
+                    onChange={(e) => setCategorySearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              <div className="w-full max-h-[32vh] overflow-y-auto">
+                {filteredCategories.length > 0 ? (
+                  filteredCategories.map((category) => (
+                    <div key={category.id} className="w-full">
                       <div
-                        className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all duration-300 ease-in-out transform ${
+                        className={`flex w-full min-h-[48px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-4 py-3 ${
                           selectedCategories.includes(category.id)
-                            ? 'bg-lime-500 border-lime-500 scale-110'
-                            : 'border-gray-300 scale-100 hover:border-lime-300'
+                            ? 'bg-gray-100'
+                            : ''
                         }`}
+                        onClick={() => toggleCategorySelection(category.id)}
                       >
                         <div
-                          className={`transition-all duration-200 ${
+                          className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all duration-300 ease-in-out transform ${
                             selectedCategories.includes(category.id)
-                              ? 'opacity-100 scale-100'
-                              : 'opacity-0 scale-75'
+                              ? 'bg-lime-500 border-lime-500 scale-110'
+                              : 'border-gray-300 scale-100 hover:border-lime-300'
                           }`}
                         >
-                          {selectedCategories.includes(category.id) && (
-                            <svg
-                              className="w-3 h-3 text-white"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          )}
+                          <div
+                            className={`transition-all duration-200 ${
+                              selectedCategories.includes(category.id)
+                                ? 'opacity-100 scale-100'
+                                : 'opacity-0 scale-75'
+                            }`}
+                          >
+                            {selectedCategories.includes(category.id) && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            )}
+                          </div>
                         </div>
+                        <span className="text-base text-slate-600 flex-1 transition-colors duration-200">
+                          {category.name}
+                        </span>
                       </div>
-                      <span className="text-base text-slate-600 flex-1 transition-colors duration-200">
-                        {category.name}
-                      </span>
                     </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-gray-500">
+                    No se encontraron categorías
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -247,50 +290,70 @@ export default function CategoryFilterMobile({
                 isBrandsOpen ? 'max-h-[40vh] opacity-100' : 'max-h-0 opacity-0'
               }`}
             >
-              <div className="w-full max-h-[40vh] overflow-y-auto">
-                {brands?.map((brand) => (
-                  <div key={brand.id} className="w-full">
-                    <div
-                      className={`flex w-full min-h-[48px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-4 py-3 ${
-                        selectedBrands.includes(brand.id) ? 'bg-gray-100' : ''
-                      }`}
-                      onClick={() => toggleBrandSelection(brand.id)}
-                    >
+              {/* Search input for brands */}
+              <div className="p-4 border-b border-gray-100">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar marca..."
+                    value={brandSearchTerm}
+                    onChange={(e) => setBrandSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              <div className="w-full max-h-[32vh] overflow-y-auto">
+                {filteredBrands.length > 0 ? (
+                  filteredBrands.map((brand) => (
+                    <div key={brand.id} className="w-full">
                       <div
-                        className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all duration-300 ease-in-out transform ${
-                          selectedBrands.includes(brand.id)
-                            ? 'bg-lime-500 border-lime-500 scale-110'
-                            : 'border-gray-300 scale-100 hover:border-lime-300'
+                        className={`flex w-full min-h-[48px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-4 py-3 ${
+                          selectedBrands.includes(brand.id) ? 'bg-gray-100' : ''
                         }`}
+                        onClick={() => toggleBrandSelection(brand.id)}
                       >
                         <div
-                          className={`transition-all duration-200 ${
+                          className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all duration-300 ease-in-out transform ${
                             selectedBrands.includes(brand.id)
-                              ? 'opacity-100 scale-100'
-                              : 'opacity-0 scale-75'
+                              ? 'bg-lime-500 border-lime-500 scale-110'
+                              : 'border-gray-300 scale-100 hover:border-lime-300'
                           }`}
                         >
-                          {selectedBrands.includes(brand.id) && (
-                            <svg
-                              className="w-3 h-3 text-white"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          )}
+                          <div
+                            className={`transition-all duration-200 ${
+                              selectedBrands.includes(brand.id)
+                                ? 'opacity-100 scale-100'
+                                : 'opacity-0 scale-75'
+                            }`}
+                          >
+                            {selectedBrands.includes(brand.id) && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            )}
+                          </div>
                         </div>
+                        <span className="text-base text-slate-600 flex-1 transition-colors duration-200">
+                          {brand.name}
+                        </span>
                       </div>
-                      <span className="text-base text-slate-600 flex-1 transition-colors duration-200">
-                        {brand.name}
-                      </span>
                     </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-gray-500">
+                    No se encontraron marcas
                   </div>
-                ))}
+                )}
               </div>
             </div>
 

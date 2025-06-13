@@ -8,7 +8,7 @@ import useStore from '@/stores/base';
 export default function CartProductsContainer() {
   const [totalPrice, setTotalPrice] = useState('');
   const [totalItems, setTotalItems] = useState(0);
-  const { cartProducts, isCartLoading } = useStore();
+  const { cartProducts } = useStore();
 
   //aqui va el useEffect para obtener los productos del carro
 
@@ -33,9 +33,7 @@ export default function CartProductsContainer() {
   return (
     <>
       <div className="bg-white w-full max-h-[800px] overflow-y-auto flex-col items-start p-3">
-        {isCartLoading ? (
-          <div className="text-sm text-slate-500">Cargando...</div>
-        ) : cartProducts.length > 0 ? (
+        {cartProducts.length > 0 ? (
           cartProducts.map((product, index) => (
             <CartProductCard
               key={product.id + '-' + index}

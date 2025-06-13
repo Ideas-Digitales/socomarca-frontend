@@ -14,6 +14,7 @@ interface AuthStoreState {
     roles: string[] | null;
   };
   token: string;
+  isLoading: boolean;
   login: ({
     rut,
     password,
@@ -25,9 +26,10 @@ interface AuthStoreState {
   }) => Promise<LoginResult>;
   logout: () => void;
   getUserRole: () => string | null;
+  setLoading: (loading: boolean) => void;
 }
 
-const useAuthStore = create<AuthStoreState>((set) => ({
+const useAuthStore = create<AuthStoreState>((set, get) => ({
   isLoggedIn: false,
   user: {
     id: 0,
@@ -37,16 +39,28 @@ const useAuthStore = create<AuthStoreState>((set) => ({
     roles: [],
   },
   token: '',
+  isLoading: false,
+  
+  setLoading: (loading: boolean) => set({ isLoading: loading }),
+  
   login: async ({ rut, password, role }) => {
+    set({ isLoading: true });
+    
     try {
       const response = await fetchLogin(rut, password, role);
 
       if (!response.user) {
-        return { success: false, error: 'Credenciales inválidas' };
+        set({ isLoading: false });
+        return { 
+          success: false, 
+          error: response.error?.message || 'Credenciales inválidas' 
+        };
       }
 
+      // Actualizar el estado del store
       set({
         isLoggedIn: true,
+        isLoading: false,
         user: {
           id: response.user.id,
           name: response.user.name,
@@ -56,15 +70,23 @@ const useAuthStore = create<AuthStoreState>((set) => ({
         },
       });
 
+      console.log('Login exitoso, estado actualizado');
+      
+      // Esperar un momento para que las cookies se establezcan
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       return { success: true };
     } catch (error: any) {
+      console.error('Error en login:', error);
+      
       set({
         isLoggedIn: false,
+        isLoading: false,
         user: { id: 0, name: '', email: '', rut: '', roles: [] },
         token: '',
       });
 
-      // Lanzamos el error para que el catch externo lo capture
+      // Manejar errores específicos del servidor
       if (error?.response?.status === 422) {
         const err: any = new Error('Error de validación');
         err.response = error.response;
@@ -74,16 +96,21 @@ const useAuthStore = create<AuthStoreState>((set) => ({
       throw new Error(error.message || 'Error desconocido');
     }
   },
+  
   // Función para cerrar sesión
-  logout: () =>
+  logout: () => {
+    console.log('Logout called from store');
     set({
       isLoggedIn: false,
       user: { id: 0, name: '', email: '', rut: '', roles: [] },
       token: '',
-    }),
+      isLoading: false,
+    });
+  },
+  
   // Función para obtener el rol del usuario
   getUserRole: () => {
-    const user: AuthStoreState['user'] = useAuthStore.getState().user;
+    const { user } = get();
     return user.roles && user.roles.length > 0 ? user.roles[0] : null;
   },
 }));
