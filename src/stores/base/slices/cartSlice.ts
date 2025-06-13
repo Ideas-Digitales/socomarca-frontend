@@ -97,12 +97,16 @@ export const createCartSlice: StateCreator<
     set({ cartProducts: updatedCart });
   },
 
-  removeProductFromCart: async (product: CartItem) => {
+  removeProductFromCart: async (product: CartItem, quantity: number) => {
     try {
       set({
         isCartLoading: true,
       });
-      const response = await fetchDeleteCartItem(product.id, 1, product.unit);
+      const response = await fetchDeleteCartItem(
+        product.id,
+        quantity,
+        product.unit
+      );
       if (response.ok && response.data) {
         await get().fetchCartProducts();
         return {

@@ -20,12 +20,17 @@ export async function createOrderFromCart() {
   const res = await fetch(`${BACKEND_URL}/orders/pay`, {
     method: 'POST',
     headers,
+    body: JSON.stringify({
+      address_id: 13
+    }),
   });
 
   const json = await res.json();
-console.log('Respuesta de crear orden:', json);
+  console.log('Respuesta de crear orden:', json);
   if (!res.ok) {
-    throw new Error(json.message || 'Error al crear la orden y generar el pago');
+    throw new Error(
+      json.message || 'Error al crear la orden y generar el pago'
+    );
   }
 
   const { payment_url, token: webpayToken } = json.data;
