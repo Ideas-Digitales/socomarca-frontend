@@ -74,8 +74,8 @@ export default function CartProductCard({ product, index }: Props) {
     }
   );
 
-  const isBrandTruncated = product.brand?.name.length > 15;
-  const isNameTruncated = product.name.length > 15;
+  const isBrandTruncated = product.brand?.name.length > 10;
+  const isNameTruncated = product.name.length > 10;
 
   // Condiciones para deshabilitar botones
   const isDecreaseDisabled = product.quantity <= 1 || isLoading;
@@ -101,13 +101,13 @@ export default function CartProductCard({ product, index }: Props) {
           className="text-[#64748B] text-[12px] font-medium cursor-help truncate"
           title={isBrandTruncated ? product.brand.name : undefined}
         >
-          {truncateText(product.brand.name, 15)}
+          {truncateText(product.brand.name, 10)}
         </span>
         <span
           className="text-[12px] font-medium cursor-help truncate"
           title={isNameTruncated ? product.name : undefined}
         >
-          {truncateText(product.name, 15)}
+          {truncateText(product.name, 10)}
         </span>
       </div>
       

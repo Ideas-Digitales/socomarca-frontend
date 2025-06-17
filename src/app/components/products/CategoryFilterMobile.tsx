@@ -48,6 +48,7 @@ export default function CategoryFilterMobile({
     setUpperPrice,
     handlePriceRangeChange,
     initializePriceRange,
+    fetchBrands, // Agregar fetchBrands
 
     // Acciones de UI
     toggleMainCategory,
@@ -60,6 +61,13 @@ export default function CategoryFilterMobile({
     clearAllFilters,
     hasActiveFilters,
   } = useStore();
+
+  // Asegurar que las marcas estén cargadas
+  useEffect(() => {
+    if (brands.length === 0) {
+      fetchBrands();
+    }
+  }, [brands.length, fetchBrands]);
 
   // Estados locales para búsqueda
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
@@ -411,8 +419,7 @@ export default function CategoryFilterMobile({
                   ? 'max-h-96 opacity-100'
                   : 'max-h-0 opacity-0'
               }`}
-            >
-              <div className="w-full p-4">
+            >              <div className="w-full p-4">
                 {hasPriceRange ? (
                   <div className="transition-opacity duration-300">
                     <DualRangeSlider
@@ -421,11 +428,42 @@ export default function CategoryFilterMobile({
                       initialLower={lowerPrice}
                       initialUpper={upperPrice}
                       onChange={handlePriceRangeChange}
-                      formatValue={formatPrice}
                       step={100}
                     />
-                  </div>
-                ) : (
+                    
+                    <div className="flex justify-between gap-3 mb-4">
+                      <div className="w-1/2">
+                        <div className="text-sm text-gray-500 mb-2">Desde</div>
+                        <input
+                          disabled
+                          type="text"
+                          className="w-full border border-gray-300 rounded-md p-3 text-base transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
+                          placeholder={`$${formatPrice(minPrice)}`}
+                          value={`${formatPrice(lowerPrice)}`}
+                          onChange={handleLowerPriceChange}
+                          onBlur={() => {
+                            if (lowerPrice < minPrice) setLowerPrice(minPrice);
+                            if (lowerPrice > upperPrice) setLowerPrice(upperPrice);
+                          }}
+                        />
+                      </div>
+                      <div className="w-1/2">
+                        <div className="text-sm text-gray-500 mb-2">Hasta</div>
+                        <input
+                          disabled
+                          type="text"
+                          className="w-full border border-gray-300 rounded-md p-3 text-base transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
+                          placeholder={`${formatPrice(maxPrice)}`}
+                          value={`${formatPrice(upperPrice)}`}
+                          onChange={handleUpperPriceChange}
+                          onBlur={() => {
+                            if (upperPrice > maxPrice) setUpperPrice(maxPrice);
+                            if (upperPrice < lowerPrice) setUpperPrice(lowerPrice);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>                ) : (
                   <div className="mb-6 mt-4 transition-opacity duration-300">
                     <div className="text-base text-center text-gray-500">
                       {priceInitialized
@@ -438,39 +476,6 @@ export default function CategoryFilterMobile({
                     </div>
                   </div>
                 )}
-
-                <div className="flex justify-between gap-3 mb-4">
-                  <div className="w-1/2">
-                    <div className="text-sm text-gray-500 mb-2">Desde</div>
-                    <input
-                      disabled
-                      type="text"
-                      className="w-full border border-gray-300 rounded-md p-3 text-base transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
-                      placeholder={`$${formatPrice(minPrice)}`}
-                      value={`${formatPrice(lowerPrice)}`}
-                      onChange={handleLowerPriceChange}
-                      onBlur={() => {
-                        if (lowerPrice < minPrice) setLowerPrice(minPrice);
-                        if (lowerPrice > upperPrice) setLowerPrice(upperPrice);
-                      }}
-                    />
-                  </div>
-                  <div className="w-1/2">
-                    <div className="text-sm text-gray-500 mb-2">Hasta</div>
-                    <input
-                      disabled
-                      type="text"
-                      className="w-full border border-gray-300 rounded-md p-3 text-base transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
-                      placeholder={`${formatPrice(maxPrice)}`}
-                      value={`${formatPrice(upperPrice)}`}
-                      onChange={handleUpperPriceChange}
-                      onBlur={() => {
-                        if (upperPrice > maxPrice) setUpperPrice(maxPrice);
-                        if (upperPrice < lowerPrice) setUpperPrice(lowerPrice);
-                      }}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </div>

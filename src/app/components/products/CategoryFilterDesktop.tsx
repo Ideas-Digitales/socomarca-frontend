@@ -286,8 +286,7 @@ export default function CategoryFilterDesktop() {
             : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="w-full p-3">
-          {hasPriceRange ? (
+        <div className="w-full p-3">          {hasPriceRange ? (
             <div className="transition-opacity duration-300">
               <DualRangeSlider
                 min={minPrice}
@@ -295,7 +294,6 @@ export default function CategoryFilterDesktop() {
                 initialLower={lowerPrice}
                 initialUpper={upperPrice}
                 onChange={handlePriceRangeChange}
-                formatValue={formatPrice}
                 step={100}
               />
             </div>

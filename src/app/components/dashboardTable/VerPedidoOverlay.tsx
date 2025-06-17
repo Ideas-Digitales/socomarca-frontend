@@ -1,10 +1,6 @@
 import { TransaccionExitosa } from '@/mock/transaccionesExitosas';
 import { CartItem } from '@/interfaces/product.interface';
-import {
-  XMarkIcon,
-  ListBulletIcon,
-  ViewColumnsIcon,
-} from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import VerPedidoItemCard from './VerPedidoItemCard';
 import Pagination from '../global/Pagination';
 import { usePagination } from '@/hooks/usePagination';
@@ -94,14 +90,10 @@ export default function VerPedidoOverlay({
                   <h3 className="text-lg font-semibold">
                     Productos ({detailSelected.productos.length})
                   </h3>
-                  <div className="flex gap-2">
-                    <ListBulletIcon className="w-5 h-5 text-gray-400" />
-                    <ViewColumnsIcon className="w-5 h-5 text-gray-400" />
-                  </div>
                 </div>
 
                 {/* Lista de productos */}
-                <ul className="space-y-4 mb-6 max-h-[50dvh] overflow-y-auto">
+                <ul className="space-y-4 mb-6 max-h-[45dvh] md:max-h-[85dvh] overflow-y-auto">
                   {(paginatedItems as CartItem[])?.map((item: CartItem) => (
                     <VerPedidoItemCard key={item.id} cartItem={item} />
                   ))}
@@ -109,7 +101,7 @@ export default function VerPedidoOverlay({
 
                 {/* Paginación */}
                 {productPaginationMeta && changePage && (
-                  <div className="flex justify-center">
+                  <div className="flex justify-center w-full">
                     <Pagination
                       meta={productPaginationMeta}
                       onPageChange={changePage}
