@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { CartSlice, StoreState } from '../types';
 import {
+  fetchDeleteCart,
   fetchDeleteCartItem,
   fetchGetCart,
   fetchPostAddToCart,
@@ -135,7 +136,15 @@ export const createCartSlice: StateCreator<
     set({ cartProducts: updatedCart });
   },
 
-  clearCart: () => {
-    set({ cartProducts: [] });
+  clearCart: async () => {
+    const response = await fetchDeleteCart();
+    if (response.ok) {
+      set({
+        cartProducts: [],
+      });
+      return {
+        ok: true,
+      };
+    }
   },
 });

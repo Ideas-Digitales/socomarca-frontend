@@ -19,8 +19,7 @@ interface CategoryFilterMobileProps {
 export default function CategoryFilterMobile({
   isOpen,
   onClose,
-}: CategoryFilterMobileProps) {
-  const {
+}: CategoryFilterMobileProps) {  const {
     // Estados de datos
     categories,
     brands,
@@ -34,6 +33,7 @@ export default function CategoryFilterMobile({
     lowerPrice,
     upperPrice,
     priceInitialized,
+    showOnlyFavorites,
 
     // Estados de UI
     isMainCategoryOpen,
@@ -49,6 +49,7 @@ export default function CategoryFilterMobile({
     handlePriceRangeChange,
     initializePriceRange,
     fetchBrands, // Agregar fetchBrands
+    toggleShowOnlyFavorites,
 
     // Acciones de UI
     toggleMainCategory,
@@ -389,10 +390,20 @@ export default function CategoryFilterMobile({
                   ? 'max-h-[20vh] opacity-100'
                   : 'max-h-0 opacity-0'
               }`}
-            >
-              <div className="w-full p-4">
-                <div className="text-base text-center text-gray-500">
-                  Funcionalidad de favoritos próximamente
+            >              <div className="w-full p-4">
+                <div className="flex items-center gap-2">
+                  <input 
+                    id="favorite-checkbox-mobile" 
+                    type="checkbox" 
+                    checked={showOnlyFavorites}
+                    onChange={toggleShowOnlyFavorites}
+                  />
+                  <label
+                    htmlFor="favorite-checkbox-mobile"
+                    className="text-sm text-slate-500 cursor-pointer"
+                  >
+                    Mostrar solo favoritos
+                  </label>
                 </div>
               </div>
             </div>

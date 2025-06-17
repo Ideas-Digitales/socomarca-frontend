@@ -5,8 +5,7 @@ import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
 
-export default function CategoryFilterDesktop() {
-  const {
+export default function CategoryFilterDesktop() {  const {
     // Estados de datos
     categories,
     brands,
@@ -20,6 +19,7 @@ export default function CategoryFilterDesktop() {
     lowerPrice,
     upperPrice,
     priceInitialized,
+    showOnlyFavorites,
 
     // Estados de UI
     isMainCategoryOpen,
@@ -34,6 +34,7 @@ export default function CategoryFilterDesktop() {
     setUpperPrice,
     handlePriceRangeChange,
     initializePriceRange,
+    toggleShowOnlyFavorites,
 
     // Acciones de UI
     toggleMainCategory,
@@ -251,9 +252,13 @@ export default function CategoryFilterDesktop() {
         className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
           isFavoritesOpen ? 'max-h-[20dvh] opacity-100' : 'max-h-0 opacity-0'
         }`}
-      >
-        <div className="w-full p-3 flex items-center gap-2">
-          <input id="favorite-checkbox" type="checkbox" />
+      >        <div className="w-full p-3 flex items-center gap-2">
+          <input 
+            id="favorite-checkbox" 
+            type="checkbox" 
+            checked={showOnlyFavorites}
+            onChange={toggleShowOnlyFavorites}
+          />
           <label
             htmlFor="favorite-checkbox"
             className="text-sm text-slate-500 cursor-pointer"

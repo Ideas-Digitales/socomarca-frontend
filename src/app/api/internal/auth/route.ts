@@ -11,13 +11,6 @@ export async function GET(request: NextRequest) {
     const role = cookieStore.get('role')?.value;
     const userId = cookieStore.get('userId')?.value;
 
-    console.log('API Internal Auth - Cookies found:', {
-      hasToken: !!token,
-      role,
-      userId,
-      tokenLength: token?.length,
-    });
-
     // Si no hay datos de autenticación
     if (!token || !role) {
       return NextResponse.json(

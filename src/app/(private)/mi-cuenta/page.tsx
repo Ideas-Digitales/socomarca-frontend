@@ -2,300 +2,31 @@
 import { useState } from 'react';
 import Sidebar from '@/app/components/mi-cuenta/Sidebar';
 import { useRouter } from 'next/navigation';
-import DatosPersonalesForm from '@/app/components/mi-cuenta/DatosPersonalesForm';
-import DireccionesSection from '@/app/components/mi-cuenta/DireccionesSection';
-import FavoritosSection, {
-  ListaFavorita,
-} from '@/app/components/mi-cuenta/FavoritosSection';
-import ComprasSection from '@/app/components/mi-cuenta/ComprasSection';
-import DetalleCompra from '@/app/components/mi-cuenta/DetalleCompra';
-import ModalLogout from '@/app/components/mi-cuenta/ModalLogout';
-import ModalVerLista from '@/app/components/mi-cuenta/ModalVerLista';
-import ModalCrearLista from '@/app/components/mi-cuenta/ModalCrearLista';
-import ModalEditarDireccion from '@/app/components/mi-cuenta/ModalEditarDireccion';
+import FavoritosSection from '@/app/components/mi-cuenta/FavoritosSection';
 import DetalleListaSection from '@/app/components/mi-cuenta/DetalleListaSection';
+import ModalLogout from '@/app/components/mi-cuenta/ModalLogout';
+import ModalCrearLista from '@/app/components/mi-cuenta/ModalCrearLista';
 import { Suspense } from 'react';
 import SectionSync from '@/app/components/mi-cuenta/SectionSync';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const SECCIONES_VALIDAS = [
   'datos',
   'direcciones',
   'favoritos',
+  'detalle-lista',
   'compras',
   'detalle-compra',
-  'detalle-lista',
 ];
 export default function MiCuentaPage() {
   const [selected, setSelected] = useState('datos');
-  const [modalListaVisible, setModalListaVisible] = useState(false);
-  const [listaSeleccionada, setListaSeleccionada] = useState<any | null>(null);
   const [modalCrearListaVisible, setModalCrearListaVisible] = useState(false);
   const [nombreNuevaLista, setNombreNuevaLista] = useState('');
   const [errorNombreLista, setErrorNombreLista] = useState('');
   const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
-  const [regionSeleccionada, setRegionSeleccionada] = useState('');
-  const [comunaSeleccionada, setComunaSeleccionada] = useState('');
-  const [favoritaIndex, setFavoritaIndex] = useState<number | null>(null);
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any | null>(
-    null
-  );
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [formData, setFormData] = useState({
-    nombre: '',
-    primerApellido: '',
-    segundoApellido: '',
-    email: '',
-    telefono: '',
-    rut: '',
-  });
 
-  const [formErrors, setFormErrors] = useState({
-    nombre: '',
-    primerApellido: '',
-    segundoApellido: '',
-    email: '',
-    telefono: '',
-    rut: '',
-  });
-
-  const [listasFavoritas, setListasFavoritas] = useState<ListaFavorita[]>([
-    {
-      nombre: 'Pizzas',
-      productos: [
-        { nombre: 'Arroz granel', imagen: '/img/arroz.png', precio: 1190 },
-        { nombre: 'Fideos', imagen: '/img/arroz.png', precio: 990 },
-        { nombre: 'Aceite', imagen: '/img/arroz.png', precio: 3590 },
-      ],
-    },
-    {
-      nombre: 'Canasta mensual',
-      productos: [
-        { nombre: 'Café', imagen: '/img/arroz.png', precio: 1890 },
-        { nombre: 'Pan', imagen: '/img/arroz.png', precio: 890 },
-      ],
-    },
-  ]);
-
-  const agregarLista = (nuevaLista: ListaFavorita) => {
-    setListasFavoritas((prev) => [...prev, nuevaLista]);
-  };
-
-  const [busqueda, setBusqueda] = useState('');
-
-  const [compras] = useState([
-    {
-      fecha: '2 de diciembre',
-      numero: '123456789',
-      hora: '15:56',
-      total: 999999,
-      productos: [
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 299,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 3999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 9994,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 9599,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 9969,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 7,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 8,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 9,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 1,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 99999,
-          cantidad: 33,
-        },
-        {
-          nombre: 'Arroz Gl laminado 1 kg.',
-          marca: 'Miraflores',
-          imagen: '/img/arroz.png',
-          precio: 2,
-          cantidad: 33,
-        },
-      ],
-    },
-    {
-      fecha: '2 de diciembre',
-      numero: '456789123',
-      hora: '15:56',
-      total: 999999,
-      productos: [
-        {
-          nombre: 'Fideos 500g',
-          marca: 'Carozzi',
-          imagen: '/img/fideos.png',
-          precio: 1890,
-          cantidad: 2,
-        },
-      ],
-    },
-  ]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: '' })); // limpiar error al escribir
-  };
   const router = useRouter();
+  const { handleViewListDetail, clearSelectedList } = useFavorites();
 
   const handleSectionChange = (newSection: string) => {
     const currentParams = new URLSearchParams(window.location.search);
@@ -304,34 +35,20 @@ export default function MiCuentaPage() {
     setSelected(newSection);
   };
 
-  const validateForm = () => {
-    const errors: any = {};
-    if (!formData.nombre) errors.nombre = 'El nombre es requerido';
-    if (!formData.primerApellido)
-      errors.primerApellido = 'El primer apellido es requerido';
-    if (!formData.segundoApellido)
-      errors.segundoApellido = 'El segundo apellido es requerido';
-    if (!formData.email) {
-      errors.email = 'El correo es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Correo no válido';
+  const handleViewList = async (lista: any) => {
+    // Cargar el detalle de la lista
+    const result = await handleViewListDetail(lista.id);
+    if (result.ok) {
+      setSelected('detalle-lista');
+      handleSectionChange('detalle-lista');
+    } else {
+      console.error('Error al cargar detalle de lista:', result.error);
     }
-    if (!formData.telefono) {
-      errors.telefono = 'El teléfono es requerido';
-    } else if (!/^\d{9}$/.test(formData.telefono)) {
-      errors.telefono = 'Teléfono no válido (9 dígitos)';
-    }
-    if (!formData.rut) errors.rut = 'El RUT es requerido';
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      alert('Datos guardados correctamente');
-    }
+  const handleBackToFavorites = () => {
+    clearSelectedList();
+    setSelected('favoritos');
+    handleSectionChange('favoritos');
   };
 
   return (
@@ -349,81 +66,44 @@ export default function MiCuentaPage() {
               setSelected={setSelected}
               validSections={SECCIONES_VALIDAS}
             />
-          </Suspense>
-
-          <div className="flex-1 h-fit rounded-lg sm:p-6">
-            {selected === 'datos' && (
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-xl font-bold mb-4">Datos personales</h2>
-                <DatosPersonalesForm
-                  formData={formData}
-                  formErrors={formErrors}
-                  onChange={handleInputChange}
-                  onSubmit={handleSubmit}
-                  setFormData={setFormData}
-                />
-              </div>
-            )}
-
-            {/* Resto de secciones (direcciones, favoritos, compras...) igual que antes */}
-            {selected === 'direcciones' && (
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <DireccionesSection
-                  favoritaIndex={favoritaIndex}
-                  setFavoritaIndex={setFavoritaIndex}
-                  setModalAbierto={setModalAbierto}
-                />
-              </div>
-            )}
-            {selected === 'favoritos' && (
+          </Suspense>          <div className="flex-1 h-fit rounded-lg sm:p-6">            {selected === 'favoritos' && (
               <FavoritosSection
-                listasFavoritas={listasFavoritas}
-                setListaSeleccionada={setListaSeleccionada}
-                setModalListaVisible={setModalListaVisible}
                 setNombreNuevaLista={setNombreNuevaLista}
                 setErrorNombreLista={setErrorNombreLista}
                 setModalCrearListaVisible={setModalCrearListaVisible}
-                setSelected={setSelected}
+                onViewListDetail={handleViewList}
               />
             )}
-
-            {selected === 'detalle-lista' && listaSeleccionada && (
+            
+            {selected === 'detalle-lista' && (
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <DetalleListaSection
-                  lista={listaSeleccionada}
-                  onVolver={() => {
-                    setSelected('favoritos');
-                    const params = new URLSearchParams(window.location.search);
-                    params.set('section', 'favoritos');
-                    router.replace(`?${params.toString()}`, { scroll: false });
-                  }}
-                />
+                <DetalleListaSection onVolver={handleBackToFavorites} />
               </div>
             )}
-
-            {selected === 'compras' && (
-              <ComprasSection
-                compras={compras}
-                busqueda={busqueda}
-                setBusqueda={setBusqueda}
-                setPedidoSeleccionado={setPedidoSeleccionado}
-                setSelected={setSelected}
-                router={router}
-              />
+            
+            {selected === 'datos' && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-bold mb-4">Datos personales</h2>
+                <p>Sección temporalmente deshabilitada</p>
+              </div>
             )}
-            {selected === 'detalle-compra' && pedidoSeleccionado && (
-              <DetalleCompra pedido={pedidoSeleccionado} />
+            
+            {selected === 'direcciones' && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-bold mb-4">Direcciones</h2>
+                <p>Sección temporalmente deshabilitada</p>
+              </div>
+            )}
+            
+            {selected === 'compras' && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-bold mb-4">Compras</h2>
+                <p>Sección temporalmente deshabilitada</p>
+              </div>
             )}
           </div>
-        </div>
-        {modalLogoutVisible && (
+        </div>        {modalLogoutVisible && (
           <ModalLogout onClose={() => setModalLogoutVisible(false)} />
-        )}
-        {modalListaVisible && listaSeleccionada && (
-          <ModalVerLista
-            lista={listaSeleccionada}
-            onClose={() => setModalListaVisible(false)}
-          />
         )}
         {modalCrearListaVisible && (
           <ModalCrearLista
@@ -432,17 +112,6 @@ export default function MiCuentaPage() {
             error={errorNombreLista}
             setError={setErrorNombreLista}
             onClose={() => setModalCrearListaVisible(false)}
-            agregarLista={agregarLista}
-          />
-        )}
-
-        {modalAbierto && (
-          <ModalEditarDireccion
-            region={regionSeleccionada}
-            setRegion={setRegionSeleccionada}
-            comuna={comunaSeleccionada}
-            setComuna={setComunaSeleccionada}
-            onClose={() => setModalAbierto(false)}
           />
         )}
       </div>

@@ -2,52 +2,72 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import ModalConfirmacion from '../global/ModalConfirmacion';
 import ModalBase from '../global/ModalBase';
-
-export interface ProductoLista {
-  nombre: string;
-  descripcion?: string;
-  marca?: string;
-  imagen: string;
-  precio: number;
-  cantidad: number;
-}
-
-export interface ListaFavoritaDetalle {
-  nombre: string;
-  productos: ProductoLista[];
-}
+import { useFavorites } from '@/hooks/useFavorites';
+import { Favorite } from '@/interfaces/favorite.inteface';
 
 export default function DetalleListaSection({
-  lista,
   onVolver,
 }: {
-  lista: ListaFavoritaDetalle;
   onVolver: () => void;
 }) {
   const router = useRouter();
-  const [productos, setProductos] = useState(lista.productos);
+  const { selectedFavoriteList, isLoadingFavorites } = useFavorites();
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [productoAEliminar, setProductoAEliminar] = useState<number | null>(
     null
   );
   const [eliminarLista, setEliminarLista] = useState(false);
   const [modalEditarVisible, setModalEditarVisible] = useState(false);
-  const [nombreEditado, setNombreEditado] = useState(lista.nombre);
+  const [nombreEditado, setNombreEditado] = useState(selectedFavoriteList?.name || '');
   const [errorNombre, setErrorNombre] = useState('');
 
-  const cambiarCantidad = (index: number, cantidad: number) => {
-    setProductos((prev) =>
-      prev.map((p, i) => (i === index ? { ...p, cantidad } : p))
+  // Loading state
+  if (isLoadingFavorites) {
+    return (
+      <div className="h-fit">
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={onVolver}
+            className="text-gray-600 hover:underline text-sm mb-4"
+          >
+            ← Volver a favoritos
+          </button>
+          <div className="text-center py-8">
+            <p>Cargando...</p>
+          </div>
+        </div>
+      </div>
     );
-  };
-  // muetra en consola los productos
-  console.log(productos);
+  }
 
-  const eliminarProducto = (index: number) => {
-    setProductos((prev) => prev.filter((_, i) => i !== index));
+  // No selected list
+  if (!selectedFavoriteList) {
+    return (
+      <div className="h-fit">
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={onVolver}
+            className="text-gray-600 hover:underline text-sm mb-4"
+          >
+            ← Volver a favoritos
+          </button>
+          <div className="text-center py-8">
+            <p>No se ha seleccionado ninguna lista</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const favorites = selectedFavoriteList.favorites || [];
+  const eliminarProducto = (favoriteId: number) => {
+    // TODO: Implement delete product from favorites list
+    console.log('Eliminar producto con ID:', favoriteId);
   };
 
   return (
@@ -65,7 +85,7 @@ export default function DetalleListaSection({
             <button
               onClick={() => {
                 setModalEditarVisible(true);
-                setNombreEditado(lista.nombre);
+                setNombreEditado(selectedFavoriteList.name);
               }}
               className="flex items-center gap-1 hover:text-lime-600"
             >
@@ -86,64 +106,72 @@ export default function DetalleListaSection({
           </div>
         </div>
 
-        <h2 className="text-xl font-bold mb-6">Productos de {lista.nombre}</h2>
+        <h2 className="text-xl font-bold mb-6">Productos de {selectedFavoriteList.name}</h2>
 
-        <div className="space-y-4">
-          {productos.map((prod, idx) => (
-            <div
-              key={idx}
-              className="bg-slate-100 flex-col gap-4 justify-start rounded flex items-start sm:items-center sm:flex-row sm:justify-between border border-slate-200 px-4 py-2 shadow-sm"
-            >
-              <div className="flex items-center gap-4">
-                <input type="checkbox" />
-                <img
-                  src={prod.imagen}
-                  alt={prod.nombre}
-                  className="w-14 h-16 object-contain rounded"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = '/assets/global/logo_plant.png';
-                  }}
-                />
-                <div className="text-sm">
-                  <p className="font-semibold">{prod.nombre}</p>
-                  <p className="text-gray-500">{prod.descripcion || ''}</p>
+        {favorites.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Esta lista no tiene productos</p>
+          </div>
+        ) : (          <div className="space-y-4">
+            {favorites.map((favorite: Favorite) => (
+              <div
+                key={favorite.id}
+                className="bg-slate-100 flex-col gap-4 justify-start rounded flex items-start sm:items-center sm:flex-row sm:justify-between border border-slate-200 px-4 py-2 shadow-sm"
+              >
+                <div className="flex items-center gap-4">
+                  <input type="checkbox" />                  <Image
+                    src="/assets/global/logo_plant.png"
+                    alt={favorite.product.name}
+                    width={56}
+                    height={64}
+                    className="object-contain rounded"
+                  />
+                  <div className="text-sm">
+                    <p className="font-semibold">{favorite.product.name}</p>
+                    <p className="text-gray-500">{favorite.product.description || ''}</p>
+                    <p className="text-xs text-gray-400">SKU: {favorite.product.sku}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 justify-end w-full">
+                  <div className="flex items-center rounded px-2">
+                    <button
+                      onClick={() => {
+                        // TODO: Implement quantity change
+                        console.log('Cambiar cantidad');
+                      }}
+                      className="px-2 text-gray-700 bg-white border border-gray-300 rounded"
+                    >
+                      -
+                    </button>
+                    <span className="px-2">1</span>
+                    <button
+                      onClick={() => {
+                        // TODO: Implement quantity change
+                        console.log('Cambiar cantidad');
+                      }}
+                      className="px-2 text-gray-700 border border-gray-300 rounded bg-white"
+                    >
+                      +
+                    </button>
+                  </div>                  <span className="font-bold text-gray-700">
+                    Sin precio
+                  </span>
+
+                  <button
+                    onClick={() => {
+                      setProductoAEliminar(favorite.id);
+                      setModalVisible(true);
+                    }}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-4 justify-end w-full">
-                <div className="flex items-center rounded px-2">
-                  <button
-                    onClick={() =>
-                      cambiarCantidad(idx, Math.max(prod.cantidad - 1, 1))
-                    }
-                    className="px-2 text-gray-700 bg-white border border-gray-300 rounded"
-                  >
-                    -
-                  </button>
-                  <span className="px-2">{prod.cantidad}</span>
-                  <button
-                    onClick={() => cambiarCantidad(idx, prod.cantidad + 1)}
-                    className="px-2 text-gray-700 border border-gray-300 rounded bg-white"
-                  >
-                    +
-                  </button>
-                </div>
-                <span className="font-bold text-gray-700">${prod.precio}</span>
-
-                <button
-                  onClick={() => {
-                    setProductoAEliminar(idx);
-                    setModalVisible(true);
-                  }}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <TrashIcon className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-8">
           <button
@@ -153,8 +181,7 @@ export default function DetalleListaSection({
             Agregar al carro
           </button>
         </div>
-      </div>
-      <ModalConfirmacion
+      </div>      <ModalConfirmacion
         isOpen={modalVisible}
         titulo={
           eliminarLista ? '¿Eliminar lista completa?' : '¿Eliminar producto?'
@@ -163,7 +190,7 @@ export default function DetalleListaSection({
           eliminarLista
             ? 'Esta acción eliminará la lista y todos sus productos.'
             : productoAEliminar !== null 
-              ? `"${productos[productoAEliminar]?.nombre}" se quitará de tu lista.`
+              ? `El producto se quitará de tu lista.`
               : '¿Estás seguro que deseas eliminar este producto?'
         }
         onCancel={() => {
@@ -173,8 +200,9 @@ export default function DetalleListaSection({
         }}
         onConfirm={() => {
           if (eliminarLista) {
-            // lógica de eliminación de la lista
-            router.push('/mi-cuenta?section=favoritos');
+            // TODO: lógica de eliminación de la lista
+            console.log('Eliminar lista completa');
+            onVolver();
           } else if (productoAEliminar !== null) {
             eliminarProducto(productoAEliminar);
           }
@@ -196,7 +224,7 @@ export default function DetalleListaSection({
               return;
             }
 
-            // Aquí puedes actualizar el nombre de la lista en tu store o backend
+            // TODO: Aquí puedes actualizar el nombre de la lista en tu store o backend
             console.log('Nuevo nombre:', nombreEditado);
             setModalEditarVisible(false);
           }}

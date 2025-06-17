@@ -105,7 +105,6 @@ export default async function middleware(request: NextRequest) {
   // ========== MANEJAR RUTA RAÍZ ==========
   if (pathname === '/') {
     if (!authData.authenticated) {
-      console.log('Middleware - Not authenticated, redirecting to login');
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
@@ -114,7 +113,6 @@ export default async function middleware(request: NextRequest) {
     // Validar token para ruta raíz
     const tokenValidation = await getAuthData(request, true);
     if (!tokenValidation.authenticated) {
-      console.log('Middleware - Token invalid, clearing and redirecting');
       await clearAuthCookies(request);
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
@@ -122,27 +120,23 @@ export default async function middleware(request: NextRequest) {
     // Redirigir según el rol
     switch (userRole) {
       case 'cliente':
-        console.log('Middleware - Cliente accessing root, allowing');
         return NextResponse.next();
       case 'admin':
-        console.log('Middleware - Admin redirecting to dashboard');
         return NextResponse.redirect(
           new URL('/admin/total-de-ventas', request.url)
         );
       case 'superadmin':
-        console.log('Middleware - Superadmin redirecting to dashboard');
         return NextResponse.redirect(
           new URL('/super-admin/users', request.url)
         );
       default:
-        console.log('Middleware - Unknown role, redirecting to login');
+
         return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }
 
   // ========== VERIFICAR AUTENTICACIÓN PARA OTRAS RUTAS ==========
   if (!authData.authenticated) {
-    console.log('Middleware - Not authenticated for protected route');
     const isAdminRoute =
       pathname.startsWith('/admin') || pathname.startsWith('/super-admin');
     const loginUrl = isAdminRoute ? '/auth/login-admin' : '/auth/login';
@@ -166,7 +160,6 @@ export default async function middleware(request: NextRequest) {
     const tokenValidation = await getAuthData(request, true);
 
     if (!tokenValidation.authenticated) {
-      console.log('Middleware - Token invalid for critical path');
       await clearAuthCookies(request);
 
       const isAdminRoute =
