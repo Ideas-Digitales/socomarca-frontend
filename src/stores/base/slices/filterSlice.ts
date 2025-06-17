@@ -240,13 +240,30 @@ export const createFiltersSlice: StateCreator<
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedCategories.includes(product.category.id)
           );
-        }
-
-        // Filtrar por múltiples marcas
+        }        // Filtrar por múltiples marcas
         if (selectedBrands.length > 1) {
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedBrands.includes(product.brand.id)
           );
+        }
+
+        // Filtrar por favoritos
+        if (selectedFavorites.length > 0) {
+          // Implementar lógica de favoritos cuando esté disponible
+        }
+
+        // Filtrar por rango de precios
+        if (lowerPrice !== minPrice || upperPrice !== maxPrice) {
+          filteredProducts = filteredProducts.filter((product: Product) => {
+            let price = product.price;
+            
+            // Convertir string a number si es necesario
+            if (typeof price === 'string') {
+              price = parseFloat((price as string).replace(/[^\d.,]/g, '').replace(',', '.'));
+            }
+            
+            return price >= lowerPrice && price <= upperPrice;
+          });
         }
 
         // Filtrar por favoritos
@@ -340,7 +357,6 @@ export const createFiltersSlice: StateCreator<
       isPriceOpen: true,
     });
   },
-
   // Verificar si hay filtros activos
   hasActiveFilters: () => {
     const {
@@ -360,5 +376,21 @@ export const createFiltersSlice: StateCreator<
       lowerPrice !== minPrice ||
       upperPrice !== maxPrice
     );
+  },
+
+  // Filtrar productos por marcas (función adicional si se necesita)
+  filterProductsByBrands: () => {
+    const { products, selectedBrands } = get();
+    
+    if (selectedBrands.length === 0) {
+      set({ filteredProducts: products });
+      return;
+    }
+    
+    const filteredProducts = products.filter((product: Product) =>
+      selectedBrands.includes(product.brand.id)
+    );
+    
+    set({ filteredProducts });
   },
 });

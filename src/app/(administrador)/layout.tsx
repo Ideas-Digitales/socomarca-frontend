@@ -85,7 +85,7 @@ export default function AdminLayout({
 
           <main
             className={`flex-grow relative w-full ${
-              !isTablet && userRole === 'admin' ? 'py-[88px]' : 'py-[30px]'
+              !isTablet && userRole === 'admin' ? 'sm:py-[88px]' : 'sm:py-[30px] mt-[80px]'
             }`}
           >
             {children}

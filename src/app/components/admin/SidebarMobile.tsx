@@ -202,7 +202,7 @@ export default function SidebarMobile({ configType }: SidebarMobileProps) {
         </div>
 
         {/* Items del menú */}
-        <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto py-2 scrollbar-hide max-h-[90vh]">
           {currentSidebarConfig.items.map((item, index) => {
             const IconComponent = item.icon;
             const isActive = isMenuActive(index);

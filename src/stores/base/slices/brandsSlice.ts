@@ -26,8 +26,7 @@ export const createBrandsSlice: StateCreator<
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
         set({ isLoading: false });
-      }
-    } catch (error) {
+      }    } catch (error) {
       console.error('Error fetching brands:', error);
       set({ isLoading: false });
     }

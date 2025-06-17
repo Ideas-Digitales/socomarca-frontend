@@ -107,12 +107,14 @@ export interface FiltersSlice {
   toggleBrandsSection: () => void;
   toggleFavoritesSection: () => void;
   togglePriceSection: () => void;
-
   // Acciones principales
   applyFilters: () => void;
   clearAllFilters: () => void;
   resetFiltersState: () => void;
   hasActiveFilters: () => boolean;
+
+  // Filtrar productos por marcas
+  filterProductsByBrands: () => void;
 }
 
 // Estado base del store
