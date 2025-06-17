@@ -13,5 +13,5 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
-          -d "{\"content\": \"🚀 Nuevo push a la rama main del repo **${{ github.repository }}** por **${{ github.actor }}**.\", \"username\": \"GitHub Bot\"}" \
+          -d "{\"content\": \"🚀 Nuevo push a la rama deploy del repo **${{ github.repository }}** por **${{ github.actor }}**.\", \"username\": \"GitHub Bot\"}" \
           ${{ secrets.DISCORD_WEBHOOK_URL }}
