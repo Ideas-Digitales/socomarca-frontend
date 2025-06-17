@@ -19,7 +19,6 @@ jobs:
           BRANCH_NAME="${{ github.ref_name }}"
           COMMIT_MESSAGE="$(git log -1 --pretty=%B)"
           COMMIT_URL="https://github.com/${REPO_NAME}/commit/${{ github.sha }}"
-          COMMITS_COUNT="${{ github.event.commits | size }}"
 
           curl -H "Content-Type: application/json" \
             -X POST \
