@@ -1,9 +1,9 @@
-name: Notify Discord on develop push
+name: Notify Discord on main push
 
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
   notify:
