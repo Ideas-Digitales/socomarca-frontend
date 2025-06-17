@@ -1,4 +1,4 @@
-name: Notify Discord on push to develop
+name: Notify Discord on main push
 
 on:
   push:
@@ -8,28 +8,10 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Send push notification to Discord
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      - name: Send Discord notification
         run: |
-          AUTHOR_NAME="${{ github.actor }}"
-          REPO_NAME="${{ github.repository }}"
-          BRANCH_NAME="${{ github.ref_name }}"
-          COMMIT_MESSAGE="$(git log -1 --pretty=%B)"
-          COMMIT_URL="https://github.com/${REPO_NAME}/commit/${{ github.sha }}"
-
           curl -H "Content-Type: application/json" \
-            -X POST \
-            -d "{
-              \"username\": \"GitHub Bot\",
-              \"embeds\": [{
-                \"title\": \"🚀 Push a *${BRANCH_NAME}* en *${REPO_NAME}*\",
-                \"description\": \"**Autor:** ${AUTHOR_NAME}\n**Commits enviados:** ${COMMITS_COUNT}\n**Último commit:** [${COMMIT_MESSAGE}](${COMMIT_URL})\",
-                \"color\": 5814783,
-                \"footer\": { \"text\": \"GitHub Actions - Notificación automática\" },
-                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
-              }]
-            }" \
-            $DISCORD_WEBHOOK_URL
+          -X POST \
+          -d "{\"content\": \"🚀 Nuevo push a la rama deploy del repo **${{ github.repository }}** por **${{ github.actor }}**.\", \"username\": \"GitHub Bot\"}" \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
