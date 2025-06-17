@@ -1,4 +1,4 @@
-name: Notify Discord on main push
+name: Notify Discord on develop push
 
 on:
   push:
@@ -13,5 +13,11 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
-          -d "{\"content\": \"🚀 Nuevo push a la rama deploy del repo **${{ github.repository }}** por **${{ github.actor }}**.\", \"username\": \"GitHub Bot\"}" \
+          -d "{
+            \"content\": \"🚀 Nuevo push a la rama **main** del repo **${{ github.repository }}** por **${{ github.actor }}**.
+👉 [Ver commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+📄 Mensaje: *${{ github.event.head_commit.message }}*
+🔑 SHA: \`${{ github.sha }}\`\",
+            \"username\": \"GitHub Bot\"
+          }" \
           ${{ secrets.DISCORD_WEBHOOK_URL }}
