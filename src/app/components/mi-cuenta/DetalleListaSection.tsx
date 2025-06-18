@@ -16,14 +16,16 @@ export default function DetalleListaSection({
 }) {
   const router = useRouter();
   const { selectedFavoriteList, isLoadingFavorites } = useFavorites();
-  
+
   const [modalVisible, setModalVisible] = useState(false);
   const [productoAEliminar, setProductoAEliminar] = useState<number | null>(
     null
   );
   const [eliminarLista, setEliminarLista] = useState(false);
   const [modalEditarVisible, setModalEditarVisible] = useState(false);
-  const [nombreEditado, setNombreEditado] = useState(selectedFavoriteList?.name || '');
+  const [nombreEditado, setNombreEditado] = useState(
+    selectedFavoriteList?.name || ''
+  );
   const [errorNombre, setErrorNombre] = useState('');
 
   // Loading state
@@ -106,20 +108,24 @@ export default function DetalleListaSection({
           </div>
         </div>
 
-        <h2 className="text-xl font-bold mb-6">Productos de {selectedFavoriteList.name}</h2>
+        <h2 className="text-xl font-bold mb-6">
+          Productos de {selectedFavoriteList.name}
+        </h2>
 
         {favorites.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">Esta lista no tiene productos</p>
           </div>
-        ) : (          <div className="space-y-4">
+        ) : (
+          <div className="space-y-4">
             {favorites.map((favorite: Favorite) => (
               <div
                 key={favorite.id}
                 className="bg-slate-100 flex-col gap-4 justify-start rounded flex items-start sm:items-center sm:flex-row sm:justify-between border border-slate-200 px-4 py-2 shadow-sm"
               >
                 <div className="flex items-center gap-4">
-                  <input type="checkbox" />                  <Image
+                  <input type="checkbox" />{' '}
+                  <Image
                     src="/assets/global/logo_plant.png"
                     alt={favorite.product.name}
                     width={56}
@@ -128,8 +134,9 @@ export default function DetalleListaSection({
                   />
                   <div className="text-sm">
                     <p className="font-semibold">{favorite.product.name}</p>
-                    <p className="text-gray-500">{favorite.product.description || ''}</p>
-                    <p className="text-xs text-gray-400">SKU: {favorite.product.sku}</p>
+                    <p className="text-gray-500">
+                      {favorite.product.description || ''}
+                    </p>
                   </div>
                 </div>
 
@@ -154,10 +161,8 @@ export default function DetalleListaSection({
                     >
                       +
                     </button>
-                  </div>                  <span className="font-bold text-gray-700">
-                    Sin precio
-                  </span>
-
+                  </div>{' '}
+                  {/* <span className="font-bold text-gray-700">{favorite.price}</span> */}
                   <button
                     onClick={() => {
                       setProductoAEliminar(favorite.id);
@@ -181,7 +186,8 @@ export default function DetalleListaSection({
             Agregar al carro
           </button>
         </div>
-      </div>      <ModalConfirmacion
+      </div>{' '}
+      <ModalConfirmacion
         isOpen={modalVisible}
         titulo={
           eliminarLista ? '¿Eliminar lista completa?' : '¿Eliminar producto?'
@@ -189,9 +195,9 @@ export default function DetalleListaSection({
         descripcion={
           eliminarLista
             ? 'Esta acción eliminará la lista y todos sus productos.'
-            : productoAEliminar !== null 
-              ? `El producto se quitará de tu lista.`
-              : '¿Estás seguro que deseas eliminar este producto?'
+            : productoAEliminar !== null
+            ? `El producto se quitará de tu lista.`
+            : '¿Estás seguro que deseas eliminar este producto?'
         }
         onCancel={() => {
           setModalVisible(false);

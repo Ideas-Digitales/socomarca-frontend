@@ -30,6 +30,7 @@ export const useFavorites = () => {
     fetchFavorites,
     setSelectedFavoriteList,
     createFavoriteList,
+    addProductToFavoriteList,
     openModal,
     closeModal
   } = useStore();
@@ -62,7 +63,6 @@ export const useFavorites = () => {
     const result = await createFavoriteList(name);
     return result;
   }, [createFavoriteList]);
-
   // Función para abrir el modal con las listas actualizadas
   const openListsModal = useCallback(
     (product: Product, currentLists: FavoriteList[]) => {
@@ -72,9 +72,21 @@ export const useFavorites = () => {
         name: list.name
       }));
 
-      const handleListSelection = (listId: string) => {
-        console.log(`Producto ${product.name} agregado a la lista ${listId}`);
-        // Aquí puedes agregar la lógica real para agregar a la lista
+      const handleListSelection = async (listId: string) => {
+        try {
+          console.log(`Agregando producto ${product.name} a la lista ${listId}`);
+          const result = await addProductToFavoriteList(parseInt(listId), product.id);
+          
+          if (result.ok) {
+            console.log('Producto agregado exitosamente a la lista');
+            // Actualizar el estado local de favoritos
+            setFavorites(prev => new Set(prev).add(product.id));
+          } else {
+            console.error('Error agregando producto a la lista:', result.error);
+          }
+        } catch (error) {
+          console.error('Error agregando producto a la lista:', error);
+        }
       };
 
       const handleCreateNewList = async (newListName: string) => {
@@ -92,10 +104,8 @@ export const useFavorites = () => {
         }
         
         closeModal();
-      };
-
-      const handleSave = () => {
-        console.log('Guardar cambios en listas');
+      };      const handleSave = () => {
+        console.log('Guardar cambios en listas - operación completada');
         closeModal();
       };
 
@@ -118,7 +128,7 @@ export const useFavorites = () => {
           />
         ),
       });
-    },    [openModal, closeModal, handleCreateList]
+    },    [openModal, closeModal, handleCreateList, addProductToFavoriteList]
   );
   const handleAddToList = (product: Product) => {
     openListsModal(product, favoriteLists);

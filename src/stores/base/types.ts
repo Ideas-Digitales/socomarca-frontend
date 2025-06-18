@@ -286,6 +286,7 @@ export interface FavoritesSlice {
   // Acciones
   fetchFavorites: () => Promise<void>;
   createFavoriteList: (name: string) => Promise<{ ok: boolean; error?: string }>;
+  addProductToFavoriteList: (favoriteListId: number, productId: number) => Promise<{ ok: boolean; error?: string }>;
   setSelectedFavoriteList: (list: any | null) => void;
   setShowOnlyFavorites: (show: boolean) => void;
   toggleShowOnlyFavorites: () => void;

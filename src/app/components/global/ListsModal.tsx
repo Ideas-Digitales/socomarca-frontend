@@ -29,6 +29,27 @@ const ListsModal = ({
     'lists'
   );
   const [newListName, setNewListName] = useState('');
+  const [selectedListIds, setSelectedListIds] = useState<Set<string>>(new Set());
+
+  const handleListToggle = (listId: string) => {
+    setSelectedListIds(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(listId)) {
+        newSelected.delete(listId);
+      } else {
+        newSelected.add(listId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSaveSelections = async () => {
+    // Agregar el producto a todas las listas seleccionadas
+    for (const listId of selectedListIds) {
+      await onAddToList(listId);
+    }
+    onSave();
+  };
 
   const handleCreateNewList = () => {
     if (newListName.trim() === '') {
@@ -96,10 +117,14 @@ const ListsModal = ({
               htmlFor={`product-${list.id}`}
               className="cursor-pointer hover:bg-slate-100 ease-in-out duration-300 transition-colors"
               key={list.id}
-              onClick={() => onAddToList(list.id)}
             >
               <li className="flex items-center px-2 py-4 gap-4 ">
-                <input id={`product-${list.id}`} type="checkbox" />
+                <input 
+                  id={`product-${list.id}`} 
+                  type="checkbox" 
+                  checked={selectedListIds.has(list.id)}
+                  onChange={() => handleListToggle(list.id)}
+                />
                 <span>{list.name}</span>
               </li>
               <HR />
@@ -128,7 +153,8 @@ const ListsModal = ({
         </button>
         <button
           className="bg-lime-500 text-white hover:bg-lime-600 transition-colors ease-in-out duration-300 px-12 py-3 cursor-pointer rounded"
-          onClick={onSave}
+          onClick={handleSaveSelections}
+          disabled={selectedListIds.size === 0}
         >
           Guardar
         </button>

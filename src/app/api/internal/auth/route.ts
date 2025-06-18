@@ -3,10 +3,10 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  const validateToken = request.nextUrl.searchParams.get('validate') === 'true';
+
   try {
     const cookieStore = await cookies();
-
-    // Leer todas las cookies de autenticación
     const token = cookieStore.get('token')?.value;
     const role = cookieStore.get('role')?.value;
     const userId = cookieStore.get('userId')?.value;
@@ -22,10 +22,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validar el token con el backend si es necesario
-    const validateToken =
-      request.nextUrl.searchParams.get('validate') === 'true';
-
     if (validateToken) {
       try {
         const response = await fetch(
@@ -39,7 +35,6 @@ export async function GET(request: NextRequest) {
             signal: AbortSignal.timeout(3000),
           }
         );
-
 
         if (!response.ok) {
           return NextResponse.json(
