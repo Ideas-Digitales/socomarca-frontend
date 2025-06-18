@@ -53,17 +53,27 @@ export const fetchLogin = async (
 
     const data = await response.json();
 
-    // Almacenar el token en cookies
 
+      // Almacenar el token y datos del usuario en cookies
     const { token, user } = data;
     const roles = user?.roles || [];
     const userId = String(user?.id || null);
 
     console.log('Datos de usuario:', userId);
-    if (token) {
+    if (token && user) {
       setCookie(token, 'token');
       setCookie(roles.join(','), 'role');
       setCookie(userId, 'userId');
+      
+      // Guardar datos completos del usuario como JSON
+      const userData = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        rut: user.rut,
+        roles: user.roles || [],
+      };
+      setCookie(JSON.stringify(userData), 'userData');
     }
 
     if (!token || !data.user) {
@@ -149,11 +159,11 @@ export async function logoutAction() {
 
     if (!response.ok) {
       console.error('Failed to revoke token', await response.text());
-    }
-
-    // Opcional: eliminar la cookie si la setea el frontend
+    }    // Opcional: eliminar la cookie si la setea el frontend
     deleteCookie('token');
     deleteCookie('role');
+    deleteCookie('userId');
+    deleteCookie('userData');
   } catch (error) {
     console.error('Logout failed:', error);
   }

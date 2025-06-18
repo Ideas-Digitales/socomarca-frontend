@@ -143,15 +143,6 @@ export const getSidebarConfig = (
     },
   ];
 
-  // Debug: verificar qué items se están agregando
-  console.log('🔧 Items Debug:', {
-    userRole,
-    isSuperadmin: userRole === 'superadmin',
-    superAdminItemsLength: superAdminItems.length,
-    willAddSuperAdminItems: userRole === 'superadmin',
-  });
-
-  // Item de cerrar sesión (siempre presente)
   const logoutItem = {
     id: 'cerrar-sesion',
     label: 'Cerrar sesión',
@@ -164,7 +155,6 @@ export const getSidebarConfig = (
     },
   };
 
-  // Construir la configuración final usando el userRole pasado como parámetro
   const items = [
     ...baseItems,
     ...(userRole === 'superadmin' ? superAdminItems : []),

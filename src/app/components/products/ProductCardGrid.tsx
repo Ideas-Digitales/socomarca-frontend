@@ -26,11 +26,9 @@ export default function ProductCardGrid({ product }: Props) {
     img.onerror = () => {
       setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
-  }, [product.image]);
-
-  const handleSetFavorite = () => {
-    if (isFavorite(product.id)) {
-      toggleFavorite(product.id);
+  }, [product.image]);  const handleSetFavorite = async () => {
+    if (isFavorite(product.id, product)) {
+      await toggleFavorite(product.id);
     } else {
       handleAddToList(product);
     }
@@ -98,7 +96,7 @@ export default function ProductCardGrid({ product }: Props) {
     return text;
   };
 
-  const isProductFavorite = isFavorite(product.id);
+  const isProductFavorite = isFavorite(product.id, product);
 
   return (
     <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b relative">
@@ -107,9 +105,7 @@ export default function ProductCardGrid({ product }: Props) {
         <div
           className="w-full bg-contain bg-no-repeat bg-center h-[87px]"
           style={{ backgroundImage }}
-        />
-
-        {/* Botón de favorito */}
+        />        {/* Botón de favorito */}
         <div className="rounded-full bg-slate-100 items-center justify-center flex p-[6px] absolute top-2 right-2">
           {!isProductFavorite ? (
             <HeartIcon

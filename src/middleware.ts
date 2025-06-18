@@ -24,12 +24,13 @@ function cleanupCache() {
       authCache.delete(key);
     }
   }
-  
+
   // Si el cache sigue siendo muy grande, eliminar las entradas más viejas
   if (authCache.size > MAX_CACHE_SIZE) {
-    const entries = Array.from(authCache.entries())
-      .sort((a, b) => a[1].timestamp - b[1].timestamp);
-    
+    const entries = Array.from(authCache.entries()).sort(
+      (a, b) => a[1].timestamp - b[1].timestamp
+    );
+
     const toDelete = entries.slice(0, authCache.size - MAX_CACHE_SIZE);
     toDelete.forEach(([key]) => authCache.delete(key));
   }
@@ -39,21 +40,23 @@ function cleanupCache() {
 async function getAuthData(
   request: NextRequest,
   validateToken = false
-): Promise<AuthData> {  // Limpiar cache periódicamente
-  if (Math.random() < 0.1) { // 10% de probabilidad
+): Promise<AuthData> {
+  // Limpiar cache periódicamente
+  if (Math.random() < 0.1) {
+    // 10% de probabilidad
     cleanupCache();
   }
-  
+
   // Crear clave de cache basada en cookies y validación
   const cookies = request.headers.get('cookie') || '';
   const cacheKey = `${cookies}-${validateToken}`;
-  
+
   // Verificar cache
   const cached = authCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
     return cached.data;
   }
-  
+
   try {
     const url = new URL('/api/internal/auth', request.url);
     if (validateToken) {
@@ -64,29 +67,31 @@ async function getAuthData(
       headers: {
         Cookie: request.headers.get('cookie') || '',
       },
-    });    if (!response.ok) {
+    });
+    if (!response.ok) {
       const data = await response.json();
       const authData = {
         authenticated: false,
         reason: data.reason || 'Auth check failed',
       };
-      
+
       // Cache negative result for shorter time
       authCache.set(cacheKey, { data: authData, timestamp: Date.now() });
       return authData;
     }
 
     const authData = await response.json();
-      // Cache successful result
+    // Cache successful result
     authCache.set(cacheKey, { data: authData, timestamp: Date.now() });
-    
-    return authData;} catch (error) {
+
+    return authData;
+  } catch (error) {
     console.error('Middleware - Error checking auth:', error);
     const authData = {
       authenticated: false,
       reason: 'Internal error',
     };
-    
+
     // Cache error result
     authCache.set(cacheKey, { data: authData, timestamp: Date.now() });
     return authData;
@@ -112,12 +117,12 @@ async function clearAuthCookies(request: NextRequest): Promise<void> {
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const method = request.method;
-  
+
   // Saltar middleware en modo QA
   if (process.env.QA_MODE === 'true') {
     return NextResponse.next();
   }
-  
+
   // ========== RUTAS COMPLETAMENTE PÚBLICAS ==========
   const publicPaths = [
     '/auth/login',
@@ -158,8 +163,8 @@ export default async function middleware(request: NextRequest) {
     '/mi-cuenta',
     '/mis-compras',
   ];
-  const needsTokenValidation = criticalPaths.some((path) =>
-    pathname === path || pathname.startsWith(path)
+  const needsTokenValidation = criticalPaths.some(
+    (path) => pathname === path || pathname.startsWith(path)
   );
 
   // ========== OBTENER DATOS DE AUTENTICACIÓN (UNA SOLA VEZ) ==========
@@ -168,7 +173,7 @@ export default async function middleware(request: NextRequest) {
   // ========== VERIFICAR AUTENTICACIÓN ==========
   if (!authData.authenticated) {
     await clearAuthCookies(request);
-    
+
     const isAdminRoute =
       pathname.startsWith('/admin') || pathname.startsWith('/super-admin');
     const loginUrl = isAdminRoute ? '/auth/login-admin' : '/auth/login';

@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { FavoritesSlice, StoreState } from '../types';
-import { fetchGetFavoriteLists, fetchCreateFavoriteList, fetchAddProductToFavoriteList } from '@/services/actions/favorite.actions';
+import { fetchGetFavoriteLists, fetchCreateFavoriteList, fetchAddProductToFavoriteList, fetchRemoveProductFromFavorites } from '@/services/actions/favorite.actions';
 
 export const createFavoritesSlice: StateCreator<
   StoreState & FavoritesSlice,
@@ -78,6 +78,30 @@ export const createFavoritesSlice: StateCreator<
       }
     } catch (error) {
       console.error('Error in addProductToFavoriteList:', error);
+      set({ isLoadingFavorites: false });
+      return { ok: false, error: 'Error desconocido' };
+    }
+  },
+
+  removeProductFromFavorites: async (productId: number) => {
+    try {
+      set({ isLoadingFavorites: true });
+      
+      const response = await fetchRemoveProductFromFavorites(productId);
+      
+      if (response.ok) {
+        // Recargar las listas después de remover el producto
+        const { fetchFavorites } = get();
+        await fetchFavorites();
+        set({ isLoadingFavorites: false });
+        return { ok: true };
+      } else {
+        console.error('Error removing product from favorites:', response.error);
+        set({ isLoadingFavorites: false });
+        return { ok: false, error: response.error || 'Error desconocido' };
+      }
+    } catch (error) {
+      console.error('Error in removeProductFromFavorites:', error);
       set({ isLoadingFavorites: false });
       return { ok: false, error: 'Error desconocido' };
     }

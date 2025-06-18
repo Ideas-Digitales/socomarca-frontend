@@ -1,15 +1,14 @@
-// app/api/internal/auth/route.ts
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const validateToken = request.nextUrl.searchParams.get('validate') === 'true';
-
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     const role = cookieStore.get('role')?.value;
     const userId = cookieStore.get('userId')?.value;
+    const userData = cookieStore.get('userData')?.value;
 
     // Si no hay datos de autenticación
     if (!token || !role) {
@@ -55,14 +54,24 @@ export async function GET(request: NextRequest) {
           { status: 500 }
         );
       }
+    }    // Retornar datos de autenticación
+    let userDetails = null;
+    
+    // Intentar parsear los datos del usuario desde la cookie
+    if (userData) {
+      try {
+        userDetails = JSON.parse(userData);
+      } catch (error) {
+        console.error('Error parsing user data from cookie:', error);
+      }
     }
 
-    // Retornar datos de autenticación
     return NextResponse.json({
       authenticated: true,
       user: {
         role,
         userId,
+        ...userDetails,
       },
     });
   } catch (error) {
@@ -77,18 +86,16 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST para limpiar cookies cuando sea necesario
 export async function POST(request: NextRequest) {
   try {
     const { action } = await request.json();
 
     if (action === 'clear') {
       const response = NextResponse.json({ success: true });
-
-      // Limpiar todas las cookies de autenticación
       response.cookies.delete('token');
       response.cookies.delete('role');
       response.cookies.delete('userId');
+      response.cookies.delete('userData');
 
       return response;
     }
