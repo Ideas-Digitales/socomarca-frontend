@@ -11,11 +11,49 @@ interface AuthData {
   reason?: string;
 }
 
+// Cache simple para evitar llamadas redundantes durante el mismo ciclo de solicitud
+const authCache = new Map<string, { data: AuthData; timestamp: number }>();
+const CACHE_DURATION = 5000; // 5 segundos para reducir aún más las llamadas
+const MAX_CACHE_SIZE = 100; // Limitar el tamaño del cache
+
+// Función para limpiar cache viejo
+function cleanupCache() {
+  const now = Date.now();
+  for (const [key, value] of authCache.entries()) {
+    if (now - value.timestamp > CACHE_DURATION) {
+      authCache.delete(key);
+    }
+  }
+  
+  // Si el cache sigue siendo muy grande, eliminar las entradas más viejas
+  if (authCache.size > MAX_CACHE_SIZE) {
+    const entries = Array.from(authCache.entries())
+      .sort((a, b) => a[1].timestamp - b[1].timestamp);
+    
+    const toDelete = entries.slice(0, authCache.size - MAX_CACHE_SIZE);
+    toDelete.forEach(([key]) => authCache.delete(key));
+  }
+}
+
 // Función para obtener datos de autenticación desde la API interna
 async function getAuthData(
   request: NextRequest,
   validateToken = false
-): Promise<AuthData> {
+): Promise<AuthData> {  // Limpiar cache periódicamente
+  if (Math.random() < 0.1) { // 10% de probabilidad
+    cleanupCache();
+  }
+  
+  // Crear clave de cache basada en cookies y validación
+  const cookies = request.headers.get('cookie') || '';
+  const cacheKey = `${cookies}-${validateToken}`;
+  
+  // Verificar cache
+  const cached = authCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  
   try {
     const url = new URL('/api/internal/auth', request.url);
     if (validateToken) {
@@ -26,23 +64,32 @@ async function getAuthData(
       headers: {
         Cookie: request.headers.get('cookie') || '',
       },
-    });
-
-    if (!response.ok) {
+    });    if (!response.ok) {
       const data = await response.json();
-      return {
+      const authData = {
         authenticated: false,
         reason: data.reason || 'Auth check failed',
       };
+      
+      // Cache negative result for shorter time
+      authCache.set(cacheKey, { data: authData, timestamp: Date.now() });
+      return authData;
     }
 
-    return await response.json();
-  } catch (error) {
+    const authData = await response.json();
+      // Cache successful result
+    authCache.set(cacheKey, { data: authData, timestamp: Date.now() });
+    
+    return authData;} catch (error) {
     console.error('Middleware - Error checking auth:', error);
-    return {
+    const authData = {
       authenticated: false,
       reason: 'Internal error',
     };
+    
+    // Cache error result
+    authCache.set(cacheKey, { data: authData, timestamp: Date.now() });
+    return authData;
   }
 }
 
@@ -63,14 +110,14 @@ async function clearAuthCookies(request: NextRequest): Promise<void> {
 }
 
 export default async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const method = request.method;
+  
   // Saltar middleware en modo QA
   if (process.env.QA_MODE === 'true') {
     return NextResponse.next();
   }
-
-  const pathname = request.nextUrl.pathname;
-
-
+  
   // ========== RUTAS COMPLETAMENTE PÚBLICAS ==========
   const publicPaths = [
     '/auth/login',
@@ -78,7 +125,7 @@ export default async function middleware(request: NextRequest) {
     '/auth/recuperar',
     '/auth/recuperar-admin',
     '/acceso-denegado',
-    '/api/internal/auth', // Importante: permitir nuestra API interna
+    '/api/internal/auth',
   ];
 
   if (
@@ -98,51 +145,30 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ========== OBTENER DATOS DE AUTENTICACIÓN ==========
-  const authData = await getAuthData(request);
-
-
-  // ========== MANEJAR RUTA RAÍZ ==========
-  if (pathname === '/') {
-    if (!authData.authenticated) {
-      console.log('Middleware - Not authenticated, redirecting to login');
-      return NextResponse.redirect(new URL('/auth/login', request.url));
-    }
-
-    const userRole = authData.user?.role as UserRole;
-
-    // Validar token para ruta raíz
-    const tokenValidation = await getAuthData(request, true);
-    if (!tokenValidation.authenticated) {
-      console.log('Middleware - Token invalid, clearing and redirecting');
-      await clearAuthCookies(request);
-      return NextResponse.redirect(new URL('/auth/login', request.url));
-    }
-
-    // Redirigir según el rol
-    switch (userRole) {
-      case 'cliente':
-        console.log('Middleware - Cliente accessing root, allowing');
-        return NextResponse.next();
-      case 'admin':
-        console.log('Middleware - Admin redirecting to dashboard');
-        return NextResponse.redirect(
-          new URL('/admin/total-de-ventas', request.url)
-        );
-      case 'superadmin':
-        console.log('Middleware - Superadmin redirecting to dashboard');
-        return NextResponse.redirect(
-          new URL('/super-admin/users', request.url)
-        );
-      default:
-        console.log('Middleware - Unknown role, redirecting to login');
-        return NextResponse.redirect(new URL('/auth/login', request.url));
-    }
+  // ========== MANEJAR REQUESTS POST A LA RAÍZ ==========
+  // Los POST a la raíz suelen ser de formularios o acciones, no navegación
+  if (pathname === '/' && method === 'POST') {
+    return NextResponse.next();
   }
+  // ========== DETERMINAR SI NECESITA VALIDACIÓN DE TOKEN ==========
+  const criticalPaths = [
+    '/', // Ruta raíz siempre necesita validación
+    '/admin',
+    '/super-admin',
+    '/mi-cuenta',
+    '/mis-compras',
+  ];
+  const needsTokenValidation = criticalPaths.some((path) =>
+    pathname === path || pathname.startsWith(path)
+  );
 
-  // ========== VERIFICAR AUTENTICACIÓN PARA OTRAS RUTAS ==========
+  // ========== OBTENER DATOS DE AUTENTICACIÓN (UNA SOLA VEZ) ==========
+  const authData = await getAuthData(request, needsTokenValidation);
+
+  // ========== VERIFICAR AUTENTICACIÓN ==========
   if (!authData.authenticated) {
-    console.log('Middleware - Not authenticated for protected route');
+    await clearAuthCookies(request);
+    
     const isAdminRoute =
       pathname.startsWith('/admin') || pathname.startsWith('/super-admin');
     const loginUrl = isAdminRoute ? '/auth/login-admin' : '/auth/login';
@@ -151,28 +177,22 @@ export default async function middleware(request: NextRequest) {
 
   const userRole = authData.user?.role as UserRole;
 
-  // ========== VALIDAR TOKEN PARA RUTAS CRÍTICAS ==========
-  const criticalPaths = [
-    '/admin',
-    '/super-admin',
-    '/mi-cuenta',
-    '/mis-compras',
-  ];
-  const isCriticalPath = criticalPaths.some((path) =>
-    pathname.startsWith(path)
-  );
-
-  if (isCriticalPath) {
-    const tokenValidation = await getAuthData(request, true);
-
-    if (!tokenValidation.authenticated) {
-      console.log('Middleware - Token invalid for critical path');
-      await clearAuthCookies(request);
-
-      const isAdminRoute =
-        pathname.startsWith('/admin') || pathname.startsWith('/super-admin');
-      const loginUrl = isAdminRoute ? '/auth/login-admin' : '/auth/login';
-      return NextResponse.redirect(new URL(loginUrl, request.url));
+  // ========== MANEJAR RUTA RAÍZ ==========
+  if (pathname === '/') {
+    // Redirigir según el rol
+    switch (userRole) {
+      case 'cliente':
+        return NextResponse.next();
+      case 'admin':
+        return NextResponse.redirect(
+          new URL('/admin/total-de-ventas', request.url)
+        );
+      case 'superadmin':
+        return NextResponse.redirect(
+          new URL('/super-admin/users', request.url)
+        );
+      default:
+        return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }
 
@@ -244,6 +264,17 @@ export default async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api/internal|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|eot|css|js|map)$).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api/internal (internal APIs)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - manifest.json (PWA manifest)
+     * - sw.js (service worker)
+     * - workbox-* (workbox files)
+     * - Files with extensions (images, fonts, etc.)
+     */
+    '/((?!api/internal|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-.*|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|eot|css|js|map|json)$).*)',
   ],
 };

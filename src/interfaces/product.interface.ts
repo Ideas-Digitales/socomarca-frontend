@@ -57,7 +57,13 @@ export interface CartResponse {
 }
 
 type Operator = 'fulltext' | '=';
-type Field = 'name' | 'category_id' | 'subcategory_id' | 'sales' | 'brand_id';
+type Field =
+  | 'name'
+  | 'category_id'
+  | 'subcategory_id'
+  | 'sales'
+  | 'brand_id'
+  | 'is_favorite';
 
 export interface FetchSearchProductsByFiltersProps {
   field?: Field;

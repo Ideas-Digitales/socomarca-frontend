@@ -205,8 +205,9 @@ export const fetchSearchProductsByFilters = async (
               // NUEVO: Soporte para filtros por marca
               return product.brand.id.toString() === filters.value;
             case 'sales':
-              // Implementar lógica de ventas si es necesario
               return true;
+            case 'is_favorite':
+              return product.is_favorite.toString() === filters.value;
             default:
               return product.name.toLowerCase().includes(searchTerm);
           }
@@ -302,8 +303,6 @@ export const fetchSearchProductsByFilters = async (
         ...(filters.sort && { sort: filters.sort }),
       };
 
-      console.log('Enviando filtros al backend:', requestBody);
-
       const response = await fetch(
         `${BACKEND_URL}/products/search?${queryParams}`,
         {
@@ -317,10 +316,11 @@ export const fetchSearchProductsByFilters = async (
         }
       );
 
-      const data = await response.json();
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);
       }
+      const data = await response.json();
+      console.log('Data fetched by filters:', data);
 
       return {
         ok: true,

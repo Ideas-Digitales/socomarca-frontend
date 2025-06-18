@@ -1,6 +1,6 @@
 describe('Mi primer test', () => {
   it('Visita el sitio y verifica el título', () => {
-    cy.visit('http://localhost:3000/');
+    cy.visit('http://localhost:3000/auth/login');
     cy.get('#rut')
       .type('202858384')
       .should('have.value', '20.285.838-4');

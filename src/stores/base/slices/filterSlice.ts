@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { FiltersSlice, StoreState, ProductsSlice } from '../types';
+import { FiltersSlice, StoreState, ProductsSlice, FavoritesSlice } from '../types';
 import {
   Product,
   SearchWithPaginationProps,
@@ -7,7 +7,7 @@ import {
 import { fetchSearchProductsByFilters } from '@/services/actions/products.actions';
 
 export const createFiltersSlice: StateCreator<
-  StoreState & FiltersSlice & ProductsSlice,
+  StoreState & FiltersSlice & ProductsSlice & FavoritesSlice,
   [],
   [],
   FiltersSlice
@@ -181,10 +181,8 @@ export const createFiltersSlice: StateCreator<
     const { isPriceOpen } = get();
     set({ isPriceOpen: !isPriceOpen });
   },
-
   // Aplicar filtros con conexión al backend
-  applyFilters: async () => {
-    const {
+  applyFilters: async () => {    const {
       selectedCategories,
       selectedBrands,
       selectedFavorites,
@@ -194,6 +192,7 @@ export const createFiltersSlice: StateCreator<
       maxPrice,
       productPaginationMeta,
       initializePriceRange,
+      showOnlyFavorites,
     } = get();
 
     try {
@@ -203,9 +202,7 @@ export const createFiltersSlice: StateCreator<
       const searchParams: SearchWithPaginationProps = {
         page: 1,
         size: productPaginationMeta?.per_page || 9,
-      };
-
-      // Determinar filtro principal para el backend
+      };      // Determinar filtro principal para el backend
       let hasBackendFilter = false;
 
       if (selectedCategories.length > 0) {
@@ -218,12 +215,17 @@ export const createFiltersSlice: StateCreator<
         searchParams.value = selectedBrands[0].toString();
         searchParams.operator = '=';
         hasBackendFilter = true;
-      }
-
-      let response;
+      } else if (showOnlyFavorites) {
+        // Filtro de favoritos como filtro principal de backend
+        searchParams.field = 'is_favorite';
+        searchParams.value = 'true';
+        searchParams.operator = '=';
+        hasBackendFilter = true;
+      }      let response;
       if (hasBackendFilter) {
         response = await fetchSearchProductsByFilters(searchParams);
       } else {
+        // Caso normal: cargar todos los productos sin filtros especiales
         const { fetchProducts } = get();
         await fetchProducts(1, searchParams.size);
         set({ isLoadingProducts: false });
@@ -240,19 +242,21 @@ export const createFiltersSlice: StateCreator<
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedCategories.includes(product.category.id)
           );
-        }        // Filtrar por múltiples marcas
+        }
+
+        // Filtrar por múltiples marcas
         if (selectedBrands.length > 1) {
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedBrands.includes(product.brand.id)
           );
         }
 
-        // Filtrar por favoritos
+        // Filtrar por favoritos específicos (si se implementa selección múltiple)
         if (selectedFavorites.length > 0) {
-          // Implementar lógica de favoritos cuando esté disponible
-        }
-
-        // Filtrar por rango de precios
+          filteredProducts = filteredProducts.filter((product: Product) =>
+            selectedFavorites.includes(product.id)
+          );
+        }// Filtrar por rango de precios
         if (lowerPrice !== minPrice || upperPrice !== maxPrice) {
           filteredProducts = filteredProducts.filter((product: Product) => {
             let price = product.price;
@@ -263,30 +267,7 @@ export const createFiltersSlice: StateCreator<
             }
             
             return price >= lowerPrice && price <= upperPrice;
-          });
-        }
-
-        // Filtrar por favoritos
-        if (selectedFavorites.length > 0) {
-          filteredProducts = filteredProducts.filter(
-            (product: Product) =>
-              product.is_favorite && selectedFavorites.includes(product.id)
-          );
-        }
-
-        // Filtrar por precio del lado cliente
-        const hasPriceFilter = lowerPrice > minPrice || upperPrice < maxPrice;
-        if (hasPriceFilter) {
-          filteredProducts = filteredProducts.filter((product: Product) => {
-            let price = product.price;
-            if (typeof price === 'string') {
-              price = parseFloat(
-                (price as string).replace(/[^\d.,]/g, '').replace(',', '.')
-              );
-            }
-            return price >= lowerPrice && price <= upperPrice;
-          });
-        }
+          });        }
 
         // Actualizar rango de precios basado en productos filtrados
         initializePriceRange(filteredProducts);
@@ -319,7 +300,6 @@ export const createFiltersSlice: StateCreator<
       set({ isLoadingProducts: false });
     }
   },
-
   // Limpiar todos los filtros
   clearAllFilters: async () => {
     const { fetchProducts, productPaginationMeta } = get();
@@ -330,6 +310,7 @@ export const createFiltersSlice: StateCreator<
       selectedBrands: [],
       selectedFavorites: [],
       searchTerm: '',
+      showOnlyFavorites: false,
     });
 
     // Recargar productos originales
@@ -339,7 +320,6 @@ export const createFiltersSlice: StateCreator<
       console.error('Error al limpiar filtros:', error);
     }
   },
-
   // Resetear completamente el estado de filtros
   resetFiltersState: () => {
     set({
@@ -355,9 +335,9 @@ export const createFiltersSlice: StateCreator<
       isBrandsOpen: false,
       isFavoritesOpen: false,
       isPriceOpen: true,
+      showOnlyFavorites: false,
     });
-  },
-  // Verificar si hay filtros activos
+  },// Verificar si hay filtros activos
   hasActiveFilters: () => {
     const {
       selectedCategories,
@@ -367,6 +347,7 @@ export const createFiltersSlice: StateCreator<
       upperPrice,
       minPrice,
       maxPrice,
+      showOnlyFavorites,
     } = get();
 
     return (
@@ -374,7 +355,8 @@ export const createFiltersSlice: StateCreator<
       selectedBrands.length > 0 ||
       selectedFavorites.length > 0 ||
       lowerPrice !== minPrice ||
-      upperPrice !== maxPrice
+      upperPrice !== maxPrice ||
+      showOnlyFavorites
     );
   },
 

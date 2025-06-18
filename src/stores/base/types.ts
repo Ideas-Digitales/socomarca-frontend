@@ -6,6 +6,7 @@ import {
 import { Category } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
+import { FavoriteList } from '@/interfaces/favorite.inteface';
 
 // Tipos para el modal
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -130,6 +131,12 @@ export interface StoreState {
 
   // Marcas
   brands: Brand[];
+
+  // Favoritos
+  favoriteLists: FavoriteList[];
+  selectedFavoriteList: any | null;
+  isLoadingFavorites: boolean;
+  showOnlyFavorites: boolean;
 
   // Estados de filtros
   selectedCategories: number[];
@@ -266,4 +273,23 @@ export type Store = StoreState &
   PaginationSlice &
   SidebarSlice &
   StoreSlice &
-  ModalSlice;
+  ModalSlice &
+  FavoritesSlice;
+
+export interface FavoritesSlice {
+  // Estados
+  favoriteLists: FavoriteList[];
+  selectedFavoriteList: any | null;
+  isLoadingFavorites: boolean;
+  showOnlyFavorites: boolean;
+
+  // Acciones
+  fetchFavorites: () => Promise<void>;
+  createFavoriteList: (name: string) => Promise<{ ok: boolean; error?: string }>;
+  addProductToFavoriteList: (favoriteListId: number, productId: number) => Promise<{ ok: boolean; error?: string }>;
+  setSelectedFavoriteList: (list: any | null) => void;
+  setShowOnlyFavorites: (show: boolean) => void;
+  toggleShowOnlyFavorites: () => void;
+  getFavoriteProductIds: () => number[];
+  resetFavoritesState: () => void;
+}

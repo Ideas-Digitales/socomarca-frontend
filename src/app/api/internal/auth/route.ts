@@ -3,20 +3,13 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  const validateToken = request.nextUrl.searchParams.get('validate') === 'true';
+
   try {
     const cookieStore = await cookies();
-
-    // Leer todas las cookies de autenticación
     const token = cookieStore.get('token')?.value;
     const role = cookieStore.get('role')?.value;
     const userId = cookieStore.get('userId')?.value;
-
-    console.log('API Internal Auth - Cookies found:', {
-      hasToken: !!token,
-      role,
-      userId,
-      tokenLength: token?.length,
-    });
 
     // Si no hay datos de autenticación
     if (!token || !role) {
@@ -28,10 +21,6 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    // Validar el token con el backend si es necesario
-    const validateToken =
-      request.nextUrl.searchParams.get('validate') === 'true';
 
     if (validateToken) {
       try {
@@ -46,7 +35,6 @@ export async function GET(request: NextRequest) {
             signal: AbortSignal.timeout(3000),
           }
         );
-
 
         if (!response.ok) {
           return NextResponse.json(

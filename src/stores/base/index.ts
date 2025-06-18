@@ -14,6 +14,7 @@ import { createBrandsSlice } from './slices/brandsSlice';
 import { createStoreSlice } from './slices/storeSlice';
 import { createFiltersSlice } from './slices/filterSlice';
 import { createModalSlice } from './slices/modalSlice';
+import { createFavoritesSlice } from './slices/favoritesSlice';
 
 // Estado inicial
 const initialState: StoreState = {
@@ -36,6 +37,11 @@ const initialState: StoreState = {
   activeItem: null,
   openSubmenus: [],
   isMobileSidebarOpen: false,
+  // Estados de favoritos
+  favoriteLists: [],
+  selectedFavoriteList: null,
+  isLoadingFavorites: false,
+  showOnlyFavorites: false,
   // Estados de filtros
   selectedCategories: [],
   selectedBrands: [],
@@ -70,6 +76,7 @@ const useStore = create<Store>()((...a) => ({
   ...createStoreSlice(...a),
   ...createFiltersSlice(...a),
   ...createModalSlice(...a),
+  ...createFavoritesSlice(...a),
 }));
 
 // Hook para manejar la detección de dispositivos móviles

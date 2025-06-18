@@ -198,3 +198,43 @@ export const fetchGetCart = async (): Promise<ActionResult<CartResponse>> => {
     };
   }
 };
+
+export const fetchDeleteCart = async (): Promise<ActionResult<any>> => {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token found',
+      };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/cart`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    return {
+      ok: true,
+      data: null,
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error deleting cart:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+};
