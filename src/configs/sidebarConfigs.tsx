@@ -18,18 +18,18 @@ export const createLogoutModal = (
             Se perderán los datos no guardados.
           </p>
         </div>
-      </div>
-
-      <div className="flex gap-3 mt-6">
+      </div>      <div className="flex gap-3 mt-6">
         <button
           onClick={onLogout}
           className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
+          data-cy="confirm-logout"
         >
           Continuar
         </button>
         <button
           onClick={onCancel}
           className="border border-gray-300 text-gray-700 px-6 py-2 rounded"
+          data-cy="cancel-logout"
         >
           Cancelar
         </button>
@@ -143,15 +143,6 @@ export const getSidebarConfig = (
     },
   ];
 
-  // Debug: verificar qué items se están agregando
-  console.log('🔧 Items Debug:', {
-    userRole,
-    isSuperadmin: userRole === 'superadmin',
-    superAdminItemsLength: superAdminItems.length,
-    willAddSuperAdminItems: userRole === 'superadmin',
-  });
-
-  // Item de cerrar sesión (siempre presente)
   const logoutItem = {
     id: 'cerrar-sesion',
     label: 'Cerrar sesión',
@@ -164,7 +155,6 @@ export const getSidebarConfig = (
     },
   };
 
-  // Construir la configuración final usando el userRole pasado como parámetro
   const items = [
     ...baseItems,
     ...(userRole === 'superadmin' ? superAdminItems : []),

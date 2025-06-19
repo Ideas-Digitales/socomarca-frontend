@@ -99,8 +99,8 @@ export default function LoginPage() {
         </div>
 
         {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-6 px-[1px] justify-between items-center w-full mt-5">
-          <button
+        <div className="flex flex-col sm:flex-row gap-6 px-[1px] justify-between items-center w-full mt-5">          <button
+            data-cy="btn-login"
             type="submit"
             disabled={!isValid || !password || isLoading}
             className="w-[174px] p-3 rounded-[6px] bg-lime-500 hover:bg-lime-600 transition-colors ease-in-out cursor-pointer text-white text-[12px] font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"

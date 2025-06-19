@@ -9,6 +9,7 @@ import ModalCrearLista from '@/app/components/mi-cuenta/ModalCrearLista';
 import { Suspense } from 'react';
 import SectionSync from '@/app/components/mi-cuenta/SectionSync';
 import { useFavorites } from '@/hooks/useFavorites';
+import DatosPersonalesForm from '@/app/components/mi-cuenta/DatosPersonalesForm';
 
 const SECCIONES_VALIDAS = [
   'datos',
@@ -66,7 +67,7 @@ export default function MiCuentaPage() {
               setSelected={setSelected}
               validSections={SECCIONES_VALIDAS}
             />
-          </Suspense>          <div className="flex-1 h-fit rounded-lg sm:p-6">            {selected === 'favoritos' && (
+          </Suspense>          <div className="flex-1 h-fit rounded-lg sm:px-6">            {selected === 'favoritos' && (
               <FavoritosSection
                 setNombreNuevaLista={setNombreNuevaLista}
                 setErrorNombreLista={setErrorNombreLista}
@@ -83,8 +84,7 @@ export default function MiCuentaPage() {
             
             {selected === 'datos' && (
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-xl font-bold mb-4">Datos personales</h2>
-                <p>Sección temporalmente deshabilitada</p>
+              <DatosPersonalesForm />
               </div>
             )}
             

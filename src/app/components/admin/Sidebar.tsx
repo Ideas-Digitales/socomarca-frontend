@@ -78,7 +78,6 @@ export default function Sidebar({
       handleMenuClick(index, false);
     }
   };
-
   const handleSubmenuNavigation = (
     subItem: any,
     menuIndex: number,
@@ -88,15 +87,23 @@ export default function Sidebar({
     if (url) {
       router.push(url);
     }
+    
+    // Ejecutar función personalizada si existe
+    if (subItem.onClick) {
+      subItem.onClick();
+    }
+    
     handleSubmenuClick(menuIndex, subIndex);
   };
 
   if (!currentSidebarConfig) {
     return null;
   }
-
   return (
-    <nav className="fixed left-0 top-0 h-screen w-[290px] flex flex-col items-center bg-slate-100 z-10">
+    <nav 
+      data-cy="sidebar"
+      className="fixed left-0 top-0 h-screen w-[290px] flex flex-col items-center bg-slate-100 z-10"
+    >
       {/* Logo - Fixed at top */}
       <div className="py-8 px-6 mx-auto flex-shrink-0">
         <Logo width={218} height={39} />

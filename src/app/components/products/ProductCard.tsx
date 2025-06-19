@@ -16,11 +16,9 @@ export default function ProductCard({ product }: Props) {
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
   );
-  const [quantity, setQuantity] = useState(0);
-
-  const handleSetFavorite = () => {
-    if (isFavorite(product.id)) {
-      toggleFavorite(product.id);
+  const [quantity, setQuantity] = useState(0);  const handleSetFavorite = async () => {
+    if (isFavorite(product.id, product)) {
+      await toggleFavorite(product.id);
     } else {
       handleAddToList(product);
     }
@@ -100,12 +98,11 @@ export default function ProductCard({ product }: Props) {
     return text;
   };
 
-  const isProductFavorite = isFavorite(product.id);
+  const isProductFavorite = isFavorite(product.id, product);
 
   return (
     <div className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative">
-      <div className="flex items-center gap-[6px]">
-        <div className="rounded-full bg-slate-100 items-center justify-center hidden sm:flex p-[6px]">
+      <div className="flex items-center gap-[6px]">        <div className="rounded-full bg-slate-100 items-center justify-center hidden sm:flex p-[6px]">
           {!isProductFavorite ? (
             <HeartIcon
               className="cursor-pointer"
@@ -202,8 +199,7 @@ export default function ProductCard({ product }: Props) {
             </button>
           </div>
         </div>
-      </div>
-      <div className="sm:hidden rounded-full w-[30px] h-[30px] bg-slate-100 absolute right-[14px] top-[12px] flex items-center justify-center">
+      </div>      <div className="sm:hidden rounded-full w-[30px] h-[30px] bg-slate-100 absolute right-[14px] top-[12px] flex items-center justify-center">
         {!isProductFavorite ? (
           <HeartIcon
             className="cursor-pointer"

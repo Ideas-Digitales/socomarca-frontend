@@ -293,11 +293,11 @@ const goNext = () => {
       />
     </div>*/}
 
- <div className="col-span-2 mt-8">
+ <div className="col-span-1 md:col-span-2 mt-8">
     <h2 className="text-2xl font-bold mb-2">Información de envío</h2>
   </div>
 
-  <div className="col-span-2">
+  <div className="col-span-1 md:col-span-2">
   <ShippingAddressSelect
     selectedAddressId={formData.shippingAddressId}
     onChange={(id) => {
@@ -343,7 +343,7 @@ const goNext = () => {
             <Image
               width={104}
               height={27}
-              style={{ width: 'auto', height: 'auto' }}
+              style={{ width: '150px', height: 'auto' }}
               src="/assets/global/logo_webpay.png"
               alt="Webpay"
               className="my-2 w-[40%] max-w-xs"
