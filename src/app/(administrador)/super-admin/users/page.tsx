@@ -471,8 +471,8 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [modalAction, setModalAction] = useState<'edit' | 'delete' | null>(null);
+  //const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  //const [modalAction, setModalAction] = useState<'edit' | 'delete' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [meta, setMeta] = useState<ApiMeta | null>(null);
@@ -544,8 +544,8 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = (user: User) => {
-    setSelectedUser(user);
-    setModalAction('delete');
+    //setSelectedUser(user);
+    //setModalAction('delete');
     openModal('delete-user', {
       title: `Confirmar eliminación`,
       size: 'sm',
@@ -575,8 +575,8 @@ export default function UsersPage() {
   };
 
   const handleEditUser = (user: User) => {
-    setSelectedUser(user);
-    setModalAction('edit');
+    //setSelectedUser(user);
+    //setModalAction('edit');
     openModal('edit-user', {
       title: 'Editar usuario',
       size: 'md',
