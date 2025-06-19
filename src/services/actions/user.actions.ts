@@ -60,8 +60,6 @@ export async function getUserData() {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    // Puedes agregar next options si estás en Next.js:
-    // next: { revalidate: 0 }, // para evitar cache
   });
 
   if (!res.ok) {
@@ -84,7 +82,6 @@ export async function getUsersAction(params: {
   try {
     const { page = 1, per_page = 10 } = params;
     
-    // Construir la URL con parámetros
     const baseURL = process.env.BACKEND_URL;
     const url = new URL(`${baseURL}/users`);
     url.searchParams.set('page', page.toString());
@@ -99,7 +96,6 @@ export async function getUsersAction(params: {
        Accept: 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      // Opcional: configurar cache
       next: {
         revalidate: 0, // No cache para datos que cambian frecuentemente
       }

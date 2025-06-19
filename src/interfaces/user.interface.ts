@@ -14,8 +14,6 @@ export interface LoginResponse {
   };
 }
 
-
-// types/user.types.ts - Tipos para la respuesta de la API
 export interface ApiUser {
   id: number;
   name: string;
@@ -51,7 +49,7 @@ export interface UsersApiResponse {
   meta: ApiMeta;
 }
 
-// Función auxiliar para transformar ApiUser a User (del componente)
+// Función auxiliar para transformar ApiUser a User
 export function transformApiUserToUser(apiUser: ApiUser): {
   id: number;
   username: string;
