@@ -18,18 +18,18 @@ export const createLogoutModal = (
             Se perderán los datos no guardados.
           </p>
         </div>
-      </div>
-
-      <div className="flex gap-3 mt-6">
+      </div>      <div className="flex gap-3 mt-6">
         <button
           onClick={onLogout}
           className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
+          data-cy="confirm-logout"
         >
           Continuar
         </button>
         <button
           onClick={onCancel}
           className="border border-gray-300 text-gray-700 px-6 py-2 rounded"
+          data-cy="cancel-logout"
         >
           Cancelar
         </button>

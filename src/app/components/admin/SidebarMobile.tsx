@@ -122,19 +122,28 @@ export default function SidebarMobile({ configType }: SidebarMobileProps) {
       }
       handleMenuClick(index, false); // Esto cerrará el sidebar automáticamente
     }
-  };
-
-  const handleSubItemClick = (
+  };  const handleSubItemClick = (
     subItem: any,
     menuIndex: number,
     subIndex: number
   ) => {
-    // Navegar y cerrar
+    // Navegar si hay URL
     const url = subItem.url || subItem.href;
     if (url) {
       router.push(url);
     }
-    handleSubmenuClick(menuIndex, subIndex); // Esto cerrará el sidebar automáticamente
+    
+    // Ejecutar función personalizada si existe (ej: logout)
+    if (subItem.onClick) {
+      subItem.onClick();
+    }
+    
+    // Actualizar el estado del sidebar
+    handleSubmenuClick(menuIndex, subIndex);
+    
+    // Cerrar el sidebar móvil después de la navegación
+    closeMobileSidebar();
+    resetNavigation();
   };
 
   const handleBackToMain = () => {
@@ -174,10 +183,9 @@ export default function SidebarMobile({ configType }: SidebarMobileProps) {
           className="fixed inset-0 bg-black/50 z-40 transition-opacity ease-in-out duration-300"
           onClick={handleOverlayClick}
         />
-      )}
-
-      {/* Sidebar principal con animación mejorada */}
+      )}      {/* Sidebar principal con animación mejorada */}
       <div
+        data-cy="sidebar"
         className={`
         fixed top-0 left-0 h-full w-80 bg-slate-100 shadow-2xl z-50 transform transition-all ease-in-out duration-300
         ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
