@@ -118,7 +118,7 @@ export default function ProductCardGrid({ product }: Props) {
           ) : (
             <HeartIconSolid
               className="cursor-pointer"
-              color="#ef4444"
+              color="#7ccf00"
               width={16}
               height={16}
               onClick={handleSetFavorite}
