@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import NavbarTest from './components/global/NavbarTest';
 import { Poppins } from 'next/font/google';
 import Modal from './components/global/Modal';
 import AuthProvider from './components/providers/AuthProvider';
@@ -34,7 +33,6 @@ export default function RootLayout({
       <body className="font-poppins">
         <AuthProvider>
           {children}
-          <NavbarTest />
           <Modal />
         </AuthProvider>
       </body>
