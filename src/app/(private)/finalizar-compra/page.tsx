@@ -328,7 +328,7 @@ const goNext = () => {
             <Image
               width={104}
               height={27}
-              style={{ width: 'auto', height: 'auto' }}
+              style={{ width: '150px', height: 'auto' }}
               src="/assets/global/logo_webpay.png"
               alt="Webpay"
               className="my-2 w-[40%] max-w-xs"
