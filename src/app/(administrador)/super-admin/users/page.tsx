@@ -3,7 +3,6 @@
 import CustomTable from '@/app/components/admin/CustomTable';
 import Pagination from '@/app/components/global/Pagination';
 import Search from '@/app/components/global/Search';
-import { usePagination } from '@/hooks/usePagination';
 import { TableColumn } from '@/interfaces/dashboard.interface';
 import useStore from '@/stores/base';
 import {
@@ -18,7 +17,9 @@ import {
   EyeSlashIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getUsersAction } from '@/services/actions/user.actions';
+import { transformApiUserToUser, ApiMeta } from '@/interfaces/user.interface';
 
 export interface User {
   id: number;
@@ -29,42 +30,6 @@ export interface User {
   profile: string;
   actions?: string[];
 }
-
-// Mover la definición de usuarios fuera del componente
-const usersData: User[] = [
-  {
-    id: 1,
-    username: 'johndoe',
-    name: 'John',
-    lastname: 'Doe',
-    email: 'johndoe@gmail.com',
-    profile: 'Administrador',
-  },
-  {
-    id: 2,
-    username: 'janedoe',
-    name: 'Jane',
-    lastname: 'Doe',
-    email: 'janedoe@gmail.com',
-    profile: 'Administrador',
-  },
-  {
-    id: 3,
-    username: 'alicesmith',
-    name: 'Alice',
-    lastname: 'Smith',
-    email: 'alice@gmail.com',
-    profile: 'Administrador',
-  },
-  {
-    id: 4,
-    username: 'bobbrown',
-    name: 'Bob',
-    lastname: 'Brown',
-    email: 'bob@gmail.com',
-    profile: 'Administrador',
-  },
-];
 
 // Interfaces para el formulario de edición
 interface EditFormData {
@@ -501,27 +466,81 @@ const EditUserForm = ({
   );
 };
 
-// Componente principal - debe ser export default
+// Componente principal
 export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [modalAction, setModalAction] = useState<'edit' | 'delete' | null>(
-    null
-  );
-  console.log('UsersPage', selectedUser, modalAction);
+  const [modalAction, setModalAction] = useState<'edit' | 'delete' | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [meta, setMeta] = useState<ApiMeta | null>(null);
+  const [perPage] = useState(10);
+
   const { openModal, closeModal } = useStore();
 
-  // Crear la data con acciones
-  const usersWithActions = usersData.map((user) => ({
-    ...user,
-    actions: ['Editar', 'Eliminar'],
-  }));
+  // Función para cargar usuarios
+  const loadUsers = async (page: number = 1, search: string = '') => {
+    setLoading(true);
+    setError(null);
 
-  const onSearch = (searchTerm: string) => {
-    console.log('Search term:', searchTerm);
+    try {
+      const result = await getUsersAction({
+        page,
+        per_page: perPage,
+      });
+
+      if (result.success && result.data) {
+        // Transformar los datos de la API al formato del componente
+        const transformedUsers = result.data.data.map(transformApiUserToUser);
+        
+        // Filtrar por término de búsqueda si existe
+        let filteredUsers = transformedUsers;
+        if (search.trim()) {
+          filteredUsers = transformedUsers.filter(
+            (user) =>
+              user.name.toLowerCase().includes(search.toLowerCase()) ||
+              user.lastname.toLowerCase().includes(search.toLowerCase()) ||
+              user.email.toLowerCase().includes(search.toLowerCase()) ||
+              user.username.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+
+        setUsers(filteredUsers);
+        setMeta(result.data.meta);
+      } else {
+        setError(result.error || 'Error al cargar usuarios');
+      }
+    } catch (err) {
+      setError('Error inesperado al cargar usuarios');
+      console.error('Error loading users:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar usuarios al montar el componente
+  useEffect(() => {
+    loadUsers(currentPage, searchTerm);
+  }, [currentPage]);
+
+  // Manejar búsqueda
+  const onSearch = (search: string) => {
+    setSearchTerm(search);
+    setCurrentPage(1); // Resetear a la primera página
+    loadUsers(1, search);
   };
 
   const onClear = () => {
-    console.log('Search cleared');
+    setSearchTerm('');
+    setCurrentPage(1);
+    loadUsers(1, '');
+  };
+
+  // Manejar cambio de página
+  const onPageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const handleDeleteUser = (user: User) => {
@@ -547,6 +566,8 @@ export default function UsersPage() {
       console.log('Usuario eliminado:', user);
       alert(`Usuario ${user.username} eliminado exitosamente`);
       closeModal();
+      // Recargar la lista después de eliminar
+      loadUsers(currentPage, searchTerm);
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
       alert('Error al eliminar usuario');
@@ -559,7 +580,16 @@ export default function UsersPage() {
     openModal('edit-user', {
       title: 'Editar usuario',
       size: 'md',
-      content: <EditUserForm user={user} onClose={closeModal} />,
+      content: (
+        <EditUserForm
+          user={user}
+          onClose={() => {
+            closeModal();
+            // Recargar la lista después de editar
+            loadUsers(currentPage, searchTerm);
+          }}
+        />
+      ),
     });
   };
 
@@ -608,11 +638,43 @@ export default function UsersPage() {
     },
   ];
 
-  const { changePage, productPaginationMeta } = usePagination(usersWithActions);
+  // Crear metadatos de paginación para el componente Pagination
+  const paginationMeta = meta ? {
+    current_page: meta.current_page,
+    last_page: meta.last_page,
+    per_page: meta.per_page,
+    total: meta.total,
+    from: meta.from,
+    to: meta.to,
+    links: meta.links,
+    path: meta.path,
+  } : null;
 
-  const onPageChange = (page: number) => {
-    changePage(page);
-  };
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-2 max-w-7xl mx-auto w-full">
+        <div className="flex justify-center items-center py-8">
+          <div className="text-gray-500">Cargando usuarios...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col gap-2 max-w-7xl mx-auto w-full">
+        <div className="flex justify-center items-center py-8">
+          <div className="text-red-500">Error: {error}</div>
+          <button
+            onClick={() => loadUsers(currentPage, searchTerm)}
+            className="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-2 max-w-7xl mx-auto w-full">
@@ -623,11 +685,13 @@ export default function UsersPage() {
         placeholder="Buscar por nombre / correo electrónico"
       />
       <div className="px-4">
-        <CustomTable data={usersWithActions} columns={usersColumns} />
+        <CustomTable data={users} columns={usersColumns} />
       </div>
-      <div className="px-4">
-        <Pagination meta={productPaginationMeta} onPageChange={onPageChange} />
-      </div>
+      {paginationMeta && (
+        <div className="px-4">
+          <Pagination meta={paginationMeta} onPageChange={onPageChange} />
+        </div>
+      )}
     </div>
   );
 }
