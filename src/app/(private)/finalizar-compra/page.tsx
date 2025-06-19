@@ -278,11 +278,11 @@ const goNext = () => {
       />
     </div>*/}
 
- <div className="col-span-2 mt-8">
+ <div className="col-span-1 md:col-span-2 mt-8">
     <h2 className="text-2xl font-bold mb-2">Información de envío</h2>
   </div>
 
-  <div className="col-span-2">
+  <div className="col-span-1 md:col-span-2">
   <ShippingAddressSelect
     selectedAddressId={formData.shippingAddressId}
     onChange={(id) => {
