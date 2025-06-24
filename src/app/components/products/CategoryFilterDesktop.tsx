@@ -9,15 +9,13 @@ export default function CategoryFilterDesktop() {  const {
     // Estados de datos
     categories,
     brands,
-    products,
-
-    // Estados de filtros
+    products,    // Estados de filtros
     selectedCategories,
     selectedBrands,
     minPrice,
     maxPrice,
-    lowerPrice,
-    upperPrice,
+    selectedMinPrice,
+    selectedMaxPrice,
     priceInitialized,
     showOnlyFavorites,
 
@@ -30,8 +28,8 @@ export default function CategoryFilterDesktop() {  const {
     // Acciones de filtros
     toggleCategorySelection,
     toggleBrandSelection,
-    setLowerPrice,
-    setUpperPrice,
+    setSelectedMinPrice,
+    setSelectedMaxPrice,
     handlePriceRangeChange,
     initializePriceRange,
     toggleShowOnlyFavorites,
@@ -51,12 +49,13 @@ export default function CategoryFilterDesktop() {  const {
   const formatPrice = useCallback((price: number): string => {
     return price.toLocaleString('es-CL');
   }, []);
-
-  // Inicializar rango de precios cuando cambien los productos
+  // Inicializar rango de precios cuando cambien los productos (solo si es necesario)
   useEffect(() => {
-    initializePriceRange(products);
-  }, [products, initializePriceRange]);
-
+    // Solo inicializar si no hay precios configurados aún
+    if (!priceInitialized) {
+      initializePriceRange(products);
+    }
+  }, [products, initializePriceRange, priceInitialized]);
   // Handle input changes for lower price
   const handleLowerPriceChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,11 +66,11 @@ export default function CategoryFilterDesktop() {  const {
         const numericValue = parseInt(inputValue);
 
         if (!isNaN(numericValue)) {
-          setLowerPrice(numericValue);
+          setSelectedMinPrice(numericValue);
         }
       }
     },
-    [setLowerPrice]
+    [setSelectedMinPrice]
   );
 
   // Handle input changes for upper price
@@ -84,15 +83,22 @@ export default function CategoryFilterDesktop() {  const {
         const numericValue = parseInt(inputValue);
 
         if (!isNaN(numericValue)) {
-          setUpperPrice(numericValue);
+          setSelectedMaxPrice(numericValue);
         }
       }
     },
-    [setUpperPrice]
+    [setSelectedMaxPrice]
   );
-
   // Check if min and max are the same value
   const hasPriceRange = minPrice !== maxPrice && priceInitialized;
+
+  // Log para debugging del CategoryFilterDesktop
+  console.log('🏪 CategoryFilterDesktop render:', {
+    hasPriceRange,
+    priceInitialized,
+    availableRange: { minPrice, maxPrice },
+    userSelection: { selectedMinPrice, selectedMaxPrice }
+  });
 
   return (
     <div className="flex flex-col items-start bg-white w-[200px] h-full">
@@ -293,11 +299,20 @@ export default function CategoryFilterDesktop() {  const {
       >
         <div className="w-full p-3">          {hasPriceRange ? (
             <div className="transition-opacity duration-300">
+              {(() => {
+                console.log('🎚️ About to render DualRangeSlider with props:', {
+                  min: minPrice,
+                  max: maxPrice,
+                  selectedMin: selectedMinPrice,
+                  selectedMax: selectedMaxPrice
+                });
+                return null;
+              })()}
               <DualRangeSlider
                 min={minPrice}
                 max={maxPrice}
-                initialLower={lowerPrice}
-                initialUpper={upperPrice}
+                selectedMin={selectedMinPrice}
+                selectedMax={selectedMaxPrice}
                 onChange={handlePriceRangeChange}
                 step={100}
               />
@@ -314,9 +329,7 @@ export default function CategoryFilterDesktop() {  const {
                 <div className="absolute h-2 w-full bg-lime-500 rounded-full"></div>
               </div>
             </div>
-          )}
-
-          <div className="flex justify-between gap-2 mb-4">
+          )}          <div className="flex justify-between gap-2 mb-4">
             <div className="w-1/2">
               <div className="text-xs text-gray-500 mb-1">Desde</div>
               <input
@@ -324,11 +337,11 @@ export default function CategoryFilterDesktop() {  const {
                 type="text"
                 className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                 placeholder={`$${formatPrice(minPrice)}`}
-                value={`${formatPrice(lowerPrice)}`}
+                value={`${formatPrice(selectedMinPrice)}`}
                 onChange={handleLowerPriceChange}
                 onBlur={() => {
-                  if (lowerPrice < minPrice) setLowerPrice(minPrice);
-                  if (lowerPrice > upperPrice) setLowerPrice(upperPrice);
+                  if (selectedMinPrice < minPrice) setSelectedMinPrice(minPrice);
+                  if (selectedMinPrice > selectedMaxPrice) setSelectedMinPrice(selectedMaxPrice);
                 }}
               />
             </div>
@@ -339,11 +352,10 @@ export default function CategoryFilterDesktop() {  const {
                 type="text"
                 className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                 placeholder={`${formatPrice(maxPrice)}`}
-                value={`${formatPrice(upperPrice)}`}
-                onChange={handleUpperPriceChange}
-                onBlur={() => {
-                  if (upperPrice > maxPrice) setUpperPrice(maxPrice);
-                  if (upperPrice < lowerPrice) setUpperPrice(lowerPrice);
+                value={`${formatPrice(selectedMaxPrice)}`}
+                onChange={handleUpperPriceChange}                onBlur={() => {
+                  if (selectedMaxPrice > maxPrice) setSelectedMaxPrice(maxPrice);
+                  if (selectedMaxPrice < selectedMinPrice) setSelectedMaxPrice(selectedMinPrice);
                 }}
               />
             </div>

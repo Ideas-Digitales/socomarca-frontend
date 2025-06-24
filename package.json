@@ -9,7 +9,11 @@
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "test:auth": "cypress run --spec 'cypress/e2e/auth.cy.ts'",
+    "test:auth:basic": "cypress run --spec 'cypress/e2e/auth-basic.cy.ts'",
     "test:auth:simple": "cypress run --spec 'cypress/e2e/auth-simple.cy.ts'",
+    "test:auth:edge": "cypress run --spec 'cypress/e2e/auth-edge-cases.cy.ts'",
+    "test:debug": "cypress run --spec 'cypress/e2e/debug.cy.ts'",
+    "test:all": "cypress run --spec 'cypress/e2e/debug.cy.ts,cypress/e2e/auth-basic.cy.ts,cypress/e2e/auth.cy.ts'",
     "test:auth:open": "cypress open --e2e --browser chrome"
   },
   "dependencies": {

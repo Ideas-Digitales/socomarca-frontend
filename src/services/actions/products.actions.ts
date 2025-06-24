@@ -183,6 +183,7 @@ export const fetchSearchProductsByFilters = async (
 ) => {
   try {
     if (IS_QA_MODE) {
+      console.log('🔍 fetchSearchProductsByFilters - QA MODE:', filters);
       // Simular delay de red
       await new Promise((resolve) => setTimeout(resolve, 800));
 
@@ -244,19 +245,32 @@ export const fetchSearchProductsByFilters = async (
               return 0;
           }
         });
-      }
-
-      const page = filters.page || 1;
+      }      const page = filters.page || 1;
       const size = filters.size || 20;
       const paginatedData = paginateProducts(filteredProducts, page, size);
       const response = createLaravelStyleResponse(paginatedData);
 
+      // Agregar información de filtros simulada para el modo QA
+      const mockFilters = {
+        min_price: filteredProducts.length > 0 
+          ? Math.min(...filteredProducts.map(p => typeof p.price === 'string' ? parseFloat(p.price) : p.price))
+          : null,
+        max_price: filteredProducts.length > 0 
+          ? Math.max(...filteredProducts.map(p => typeof p.price === 'string' ? parseFloat(p.price) : p.price))
+          : null,
+        unit: null
+      };
+
       return {
         ok: true,
-        data: response,
+        data: {
+          ...response,
+          filters: mockFilters
+        },
         error: null,
       };
     } else {
+      console.log('🔍 fetchSearchProductsByFilters - BACKEND MODE:', filters);
       const { getCookie } = await cookiesManagement();
       const cookie = getCookie('token');
 
@@ -311,8 +325,7 @@ export const fetchSearchProductsByFilters = async (
             'Content-Type': 'application/json',
             Accept: 'application/json',
             Authorization: `Bearer ${cookie}`,
-          },
-          body: JSON.stringify(requestBody),
+          },          body: JSON.stringify(requestBody),
         }
       );
 
@@ -320,7 +333,7 @@ export const fetchSearchProductsByFilters = async (
         throw new Error(`Error HTTP: ${response.status}`);
       }
       const data = await response.json();
-      console.log('Data fetched by filters:', data);
+      console.log('📡 Backend response:', data);
 
       return {
         ok: true,

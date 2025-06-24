@@ -10,41 +10,45 @@ interface Props {
 
 export default function CartProductCard({ product, index }: Props) {
   const {
-    addProductToCart,
-    removeProductFromCart,
+    addProductToCartOptimistic,
+    removeProductFromCartOptimistic,
   } = useStore();
 
   const [isLoading, setIsLoading] = useState(false);
 
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
-  );
-
-  useEffect(() => {
+  );  useEffect(() => {
     const img = new Image();
     img.src = product.image;
     img.onerror = () => {
       setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
-  }, [product.image]);
-
-  const decreaseQuantity = async () => {
+  }, [product.image]);  const decreaseQuantity = async () => {
     setIsLoading(true);
+    
     if (product.quantity > 1) {
-      const response = await removeProductFromCart(product, 1);
-      if (!response.ok) {
-        console.error('Error decrementing product in cart:');
+      try {
+        const response = await removeProductFromCartOptimistic(product, 1);
+        if (!response.ok) {
+          console.error('Error decrementing product in cart:');
+        }
+      } catch (error) {
+        console.error('Error decrementing product:', error);
       }
     }
     setIsLoading(false);
-  };
-
-  const increaseQuantity = async () => {
+  };  const increaseQuantity = async () => {
     setIsLoading(true);
+    
     if (product.quantity < product.stock) {
-      const response = await addProductToCart(product.id, 1, product.unit);
-      if (!response.ok) {
-        console.error('Error adding product to cart:');
+      try {
+        const response = await addProductToCartOptimistic(product.id, 1, product.unit, product);
+        if (!response.ok) {
+          console.error('Error adding product to cart:');
+        }
+      } catch (error) {
+        console.error('Error adding product:', error);
       }
     }
     setIsLoading(false);
@@ -56,12 +60,16 @@ export default function CartProductCard({ product, index }: Props) {
     }
     return text;
   };
-  
   const deleteAllQuantity = async () => {
     setIsLoading(true);
-    const response = await removeProductFromCart(product, product.quantity);
-    if (!response.ok) {
-      console.error('Error removing all quantity of product from cart:');
+    
+    try {
+      const response = await removeProductFromCartOptimistic(product, product.quantity);
+      if (!response.ok) {
+        console.error('Error removing all quantity of product from cart:');
+      }
+    } catch (error) {
+      console.error('Error removing product:', error);
     }
     setIsLoading(false);
   };
@@ -112,8 +120,7 @@ export default function CartProductCard({ product, index }: Props) {
       </div>
       
       {/* Controles y precio - flexible */}
-      <div className="flex flex-1 min-w-0 justify-end items-center gap-2">
-        {/* Controles de cantidad */}
+      <div className="flex flex-1 min-w-0 justify-end items-center gap-2">        {/* Controles de cantidad */}
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             disabled={isDecreaseDisabled}
@@ -149,9 +156,7 @@ export default function CartProductCard({ product, index }: Props) {
           <span className="text-[11px] font-bold truncate" title={totalPrice}>
             {totalPrice}
           </span>
-        </div>
-        
-        {/* Icono de eliminar - fijo */}
+        </div>        {/* Icono de eliminar - fijo */}
         <div className="flex-shrink-0">
           <TrashIcon
             className={`transition-all duration-200 ${

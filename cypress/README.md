@@ -1,115 +1,67 @@
-# Tests de Autenticación con Cypress
+# Tests de Cypress - Autenticación
 
-## Descripción
-
-Este conjunto de tests automatizados verifica el funcionamiento completo del sistema de autenticación, incluyendo login, logout, persistencia de datos y casos edge.
+Este directorio contiene los tests de end-to-end (E2E) para la funcionalidad de autenticación de la aplicación Socomarca.
 
 ## Estructura de Tests
 
-### 1. `auth.cy.ts` - Tests principales
-- **Login de Cliente**: Verifica login exitoso, credenciales inválidas, validación de RUT
-- **Login de Administrador**: Tests específicos para usuarios admin
-- **Logout**: Verificación de cierre de sesión y limpieza de cookies
-- **Navegación**: Redirecciones después de autenticación
-- **Persistencia**: Mantenimiento de datos entre recargas
+### Tests Principales
 
-### 2. `auth-simple.cy.ts` - Tests básicos y estables ⭐
-- **Tests simplificados** sin dependencias complejas
-- **Verificaciones esenciales** de login/logout
-- **Más robustos** y menos propensos a errores
-- **Recomendado para empezar**
+1. **`debug.cy.ts`** - Tests básicos de debugging ⭐ **EMPEZAR AQUÍ**
+   - Login exitoso de cliente
+   - Login fallido con credenciales incorrectas  
+   - Login exitoso de admin
+   - Ideal para verificar que todo funciona correctamente
 
-### 3. `auth-edge-cases.cy.ts` - Casos edge
-- **Errores de red**: Timeout, errores de servidor
-- **Validación**: Campos vacíos, longitud de contraseña
-- **Estados de loading**: Botones deshabilitados, indicadores
-- **Seguridad**: Ocultación de contraseñas, prevención de multiple submit
-- **Accesibilidad**: Navegación por teclado, labels
-- **Cookies**: Manejo de cookies corruptas
+2. **`auth-basic.cy.ts`** - Tests básicos de autenticación
+   - Login de cliente, admin y superadmin
+   - Validación de credenciales incorrectas
+   - Persistencia de sesión después de recargar
 
-## Comandos Personalizados
+3. **`auth.cy.ts`** - Suite completa de tests de autenticación
+   - Tests de login para todos los roles
+   - Tests de logout
+   - Tests de navegación después de autenticación
+   - Tests de persistencia de datos
 
-### `cy.loginAsClient(rut, password)`
-```typescript
-cy.loginAsClient('12.312.312-3', 'password');
+4. **`auth-edge-cases.cy.ts`** - Casos edge y validaciones
+   - Validación de campos
+   - Estados de loading
+   - Seguridad básica
+   - Accesibilidad
+   - Manejo de cookies
+
+## Credenciales de Prueba
+
+```javascript
+const TEST_CREDENTIALS = {
+  cliente: { rut: '202858384', password: 'password' },
+  admin: { rut: '192855179', password: 'password' },
+  superadmin: { rut: '238439256', password: 'password' }
+};
 ```
-Realiza login como cliente y verifica el éxito.
 
-### `cy.loginAsAdmin(rut, password)`
-```typescript
-cy.loginAsAdmin('12.312.312-3', 'password');
-```
-Realiza login como administrador.
+## Comandos Disponibles
 
-### `cy.logout()`
-```typescript
-cy.logout();
-```
-Cierra sesión y verifica la limpieza completa.
+### Ejecución de Tests
 
-### `cy.checkUserData(expectedData)`
-```typescript
-cy.checkUserData({
-  name: 'Juan Pérez',
-  email: 'juan@example.com',
-  rut: '12.312.312-3',
-  roles: ['cliente']
-});
-```
-Verifica que los datos del usuario estén correctos.
-
-## Cómo Ejecutar los Tests
-
-### Modo interactivo (recomendado para desarrollo)
 ```bash
-npm run test:auth:open
-# o
-npm run cypress:open
-```
+# Test de debugging (recomendado empezar aquí)
+pnpm run test:debug
 
-### Modo headless (para CI/CD)
-```bash
-# Tests básicos y estables (recomendado)
-npm run test:auth:simple
-
-# Tests completos
-npm run test:auth
-
-# Todos los tests
-npm run cypress:run
-```
-
-### Solo tests específicos
-```bash
 # Tests básicos
-npm run test:auth:simple
+pnpm run test:auth:basic
 
-# Tests principales
-npm run test:auth
-```
+# Suite completa de autenticación
+pnpm run test:auth
 
-## Configuración
+# Casos edge
+pnpm run test:auth:edge
 
-### Datos de prueba
-Los tests usan las credenciales del modo QA:
-- **RUT**: `12.312.312-3`
-- **Contraseña**: `password`
+# Todos los tests principales
+pnpm run test:all
 
-### URLs base
-- Cliente: `http://localhost:3000/auth/login`
-- Admin: `http://localhost:3000/auth/login-admin`
-
-## Elementos que deben tener data-cy
-
-Para que los tests funcionen correctamente, asegúrate de que estos elementos tengan los atributos `data-cy`:
-
-```html
-<!-- Botón de login -->
-<button data-cy="btn-login">Iniciar Sesión</button>
-
-<!-- Modal de logout -->
-<button data-cy="confirm-logout">Continuar</button>
-<button data-cy="cancel-logout">Cancelar</button>
+# Abrir Cypress UI
+pnpm run test:auth:open
 ```
 
 ## Casos de Test Cubiertos

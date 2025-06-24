@@ -8,6 +8,7 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
+import { useBrandFilters, useCategoryFilters, usePriceFilters, useFilterUIActions } from '@/stores/hooks';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
 
@@ -19,43 +20,45 @@ interface CategoryFilterMobileProps {
 export default function CategoryFilterMobile({
   isOpen,
   onClose,
-}: CategoryFilterMobileProps) {  const {
-    // Estados de datos
-    categories,
-    brands,
-    products,
-
-    // Estados de filtros
-    selectedCategories,
-    selectedBrands,
+}: CategoryFilterMobileProps) {
+  // Usar hooks especializados para mejor rendimiento
+  const { selectedCategories, toggleCategorySelection } = useCategoryFilters();
+  const { selectedBrands, toggleBrandSelection } = useBrandFilters();
+  const {
     minPrice,
     maxPrice,
     lowerPrice,
     upperPrice,
     priceInitialized,
-    showOnlyFavorites,
+    setLowerPrice,
+    setUpperPrice,
+    handlePriceRangeChange,
+    initializePriceRange,
+  } = usePriceFilters();
 
+  const {
+    toggleMainCategory,
+    toggleBrandsSection,
+    toggleFavoritesSection,
+    togglePriceSection,
+  } = useFilterUIActions();
+
+  // Estados que aún necesitamos del store principal
+  const {
+    categories,
+    brands,
+    products,
+    showOnlyFavorites,
+    
     // Estados de UI
     isMainCategoryOpen,
     isBrandsOpen,
     isFavoritesOpen,
     isPriceOpen,
 
-    // Acciones de filtros
-    toggleCategorySelection,
-    toggleBrandSelection,
-    setLowerPrice,
-    setUpperPrice,
-    handlePriceRangeChange,
-    initializePriceRange,
-    fetchBrands, // Agregar fetchBrands
+    // Acciones que aún no hemos migrado
+    fetchBrands,
     toggleShowOnlyFavorites,
-
-    // Acciones de UI
-    toggleMainCategory,
-    toggleBrandsSection,
-    toggleFavoritesSection,
-    togglePriceSection,
 
     // Acciones principales
     applyFilters,
@@ -390,11 +393,13 @@ export default function CategoryFilterMobile({
                   ? 'max-h-[20vh] opacity-100'
                   : 'max-h-0 opacity-0'
               }`}
-            >              <div className="w-full p-4">
+            >
+              {' '}
+              <div className="w-full p-4">
                 <div className="flex items-center gap-2">
-                  <input 
-                    id="favorite-checkbox-mobile" 
-                    type="checkbox" 
+                  <input
+                    id="favorite-checkbox-mobile"
+                    type="checkbox"
                     checked={showOnlyFavorites}
                     onChange={toggleShowOnlyFavorites}
                   />
@@ -430,18 +435,19 @@ export default function CategoryFilterMobile({
                   ? 'max-h-96 opacity-100'
                   : 'max-h-0 opacity-0'
               }`}
-            >              <div className="w-full p-4">
+            >
+              {' '}
+              <div className="w-full p-4">
                 {hasPriceRange ? (
-                  <div className="transition-opacity duration-300">
-                    <DualRangeSlider
+                  <div className="transition-opacity duration-300">                    <DualRangeSlider
                       min={minPrice}
                       max={maxPrice}
-                      initialLower={lowerPrice}
-                      initialUpper={upperPrice}
+                      selectedMin={lowerPrice}
+                      selectedMax={upperPrice}
                       onChange={handlePriceRangeChange}
                       step={100}
                     />
-                    
+
                     <div className="flex justify-between gap-3 mb-4">
                       <div className="w-1/2">
                         <div className="text-sm text-gray-500 mb-2">Desde</div>
@@ -454,7 +460,8 @@ export default function CategoryFilterMobile({
                           onChange={handleLowerPriceChange}
                           onBlur={() => {
                             if (lowerPrice < minPrice) setLowerPrice(minPrice);
-                            if (lowerPrice > upperPrice) setLowerPrice(upperPrice);
+                            if (lowerPrice > upperPrice)
+                              setLowerPrice(upperPrice);
                           }}
                         />
                       </div>
@@ -469,12 +476,14 @@ export default function CategoryFilterMobile({
                           onChange={handleUpperPriceChange}
                           onBlur={() => {
                             if (upperPrice > maxPrice) setUpperPrice(maxPrice);
-                            if (upperPrice < lowerPrice) setUpperPrice(lowerPrice);
+                            if (upperPrice < lowerPrice)
+                              setUpperPrice(lowerPrice);
                           }}
                         />
                       </div>
                     </div>
-                  </div>                ) : (
+                  </div>
+                ) : (
                   <div className="mb-6 mt-4 transition-opacity duration-300">
                     <div className="text-base text-center text-gray-500">
                       {priceInitialized

@@ -18,7 +18,16 @@ export const createProductsSlice: StateCreator<
   [],
   [],
   ProductsSlice
-> = (set, get) => ({
+> = (set, get) => ({  // Estados de productos
+  products: [],
+  filteredProducts: [],
+  searchTerm: '',
+  productPaginationMeta: null,
+  productPaginationLinks: null,
+  currentPage: 1,
+  isLoadingProducts: false,
+
+  // Acciones
   setProducts: (products, meta?: PaginationMeta, links?: PaginationLinks) => {
     const searchTerm = get().searchTerm;
     const { initializePriceRange } = get();

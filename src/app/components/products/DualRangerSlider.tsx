@@ -5,48 +5,83 @@ import { useState, useEffect } from 'react';
 interface DualRangeSliderProps {
   min: number;
   max: number;
+  selectedMin: number;
+  selectedMax: number;
   onChange: (lowerValue: number, upperValue: number) => void;
-  initialLower?: number;
-  initialUpper?: number;
   step?: number;
 }
 
 const DualRangeSlider = ({
   min,
   max,
+  selectedMin,
+  selectedMax,
   onChange,
-  initialLower,
-  initialUpper,
   step = 1,
 }: DualRangeSliderProps) => {
-  const [minVal, setMinVal] = useState(initialLower || min);
-  const [maxVal, setMaxVal] = useState(initialUpper || max);
+  const [minVal, setMinVal] = useState(selectedMin || min);
+  const [maxVal, setMaxVal] = useState(selectedMax || max);
 
-  // Convertir valores a porcentajes
-  const getPercent = (value: number) => Math.round(((value - min) / (max - min)) * 100);
+  // Convertir valores a porcentajes basado en el rango disponible (min-max del backend)
+  const getPercent = (value: number) => {
+    if (max === min) return 0;
+    return Math.round(((value - min) / (max - min)) * 100);
+  };
 
-  // Actualizar valores cuando cambien las props
+  // Actualizar valores cuando cambien las props de selección del usuario
   useEffect(() => {
-    if (initialLower !== undefined) setMinVal(initialLower);
-    if (initialUpper !== undefined) setMaxVal(initialUpper);
-  }, [initialLower, initialUpper]);
-
+    console.log('🎚️ DualRangeSlider props changed:', {
+      availableRange: { min, max },
+      selectedRange: { selectedMin, selectedMax }
+    });
+    
+    if (selectedMin !== undefined) setMinVal(selectedMin);
+    if (selectedMax !== undefined) setMaxVal(selectedMax);
+  }, [selectedMin, selectedMax, min, max]); // Incluir min y max en las dependencias
   // Manejar cambio del valor mínimo
   const handleMinChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Math.min(Number(event.target.value), maxVal - step);
-    setMinVal(value);
-    onChange(value, maxVal);
+    const boundedValue = Math.max(min, Math.min(value, max)); // Asegurar que esté dentro del rango disponible
+    
+    console.log('🎚️ Min thumb changed:', { 
+      rawValue: event.target.value,
+      processedValue: value,
+      boundedValue,
+      availableRange: { min, max }
+    });
+    
+    setMinVal(boundedValue);
+    onChange(boundedValue, maxVal);
   };
 
   // Manejar cambio del valor máximo
   const handleMaxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Math.max(Number(event.target.value), minVal + step);
-    setMaxVal(value);
-    onChange(minVal, value);
+    const boundedValue = Math.max(min, Math.min(value, max)); // Asegurar que esté dentro del rango disponible
+    
+    console.log('🎚️ Max thumb changed:', { 
+      rawValue: event.target.value,
+      processedValue: value,
+      boundedValue,
+      availableRange: { min, max }
+    });
+    
+    setMaxVal(boundedValue);
+    onChange(minVal, boundedValue);
   };
-
   const minPercent = getPercent(minVal);
   const maxPercent = getPercent(maxVal);
+
+  // Log para debugging
+  console.log('🎯 DualRangeSlider render:', {
+    availableRange: { min, max },
+    selectedValues: { minVal, maxVal },
+    percentages: { minPercent, maxPercent },
+    trackStyle: {
+      left: `${minPercent}%`,
+      width: `${maxPercent - minPercent}%`
+    }
+  });
 
   return (
     <div className="dual-range-slider">

@@ -8,41 +8,29 @@ import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
 import { FavoriteList } from '@/interfaces/favorite.inteface';
 
-// Tipos para el modal
+// ===== BASE TYPES =====
+export type ViewMode = 'grid' | 'list';
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type ModalContentType = 'confirm' | 'info' | 'form' | 'custom' | null;
 
-export interface ModalSlice {
-  // Estados
-  isModalOpen: boolean;
-  modalTitle: string;
-  modalSize: ModalSize;
-  modalContent: React.ReactNode;
-
-  // Acciones
-  openModal: (
-    content?: string,
-    options?: {
-      title?: string;
-      size?: ModalSize;
-      showCloseButton?: boolean;
-      content?: React.ReactNode;
-    }
-  ) => void;
-  closeModal: () => void;
+// ===== USER & AUTH TYPES =====
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  rut: string;
+  roles: string[];
 }
 
-export interface StoreSlice {
-  // Métodos individuales de reset
-  resetBrandsState: () => void;
-  resetCategoriesState: () => void;
-  resetProductsState: () => void;
-  resetFiltersState: () => void;
-  // Métodos combinados de reset
-  resetSearchRelatedStates: () => void;
-  resetAllStates: () => void;
+export interface AuthState {
+  isLoggedIn: boolean;
+  user: User;
+  token: string;
+  isLoading: boolean;
+  isInitialized: boolean;
 }
 
+// ===== PAGINATION TYPES =====
 export interface PaginationLinks {
   first: string | null;
   last: string | null;
@@ -56,13 +44,6 @@ export interface PaginationMetaLink {
   active: boolean;
 }
 
-// Tipos para el sidebar navigation
-export interface ActiveItem {
-  type: 'menu' | 'submenu';
-  menuIndex: number;
-  submenuIndex?: number;
-}
-
 export interface PaginationMeta {
   current_page: number;
   from: number;
@@ -74,20 +55,195 @@ export interface PaginationMeta {
   total: number;
 }
 
+// ===== SIDEBAR TYPES =====
+export interface ActiveItem {
+  type: 'menu' | 'submenu';
+  menuIndex: number;
+  submenuIndex?: number;
+}
+
+// ===== API RESPONSE TYPES =====
+export interface ApiResponse<T = any> {
+  ok: boolean;
+  data?: T;
+  error?: {
+    message: string;
+    status?: number;
+  };
+}
+
+// ===== LOADING STATES =====
+export interface LoadingStates {
+  isLoading: boolean;
+  isLoadingProducts: boolean;
+  isCartLoading: boolean;
+  isLoadingFavorites: boolean;
+}
+
+// ===== SLICE INTERFACES =====
+
+// Auth Slice
+export interface AuthSlice extends AuthState {
+  login: (credentials: {
+    rut: string;
+    password: string;
+    role?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
+  logout: () => void;
+  initializeFromAuth: () => Promise<void>;
+  setLoading: (loading: boolean) => void;
+  getUserRole: () => string | null;
+}
+
+// Modal Slice
+export interface ModalSlice {
+  isModalOpen: boolean;
+  modalTitle: string;
+  modalSize: ModalSize;
+  modalContent: React.ReactNode;
+
+  openModal: (
+    content?: string,
+    options?: {
+      title?: string;
+      size?: ModalSize;
+      showCloseButton?: boolean;
+      content?: React.ReactNode;
+    }
+  ) => void;
+  closeModal: () => void;
+}
+
+// Products Slice
+export interface ProductsSlice {
+  products: Product[];
+  filteredProducts: Product[];
+  searchTerm: string;
+  productPaginationMeta: PaginationMeta | null;
+  productPaginationLinks: PaginationLinks | null;
+  currentPage: number;
+
+  setProducts: (
+    products: Product[],
+    meta?: PaginationMeta,
+    links?: PaginationLinks
+  ) => void;
+  setFilteredProducts: (filteredProducts: Product[]) => void;
+  setSearchTerm: (
+    terms: SearchWithPaginationProps & { page?: number; size?: number }
+  ) => Promise<void>;
+  fetchProducts: (page?: number, size?: number) => Promise<void>;
+}
+
+// Categories Slice
+export interface CategoriesSlice {
+  categories: Category[];
+
+  setCategories: (categories: Category[]) => void;
+  fetchCategories: () => Promise<void>;
+}
+
+// Brands Slice
+export interface BrandsSlice {
+  brands: Brand[];
+
+  setBrands: (brands: Brand[]) => void;
+  fetchBrands: () => Promise<void>;
+}
+
+// UI Slice
+export interface UiSlice {
+  isMobile: boolean;
+  isTablet: boolean;
+  viewMode: ViewMode;
+
+  checkIsMobile: () => void;
+  checkIsTablet: () => void;
+  setViewMode: (mode: ViewMode) => void;
+}
+
+// Cart Slice
+export interface CartSlice {
+  cartProducts: CartItem[];
+
+  addProductToCart: (
+    product_id: number,
+    quantity: number,
+    unit: string
+  ) => Promise<ApiResponse>;
+  addProductToCartOptimistic: (
+    product_id: number,
+    quantity: number,
+    unit: string,
+    product: Product
+  ) => Promise<ApiResponse>;
+  fetchCartProducts: () => Promise<void>;
+  incrementProductInCart: (productId: number) => void;
+  decrementProductInCart: (productId: number) => void;
+  removeProductFromCart: (
+    product: CartItem,
+    quantity: number
+  ) => Promise<ApiResponse>;
+  removeProductFromCartOptimistic: (
+    product: CartItem,
+    quantity: number
+  ) => Promise<ApiResponse>;
+  removeAllQuantityByProductId: (productId: number) => void;
+  clearCart: () => Promise<void>;
+}
+
+// Pagination Slice
+export interface PaginationSlice {
+  setProductPage: (page: number) => void;
+  nextPage: () => void;
+  prevPage: () => void;
+}
+
+// Favorites Slice
+export interface FavoritesSlice {
+  favoriteLists: FavoriteList[];
+  selectedFavoriteList: FavoriteList | null;
+  showOnlyFavorites: boolean;
+
+  fetchFavorites: () => Promise<void>;
+  createFavoriteList: (name: string) => Promise<ApiResponse>;
+  addProductToFavoriteList: (
+    favoriteListId: number,
+    productId: number
+  ) => Promise<ApiResponse>;
+  removeProductFromFavorites: (productId: number) => Promise<ApiResponse>;
+  setShowOnlyFavorites: (show: boolean) => void;
+  toggleShowOnlyFavorites: () => void;
+  getFavoriteProductIds: () => number[];
+  resetFavoritesState: () => void;
+  setSelectedFavoriteList: (list: FavoriteList | null) => void;
+}
+
+// Filters Slice
 export interface FiltersSlice {
-  // Acciones para categorías
+  selectedCategories: number[];
+  selectedBrands: number[];
+  selectedFavorites: number[];
+  minPrice: number;
+  maxPrice: number;
+  selectedMinPrice: number;
+  selectedMaxPrice: number;
+  hasUserSpecificSelection: boolean;
+  lowerPrice: number;
+  upperPrice: number;
+  priceInitialized: boolean;
+
+  isMainCategoryOpen: boolean;
+  isBrandsOpen: boolean;
+  isFavoritesOpen: boolean;
+  isPriceOpen: boolean;
+
   setSelectedCategories: (categories: number[]) => void;
   toggleCategorySelection: (categoryId: number) => void;
-
-  // Acciones para marcas
   setSelectedBrands: (brands: number[]) => void;
   toggleBrandSelection: (brandId: number) => void;
-
-  // Acciones para favoritos
   setSelectedFavorites: (favorites: number[]) => void;
   toggleFavoriteSelection: (favoriteId: number) => void;
-
-  // Acciones para precios
   setPriceRange: (
     min: number,
     max: number,
@@ -96,10 +252,12 @@ export interface FiltersSlice {
   ) => void;
   setLowerPrice: (price: number) => void;
   setUpperPrice: (price: number) => void;
+  setAvailablePriceRange: (min: number, max: number) => void;
+  setSelectedPriceRange: (selectedMin: number, selectedMax: number) => void;
+  setSelectedMinPrice: (price: number) => void;
+  setSelectedMaxPrice: (price: number) => void;
   handlePriceRangeChange: (lower: number, upper: number) => void;
   initializePriceRange: (products: Product[]) => void;
-
-  // Acciones para UI de filtros
   setMainCategoryOpen: (isOpen: boolean) => void;
   setBrandsOpen: (isOpen: boolean) => void;
   setFavoritesOpen: (isOpen: boolean) => void;
@@ -108,162 +266,101 @@ export interface FiltersSlice {
   toggleBrandsSection: () => void;
   toggleFavoritesSection: () => void;
   togglePriceSection: () => void;
-  // Acciones principales
-  applyFilters: () => void;
-  clearAllFilters: () => void;
+  applyFilters: () => Promise<void>;
+  clearAllFilters: () => Promise<void>;
   resetFiltersState: () => void;
   hasActiveFilters: () => boolean;
-
-  // Filtrar productos por marcas
   filterProductsByBrands: () => void;
 }
 
-// Estado base del store
-export interface StoreState {
-  // Productos
-  products: Product[];
-  isLoadingProducts: boolean;
-  filteredProducts: Product[];
-  searchTerm: string;
-
-  // Categorías
-  categories: Category[];
-
-  // Marcas
-  brands: Brand[];
-
-  // Favoritos
-  favoriteLists: FavoriteList[];
-  selectedFavoriteList: any | null;
-  isLoadingFavorites: boolean;
-  showOnlyFavorites: boolean;
-
-  // Estados de filtros
-  selectedCategories: number[];
-  selectedBrands: number[];
-  selectedFavorites: number[];
-  minPrice: number;
-  maxPrice: number;
-  lowerPrice: number;
-  upperPrice: number;
-  priceInitialized: boolean;
-
-  // Estados de UI de filtros
-  isMainCategoryOpen: boolean;
-  isBrandsOpen: boolean;
-  isFavoritesOpen: boolean;
-  isPriceOpen: boolean;
-
-  // UI
-  isLoading: boolean;
-  isMobile: boolean;
-  isTablet: boolean;
-  isQaMode: boolean;
-  viewMode: 'grid' | 'list';
-
-  // Carrito
-  cartProducts: CartItem[];
-  isCartLoading: boolean;
-
-  // Paginación
-  productPaginationMeta: PaginationMeta | null;
-  productPaginationLinks: PaginationLinks | null;
-  currentPage: number;
-
-  // Sidebar Navigation
-  activeItem: ActiveItem | null;
-  openSubmenus: number[];
-  isMobileSidebarOpen: boolean;
-
-  // Estados del modal
-  isModalOpen: boolean;
-  modalTitle: string;
-  modalSize: ModalSize;
-  modalContent: React.ReactNode;
-}
-
-// Acciones de productos
-export interface ProductsSlice {
-  setProducts: (
-    products: Product[],
-    meta?: PaginationMeta,
-    links?: PaginationLinks
-  ) => void;
-  setSearchTerm: (terms: SearchWithPaginationProps) => void;
-  fetchProducts: (page?: number, size?: number) => Promise<void>;
-  setFilteredProducts: (filteredProducts: Product[]) => void;
-}
-
-// Acciones de categorías
-export interface CategoriesSlice {
-  setCategories: (categories: Category[]) => void;
-  fetchCategories: () => Promise<void>;
-}
-
-// Acciones de marcas
-export interface BrandsSlice {
-  setBrands: (brands: Brand[]) => void;
-  fetchBrands: () => Promise<void>;
-}
-
-// Acciones de UI
-export interface UiSlice {
-  checkIsMobile: () => void;
-  checkIsTablet: () => void;
-  setViewMode: (mode: 'grid' | 'list') => void;
-}
-
-// Acciones de carrito
-export interface CartSlice {
-  addProductToCart: (
-    product_id: number,
-    quantity: number,
-    unit: string
-  ) => Promise<{ ok: boolean }>;
-  incrementProductInCart: (productId: number) => void;
-  decrementProductInCart: (productId: number) => void;
-  removeAllQuantityByProductId: (productId: number) => void;
-  clearCart: () => void;
-  fetchCartProducts: () => Promise<void>;
-  removeProductFromCart: (product: CartItem, quantity: number) => Promise<{ ok: boolean }>;
-}
-
-// Acciones de paginación
-export interface PaginationSlice {
-  setProductPage: (page: number) => void;
-  nextPage: () => void;
-  prevPage: () => void;
-}
-
+// Sidebar Slice
 export interface SidebarSlice {
-  // Estados
   activeItem: ActiveItem | null;
   openSubmenus: number[];
   isMobileSidebarOpen: boolean;
   currentSidebarConfig: SidebarConfig | null;
 
-  // Acciones básicas
-  setActiveItem: (item: ActiveItem | null) => void;
   setSidebarConfig: (config: SidebarConfig) => void;
+  setActiveItem: (item: ActiveItem | null) => void;
   toggleSubmenu: (menuIndex: number) => void;
   closeAllSubmenus: () => void;
   setMobileSidebarOpen: (isOpen: boolean) => void;
   closeMobileSidebar: () => void;
   setActiveItemByUrl: (currentPath: string) => void;
 
-  // Helpers
   isMenuActive: (menuIndex: number) => boolean;
   isSubmenuActive: (menuIndex: number, submenuIndex: number) => boolean;
   isSubmenuOpen: (menuIndex: number) => boolean;
+  resetNavigation: () => void;
 
-  // Acciones compuestas
   handleMenuClick: (menuIndex: number, hasSubmenu: boolean) => void;
   handleSubmenuClick: (menuIndex: number, submenuIndex: number) => void;
-  resetNavigation: () => void;
 }
 
-// Tipo completo del store
+// Store Management Slice
+export interface StoreSlice {
+  resetBrandsState: () => void;
+  resetCategoriesState: () => void;
+  resetProductsState: () => void;
+  resetFiltersState: () => void;
+  resetSearchRelatedStates: () => Promise<void>;
+  resetAllStates: () => Promise<void>;
+}
+
+// ===== MAIN STORE STATE =====
+export interface StoreState extends LoadingStates, AuthState {
+  products: Product[];
+  filteredProducts: Product[];
+  searchTerm: string;
+  productPaginationMeta: PaginationMeta | null;
+  productPaginationLinks: PaginationLinks | null;
+  currentPage: number;
+
+  categories: Category[];
+  brands: Brand[];
+
+  isMobile: boolean;
+  isTablet: boolean;
+  viewMode: ViewMode;
+
+  cartProducts: CartItem[];
+
+  favoriteLists: FavoriteList[];
+  selectedFavoriteList: FavoriteList | null;
+  showOnlyFavorites: boolean;
+
+  selectedCategories: number[];
+  selectedBrands: number[];
+  selectedFavorites: number[];
+  minPrice: number;
+  maxPrice: number;
+  selectedMinPrice: number;
+  selectedMaxPrice: number;
+  hasUserSpecificSelection: boolean;
+  lowerPrice: number;
+  upperPrice: number;
+  priceInitialized: boolean;
+  isMainCategoryOpen: boolean;
+  isBrandsOpen: boolean;
+  isFavoritesOpen: boolean;
+  isPriceOpen: boolean;
+
+  activeItem: ActiveItem | null;
+  openSubmenus: number[];
+  isMobileSidebarOpen: boolean;
+  currentSidebarConfig: SidebarConfig | null;
+
+  isModalOpen: boolean;
+  modalTitle: string;
+  modalSize: ModalSize;
+  modalContent: React.ReactNode;
+
+  isQaMode: boolean;
+}
+
+// ===== COMPLETE STORE TYPE =====
 export type Store = StoreState &
+  AuthSlice &
   ProductsSlice &
   CategoriesSlice &
   BrandsSlice &
@@ -275,22 +372,3 @@ export type Store = StoreState &
   StoreSlice &
   ModalSlice &
   FavoritesSlice;
-
-export interface FavoritesSlice {
-  // Estados
-  favoriteLists: FavoriteList[];
-  selectedFavoriteList: any | null;
-  isLoadingFavorites: boolean;
-  showOnlyFavorites: boolean;
-
-  // Acciones
-  fetchFavorites: () => Promise<void>;
-  createFavoriteList: (name: string) => Promise<{ ok: boolean; error?: string }>;
-  addProductToFavoriteList: (favoriteListId: number, productId: number) => Promise<{ ok: boolean; error?: string }>;
-  removeProductFromFavorites: (productId: number) => Promise<{ ok: boolean; error?: string }>;
-  setSelectedFavoriteList: (list: any | null) => void;
-  setShowOnlyFavorites: (show: boolean) => void;
-  toggleShowOnlyFavorites: () => void;
-  getFavoriteProductIds: () => number[];
-  resetFavoritesState: () => void;
-}

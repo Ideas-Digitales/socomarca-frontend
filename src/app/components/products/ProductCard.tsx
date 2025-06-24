@@ -10,20 +10,20 @@ interface Props {
 }
 
 export default function ProductCard({ product }: Props) {
-  const { addProductToCart, isQaMode } = useStore();
+  const { addProductToCartOptimistic, isQaMode } = useStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [isOptimisticUpdate, setIsOptimisticUpdate] = useState(false);
   const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
   const [backgroundImage, setBackgroundImage] = useState(
     `url(${product.image})`
   );
-  const [quantity, setQuantity] = useState(0);  const handleSetFavorite = async () => {
+  const [quantity, setQuantity] = useState(0);const handleSetFavorite = async () => {
     if (isFavorite(product.id, product)) {
       await toggleFavorite(product.id);
     } else {
       handleAddToList(product);
     }
   };
-
   useEffect(() => {
     const img = new Image();
     img.src = product.image;
@@ -31,6 +31,17 @@ export default function ProductCard({ product }: Props) {
       setBackgroundImage(`url(/assets/global/logo_plant.png)`);
     };
   }, [product.image]);
+
+  // Efecto para manejar el feedback visual del optimistic update
+  useEffect(() => {
+    if (isOptimisticUpdate && !isLoading) {
+      const timer = setTimeout(() => {
+        setIsOptimisticUpdate(false);
+      }, 1500); // Mostrar "✓ Agregado" por 1.5 segundos
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOptimisticUpdate, isLoading]);
 
   const decreaseQuantity = () => {
     if (quantity > 0) {
@@ -67,28 +78,41 @@ export default function ProductCard({ product }: Props) {
     } else {
       setQuantity(numericValue);
     }
-  };
-
-  const addToCart = async () => {
+  };  const addToCart = async () => {
+    if (quantity <= 0) return;
+    
     setIsLoading(true);
-    if (quantity > 0) {
-      if (isQaMode) {
-        setQuantity(0);
-        setIsLoading(false);
-        return;
-      }
+    
+    if (isQaMode) {
+      setQuantity(0);
+      setIsLoading(false);
+      return;
+    }
 
-      const response = await addProductToCart(
+    try {
+      // Establecer estado optimista inmediatamente
+      setIsOptimisticUpdate(true);
+      
+      const response = await addProductToCartOptimistic(
         product.id,
         quantity,
-        product.unit
+        product.unit,
+        product
       );
 
       if (response.ok) {
         setQuantity(0);
+        // El estado isOptimisticUpdate se mantendrá true hasta que el useEffect lo resetee
+      } else {
+        // Si falla, quitar el estado optimista inmediatamente
+        setIsOptimisticUpdate(false);
       }
+    } catch (error) {
+      console.error('Error al agregar producto:', error);
+      setIsOptimisticUpdate(false);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -96,9 +120,7 @@ export default function ProductCard({ product }: Props) {
       return text.substring(0, maxLength) + '...';
     }
     return text;
-  };
-
-  const isProductFavorite = isFavorite(product.id, product);
+  };  const isProductFavorite = isFavorite(product.id, product);
 
   return (
     <div className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative">
@@ -183,16 +205,21 @@ export default function ProductCard({ product }: Props) {
               >
                 +
               </button>
-            </div>
-            <button
+            </div>            <button
               onClick={addToCart}
               disabled={quantity === 0}
-              className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] bg-[#84CC16] text-white hover:bg-[#257f00] h-[32px] text-[12px] cursor-pointer  disabled:cursor-not-allowed transition-all duration-300 ease-in-out"
+              className={`flex w-full p-2 flex-col justify-center items-center rounded-[6px] text-white h-[32px] text-[12px] cursor-pointer disabled:cursor-not-allowed transition-all duration-300 ease-in-out ${
+                isOptimisticUpdate 
+                  ? 'bg-lime-500' 
+                  : 'bg-[#84CC16] hover:bg-[#257f00]'
+              }`}
             >
               {isLoading ? (
                 <span className="animate-spin">
                   <ArrowPathIcon width={16} />
                 </span>
+              ) : isOptimisticUpdate ? (
+                '✓ Agregado'
               ) : (
                 'Agregar al carro'
               )}

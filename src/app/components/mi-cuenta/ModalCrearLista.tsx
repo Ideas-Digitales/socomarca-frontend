@@ -30,13 +30,18 @@ export default function ModalCrearLista({
     setIsLoading(true);
     try {
       const result = await handleCreateList(nombre.trim());
-      
+
       if (result.ok) {
         onClose();
-        setNombre(''); // Limpiar el formulario
+        setNombre('');
       } else {
-        setError(result.error || 'Error al crear la lista');
-      }    } catch {
+        setError(
+          typeof result.error === 'string'
+            ? result.error
+            : result.error?.message || 'Error al crear la lista'
+        );
+      }
+    } catch {
       setError('Error al crear la lista');
     } finally {
       setIsLoading(false);
@@ -63,7 +68,8 @@ export default function ModalCrearLista({
               className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-          </div>          <div className="flex gap-2">
+          </div>{' '}
+          <div className="flex gap-2">
             <button
               type="submit"
               disabled={isLoading}

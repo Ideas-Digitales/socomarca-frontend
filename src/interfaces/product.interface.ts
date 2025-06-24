@@ -79,3 +79,34 @@ export interface SearchWithPaginationProps
   page?: number;
   size?: number;
 }
+
+export interface BackendFilters {
+  min_price: number | null;
+  max_price: number | null;
+  unit: string | null;
+}
+
+export interface ProductSearchResponse {
+  data: Product[];
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    path: string;
+    per_page: number;
+    to: number;
+    total: number;
+    links: Array<{
+      url: string | null;
+      label: string;
+      active: boolean;
+    }>;
+  };
+  filters?: BackendFilters;
+}
