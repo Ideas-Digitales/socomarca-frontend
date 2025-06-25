@@ -14,9 +14,14 @@ import { getUserOrders } from "@/services/actions/order.actions";
 import { mapOrderToCompra } from "@/utils/mapOrderToCompra";
 import ComprasSection, {
   Compra,
-  ProductoCompra,
 } from "@/app/components/mi-cuenta/ComprasSection";
 import DetalleCompra from "@/app/components/mi-cuenta/DetalleCompra";
+import {
+  getUserAddresses,
+  type Address,
+} from "@/services/actions/addressees.actions";
+import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
+import LoadingSpinner from "@/app/components/global/LoadingSpinner";
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -37,9 +42,15 @@ export default function MiCuentaPage() {
   const [compras, setCompras] = useState<Compra[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Compra>(
-  compras[0]
-)
+    compras[0]
+  );
   const [loadingOrders, setLoadingOrders] = useState(true);
+
+  /* Estados para seccion de direcciones del usuario */
+  const [direcciones, setDirecciones] = useState<Address[]>([]);
+  const [loadingDirecciones, setLoadinDirecciones] = useState(true);
+  const [favoritaIndex, setFavoritaIndex] = useState<number | null>(null);
+  const [modalAbierto, setModalAbiertoState] = useState(false);
 
   const router = useRouter();
   const { handleViewListDetail, clearSelectedList } = useFavorites();
@@ -88,6 +99,17 @@ export default function MiCuentaPage() {
     fetchOrders();
   }, []);
 
+  /* Trae las direcciones del usuario */
+  useEffect(() => {
+    const fetchDirecciones = async () => {
+      const data = await getUserAddresses();
+      if (data) setDirecciones(data);
+      setLoadinDirecciones(false);
+    };
+
+    fetchDirecciones();
+  }, []);
+
   return (
     <div className="bg-[#f1f5f9] min-h-screen px-4">
       <div className="max-w-7xl mx-auto py-6">
@@ -124,31 +146,49 @@ export default function MiCuentaPage() {
                 <DatosPersonalesForm />
               </div>
             )}
-             {selected === "detalle-compra" && (
+            {selected === "detalle-compra" && (
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <DetalleCompra pedido={pedidoSeleccionado} setSection={setSelected} />
+                <DetalleCompra
+                  pedido={pedidoSeleccionado}
+                  setSection={setSelected}
+                />
               </div>
             )}
             {selected === "direcciones" && (
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-xl font-bold mb-4">Direcciones</h2>
-                <p>Sección temporalmente deshabilitada</p>
+                {loadingDirecciones ? (
+                  <div className="flex justify-center items-center py-10">
+                    <LoadingSpinner />
+                  </div>
+                ) : (
+                  <DireccionesSection
+                    direcciones={direcciones}
+                    favoritaIndex={favoritaIndex}
+                    setFavoritaIndex={setFavoritaIndex}
+                    setModalAbierto={setModalAbiertoState}
+                  />
+                )}
               </div>
             )}
             {selected === "compras" && (
-              <ComprasSection
-                compras={compras}
-                busqueda={busqueda}
-                setBusqueda={setBusqueda}
-                setPedidoSeleccionado={setPedidoSeleccionado}
-                setSelected={setSelected}
-                router={router}
-                loading={loadingOrders}
-              />
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <ComprasSection
+                  compras={compras}
+                  busqueda={busqueda}
+                  setBusqueda={setBusqueda}
+                  setPedidoSeleccionado={setPedidoSeleccionado}
+                  setSelected={setSelected}
+                  router={router}
+                  loading={loadingOrders}
+                />
+              </div>
             )}
           </div>
         </div>{" "}
         {modalLogoutVisible && (
+          <ModalLogout onClose={() => setModalLogoutVisible(false)} />
+        )}
+         {modalAbierto && (
           <ModalLogout onClose={() => setModalLogoutVisible(false)} />
         )}
         {modalCrearListaVisible && (
