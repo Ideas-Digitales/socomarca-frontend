@@ -8,7 +8,6 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
-import { useBrandFilters, useCategoryFilters, usePriceFilters, useFilterUIActions } from '@/stores/hooks';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
 
@@ -21,44 +20,42 @@ export default function CategoryFilterMobile({
   isOpen,
   onClose,
 }: CategoryFilterMobileProps) {
-  // Usar hooks especializados para mejor rendimiento
-  const { selectedCategories, toggleCategorySelection } = useCategoryFilters();
-  const { selectedBrands, toggleBrandSelection } = useBrandFilters();
   const {
-    minPrice,
-    maxPrice,
-    lowerPrice,
-    upperPrice,
-    priceInitialized,
-    setLowerPrice,
-    setUpperPrice,
-    handlePriceRangeChange,
-    initializePriceRange,
-  } = usePriceFilters();
-
-  const {
-    toggleMainCategory,
-    toggleBrandsSection,
-    toggleFavoritesSection,
-    togglePriceSection,
-  } = useFilterUIActions();
-
-  // Estados que aún necesitamos del store principal
-  const {
+    // Estados de datos
     categories,
     brands,
     products,
+
+    // Estados de filtros
+    selectedCategories,
+    selectedBrands,
+    minPrice,
+    maxPrice,
+    selectedMinPrice,
+    selectedMaxPrice,
+    priceInitialized,
     showOnlyFavorites,
-    
+
     // Estados de UI
     isMainCategoryOpen,
     isBrandsOpen,
     isFavoritesOpen,
     isPriceOpen,
 
-    // Acciones que aún no hemos migrado
-    fetchBrands,
+    // Acciones de filtros
+    toggleCategorySelection,
+    toggleBrandSelection,
+    setSelectedMinPrice,
+    setSelectedMaxPrice,
+    handlePriceRangeChange,
+    initializePriceRange,
     toggleShowOnlyFavorites,
+
+    // Acciones de UI
+    toggleMainCategory,
+    toggleBrandsSection,
+    toggleFavoritesSection,
+    togglePriceSection,
 
     // Acciones principales
     applyFilters,
@@ -66,17 +63,9 @@ export default function CategoryFilterMobile({
     hasActiveFilters,
   } = useStore();
 
-  // Asegurar que las marcas estén cargadas
-  useEffect(() => {
-    if (brands.length === 0) {
-      fetchBrands();
-    }
-  }, [brands.length, fetchBrands]);
-
   // Estados locales para búsqueda
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [brandSearchTerm, setBrandSearchTerm] = useState('');
-
   const formatPrice = useCallback((price: number): string => {
     return price.toLocaleString('es-CL');
   }, []);
@@ -85,47 +74,51 @@ export default function CategoryFilterMobile({
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
   );
-
   // Filtrar marcas por término de búsqueda
   const filteredBrands = brands.filter((brand) =>
     brand.name.toLowerCase().includes(brandSearchTerm.toLowerCase())
   );
 
-  // Inicializar rango de precios cuando cambien los productos
+  // Inicializar rango de precios cuando cambien los productos (solo si es necesario)
   useEffect(() => {
-    initializePriceRange(products);
-  }, [products, initializePriceRange]);
+    // Solo inicializar si no hay precios configurados aún
+    if (!priceInitialized) {
+      initializePriceRange(products);
+    }
+  }, [products, initializePriceRange, priceInitialized]);
 
   // Handle input changes for lower price
   const handleLowerPriceChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      // Remove non-numeric characters
       const inputValue = e.target.value.replace(/[^\d]/g, '');
 
       if (inputValue) {
         const numericValue = parseInt(inputValue);
 
         if (!isNaN(numericValue)) {
-          setLowerPrice(numericValue);
+          setSelectedMinPrice(numericValue);
         }
       }
     },
-    [setLowerPrice]
+    [setSelectedMinPrice]
   );
 
   // Handle input changes for upper price
   const handleUpperPriceChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      // Remove non-numeric characters
       const inputValue = e.target.value.replace(/[^\d]/g, '');
 
       if (inputValue) {
         const numericValue = parseInt(inputValue);
 
         if (!isNaN(numericValue)) {
-          setUpperPrice(numericValue);
+          setSelectedMaxPrice(numericValue);
         }
       }
     },
-    [setUpperPrice]
+    [setSelectedMaxPrice]
   );
 
   const handleApplyFilters = () => {
@@ -439,15 +432,16 @@ export default function CategoryFilterMobile({
               {' '}
               <div className="w-full p-4">
                 {hasPriceRange ? (
-                  <div className="transition-opacity duration-300">                    <DualRangeSlider
+                  <div className="transition-opacity duration-300">
+                    {' '}
+                    <DualRangeSlider
                       min={minPrice}
                       max={maxPrice}
-                      selectedMin={lowerPrice}
-                      selectedMax={upperPrice}
+                      selectedMin={selectedMinPrice}
+                      selectedMax={selectedMaxPrice}
                       onChange={handlePriceRangeChange}
                       step={100}
-                    />
-
+                    />{' '}
                     <div className="flex justify-between gap-3 mb-4">
                       <div className="w-1/2">
                         <div className="text-sm text-gray-500 mb-2">Desde</div>
@@ -456,12 +450,13 @@ export default function CategoryFilterMobile({
                           type="text"
                           className="w-full border border-gray-300 rounded-md p-3 text-base transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                           placeholder={`$${formatPrice(minPrice)}`}
-                          value={`${formatPrice(lowerPrice)}`}
+                          value={`${formatPrice(selectedMinPrice)}`}
                           onChange={handleLowerPriceChange}
                           onBlur={() => {
-                            if (lowerPrice < minPrice) setLowerPrice(minPrice);
-                            if (lowerPrice > upperPrice)
-                              setLowerPrice(upperPrice);
+                            if (selectedMinPrice < minPrice)
+                              setSelectedMinPrice(minPrice);
+                            if (selectedMinPrice > selectedMaxPrice)
+                              setSelectedMinPrice(selectedMaxPrice);
                           }}
                         />
                       </div>
@@ -472,12 +467,13 @@ export default function CategoryFilterMobile({
                           type="text"
                           className="w-full border border-gray-300 rounded-md p-3 text-base transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                           placeholder={`${formatPrice(maxPrice)}`}
-                          value={`${formatPrice(upperPrice)}`}
+                          value={`${formatPrice(selectedMaxPrice)}`}
                           onChange={handleUpperPriceChange}
                           onBlur={() => {
-                            if (upperPrice > maxPrice) setUpperPrice(maxPrice);
-                            if (upperPrice < lowerPrice)
-                              setUpperPrice(lowerPrice);
+                            if (selectedMaxPrice > maxPrice)
+                              setSelectedMaxPrice(maxPrice);
+                            if (selectedMaxPrice < selectedMinPrice)
+                              setSelectedMaxPrice(selectedMinPrice);
                           }}
                         />
                       </div>

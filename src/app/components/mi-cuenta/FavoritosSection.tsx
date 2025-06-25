@@ -37,9 +37,8 @@ export default function FavoritosSection({
         </div>
       </div>
     );
-  }
-  return (
-    <div className=" p-4 rounded">
+  }  return (
+    <div className=" p-4 rounded" data-cy="favoritos-section">
       <h2 className="text-xl font-bold mb-6">Mis favoritos</h2>{' '}
       <div className="space-y-4 mb-6">
         {lists.length === 0 ? (
@@ -49,10 +48,10 @@ export default function FavoritosSection({
               Crea tu primera lista para comenzar
             </p>
           </div>
-        ) : (
-          lists.map((lista, i) => (
+        ) : (          lists.map((lista, i) => (
             <div
               key={lista.id || i}
+              data-cy="lista-favorita"
               className="bg-white rounded p-4 shadow-sm border border-[#e4eaf1] sm:flex sm:justify-between"
             >
               <div>
@@ -76,11 +75,11 @@ export default function FavoritosSection({
                     />
                   ))}
                 </div>
-              </div>
-              <button
+              </div>              <button
                 onClick={() => {
                   onViewListDetail(lista);
                 }}
+                data-cy="btn-revisar-lista"
                 className="text-sm text-slate-500 flex items-center gap-1 hover:underline cursor-pointer justify-center"
               >
                 Revisar lista <span className="text-lg">›</span>
@@ -88,13 +87,13 @@ export default function FavoritosSection({
             </div>
           ))
         )}
-      </div>
-      <button
+      </div>      <button
         onClick={() => {
           setNombreNuevaLista('');
           setErrorNombreLista('');
           setModalCrearListaVisible(true);
         }}
+        data-cy="crear-nueva-lista"
         className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded text-sm"
       >
         Crear nueva lista

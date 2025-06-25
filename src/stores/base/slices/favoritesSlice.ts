@@ -5,6 +5,7 @@ import {
   fetchCreateFavoriteList,
   fetchAddProductToFavoriteList,
   fetchRemoveProductFromFavorites,
+  deleteFavoriteList,
 } from '@/services/actions/favorite.actions';
 
 export const createFavoritesSlice: StateCreator<
@@ -77,14 +78,16 @@ export const createFavoritesSlice: StateCreator<
   },
   addProductToFavoriteList: async (
     favoriteListId: number,
-    productId: number
+    productId: number,
+    unit: string
   ) => {
     try {
       set({ isLoadingFavorites: true });
 
       const response = await fetchAddProductToFavoriteList(
         favoriteListId,
-        productId
+        productId,
+        unit
       );
 
       if (response.ok) {
@@ -149,6 +152,38 @@ export const createFavoritesSlice: StateCreator<
           status: 500,
         },
       };
+    }
+  },
+
+  removeFavoriteList: async (listId: number) => {
+    try {
+      set({ isLoadingFavorites: true });
+      const response = await deleteFavoriteList(listId);
+      if (response.ok) {
+        const { fetchFavorites } = get();
+        await fetchFavorites();
+        return { ok: true };
+      } else {
+        console.error('Error removing favorite list:', response.error);
+        return {
+          ok: false,
+          error: {
+            message: response.error || 'Error desconocido',
+            status: 500,
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error removing favorite list:', error);
+      return {
+        ok: false,
+        error: {
+          message: 'Error desconocido',
+          status: 500,
+        },
+      };
+    } finally {
+      set({ isLoadingFavorites: false });
     }
   },
 

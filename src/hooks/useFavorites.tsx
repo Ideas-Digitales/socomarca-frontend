@@ -4,8 +4,7 @@ import useStore from '@/stores/base';
 import ListsModal from '@/app/components/global/ListsModal';
 import { FavoriteList } from '@/interfaces/favorite.inteface';
 
-export const useFavorites = () => {
-  const {
+export const useFavorites = () => {  const {
     favoriteLists,
     selectedFavoriteList,
     isLoadingFavorites,
@@ -14,6 +13,7 @@ export const useFavorites = () => {
     createFavoriteList,
     addProductToFavoriteList,
     removeProductFromFavorites,
+    removeFavoriteList,
     openModal,
     closeModal,
   } = useStore();
@@ -144,7 +144,8 @@ export const useFavorites = () => {
           );
           const result = await addProductToFavoriteList(
             parseInt(listId),
-            product.id
+            product.id,
+            product.unit
           );
 
           if (result.ok) {
@@ -233,14 +234,35 @@ export const useFavorites = () => {
       list.favorites?.forEach((favorite) => {
         allIds.add(favorite.product.id);
       });
-    });
-
-    return Array.from(allIds);
+    });    return Array.from(allIds);
   }, [favorites, favoriteLists]);
+
+  // Función para eliminar una lista de favoritos
+  const handleDeleteList = useCallback(
+    async (listId: number) => {
+      try {
+        const result = await removeFavoriteList(listId);
+        if (result.ok) {
+          // Limpiar la lista seleccionada si es la que se eliminó
+          if (selectedFavoriteList?.id === listId) {
+            clearSelectedList();
+          }
+        }
+        return result;
+      } catch (error) {
+        console.error('Error deleting list:', error);
+        return {
+          ok: false,
+          error: 'Error al eliminar la lista',
+        };
+      }
+    },
+    [removeFavoriteList, selectedFavoriteList?.id, clearSelectedList]
+  );
+
   const isRemovingFavorite = (productId: number) => {
     return removingFavorites.has(productId);
-  };
-  return {
+  };  return {
     favorites,
     lists: Array.isArray(favoriteLists) ? favoriteLists : [],
     selectedFavoriteList,
@@ -252,6 +274,7 @@ export const useFavorites = () => {
     fetchFavorites,
     handleCreateList,
     handleViewListDetail,
+    handleDeleteList,
     setSelectedFavoriteList,
     clearSelectedList,
     getAllFavoriteProductIds,

@@ -209,7 +209,8 @@ export interface FavoritesSlice {
   createFavoriteList: (name: string) => Promise<ApiResponse>;
   addProductToFavoriteList: (
     favoriteListId: number,
-    productId: number
+    productId: number,
+    unit: string
   ) => Promise<ApiResponse>;
   removeProductFromFavorites: (productId: number) => Promise<ApiResponse>;
   setShowOnlyFavorites: (show: boolean) => void;
@@ -217,6 +218,7 @@ export interface FavoritesSlice {
   getFavoriteProductIds: () => number[];
   resetFavoritesState: () => void;
   setSelectedFavoriteList: (list: FavoriteList | null) => void;
+  removeFavoriteList: (listId: number) => Promise<ApiResponse>;
 }
 
 // Filters Slice

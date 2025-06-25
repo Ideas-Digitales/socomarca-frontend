@@ -89,7 +89,8 @@ export async function fetchCreateFavoriteList(name: string) {
 
 export async function fetchAddProductToFavoriteList(
   favoriteListId: number,
-  productId: number
+  productId: number,
+  unit: string
 ) {
   const { getCookie } = await cookiesManagement();
   const cookie = getCookie('token');
@@ -113,6 +114,7 @@ export async function fetchAddProductToFavoriteList(
       body: JSON.stringify({
         favorite_list_id: favoriteListId,
         product_id: productId,
+        unit,
       }),
     });
 
@@ -179,3 +181,43 @@ export async function fetchRemoveProductFromFavorites(productId: number) {
     };
   }
 }
+
+export const deleteFavoriteList = async (
+  listId: number
+): Promise<{ ok: boolean; data?: any; error?: string }> => {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const cookie = getCookie('token');
+
+    if (!cookie) {
+      return { 
+        ok: false, 
+        error: 'Unauthorized: No token provided' 
+      };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/favorites-list/${listId}`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${cookie}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error deleting favorite list');
+    }
+
+    const data = await response.json();
+    return { 
+      ok: true, 
+      data 
+    };
+  } catch (error) {
+    console.error('Error deleting favorite list:', error);
+    return { 
+      ok: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    };
+  }
+};

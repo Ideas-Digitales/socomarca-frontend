@@ -57,22 +57,22 @@ export default function ModalCrearLista({
           <div>
             <label className="block font-medium">
               Nombre de lista <span className="text-red-500">*</span>
-            </label>
-            <input
+            </label>            <input
               type="text"
               value={nombre}
               onChange={(e) => {
                 setNombre(e.target.value);
                 setError('');
               }}
+              data-cy="input-nombre-lista"
               className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
           </div>{' '}
-          <div className="flex gap-2">
-            <button
+          <div className="flex gap-2">            <button
               type="submit"
               disabled={isLoading}
+              data-cy="btn-crear-lista"
               className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-6 py-2 rounded"
             >
               {isLoading ? 'Creando...' : 'Crear'}

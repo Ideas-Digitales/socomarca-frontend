@@ -15,7 +15,7 @@ export default function DetalleListaSection({
   onVolver: () => void;
 }) {
   const router = useRouter();
-  const { selectedFavoriteList, isLoadingFavorites } = useFavorites();
+  const { selectedFavoriteList, isLoadingFavorites, handleDeleteList } = useFavorites();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [productoAEliminar, setProductoAEliminar] = useState<number | null>(
@@ -93,13 +93,12 @@ export default function DetalleListaSection({
             >
               <PencilSquareIcon className="w-4 h-4" />
               Editar
-            </button>
-
-            <button
+            </button>            <button
               onClick={() => {
                 setEliminarLista(true);
                 setModalVisible(true);
               }}
+              data-cy="btn-eliminar-lista"
               className="flex items-center gap-1 hover:text-red-600"
             >
               <TrashIcon className="w-4 h-4" />
@@ -203,12 +202,19 @@ export default function DetalleListaSection({
           setModalVisible(false);
           setProductoAEliminar(null);
           setEliminarLista(false);
-        }}
-        onConfirm={() => {
-          if (eliminarLista) {
-            // TODO: lógica de eliminación de la lista
-            console.log('Eliminar lista completa');
-            onVolver();
+        }}        onConfirm={async () => {
+          if (eliminarLista && selectedFavoriteList) {
+            try {
+              const result = await handleDeleteList(selectedFavoriteList.id);
+              if (result.ok) {
+                onVolver();
+              } else {
+                console.error('Error al eliminar la lista:', result.error);
+                // Aquí podrías mostrar un mensaje de error al usuario
+              }
+            } catch (error) {
+              console.error('Error inesperado al eliminar la lista:', error);
+            }
           } else if (productoAEliminar !== null) {
             eliminarProducto(productoAEliminar);
           }

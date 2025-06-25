@@ -5,11 +5,12 @@ import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
 
-export default function CategoryFilterDesktop() {  const {
+export default function CategoryFilterDesktop() {
+  const {
     // Estados de datos
     categories,
     brands,
-    products,    // Estados de filtros
+    products, // Estados de filtros
     selectedCategories,
     selectedBrands,
     minPrice,
@@ -97,7 +98,7 @@ export default function CategoryFilterDesktop() {  const {
     hasPriceRange,
     priceInitialized,
     availableRange: { minPrice, maxPrice },
-    userSelection: { selectedMinPrice, selectedMaxPrice }
+    userSelection: { selectedMinPrice, selectedMaxPrice },
   });
 
   return (
@@ -258,10 +259,12 @@ export default function CategoryFilterDesktop() {  const {
         className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
           isFavoritesOpen ? 'max-h-[20dvh] opacity-100' : 'max-h-0 opacity-0'
         }`}
-      >        <div className="w-full p-3 flex items-center gap-2">
-          <input 
-            id="favorite-checkbox" 
-            type="checkbox" 
+      >
+        {' '}
+        <div className="w-full p-3 flex items-center gap-2">
+          <input
+            id="favorite-checkbox"
+            type="checkbox"
             checked={showOnlyFavorites}
             onChange={toggleShowOnlyFavorites}
           />
@@ -297,14 +300,16 @@ export default function CategoryFilterDesktop() {  const {
             : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="w-full p-3">          {hasPriceRange ? (
+        <div className="w-full p-3">
+          {' '}
+          {hasPriceRange ? (
             <div className="transition-opacity duration-300">
               {(() => {
                 console.log('🎚️ About to render DualRangeSlider with props:', {
                   min: minPrice,
                   max: maxPrice,
                   selectedMin: selectedMinPrice,
-                  selectedMax: selectedMaxPrice
+                  selectedMax: selectedMaxPrice,
                 });
                 return null;
               })()}
@@ -329,7 +334,8 @@ export default function CategoryFilterDesktop() {  const {
                 <div className="absolute h-2 w-full bg-lime-500 rounded-full"></div>
               </div>
             </div>
-          )}          <div className="flex justify-between gap-2 mb-4">
+          )}{' '}
+          <div className="flex justify-between gap-2 mb-4">
             <div className="w-1/2">
               <div className="text-xs text-gray-500 mb-1">Desde</div>
               <input
@@ -340,8 +346,10 @@ export default function CategoryFilterDesktop() {  const {
                 value={`${formatPrice(selectedMinPrice)}`}
                 onChange={handleLowerPriceChange}
                 onBlur={() => {
-                  if (selectedMinPrice < minPrice) setSelectedMinPrice(minPrice);
-                  if (selectedMinPrice > selectedMaxPrice) setSelectedMinPrice(selectedMaxPrice);
+                  if (selectedMinPrice < minPrice)
+                    setSelectedMinPrice(minPrice);
+                  if (selectedMinPrice > selectedMaxPrice)
+                    setSelectedMinPrice(selectedMaxPrice);
                 }}
               />
             </div>
@@ -353,9 +361,12 @@ export default function CategoryFilterDesktop() {  const {
                 className="w-full border border-gray-300 rounded-md p-2 text-sm transition-all duration-200 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none"
                 placeholder={`${formatPrice(maxPrice)}`}
                 value={`${formatPrice(selectedMaxPrice)}`}
-                onChange={handleUpperPriceChange}                onBlur={() => {
-                  if (selectedMaxPrice > maxPrice) setSelectedMaxPrice(maxPrice);
-                  if (selectedMaxPrice < selectedMinPrice) setSelectedMaxPrice(selectedMinPrice);
+                onChange={handleUpperPriceChange}
+                onBlur={() => {
+                  if (selectedMaxPrice > maxPrice)
+                    setSelectedMaxPrice(maxPrice);
+                  if (selectedMaxPrice < selectedMinPrice)
+                    setSelectedMaxPrice(selectedMinPrice);
                 }}
               />
             </div>
