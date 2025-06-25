@@ -11,8 +11,12 @@ import SectionSync from "@/app/components/mi-cuenta/SectionSync";
 import { useFavorites } from "@/hooks/useFavorites";
 import DatosPersonalesForm from "@/app/components/mi-cuenta/DatosPersonalesForm";
 import { getUserOrders } from "@/services/actions/order.actions";
-import { mapOrderToCompra } from '@/utils/mapOrderToCompra'
-import ComprasSection, { Compra, ProductoCompra } from '@/app/components/mi-cuenta/ComprasSection';
+import { mapOrderToCompra } from "@/utils/mapOrderToCompra";
+import ComprasSection, {
+  Compra,
+  ProductoCompra,
+} from "@/app/components/mi-cuenta/ComprasSection";
+import DetalleCompra from "@/app/components/mi-cuenta/DetalleCompra";
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -30,12 +34,12 @@ export default function MiCuentaPage() {
   const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
 
   /* Estados para seccion de ordenes del usuario */
-  const [compras, setCompras] = useState<Compra[]>([])
-  const [busqueda, setBusqueda] = useState('')
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Compra | null>(null)
-  const [loadingOrders, setLoadingOrders] = useState(true)
-
-
+  const [compras, setCompras] = useState<Compra[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Compra>(
+  compras[0]
+)
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   const router = useRouter();
   const { handleViewListDetail, clearSelectedList } = useFavorites();
@@ -64,25 +68,25 @@ export default function MiCuentaPage() {
   };
 
   /* Trae las ordenes del usuario  */
-useEffect(() => {
-  const fetchOrders = async () => {
-    setLoadingOrders(true)
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoadingOrders(true);
 
-    try {
-      const res = await getUserOrders()
-      if (res?.data) {
-        const mapped: Compra[] = res.data.map(mapOrderToCompra)
-        setCompras(mapped)
+      try {
+        const res = await getUserOrders();
+        if (res?.data) {
+          const mapped: Compra[] = res.data.map(mapOrderToCompra);
+          setCompras(mapped);
+        }
+      } catch (error) {
+        console.error("Error al cargar las órdenes:", error);
+      } finally {
+        setLoadingOrders(false);
       }
-    } catch (error) {
-      console.error('Error al cargar las órdenes:', error)
-    } finally {
-      setLoadingOrders(false) 
-    }
-  }
+    };
 
-  fetchOrders()
-}, [])
+    fetchOrders();
+  }, []);
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen px-4">
@@ -120,23 +124,28 @@ useEffect(() => {
                 <DatosPersonalesForm />
               </div>
             )}
+             {selected === "detalle-compra" && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <DetalleCompra pedido={pedidoSeleccionado} setSection={setSelected} />
+              </div>
+            )}
             {selected === "direcciones" && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-bold mb-4">Direcciones</h2>
                 <p>Sección temporalmente deshabilitada</p>
               </div>
             )}
-           {selected === 'compras' && (
-       <ComprasSection
-  compras={compras}
-  busqueda={busqueda}
-  setBusqueda={setBusqueda}
-  setPedidoSeleccionado={setPedidoSeleccionado}
-  setSelected={setSelected}
-  router={router}
-  loading={loadingOrders}
-/>
-      )}
+            {selected === "compras" && (
+              <ComprasSection
+                compras={compras}
+                busqueda={busqueda}
+                setBusqueda={setBusqueda}
+                setPedidoSeleccionado={setPedidoSeleccionado}
+                setSelected={setSelected}
+                router={router}
+                loading={loadingOrders}
+              />
+            )}
           </div>
         </div>{" "}
         {modalLogoutVisible && (
