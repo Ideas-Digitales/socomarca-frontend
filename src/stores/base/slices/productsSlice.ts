@@ -18,7 +18,8 @@ export const createProductsSlice: StateCreator<
   [],
   [],
   ProductsSlice
-> = (set, get) => ({  // Estados de productos
+> = (set, get) => ({
+  // Estados de productos
   products: [],
   filteredProducts: [],
   searchTerm: '',

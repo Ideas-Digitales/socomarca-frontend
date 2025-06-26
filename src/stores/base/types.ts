@@ -112,6 +112,7 @@ export interface ModalSlice {
     }
   ) => void;
   closeModal: () => void;
+  updateModalContent: (content: React.ReactNode) => void;
 }
 
 // Products Slice
@@ -212,13 +213,15 @@ export interface FavoritesSlice {
     productId: number,
     unit: string
   ) => Promise<ApiResponse>;
-  removeProductFromFavorites: (productId: number) => Promise<ApiResponse>;
+  removeProductFromFavorites: (favoriteId: number) => Promise<ApiResponse>;
   setShowOnlyFavorites: (show: boolean) => void;
   toggleShowOnlyFavorites: () => void;
   getFavoriteProductIds: () => number[];
   resetFavoritesState: () => void;
   setSelectedFavoriteList: (list: FavoriteList | null) => void;
   removeFavoriteList: (listId: number) => Promise<ApiResponse>;
+  changeListName: (listId: number, newName: string) => Promise<ApiResponse>;
+  toggleProductFavorite: (productId: number, product?: any) => Promise<ApiResponse & { requiresListSelection?: boolean; product?: any }>;
 }
 
 // Filters Slice

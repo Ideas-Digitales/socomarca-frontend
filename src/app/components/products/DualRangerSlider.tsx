@@ -30,26 +30,14 @@ const DualRangeSlider = ({
 
   // Actualizar valores cuando cambien las props de selección del usuario
   useEffect(() => {
-    console.log('🎚️ DualRangeSlider props changed:', {
-      availableRange: { min, max },
-      selectedRange: { selectedMin, selectedMax }
-    });
-    
     if (selectedMin !== undefined) setMinVal(selectedMin);
     if (selectedMax !== undefined) setMaxVal(selectedMax);
   }, [selectedMin, selectedMax, min, max]); // Incluir min y max en las dependencias
   // Manejar cambio del valor mínimo
   const handleMinChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Math.min(Number(event.target.value), maxVal - step);
-    const boundedValue = Math.max(min, Math.min(value, max)); // Asegurar que esté dentro del rango disponible
-    
-    console.log('🎚️ Min thumb changed:', { 
-      rawValue: event.target.value,
-      processedValue: value,
-      boundedValue,
-      availableRange: { min, max }
-    });
-    
+    const boundedValue = Math.max(min, Math.min(value, max));
+
     setMinVal(boundedValue);
     onChange(boundedValue, maxVal);
   };
@@ -57,41 +45,26 @@ const DualRangeSlider = ({
   // Manejar cambio del valor máximo
   const handleMaxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Math.max(Number(event.target.value), minVal + step);
-    const boundedValue = Math.max(min, Math.min(value, max)); // Asegurar que esté dentro del rango disponible
-    
-    console.log('🎚️ Max thumb changed:', { 
-      rawValue: event.target.value,
-      processedValue: value,
-      boundedValue,
-      availableRange: { min, max }
-    });
-    
+    const boundedValue = Math.max(min, Math.min(value, max));
+
     setMaxVal(boundedValue);
     onChange(minVal, boundedValue);
   };
   const minPercent = getPercent(minVal);
   const maxPercent = getPercent(maxVal);
 
-  // Log para debugging
-  console.log('🎯 DualRangeSlider render:', {
-    availableRange: { min, max },
-    selectedValues: { minVal, maxVal },
-    percentages: { minPercent, maxPercent },
-    trackStyle: {
-      left: `${minPercent}%`,
-      width: `${maxPercent - minPercent}%`
-    }
-  });
-
   return (
     <div className="dual-range-slider">
       <div className="slider-track">
-        <div className="slider-range" style={{
-          left: `${minPercent}%`,
-          width: `${maxPercent - minPercent}%`
-        }} />
+        <div
+          className="slider-range"
+          style={{
+            left: `${minPercent}%`,
+            width: `${maxPercent - minPercent}%`,
+          }}
+        />
       </div>
-      
+
       <input
         type="range"
         min={min}
@@ -101,7 +74,7 @@ const DualRangeSlider = ({
         onChange={handleMinChange}
         className="thumb thumb--left"
       />
-      
+
       <input
         type="range"
         min={min}

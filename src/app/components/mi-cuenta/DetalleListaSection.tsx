@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import {
+  ChevronLeftIcon,
+  PencilSquareIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
 import ModalConfirmacion from '../global/ModalConfirmacion';
 import ModalBase from '../global/ModalBase';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -15,10 +19,19 @@ export default function DetalleListaSection({
   onVolver: () => void;
 }) {
   const router = useRouter();
-  const { selectedFavoriteList, isLoadingFavorites, handleDeleteList } = useFavorites();
+  const {
+    selectedFavoriteList,
+    isLoadingFavorites,
+    handleDeleteList,
+    handleChangeListName,
+    handleRemoveProductFromFavorites,
+  } = useFavorites();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [productoAEliminar, setProductoAEliminar] = useState<number | null>(
+    null
+  );
+  const [eliminandoProducto, setEliminandoProducto] = useState<number | null>(
     null
   );
   const [eliminarLista, setEliminarLista] = useState(false);
@@ -27,6 +40,14 @@ export default function DetalleListaSection({
     selectedFavoriteList?.name || ''
   );
   const [errorNombre, setErrorNombre] = useState('');
+  const [isSavingName, setIsSavingName] = useState(false);
+
+  // Actualizar el nombre editado cuando cambie la lista seleccionada
+  useEffect(() => {
+    if (selectedFavoriteList) {
+      setNombreEditado(selectedFavoriteList.name);
+    }
+  }, [selectedFavoriteList]);
 
   // Loading state
   if (isLoadingFavorites) {
@@ -35,9 +56,9 @@ export default function DetalleListaSection({
         <div className="max-w-4xl mx-auto">
           <button
             onClick={onVolver}
-            className="text-gray-600 hover:underline text-sm mb-4"
+            className="text-gray-600 hover:underline text-sm mb-4 flex gap-[10px] cursor-pointer"
           >
-            ← Volver a favoritos
+            <ChevronLeftIcon width={20} height={20} /> Volver a favoritos
           </button>
           <div className="text-center py-8">
             <p>Cargando...</p>
@@ -54,9 +75,9 @@ export default function DetalleListaSection({
         <div className="max-w-4xl mx-auto">
           <button
             onClick={onVolver}
-            className="text-gray-600 hover:underline text-sm mb-4"
+            className="text-gray-600 hover:underline text-sm mb-4 flex gap-[10px] cursor-pointer"
           >
-            ← Volver a favoritos
+            <ChevronLeftIcon width={20} height={20} /> Volver a favoritos
           </button>
           <div className="text-center py-8">
             <p>No se ha seleccionado ninguna lista</p>
@@ -67,9 +88,21 @@ export default function DetalleListaSection({
   }
 
   const favorites = selectedFavoriteList.favorites || [];
-  const eliminarProducto = (favoriteId: number) => {
-    // TODO: Implement delete product from favorites list
-    console.log('Eliminar producto con ID:', favoriteId);
+
+  const eliminarProducto = async (favoriteId: number) => {
+    try {
+      setEliminandoProducto(favoriteId);
+      const result = await handleRemoveProductFromFavorites(favoriteId);
+
+      if (!result.ok) {
+        // Si hay error, podrías mostrar un toast o mensaje de error
+        console.error('Error al eliminar producto:', result.error);
+      }
+    } catch (error) {
+      console.error('Error inesperado al eliminar producto:', error);
+    } finally {
+      setEliminandoProducto(null);
+    }
   };
 
   return (
@@ -78,9 +111,9 @@ export default function DetalleListaSection({
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={onVolver}
-            className="text-gray-600 hover:underline text-sm"
+            className="text-gray-600 hover:underline text-sm flex gap-[10px] cursor-pointer"
           >
-            ← Volver a favoritos
+            <ChevronLeftIcon width={20} height={20} /> Volver a favoritos
           </button>
 
           <div className="flex gap-4 text-sm text-gray-500">
@@ -93,7 +126,8 @@ export default function DetalleListaSection({
             >
               <PencilSquareIcon className="w-4 h-4" />
               Editar
-            </button>            <button
+            </button>{' '}
+            <button
               onClick={() => {
                 setEliminarLista(true);
                 setModalVisible(true);
@@ -117,63 +151,74 @@ export default function DetalleListaSection({
           </div>
         ) : (
           <div className="space-y-4">
-            {favorites.map((favorite: Favorite) => (
-              <div
-                key={favorite.id}
-                className="bg-slate-100 flex-col gap-4 justify-start rounded flex items-start sm:items-center sm:flex-row sm:justify-between border border-slate-200 px-4 py-2 shadow-sm"
-              >
-                <div className="flex items-center gap-4">
-                  <input type="checkbox" />{' '}
-                  <Image
-                    src="/assets/global/logo_plant.png"
-                    alt={favorite.product.name}
-                    width={56}
-                    height={64}
-                    className="object-contain rounded"
-                  />
-                  <div className="text-sm">
-                    <p className="font-semibold">{favorite.product.name}</p>
-                    <p className="text-gray-500">
-                      {favorite.product.description || ''}
-                    </p>
+            {favorites.map((favorite: Favorite) => {
+              const isDeleting = eliminandoProducto === favorite.id;
+              return (
+                <div
+                  key={favorite.id}
+                  className={`flex-col gap-4 justify-start rounded flex items-start sm:items-center sm:flex-row sm:justify-between px-4 py-2 transition-opacity ${
+                    isDeleting ? 'opacity-50 pointer-events-none' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <input type="checkbox" disabled={isDeleting} />
+                    <Image
+                      src="/assets/global/logo_plant.png"
+                      alt={favorite.product.name}
+                      width={56}
+                      height={64}
+                      className="object-contain rounded"
+                    />
+                    <div className="text-sm">
+                      <p className="font-semibold">{favorite.product.name}</p>
+                      <p className="text-gray-500">
+                        {favorite.product.description || ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 justify-end w-full">
+                    <div className="flex items-center rounded px-2">
+                      <button
+                        onClick={() => {
+                          // TODO: Implement quantity change
+                          console.log('Cambiar cantidad');
+                        }}
+                        disabled={isDeleting}
+                        className="px-2 text-gray-700 bg-slate-200 border border-gray-300 rounded disabled:opacity-50"
+                      >
+                        -
+                      </button>
+                      <span className="px-2">1</span>
+                      <button
+                        onClick={() => {
+                          // TODO: Implement quantity change
+                          console.log('Cambiar cantidad');
+                        }}
+                        disabled={isDeleting}
+                        className="px-2 text-gray-700 bg-slate-200 border border-gray-300 rounded disabled:opacity-50"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setProductoAEliminar(favorite.id);
+                        setModalVisible(true);
+                      }}
+                      disabled={isDeleting}
+                      className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isDeleting ? (
+                        <div className="w-5 h-5 border-2 border-red-300 border-t-red-500 rounded-full animate-spin"></div>
+                      ) : (
+                        <TrashIcon className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4 justify-end w-full">
-                  <div className="flex items-center rounded px-2">
-                    <button
-                      onClick={() => {
-                        // TODO: Implement quantity change
-                        console.log('Cambiar cantidad');
-                      }}
-                      className="px-2 text-gray-700 bg-white border border-gray-300 rounded"
-                    >
-                      -
-                    </button>
-                    <span className="px-2">1</span>
-                    <button
-                      onClick={() => {
-                        // TODO: Implement quantity change
-                        console.log('Cambiar cantidad');
-                      }}
-                      className="px-2 text-gray-700 border border-gray-300 rounded bg-white"
-                    >
-                      +
-                    </button>
-                  </div>{' '}
-                  {/* <span className="font-bold text-gray-700">{favorite.price}</span> */}
-                  <button
-                    onClick={() => {
-                      setProductoAEliminar(favorite.id);
-                      setModalVisible(true);
-                    }}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -202,7 +247,8 @@ export default function DetalleListaSection({
           setModalVisible(false);
           setProductoAEliminar(null);
           setEliminarLista(false);
-        }}        onConfirm={async () => {
+        }}
+        onConfirm={async () => {
           if (eliminarLista && selectedFavoriteList) {
             try {
               const result = await handleDeleteList(selectedFavoriteList.id);
@@ -229,16 +275,40 @@ export default function DetalleListaSection({
         onClose={() => setModalEditarVisible(false)}
       >
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (!nombreEditado.trim()) {
               setErrorNombre('Este campo es obligatorio');
               return;
             }
 
-            // TODO: Aquí puedes actualizar el nombre de la lista en tu store o backend
-            console.log('Nuevo nombre:', nombreEditado);
-            setModalEditarVisible(false);
+            if (!selectedFavoriteList) {
+              setErrorNombre('No hay lista seleccionada');
+              return;
+            }
+
+            try {
+              setIsSavingName(true);
+              const result = await handleChangeListName(
+                selectedFavoriteList.id,
+                nombreEditado.trim()
+              );
+              if (result.ok) {
+                setModalEditarVisible(false);
+                setErrorNombre('');
+              } else {
+                const errorMessage =
+                  typeof result.error === 'string'
+                    ? result.error
+                    : result.error?.message || 'Error al actualizar el nombre';
+                setErrorNombre(errorMessage);
+              }
+            } catch (error) {
+              console.error('Error updating list name:', error);
+              setErrorNombre('Error inesperado al actualizar el nombre');
+            } finally {
+              setIsSavingName(false);
+            }
           }}
           className="space-y-4"
         >
@@ -262,14 +332,16 @@ export default function DetalleListaSection({
           <div className="flex justify-end gap-2">
             <button
               type="submit"
-              className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
+              disabled={isSavingName}
+              className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded"
             >
-              Guardar
+              {isSavingName ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
+              disabled={isSavingName}
               onClick={() => setModalEditarVisible(false)}
-              className="border border-gray-300 text-gray-700 px-6 py-2 rounded"
+              className="border border-gray-300 text-gray-700 px-6 py-2 rounded disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>

@@ -93,14 +93,6 @@ export default function CategoryFilterDesktop() {
   // Check if min and max are the same value
   const hasPriceRange = minPrice !== maxPrice && priceInitialized;
 
-  // Log para debugging del CategoryFilterDesktop
-  console.log('🏪 CategoryFilterDesktop render:', {
-    hasPriceRange,
-    priceInitialized,
-    availableRange: { minPrice, maxPrice },
-    userSelection: { selectedMinPrice, selectedMaxPrice },
-  });
-
   return (
     <div className="flex flex-col items-start bg-white w-[200px] h-full">
       {/* Main category header */}
@@ -305,12 +297,6 @@ export default function CategoryFilterDesktop() {
           {hasPriceRange ? (
             <div className="transition-opacity duration-300">
               {(() => {
-                console.log('🎚️ About to render DualRangeSlider with props:', {
-                  min: minPrice,
-                  max: maxPrice,
-                  selectedMin: selectedMinPrice,
-                  selectedMax: selectedMaxPrice,
-                });
                 return null;
               })()}
               <DualRangeSlider

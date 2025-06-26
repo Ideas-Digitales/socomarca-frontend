@@ -365,7 +365,7 @@ export const preloadProductsCache = async () => {
 export const fetchGetProductsByCategory = async (
   categoryId: number,
   page: number = 1,
-  size: number = 20
+  size: number = 21
 ) => {
   if (IS_QA_MODE) {
     await new Promise((resolve) => setTimeout(resolve, 600));
@@ -391,7 +391,7 @@ export const fetchGetProductsByCategory = async (
 export const fetchSearchProducts = async (
   query: string,
   page: number = 1,
-  size: number = 20
+  size: number = 21
 ) => {
   if (IS_QA_MODE) {
     await new Promise((resolve) => setTimeout(resolve, 400));

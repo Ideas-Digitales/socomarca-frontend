@@ -28,4 +28,10 @@ export const createModalSlice: StateCreator<any, [], [], ModalSlice> = (
       modalContent: null,
     });
   },
+
+  updateModalContent: (content: any) => {
+    set({
+      modalContent: content,
+    });
+  },
 });

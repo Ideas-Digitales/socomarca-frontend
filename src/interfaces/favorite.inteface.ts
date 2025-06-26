@@ -20,4 +20,5 @@ export interface FavoriteList {
   name: string;
   user_id: number;
   favorites: Favorite[];
+  isOptimistic?: boolean; // Flag para identificar listas que están siendo creadas optimísticamente
 }

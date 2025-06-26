@@ -6,6 +6,7 @@ import {
   fetchAddProductToFavoriteList,
   fetchRemoveProductFromFavorites,
   deleteFavoriteList,
+  changeFavoriteListName,
 } from '@/services/actions/favorite.actions';
 
 export const createFavoritesSlice: StateCreator<
@@ -43,19 +44,57 @@ export const createFavoritesSlice: StateCreator<
     }
   },
   createFavoriteList: async (name: string) => {
-    try {
-      set({ isLoadingFavorites: true });
+    const { favoriteLists } = get();
+    
+    // Crear una lista temporal con ID negativo para optimistic update
+    const tempId = Date.now() * -1; // ID negativo temporal
+    const tempList = {
+      id: tempId,
+      name: name.trim(),
+      user_id: 0, // Se actualizará con la respuesta del servidor
+      favorites: [],
+      isOptimistic: true, // Flag para identificar listas optimistas
+    };
 
+    try {
+      // Optimistic update: agregar la lista inmediatamente
+      set({
+        favoriteLists: [...favoriteLists, tempList],
+        isLoadingFavorites: false,
+      });
+
+      // Hacer la llamada al backend
       const response = await fetchCreateFavoriteList(name);
 
-      if (response.ok) {
-        // Recargar las listas después de crear una nueva
-        const { fetchFavorites } = get();
-        await fetchFavorites();
-        return { ok: true };
+      if (response.ok && response.data) {
+        // Reemplazar la lista temporal con la real del servidor
+        const updatedLists = favoriteLists.map(list => 
+          list.id === tempId ? { ...response.data, isOptimistic: false } : list
+        );
+        
+        // Agregar la nueva lista si no existía (por si acaso)
+        if (!updatedLists.some(list => list.id === response.data.id)) {
+          updatedLists.push({ ...response.data, isOptimistic: false });
+        }
+        
+        // Remover la lista temporal y agregar la real
+        const finalLists = updatedLists.filter(list => list.id !== tempId);
+        finalLists.push({ ...response.data, isOptimistic: false });
+        
+        set({
+          favoriteLists: finalLists,
+          isLoadingFavorites: false,
+        });
+        
+        return { ok: true, data: response.data };
       } else {
+        // Rollback: remover la lista temporal en caso de error
+        set({
+          favoriteLists: favoriteLists.filter(list => list.id !== tempId),
+          isLoadingFavorites: false,
+        });
+        
         console.error('Error creating favorite list:', response.error);
-        set({ isLoadingFavorites: false });
         return {
           ok: false,
           error: {
@@ -65,8 +104,13 @@ export const createFavoritesSlice: StateCreator<
         };
       }
     } catch (error) {
+      // Rollback: remover la lista temporal en caso de error
+      set({
+        favoriteLists: favoriteLists.filter(list => list.id !== tempId),
+        isLoadingFavorites: false,
+      });
+      
       console.error('Error in createFavoriteList:', error);
-      set({ isLoadingFavorites: false });
       return {
         ok: false,
         error: {
@@ -119,21 +163,77 @@ export const createFavoritesSlice: StateCreator<
       };
     }
   },
-  removeProductFromFavorites: async (productId: number) => {
+  removeProductFromFavorites: async (favoriteId: number) => {
+    const { favoriteLists, selectedFavoriteList } = get();
+    
+    // Encontrar el productId basado en el favoriteId para el optimistic update
+    let productId = null;
+    for (const list of favoriteLists) {
+      const favorite = list.favorites?.find(fav => fav.id === favoriteId);
+      if (favorite) {
+        productId = favorite.product.id;
+        break;
+      }
+    }
+    
+    if (!productId) {
+      return {
+        ok: false,
+        error: {
+          message: 'Favorito no encontrado',
+          status: 404,
+        },
+      };
+    }
+    
+    // Guardar estado anterior para posible rollback
+    const previousFavoriteLists = [...favoriteLists];
+    const previousSelectedList = selectedFavoriteList ? { ...selectedFavoriteList } : null;
+    
     try {
-      set({ isLoadingFavorites: true });
+      // Optimistic update: remover el producto inmediatamente del estado local
+      const updatedLists = favoriteLists.map(list => ({
+        ...list,
+        favorites: list.favorites ? list.favorites.filter(favorite => favorite.id !== favoriteId) : []
+      }));
+      
+      console.log('Optimistic update - Removing favoriteId:', favoriteId);
+      console.log('Before removal - Lists count:', favoriteLists.length);
+      console.log('After removal - Lists count:', updatedLists.length);
+      
+      // Actualizar la lista seleccionada si existe
+      let updatedSelectedList = selectedFavoriteList;
+      if (selectedFavoriteList) {
+        updatedSelectedList = {
+          ...selectedFavoriteList,
+          favorites: selectedFavoriteList.favorites ? 
+            selectedFavoriteList.favorites.filter(favorite => favorite.id !== favoriteId) : []
+        };
+      }
+      
+      // Aplicar el update optimista
+      set({ 
+        favoriteLists: updatedLists,
+        selectedFavoriteList: updatedSelectedList
+      });
 
-      const response = await fetchRemoveProductFromFavorites(productId);
+      console.log('Optimistic update applied successfully');
+
+      // Hacer la llamada al backend con el favoriteId
+      const response = await fetchRemoveProductFromFavorites(favoriteId);
 
       if (response.ok) {
-        // Recargar las listas después de remover el producto
-        const { fetchFavorites } = get();
-        await fetchFavorites();
-        set({ isLoadingFavorites: false });
+        // La eliminación fue exitosa, mantener el optimistic update
+        // No necesitamos hacer fetchFavorites aquí porque el optimistic update ya es correcto
         return { ok: true };
       } else {
+        // Rollback en caso de error
+        set({ 
+          favoriteLists: previousFavoriteLists,
+          selectedFavoriteList: previousSelectedList
+        });
+        
         console.error('Error removing product from favorites:', response.error);
-        set({ isLoadingFavorites: false });
         return {
           ok: false,
           error: {
@@ -143,8 +243,13 @@ export const createFavoritesSlice: StateCreator<
         };
       }
     } catch (error) {
+      // Rollback en caso de error
+      set({ 
+        favoriteLists: previousFavoriteLists,
+        selectedFavoriteList: previousSelectedList
+      });
+      
       console.error('Error in removeProductFromFavorites:', error);
-      set({ isLoadingFavorites: false });
       return {
         ok: false,
         error: {
@@ -187,6 +292,48 @@ export const createFavoritesSlice: StateCreator<
     }
   },
 
+  changeListName: async (listId: number, newName: string) => {
+    try {
+      set({ isLoadingFavorites: true });
+      const response = await changeFavoriteListName(listId, newName);
+      if (response.ok) {
+        const { fetchFavorites, selectedFavoriteList } = get();
+        await fetchFavorites();
+        
+        // Si la lista actualmente seleccionada es la que se editó, actualizarla también
+        if (selectedFavoriteList && selectedFavoriteList.id === listId) {
+          const updatedLists = get().favoriteLists;
+          const updatedSelectedList = updatedLists.find(list => list.id === listId);
+          if (updatedSelectedList) {
+            set({ selectedFavoriteList: updatedSelectedList });
+          }
+        }
+        
+        return { ok: true };
+      } else {
+        console.error('Error changing favorite list name:', response.error);
+        return {
+          ok: false,
+          error: {
+            message: response.error || 'Error desconocido',
+            status: 500,
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error changing favorite list name:', error);
+      return {
+        ok: false,
+        error: {
+          message: 'Error desconocido',
+          status: 500,
+        },
+      };
+    } finally {
+      set({ isLoadingFavorites: false });
+    }
+  },
+
   setShowOnlyFavorites: (show: boolean) => {
     set({ showOnlyFavorites: show });
   },
@@ -210,5 +357,47 @@ export const createFavoritesSlice: StateCreator<
 
   setSelectedFavoriteList: (list: any | null) => {
     set({ selectedFavoriteList: list });
+  },
+
+  // Nueva función unificada para manejar favoritos
+  toggleProductFavorite: async (productId: number, product?: any) => {
+    const { favoriteLists } = get();
+    
+    console.log('toggleProductFavorite called with productId:', productId);
+    console.log('Current favoriteLists:', favoriteLists);
+    
+    // Verificar si el producto ya está en favoritos y obtener el favoriteId
+    let favoriteId = null;
+    const isCurrentlyFavorite = favoriteLists.some(list => 
+      list.favorites?.some(favorite => {
+        if (favorite.product.id === productId) {
+          favoriteId = favorite.id;
+          console.log('Found favoriteId:', favoriteId, 'for productId:', productId);
+          return true;
+        }
+        return false;
+      })
+    );
+
+    console.log('isCurrentlyFavorite:', isCurrentlyFavorite, 'favoriteId:', favoriteId);
+
+    if (isCurrentlyFavorite && favoriteId) {
+      // Pasar el favoriteId, no el productId
+      console.log('Calling removeProductFromFavorites with favoriteId:', favoriteId);
+      const result = await get().removeProductFromFavorites(favoriteId);
+      console.log('Remove result:', result);
+      return {
+        ...result,
+        requiresListSelection: false,
+      };
+    } else {
+      console.log('Product not in favorites, requiring list selection');
+      return { 
+        ok: false, 
+        error: { message: 'Requiere selección de lista', status: 200 },
+        requiresListSelection: true,
+        product: product
+      };
+    }
   },
 });
