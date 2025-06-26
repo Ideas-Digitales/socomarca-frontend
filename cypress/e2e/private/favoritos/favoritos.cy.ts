@@ -29,7 +29,7 @@ describe('Favoritos - Test Simple', () => {
     // Crear lista
     cy.get('[data-cy="crear-nueva-lista"]').click();
     cy.get('[data-cy="input-nombre-lista"]').clear().type(nombreLista);
-    cy.get('[data-cy="btn-crear-lista"]').click();    // Verificar que la lista aparece
+    cy.get('[data-cy="btn-crear-lista"]').click(); // Verificar que la lista aparece
     cy.contains(nombreLista, { timeout: 10000 }).should('be.visible');
 
     // Ir a detalle de la lista específica que acabamos de crear
