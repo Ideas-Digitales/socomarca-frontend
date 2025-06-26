@@ -1,5 +1,5 @@
 import { PaginationMeta } from '@/stores/base/types';
-import { Category } from './category.interface';
+import { CategoryComplexData } from './category.interface';
 import { Comuna } from '@/mock/comunasVentas';
 import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
 
@@ -72,7 +72,7 @@ export interface DashboardTableLayoutProps<T = any> {
   onClientFilter?: (clientId: number) => void;
 
   // Datos para filtros
-  categories?: Category[];
+  categories?: CategoryComplexData[];
   communes?: Comuna[];
   clients?: Client[];
 

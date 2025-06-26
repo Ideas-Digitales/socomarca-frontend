@@ -381,7 +381,6 @@ export const createFiltersSlice: StateCreator<
                 upperPrice: finalMax,
                 hasUserSpecificSelection: true,
               });
-
             } else {
               set({
                 selectedMinPrice: backendMin,

@@ -3,7 +3,7 @@ import {
   Product,
   SearchWithPaginationProps,
 } from '@/interfaces/product.interface';
-import { Category } from '@/interfaces/category.interface';
+import { Category, CategoryComplexData } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
 import { FavoriteList } from '@/interfaces/favorite.inteface';
@@ -138,7 +138,7 @@ export interface ProductsSlice {
 
 // Categories Slice
 export interface CategoriesSlice {
-  categories: Category[];
+  categories: CategoryComplexData[];
 
   setCategories: (categories: Category[]) => void;
   fetchCategories: () => Promise<void>;
@@ -205,6 +205,7 @@ export interface FavoritesSlice {
   favoriteLists: FavoriteList[];
   selectedFavoriteList: FavoriteList | null;
   showOnlyFavorites: boolean;
+  favoritesInitialized: boolean;
 
   fetchFavorites: () => Promise<void>;
   createFavoriteList: (name: string) => Promise<ApiResponse>;
@@ -221,7 +222,12 @@ export interface FavoritesSlice {
   setSelectedFavoriteList: (list: FavoriteList | null) => void;
   removeFavoriteList: (listId: number) => Promise<ApiResponse>;
   changeListName: (listId: number, newName: string) => Promise<ApiResponse>;
-  toggleProductFavorite: (productId: number, product?: any) => Promise<ApiResponse & { requiresListSelection?: boolean; product?: any }>;
+  toggleProductFavorite: (
+    productId: number,
+    product?: any
+  ) => Promise<
+    ApiResponse & { requiresListSelection?: boolean; product?: any }
+  >;
 }
 
 // Filters Slice
@@ -242,7 +248,6 @@ export interface FiltersSlice {
   isBrandsOpen: boolean;
   isFavoritesOpen: boolean;
   isPriceOpen: boolean;
-
   setSelectedCategories: (categories: number[]) => void;
   toggleCategorySelection: (categoryId: number) => void;
   setSelectedBrands: (brands: number[]) => void;
@@ -321,7 +326,7 @@ export interface StoreState extends LoadingStates, AuthState {
   productPaginationLinks: PaginationLinks | null;
   currentPage: number;
 
-  categories: Category[];
+  categories: CategoryComplexData[];
   brands: Brand[];
 
   isMobile: boolean;
@@ -333,6 +338,7 @@ export interface StoreState extends LoadingStates, AuthState {
   favoriteLists: FavoriteList[];
   selectedFavoriteList: FavoriteList | null;
   showOnlyFavorites: boolean;
+  favoritesInitialized: boolean;
 
   selectedCategories: number[];
   selectedBrands: number[];

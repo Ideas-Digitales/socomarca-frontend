@@ -8,6 +8,7 @@ export const useFavorites = () => {
     favoriteLists,
     selectedFavoriteList,
     isLoadingFavorites,
+    favoritesInitialized,
     fetchFavorites,
     setSelectedFavoriteList,
     createFavoriteList,
@@ -20,16 +21,14 @@ export const useFavorites = () => {
     toggleProductFavorite,
   } = useStore();
   const hasInitialized = useRef(false);
+  
   useEffect(() => {
-    if (
-      !hasInitialized.current &&
-      favoriteLists.length === 0 &&
-      !isLoadingFavorites
-    ) {
+    // Solo inicializar si no hemos iniciado el proceso y no estamos cargando
+    if (!hasInitialized.current && !isLoadingFavorites && !favoritesInitialized) {
       hasInitialized.current = true;
       fetchFavorites();
     }
-  }, [favoriteLists.length, isLoadingFavorites, fetchFavorites]);
+  }, [isLoadingFavorites, favoritesInitialized, fetchFavorites]);
   const toggleFavorite = async (productId: number, product?: Product) => {
     const result = await toggleProductFavorite(productId, product);
 
@@ -38,12 +37,6 @@ export const useFavorites = () => {
       return result;
     }
 
-    return result;
-  };
-  const isFavorite = (productId: number) => {
-    const result = favoriteLists.some((list) =>
-      list.favorites?.some((favorite) => favorite.product.id === productId)
-    );
     return result;
   };
   const handleCreateList = useCallback(
@@ -57,6 +50,19 @@ export const useFavorites = () => {
       }
     },
     [createFavoriteList]
+  );
+  const isFavorite = useCallback(
+    (productId: number) => {
+      // Si aún está cargando o no se han inicializado los favoritos, retornamos null
+      if (isLoadingFavorites || !favoritesInitialized) {
+        return null;
+      }
+      
+      return favoriteLists.some((list) =>
+        list.favorites?.some((favorite) => favorite.product.id === productId)
+      );
+    },
+    [favoriteLists, isLoadingFavorites, favoritesInitialized]
   );
   const openListsModal = useCallback(
     (product: Product) => {
@@ -222,7 +228,6 @@ export const useFavorites = () => {
     selectedFavoriteList,
     isLoadingFavorites,
     toggleFavorite,
-    isFavorite,
     isRemovingFavorite,
     handleAddToList,
     fetchFavorites,
@@ -234,5 +239,6 @@ export const useFavorites = () => {
     setSelectedFavoriteList,
     clearSelectedList,
     getAllFavoriteProductIds,
+    isFavorite, // Ahora puede retornar boolean | null
   };
 };

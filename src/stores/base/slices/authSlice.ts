@@ -139,7 +139,6 @@ export const createAuthSlice: StateCreator<
 
   // Función para cerrar sesión
   logout: () => {
-    console.log('Logout called from store');
     set({
       isLoggedIn: false,
       user: { id: 0, name: '', email: '', rut: '', roles: [] },
@@ -151,7 +150,6 @@ export const createAuthSlice: StateCreator<
   // Función para obtener el rol del usuario
   getUserRole: () => {
     const { user } = get();
-    console.log('getUserRole called from store', user);
     return user.roles && user.roles.length > 0 ? user.roles[0] : null;
   },
 });

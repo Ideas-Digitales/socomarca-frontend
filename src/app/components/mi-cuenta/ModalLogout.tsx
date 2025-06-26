@@ -23,9 +23,6 @@ const handleLogout = async () => {
           <QuestionMarkCircleIcon className="w-6 h-6 text-blue-500 mt-1" />
           <div>
             <h2 className="text-lg font-bold">¿Deseas cerrar sesión?</h2>
-            <p className="text-sm text-gray-600">
-              Se perderán los datos no guardados.
-            </p>
           </div>
         </div>
 

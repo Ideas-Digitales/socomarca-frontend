@@ -20,6 +20,7 @@ export const createFavoritesSlice: StateCreator<
   selectedFavoriteList: null,
   isLoadingFavorites: false,
   showOnlyFavorites: false,
+  favoritesInitialized: false,
 
   // Acciones
   fetchFavorites: async () => {
@@ -33,14 +34,21 @@ export const createFavoritesSlice: StateCreator<
         set({
           favoriteLists: lists,
           isLoadingFavorites: false,
+          favoritesInitialized: true,
         });
       } else {
         console.error('Error fetching favorite lists:', response.error);
-        set({ isLoadingFavorites: false });
+        set({ 
+          isLoadingFavorites: false,
+          favoritesInitialized: true 
+        });
       }
     } catch (error) {
       console.error('Error in fetchFavorites:', error);
-      set({ isLoadingFavorites: false });
+      set({ 
+        isLoadingFavorites: false,
+        favoritesInitialized: true 
+      });
     }
   },
   createFavoriteList: async (name: string) => {
@@ -201,10 +209,6 @@ export const createFavoritesSlice: StateCreator<
           : [],
       }));
 
-      console.log('Optimistic update - Removing favoriteId:', favoriteId);
-      console.log('Before removal - Lists count:', favoriteLists.length);
-      console.log('After removal - Lists count:', updatedLists.length);
-
       // Actualizar la lista seleccionada si existe
       let updatedSelectedList = selectedFavoriteList;
       if (selectedFavoriteList) {
@@ -352,6 +356,7 @@ export const createFavoritesSlice: StateCreator<
       favoriteLists: [],
       isLoadingFavorites: false,
       showOnlyFavorites: false,
+      favoritesInitialized: false,
     });
   },
 
@@ -363,42 +368,20 @@ export const createFavoritesSlice: StateCreator<
   toggleProductFavorite: async (productId: number, product?: any) => {
     const { favoriteLists } = get();
 
-    console.log('toggleProductFavorite called with productId:', productId);
-    console.log('Current favoriteLists:', favoriteLists);
-
     // Verificar si el producto ya está en favoritos y obtener el favoriteId
     let favoriteId = null;
     const isCurrentlyFavorite = favoriteLists.some((list) =>
       list.favorites?.some((favorite) => {
         if (favorite.product.id === productId) {
           favoriteId = favorite.id;
-          console.log(
-            'Found favoriteId:',
-            favoriteId,
-            'for productId:',
-            productId
-          );
           return true;
         }
         return false;
       })
     );
 
-    console.log(
-      'isCurrentlyFavorite:',
-      isCurrentlyFavorite,
-      'favoriteId:',
-      favoriteId
-    );
-
     if (isCurrentlyFavorite && favoriteId) {
-      // Pasar el favoriteId, no el productId
-      console.log(
-        'Calling removeProductFromFavorites with favoriteId:',
-        favoriteId
-      );
       const result = await get().removeProductFromFavorites(favoriteId);
-      console.log('Remove result:', result);
       return {
         ...result,
         requiresListSelection: false,

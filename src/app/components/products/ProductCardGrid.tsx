@@ -16,18 +16,17 @@ interface Props {
 }
 
 export default function ProductCardGrid({ product }: Props) {
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const { addProductToCartOptimistic, isQaMode } = useStore();
   const [quantity, setQuantity] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isOptimisticUpdate, setIsOptimisticUpdate] = useState(false);
 
-  // Efecto para manejar el feedback visual del optimistic update
   useEffect(() => {
     if (isOptimisticUpdate && !isLoading) {
       const timer = setTimeout(() => {
         setIsOptimisticUpdate(false);
-      }, 1500); // Mostrar "✓ Agregado" por 1.5 segundos
+      }, 1500);
 
       return () => clearTimeout(timer);
     }

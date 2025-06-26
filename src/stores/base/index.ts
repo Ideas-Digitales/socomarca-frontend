@@ -61,6 +61,7 @@ const initialState: StoreState = {
   favoriteLists: [],
   selectedFavoriteList: null,
   showOnlyFavorites: false,
+  favoritesInitialized: false,
 
   // Filter states
   selectedCategories: [],
