@@ -8,6 +8,7 @@ import {
 } from '../types';
 import {
   fetchGetProducts,
+  fetchMinMaxPrice,
   fetchSearchProductsByFilters,
 } from '@/services/actions/products.actions';
 import { filterAndRankProducts } from '../utils/searchUtils';
@@ -31,7 +32,6 @@ export const createProductsSlice: StateCreator<
   // Acciones
   setProducts: (products, meta?: PaginationMeta, links?: PaginationLinks) => {
     const searchTerm = get().searchTerm;
-    const { initializePriceRange } = get();
 
     const finalProducts = searchTerm
       ? filterAndRankProducts(products, searchTerm)
@@ -43,17 +43,13 @@ export const createProductsSlice: StateCreator<
       productPaginationMeta: meta || get().productPaginationMeta,
       productPaginationLinks: links || get().productPaginationLinks,
     });
-
-    initializePriceRange(finalProducts);
   },
 
   setFilteredProducts: (filteredProducts) => {
     const currentMeta = get().productPaginationMeta;
-    const { initializePriceRange } = get();
 
     if (!currentMeta) {
       set({ filteredProducts });
-      initializePriceRange(filteredProducts);
       return;
     }
 
@@ -93,16 +89,12 @@ export const createProductsSlice: StateCreator<
       productPaginationLinks: updatedLinks,
       currentPage: 1,
     });
-
-    initializePriceRange(filteredProducts);
   },
 
   setSearchTerm: async (
     terms: FetchSearchProductsByFiltersProps & { page?: number; size?: number }
   ) => {
     try {
-      const { initializePriceRange } = get();
-
       const searchParams = {
         ...terms,
         page: terms.page || 1,
@@ -122,8 +114,6 @@ export const createProductsSlice: StateCreator<
           currentPage: response.data.meta.current_page,
           isLoadingProducts: false,
         });
-
-        initializePriceRange(products);
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
       }
@@ -131,13 +121,20 @@ export const createProductsSlice: StateCreator<
       console.error('Error in setSearchTerm:', error);
     }
   },
-
+  fetchMinMaxPrice: async () => {
+    const { setAvailablePriceRange } = get();
+    const response = await fetchMinMaxPrice();
+    if (response.ok && response.data) {
+      const { min_price, max_price } = response.data;
+      setAvailablePriceRange(min_price, max_price);
+    }
+  },
   fetchProducts: async (page = 1, size = 9) => {
     try {
       set({ isLoadingProducts: true });
-      const { initializePriceRange } = get();
 
       const response = await fetchGetProducts({ page, size });
+      await get().fetchMinMaxPrice(); // Establecer los valores extremos del endpoint
 
       if (response.ok && response.data) {
         const products = response.data.data;
@@ -150,8 +147,6 @@ export const createProductsSlice: StateCreator<
           currentPage: response.data.meta.current_page,
           isLoadingProducts: false,
         });
-
-        initializePriceRange(products);
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
         set({ isLoadingProducts: false });

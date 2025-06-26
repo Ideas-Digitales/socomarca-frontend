@@ -71,9 +71,6 @@ const initialState: StoreState = {
   maxPrice: 0,
   selectedMinPrice: 0,
   selectedMaxPrice: 0,
-  hasUserSpecificSelection: false,
-  lowerPrice: 0,
-  upperPrice: 0,
   priceInitialized: false,
 
   // Filter UI states

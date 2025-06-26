@@ -19,8 +19,9 @@ const DualRangeSlider = ({
   onChange,
   step = 1,
 }: DualRangeSliderProps) => {
-  const [minVal, setMinVal] = useState(selectedMin || min);
-  const [maxVal, setMaxVal] = useState(selectedMax || max);
+  // Usar los valores seleccionados del usuario, o por defecto el rango completo
+  const [minVal, setMinVal] = useState(selectedMin);
+  const [maxVal, setMaxVal] = useState(selectedMax);
 
   // Convertir valores a porcentajes basado en el rango disponible (min-max del backend)
   const getPercent = (value: number) => {
@@ -28,11 +29,11 @@ const DualRangeSlider = ({
     return Math.round(((value - min) / (max - min)) * 100);
   };
 
-  // Actualizar valores cuando cambien las props de selección del usuario
+  // Actualizar valores cuando cambien las props
   useEffect(() => {
-    if (selectedMin !== undefined) setMinVal(selectedMin);
-    if (selectedMax !== undefined) setMaxVal(selectedMax);
-  }, [selectedMin, selectedMax, min, max]); // Incluir min y max en las dependencias
+    setMinVal(selectedMin);
+    setMaxVal(selectedMax);
+  }, [selectedMin, selectedMax, min, max]);
   // Manejar cambio del valor mínimo
   const handleMinChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Math.min(Number(event.target.value), maxVal - step);

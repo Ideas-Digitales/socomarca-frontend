@@ -443,3 +443,83 @@ export const fetchSearchProducts = async (
   // Lógica para API real aquí
   return fetchGetProducts({ page, size });
 };
+
+export const fetchMinMaxPrice = async () => {
+  try {
+    if (IS_QA_MODE) {
+      // Simular delay de red
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      
+      // Obtener precios desde los productos mock
+      const allProducts = getCachedProducts();
+      if (allProducts.length === 0) {
+        return {
+          ok: true,
+          data: {
+            min_price: 0,
+            max_price: 1000,
+          },
+          error: null,
+        };
+      }
+      
+      const prices = allProducts.map(product => {
+        let price = product.price;
+        if (typeof price === 'string') {
+          price = parseFloat((price as string).replace(/[^\d.,]/g, '').replace(',', '.'));
+        }
+        return price;
+      }).filter(price => !isNaN(price) && price >= 0);
+      
+      const min_price = Math.floor(Math.min(...prices));
+      const max_price = Math.ceil(Math.max(...prices));
+      
+      return {
+        ok: true,
+        data: {
+          min_price,
+          max_price,
+        },
+        error: null,
+      };
+    }
+
+    const { getCookie } = await cookiesManagement();
+    const cookie = getCookie('token');
+
+    if (!cookie) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token provided',
+      };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/products/price-extremes`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${cookie}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    const data = await response.json();
+    return {
+      ok: true,
+      data: {
+        min_price: data.lowest_price_product,
+        max_price: data.highest_price_product,
+      },
+      error: null,
+    };
+  } catch (error) {
+    console.log('Error fetching min/max price:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+};

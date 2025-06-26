@@ -24,7 +24,6 @@ export default function CategoryFilterMobile({
     // Estados de datos
     categories,
     brands,
-    products,
 
     // Estados de filtros
     selectedCategories,
@@ -48,7 +47,6 @@ export default function CategoryFilterMobile({
     setSelectedMinPrice,
     setSelectedMaxPrice,
     handlePriceRangeChange,
-    initializePriceRange,
     toggleShowOnlyFavorites,
 
     // Acciones de UI
@@ -78,14 +76,6 @@ export default function CategoryFilterMobile({
   const filteredBrands = brands.filter((brand) =>
     brand.name.toLowerCase().includes(brandSearchTerm.toLowerCase())
   );
-
-  // Inicializar rango de precios cuando cambien los productos (solo si es necesario)
-  useEffect(() => {
-    // Solo inicializar si no hay precios configurados aún
-    if (!priceInitialized) {
-      initializePriceRange(products);
-    }
-  }, [products, initializePriceRange, priceInitialized]);
 
   // Handle input changes for lower price
   const handleLowerPriceChange = useCallback(

@@ -134,6 +134,7 @@ export interface ProductsSlice {
     terms: SearchWithPaginationProps & { page?: number; size?: number }
   ) => Promise<void>;
   fetchProducts: (page?: number, size?: number) => Promise<void>;
+  fetchMinMaxPrice: () => Promise<void>;
 }
 
 // Categories Slice
@@ -239,35 +240,24 @@ export interface FiltersSlice {
   maxPrice: number;
   selectedMinPrice: number;
   selectedMaxPrice: number;
-  hasUserSpecificSelection: boolean;
-  lowerPrice: number;
-  upperPrice: number;
   priceInitialized: boolean;
 
   isMainCategoryOpen: boolean;
   isBrandsOpen: boolean;
   isFavoritesOpen: boolean;
   isPriceOpen: boolean;
+  
   setSelectedCategories: (categories: number[]) => void;
   toggleCategorySelection: (categoryId: number) => void;
   setSelectedBrands: (brands: number[]) => void;
   toggleBrandSelection: (brandId: number) => void;
   setSelectedFavorites: (favorites: number[]) => void;
   toggleFavoriteSelection: (favoriteId: number) => void;
-  setPriceRange: (
-    min: number,
-    max: number,
-    lower: number,
-    upper: number
-  ) => void;
-  setLowerPrice: (price: number) => void;
-  setUpperPrice: (price: number) => void;
   setAvailablePriceRange: (min: number, max: number) => void;
   setSelectedPriceRange: (selectedMin: number, selectedMax: number) => void;
   setSelectedMinPrice: (price: number) => void;
   setSelectedMaxPrice: (price: number) => void;
   handlePriceRangeChange: (lower: number, upper: number) => void;
-  initializePriceRange: (products: Product[]) => void;
   setMainCategoryOpen: (isOpen: boolean) => void;
   setBrandsOpen: (isOpen: boolean) => void;
   setFavoritesOpen: (isOpen: boolean) => void;
@@ -347,9 +337,6 @@ export interface StoreState extends LoadingStates, AuthState {
   maxPrice: number;
   selectedMinPrice: number;
   selectedMaxPrice: number;
-  hasUserSpecificSelection: boolean;
-  lowerPrice: number;
-  upperPrice: number;
   priceInitialized: boolean;
   isMainCategoryOpen: boolean;
   isBrandsOpen: boolean;
@@ -365,6 +352,7 @@ export interface StoreState extends LoadingStates, AuthState {
   modalTitle: string;
   modalSize: ModalSize;
   modalContent: React.ReactNode;
+
 
   isQaMode: boolean;
 }

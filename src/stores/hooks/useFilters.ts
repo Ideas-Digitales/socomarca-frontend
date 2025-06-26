@@ -15,9 +15,6 @@ export const usePriceRange = () =>
     maxPrice: state.maxPrice,
     selectedMinPrice: state.selectedMinPrice,
     selectedMaxPrice: state.selectedMaxPrice,
-    lowerPrice: state.lowerPrice,
-    upperPrice: state.upperPrice,
-    hasUserSpecificSelection: state.hasUserSpecificSelection,
     priceInitialized: state.priceInitialized,
   }));
 
@@ -52,14 +49,10 @@ export const usePriceFilters = () => {
 
   return useStore((state) => ({
     ...priceRange,
-    setPriceRange: state.setPriceRange,
-    setLowerPrice: state.setLowerPrice,
-    setUpperPrice: state.setUpperPrice,
     setSelectedPriceRange: state.setSelectedPriceRange,
     setSelectedMinPrice: state.setSelectedMinPrice,
     setSelectedMaxPrice: state.setSelectedMaxPrice,
     handlePriceRangeChange: state.handlePriceRangeChange,
-    initializePriceRange: state.initializePriceRange,
   }));
 };
 

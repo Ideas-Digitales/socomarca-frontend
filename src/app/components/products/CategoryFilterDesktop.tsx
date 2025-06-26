@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
@@ -10,7 +10,8 @@ export default function CategoryFilterDesktop() {
     // Estados de datos
     categories,
     brands,
-    products, // Estados de filtros
+
+    // Estados de filtros
     selectedCategories,
     selectedBrands,
     minPrice,
@@ -32,7 +33,6 @@ export default function CategoryFilterDesktop() {
     setSelectedMinPrice,
     setSelectedMaxPrice,
     handlePriceRangeChange,
-    initializePriceRange,
     toggleShowOnlyFavorites,
 
     // Acciones de UI
@@ -50,13 +50,7 @@ export default function CategoryFilterDesktop() {
   const formatPrice = useCallback((price: number): string => {
     return price.toLocaleString('es-CL');
   }, []);
-  // Inicializar rango de precios cuando cambien los productos (solo si es necesario)
-  useEffect(() => {
-    // Solo inicializar si no hay precios configurados aún
-    if (!priceInitialized) {
-      initializePriceRange(products);
-    }
-  }, [products, initializePriceRange, priceInitialized]);
+
   // Handle input changes for lower price
   const handleLowerPriceChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
