@@ -183,7 +183,6 @@ export const fetchSearchProductsByFilters = async (
 ) => {
   try {
     if (IS_QA_MODE) {
-      console.log('🔍 fetchSearchProductsByFilters - QA MODE:', filters);
       // Simular delay de red
       await new Promise((resolve) => setTimeout(resolve, 800));
 
@@ -245,32 +244,42 @@ export const fetchSearchProductsByFilters = async (
               return 0;
           }
         });
-      }      const page = filters.page || 1;
+      }
+      const page = filters.page || 1;
       const size = filters.size || 20;
       const paginatedData = paginateProducts(filteredProducts, page, size);
       const response = createLaravelStyleResponse(paginatedData);
 
       // Agregar información de filtros simulada para el modo QA
       const mockFilters = {
-        min_price: filteredProducts.length > 0 
-          ? Math.min(...filteredProducts.map(p => typeof p.price === 'string' ? parseFloat(p.price) : p.price))
-          : null,
-        max_price: filteredProducts.length > 0 
-          ? Math.max(...filteredProducts.map(p => typeof p.price === 'string' ? parseFloat(p.price) : p.price))
-          : null,
-        unit: null
+        min_price:
+          filteredProducts.length > 0
+            ? Math.min(
+                ...filteredProducts.map((p) =>
+                  typeof p.price === 'string' ? parseFloat(p.price) : p.price
+                )
+              )
+            : null,
+        max_price:
+          filteredProducts.length > 0
+            ? Math.max(
+                ...filteredProducts.map((p) =>
+                  typeof p.price === 'string' ? parseFloat(p.price) : p.price
+                )
+              )
+            : null,
+        unit: null,
       };
 
       return {
         ok: true,
         data: {
           ...response,
-          filters: mockFilters
+          filters: mockFilters,
         },
         error: null,
       };
     } else {
-      console.log('🔍 fetchSearchProductsByFilters - BACKEND MODE:', filters);
       const { getCookie } = await cookiesManagement();
       const cookie = getCookie('token');
 
@@ -290,32 +299,47 @@ export const fetchSearchProductsByFilters = async (
         per_page: per_page.toString(),
       });
 
-      // Construir el body con mejor soporte para múltiples filtros
-      const filterObjects = [];
-
-      // Filtro principal (field, value, operator)
-      if (filters.field && filters.value) {
-        filterObjects.push({
-          field: filters.field,
-          value: filters.value,
-          operator: filters.operator || '=',
-        });
-      }
-
-      // Filtro de precio como objeto separado
-      if (filters.min !== undefined || filters.max !== undefined) {
-        filterObjects.push({
-          field: 'price',
-          min: filters.min,
-          max: filters.max,
-          operator: 'range',
-        });
-      }
-
-      const requestBody = {
-        filters: filterObjects,
-        ...(filters.sort && { sort: filters.sort }),
+      // Construir el body con la nueva estructura
+      const requestBody: any = {
+        filters: {
+          // Price siempre va sin excepción
+          price: {
+            min: filters.min !== undefined ? filters.min : 0,
+            max: filters.max !== undefined ? filters.max : 999999,
+          },
+        },
       };
+
+      // Agregar unit solo si tiene valor
+      if (filters.unit) {
+        requestBody.filters.price.unit = filters.unit;
+      }
+
+      // Agregar otros filtros solo si vienen en filters
+      if (filters.category_id !== undefined) {
+        requestBody.filters.category_id = filters.category_id;
+      }
+
+      if (filters.subcategory_id !== undefined) {
+        requestBody.filters.subcategory_id = filters.subcategory_id;
+      }
+
+      if (filters.brand_id !== undefined) {
+        requestBody.filters.brand_id = filters.brand_id;
+      }
+
+      if (filters.field === 'name' && filters.value) {
+        requestBody.filters.name = filters.value;
+      }
+
+      if (filters.is_favorite !== undefined) {
+        requestBody.filters.is_favorite = filters.is_favorite;
+      }
+
+      // Agregar sort si existe
+      if (filters.sort) {
+        requestBody.sort = filters.sort;
+      }
 
       const response = await fetch(
         `${BACKEND_URL}/products/search?${queryParams}`,
@@ -325,15 +349,15 @@ export const fetchSearchProductsByFilters = async (
             'Content-Type': 'application/json',
             Accept: 'application/json',
             Authorization: `Bearer ${cookie}`,
-          },          body: JSON.stringify(requestBody),
+          },
+          body: JSON.stringify(requestBody),
         }
       );
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);
       }
-      const data = await response.json();
-      console.log('📡 Backend response:', data);
 
       return {
         ok: true,

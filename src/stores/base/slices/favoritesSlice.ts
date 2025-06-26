@@ -45,7 +45,7 @@ export const createFavoritesSlice: StateCreator<
   },
   createFavoriteList: async (name: string) => {
     const { favoriteLists } = get();
-    
+
     // Crear una lista temporal con ID negativo para optimistic update
     const tempId = Date.now() * -1; // ID negativo temporal
     const tempList = {
@@ -68,32 +68,32 @@ export const createFavoritesSlice: StateCreator<
 
       if (response.ok && response.data) {
         // Reemplazar la lista temporal con la real del servidor
-        const updatedLists = favoriteLists.map(list => 
+        const updatedLists = favoriteLists.map((list) =>
           list.id === tempId ? { ...response.data, isOptimistic: false } : list
         );
-        
+
         // Agregar la nueva lista si no existía (por si acaso)
-        if (!updatedLists.some(list => list.id === response.data.id)) {
+        if (!updatedLists.some((list) => list.id === response.data.id)) {
           updatedLists.push({ ...response.data, isOptimistic: false });
         }
-        
+
         // Remover la lista temporal y agregar la real
-        const finalLists = updatedLists.filter(list => list.id !== tempId);
+        const finalLists = updatedLists.filter((list) => list.id !== tempId);
         finalLists.push({ ...response.data, isOptimistic: false });
-        
+
         set({
           favoriteLists: finalLists,
           isLoadingFavorites: false,
         });
-        
+
         return { ok: true, data: response.data };
       } else {
         // Rollback: remover la lista temporal en caso de error
         set({
-          favoriteLists: favoriteLists.filter(list => list.id !== tempId),
+          favoriteLists: favoriteLists.filter((list) => list.id !== tempId),
           isLoadingFavorites: false,
         });
-        
+
         console.error('Error creating favorite list:', response.error);
         return {
           ok: false,
@@ -106,10 +106,10 @@ export const createFavoritesSlice: StateCreator<
     } catch (error) {
       // Rollback: remover la lista temporal en caso de error
       set({
-        favoriteLists: favoriteLists.filter(list => list.id !== tempId),
+        favoriteLists: favoriteLists.filter((list) => list.id !== tempId),
         isLoadingFavorites: false,
       });
-      
+
       console.error('Error in createFavoriteList:', error);
       return {
         ok: false,
@@ -165,17 +165,17 @@ export const createFavoritesSlice: StateCreator<
   },
   removeProductFromFavorites: async (favoriteId: number) => {
     const { favoriteLists, selectedFavoriteList } = get();
-    
+
     // Encontrar el productId basado en el favoriteId para el optimistic update
     let productId = null;
     for (const list of favoriteLists) {
-      const favorite = list.favorites?.find(fav => fav.id === favoriteId);
+      const favorite = list.favorites?.find((fav) => fav.id === favoriteId);
       if (favorite) {
         productId = favorite.product.id;
         break;
       }
     }
-    
+
     if (!productId) {
       return {
         ok: false,
@@ -185,55 +185,53 @@ export const createFavoritesSlice: StateCreator<
         },
       };
     }
-    
+
     // Guardar estado anterior para posible rollback
     const previousFavoriteLists = [...favoriteLists];
-    const previousSelectedList = selectedFavoriteList ? { ...selectedFavoriteList } : null;
-    
+    const previousSelectedList = selectedFavoriteList
+      ? { ...selectedFavoriteList }
+      : null;
+
     try {
       // Optimistic update: remover el producto inmediatamente del estado local
-      const updatedLists = favoriteLists.map(list => ({
+      const updatedLists = favoriteLists.map((list) => ({
         ...list,
-        favorites: list.favorites ? list.favorites.filter(favorite => favorite.id !== favoriteId) : []
+        favorites: list.favorites
+          ? list.favorites.filter((favorite) => favorite.id !== favoriteId)
+          : [],
       }));
-      
+
       console.log('Optimistic update - Removing favoriteId:', favoriteId);
       console.log('Before removal - Lists count:', favoriteLists.length);
       console.log('After removal - Lists count:', updatedLists.length);
-      
+
       // Actualizar la lista seleccionada si existe
       let updatedSelectedList = selectedFavoriteList;
       if (selectedFavoriteList) {
         updatedSelectedList = {
           ...selectedFavoriteList,
-          favorites: selectedFavoriteList.favorites ? 
-            selectedFavoriteList.favorites.filter(favorite => favorite.id !== favoriteId) : []
+          favorites: selectedFavoriteList.favorites
+            ? selectedFavoriteList.favorites.filter(
+                (favorite) => favorite.id !== favoriteId
+              )
+            : [],
         };
       }
-      
-      // Aplicar el update optimista
-      set({ 
+
+      set({
         favoriteLists: updatedLists,
-        selectedFavoriteList: updatedSelectedList
+        selectedFavoriteList: updatedSelectedList,
       });
 
-      console.log('Optimistic update applied successfully');
-
-      // Hacer la llamada al backend con el favoriteId
       const response = await fetchRemoveProductFromFavorites(favoriteId);
 
       if (response.ok) {
-        // La eliminación fue exitosa, mantener el optimistic update
-        // No necesitamos hacer fetchFavorites aquí porque el optimistic update ya es correcto
         return { ok: true };
       } else {
-        // Rollback en caso de error
-        set({ 
+        set({
           favoriteLists: previousFavoriteLists,
-          selectedFavoriteList: previousSelectedList
+          selectedFavoriteList: previousSelectedList,
         });
-        
-        console.error('Error removing product from favorites:', response.error);
         return {
           ok: false,
           error: {
@@ -244,11 +242,11 @@ export const createFavoritesSlice: StateCreator<
       }
     } catch (error) {
       // Rollback en caso de error
-      set({ 
+      set({
         favoriteLists: previousFavoriteLists,
-        selectedFavoriteList: previousSelectedList
+        selectedFavoriteList: previousSelectedList,
       });
-      
+
       console.error('Error in removeProductFromFavorites:', error);
       return {
         ok: false,
@@ -299,16 +297,18 @@ export const createFavoritesSlice: StateCreator<
       if (response.ok) {
         const { fetchFavorites, selectedFavoriteList } = get();
         await fetchFavorites();
-        
+
         // Si la lista actualmente seleccionada es la que se editó, actualizarla también
         if (selectedFavoriteList && selectedFavoriteList.id === listId) {
           const updatedLists = get().favoriteLists;
-          const updatedSelectedList = updatedLists.find(list => list.id === listId);
+          const updatedSelectedList = updatedLists.find(
+            (list) => list.id === listId
+          );
           if (updatedSelectedList) {
             set({ selectedFavoriteList: updatedSelectedList });
           }
         }
-        
+
         return { ok: true };
       } else {
         console.error('Error changing favorite list name:', response.error);
@@ -362,28 +362,41 @@ export const createFavoritesSlice: StateCreator<
   // Nueva función unificada para manejar favoritos
   toggleProductFavorite: async (productId: number, product?: any) => {
     const { favoriteLists } = get();
-    
+
     console.log('toggleProductFavorite called with productId:', productId);
     console.log('Current favoriteLists:', favoriteLists);
-    
+
     // Verificar si el producto ya está en favoritos y obtener el favoriteId
     let favoriteId = null;
-    const isCurrentlyFavorite = favoriteLists.some(list => 
-      list.favorites?.some(favorite => {
+    const isCurrentlyFavorite = favoriteLists.some((list) =>
+      list.favorites?.some((favorite) => {
         if (favorite.product.id === productId) {
           favoriteId = favorite.id;
-          console.log('Found favoriteId:', favoriteId, 'for productId:', productId);
+          console.log(
+            'Found favoriteId:',
+            favoriteId,
+            'for productId:',
+            productId
+          );
           return true;
         }
         return false;
       })
     );
 
-    console.log('isCurrentlyFavorite:', isCurrentlyFavorite, 'favoriteId:', favoriteId);
+    console.log(
+      'isCurrentlyFavorite:',
+      isCurrentlyFavorite,
+      'favoriteId:',
+      favoriteId
+    );
 
     if (isCurrentlyFavorite && favoriteId) {
       // Pasar el favoriteId, no el productId
-      console.log('Calling removeProductFromFavorites with favoriteId:', favoriteId);
+      console.log(
+        'Calling removeProductFromFavorites with favoriteId:',
+        favoriteId
+      );
       const result = await get().removeProductFromFavorites(favoriteId);
       console.log('Remove result:', result);
       return {
@@ -391,12 +404,11 @@ export const createFavoritesSlice: StateCreator<
         requiresListSelection: false,
       };
     } else {
-      console.log('Product not in favorites, requiring list selection');
-      return { 
-        ok: false, 
+      return {
+        ok: false,
         error: { message: 'Requiere selección de lista', status: 200 },
         requiresListSelection: true,
-        product: product
+        product: product,
       };
     }
   },

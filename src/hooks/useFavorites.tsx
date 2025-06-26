@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Product } from '@/interfaces/product.interface';
 import useStore from '@/stores/base';
 import ListsModal from '@/app/components/global/ListsModal';
-import { FavoriteList } from '@/interfaces/favorite.inteface';
 
 export const useFavorites = () => {
   const {
@@ -21,8 +20,6 @@ export const useFavorites = () => {
     toggleProductFavorite,
   } = useStore();
   const hasInitialized = useRef(false);
-
-  // Efecto para cargar las listas de favoritos al inicializar el hook
   useEffect(() => {
     if (
       !hasInitialized.current &&
@@ -35,27 +32,20 @@ export const useFavorites = () => {
   }, [favoriteLists.length, isLoadingFavorites, fetchFavorites]);
   const toggleFavorite = async (productId: number, product?: Product) => {
     const result = await toggleProductFavorite(productId, product);
-    
+
     if (result.requiresListSelection && result.product) {
-      // Si requiere selección de lista, abrir el modal
-      openListsModal(result.product, favoriteLists);
+      openListsModal(result.product);
       return result;
     }
-    
-    // El estado local se actualizará automáticamente cuando cambien las favoriteLists
-    // gracias al useEffect que sincroniza el estado
-    
+
     return result;
   };
   const isFavorite = (productId: number) => {
-    // Solo usar favoriteLists como fuente de verdad
     const result = favoriteLists.some((list) =>
       list.favorites?.some((favorite) => favorite.product.id === productId)
     );
-    console.log('isFavorite check for productId:', productId, 'result:', result);
-    console.log('Current favoriteLists:', favoriteLists);
     return result;
-  }; // Función para crear una nueva lista
+  };
   const handleCreateList = useCallback(
     async (name: string) => {
       try {
@@ -69,11 +59,7 @@ export const useFavorites = () => {
     [createFavoriteList]
   );
   const openListsModal = useCallback(
-    (product: Product, currentLists: FavoriteList[]) => {
-      const adaptedLists = currentLists.map((list) => ({
-        id: list.id.toString(),
-        name: list.name,
-      }));
+    (product: Product) => {
       const handleListSelection = async (listId: string) => {
         try {
           console.log(
@@ -86,7 +72,6 @@ export const useFavorites = () => {
           );
 
           if (result.ok) {
-            // El estado local se actualizará automáticamente cuando se ejecute fetchFavorites
             await fetchFavorites();
           } else {
             console.error('Error agregando producto a la lista:', result.error);
@@ -121,7 +106,6 @@ export const useFavorites = () => {
         size: 'md',
         content: (
           <ListsModal
-            lists={adaptedLists}
             product={product}
             onAddToList={handleListSelection}
             onCreateNewList={handleCreateNewList}
@@ -140,7 +124,7 @@ export const useFavorites = () => {
     ]
   );
   const handleAddToList = (product: Product) => {
-    openListsModal(product, favoriteLists);
+    openListsModal(product);
   };
   // Función para ver el detalle de una lista
   const handleViewListDetail = useCallback(

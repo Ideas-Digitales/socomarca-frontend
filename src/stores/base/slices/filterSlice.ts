@@ -123,13 +123,6 @@ export const createFiltersSlice: StateCreator<
     // Determinar si es una selección específica (no está en los extremos)
     const isSpecificSelection = boundedMin > minPrice || boundedMax < maxPrice;
 
-    console.log('💰 Setting selected price range:', {
-      input: { selectedMin, selectedMax },
-      bounded: { boundedMin, boundedMax },
-      availableRange: { minPrice, maxPrice },
-      isSpecificSelection,
-    });
-
     set({
       selectedMinPrice: boundedMin,
       selectedMaxPrice: boundedMax,
@@ -169,13 +162,6 @@ export const createFiltersSlice: StateCreator<
     });
   },
   handlePriceRangeChange: (lower, upper) => {
-    const { minPrice, maxPrice } = get();
-    console.log('🎚️ User changed price range:', {
-      lower,
-      upper,
-      isFullRange: lower === minPrice && upper === maxPrice,
-    });
-
     const { setSelectedPriceRange } = get();
     setSelectedPriceRange(lower, upper);
   }, // Inicializar rango de precios basado en productos mostrados
@@ -246,13 +232,6 @@ export const createFiltersSlice: StateCreator<
           // Mantener el flag de selección específica
           hasUserSpecificSelection: true,
         });
-        console.log(
-          '🎯 Maintaining specific user selection in initializePriceRange:',
-          {
-            original: { selectedMinPrice, selectedMaxPrice },
-            adjusted: { finalMin, finalMax },
-          }
-        );
       } else {
         // No hay selección específica, usar el rango completo
         set({
@@ -323,56 +302,39 @@ export const createFiltersSlice: StateCreator<
     try {
       set({ isLoadingProducts: true });
 
-      // Construir parámetros de búsqueda
+      // Construir parámetros de búsqueda con la nueva estructura
       const searchParams: SearchWithPaginationProps = {
         page: 1,
         size: productPaginationMeta?.per_page || 9,
+        // Precio siempre va
+        min: selectedMinPrice,
+        max: selectedMaxPrice,
+        unit: 'kg', // Proporcionar valor por defecto
       };
 
-      // Determinar filtro principal para el backend
-      let hasBackendFilter = false;
-
+      // Agregar filtros solo si están seleccionados
       if (selectedCategories.length > 0) {
-        searchParams.field = 'category_id';
-        searchParams.value = selectedCategories[0].toString();
-        searchParams.operator = '=';
-        hasBackendFilter = true;
-      } else if (selectedBrands.length > 0) {
-        searchParams.field = 'brand_id';
-        searchParams.value = selectedBrands[0].toString();
-        searchParams.operator = '=';
-        hasBackendFilter = true;
-      } else if (showOnlyFavorites) {
-        // Filtro de favoritos como filtro principal de backend
-        searchParams.field = 'is_favorite';
-        searchParams.value = 'true';
-        searchParams.operator = '=';
-        hasBackendFilter = true;
+        searchParams.category_id = selectedCategories[0];
       }
 
-      // Agregar filtro de precio si hay un rango seleccionado
-      const hasPriceFilter =
-        selectedMinPrice !== minPrice || selectedMaxPrice !== maxPrice;
-      if (hasPriceFilter) {
-        searchParams.min = selectedMinPrice;
-        searchParams.max = selectedMaxPrice;
-        hasBackendFilter = true;
+      if (selectedBrands.length > 0) {
+        searchParams.brand_id = selectedBrands[0];
       }
 
-      console.log('🚀 Aplicando filtros:', {
-        selectedCategories,
-        selectedBrands,
-        showOnlyFavorites,
-        priceRange: hasPriceFilter
-          ? { min: selectedMinPrice, max: selectedMaxPrice }
-          : null,
-        availableRange: { minPrice, maxPrice },
-        searchParams,
-        hasBackendFilter,
-      });
+      if (showOnlyFavorites) {
+        searchParams.is_favorite = true;
+      }
+
+      // Determinar si hay algún filtro activo
+      const hasActiveFilter =
+        selectedCategories.length > 0 ||
+        selectedBrands.length > 0 ||
+        showOnlyFavorites ||
+        selectedMinPrice !== minPrice ||
+        selectedMaxPrice !== maxPrice;
 
       let response;
-      if (hasBackendFilter) {
+      if (hasActiveFilter) {
         response = await fetchSearchProductsByFilters(searchParams);
       } else {
         // Caso normal: cargar todos los productos sin filtros especiales
@@ -385,7 +347,6 @@ export const createFiltersSlice: StateCreator<
         let filteredProducts = response.data.data; // Manejar filtros del backend si están disponibles
         if (response.data.filters) {
           const backendFilters = response.data.filters;
-          console.log('🔧 Backend filters received:', backendFilters);
 
           // Si el backend devuelve min_price y max_price, actualizar el rango disponible
           if (
@@ -395,21 +356,11 @@ export const createFiltersSlice: StateCreator<
             const backendMin = backendFilters.min_price;
             const backendMax = backendFilters.max_price;
 
-            console.log('💰 Updating available price range from backend:', {
-              backendMin,
-              backendMax,
-            }); // Capturar valores actuales ANTES de actualizar el rango disponible
             const {
               selectedMinPrice,
               selectedMaxPrice,
               hasUserSpecificSelection,
             } = get();
-
-            console.log('📊 Current state before backend update:', {
-              userSelection: { selectedMinPrice, selectedMaxPrice },
-              hasUserSpecificSelection,
-              backendRange: { backendMin, backendMax },
-            });
 
             // Actualizar rango disponible del backend
             setAvailablePriceRange(backendMin, backendMax);
@@ -428,15 +379,10 @@ export const createFiltersSlice: StateCreator<
                 selectedMaxPrice: finalMax,
                 lowerPrice: finalMin,
                 upperPrice: finalMax,
-                // Mantener el flag de selección específica
                 hasUserSpecificSelection: true,
               });
-              console.log('✅ Maintaining specific user selection:', {
-                original: { selectedMinPrice, selectedMaxPrice },
-                adjusted: { finalMin, finalMax },
-              });
+
             } else {
-              // El usuario no había hecho una selección específica, usar el rango completo del backend
               set({
                 selectedMinPrice: backendMin,
                 selectedMaxPrice: backendMax,
@@ -469,22 +415,7 @@ export const createFiltersSlice: StateCreator<
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedFavorites.includes(product.id)
           );
-        } // El filtro de precio ya se aplicó en el backend, pero si hay filtros adicionales del lado cliente
-        // y necesitamos aplicar el filtro de precio también del lado cliente, lo haríamos aquí
-        // Comentado porque ya se aplicó en el backend
-        // if (hasPriceFilter) {
-        //   filteredProducts = filteredProducts.filter((product: Product) => {
-        //     let price = product.price;
-        //     if (typeof price === 'string') {
-        //       price = parseFloat(
-        //         (price as string).replace(/[^\d.,]/g, '').replace(',', '.')
-        //       );
-        //     }
-        //     return price >= lowerPrice && price <= upperPrice;
-        //   });
-        // }
-
-        // Solo actualizar rango de precios basado en productos filtrados si no hay info del backend
+        }
         if (
           !response.data.filters ||
           response.data.filters.min_price === null ||

@@ -34,6 +34,7 @@ export default function DetalleListaSection({
   const [eliminandoProducto, setEliminandoProducto] = useState<number | null>(
     null
   );
+  console.log(selectedFavoriteList);
   const [eliminarLista, setEliminarLista] = useState(false);
   const [modalEditarVisible, setModalEditarVisible] = useState(false);
   const [nombreEditado, setNombreEditado] = useState(
@@ -122,7 +123,7 @@ export default function DetalleListaSection({
                 setModalEditarVisible(true);
                 setNombreEditado(selectedFavoriteList.name);
               }}
-              className="flex items-center gap-1 hover:text-lime-600"
+              className="flex items-center gap-1 hover:text-lime-600 cursor-pointer"
             >
               <PencilSquareIcon className="w-4 h-4" />
               Editar
@@ -133,7 +134,7 @@ export default function DetalleListaSection({
                 setModalVisible(true);
               }}
               data-cy="btn-eliminar-lista"
-              className="flex items-center gap-1 hover:text-red-600"
+              className="flex items-center gap-1 hover:text-red-600 cursor-pointer"
             >
               <TrashIcon className="w-4 h-4" />
               Eliminar
@@ -156,7 +157,7 @@ export default function DetalleListaSection({
               return (
                 <div
                   key={favorite.id}
-                  className={`flex-col gap-4 justify-start rounded flex items-start sm:items-center sm:flex-row sm:justify-between px-4 py-2 transition-opacity ${
+                  className={`flex-col gap-4 justify-start border-[1px] border-slate-200 rounded flex items-start sm:items-center sm:flex-row sm:justify-between px-4 py-2 transition-opacity ${
                     isDeleting ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
@@ -172,35 +173,12 @@ export default function DetalleListaSection({
                     <div className="text-sm">
                       <p className="font-semibold">{favorite.product.name}</p>
                       <p className="text-gray-500">
-                        {favorite.product.description || ''}
+                        {favorite.product.brand.name || ''}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 justify-end w-full">
-                    <div className="flex items-center rounded px-2">
-                      <button
-                        onClick={() => {
-                          // TODO: Implement quantity change
-                          console.log('Cambiar cantidad');
-                        }}
-                        disabled={isDeleting}
-                        className="px-2 text-gray-700 bg-slate-200 border border-gray-300 rounded disabled:opacity-50"
-                      >
-                        -
-                      </button>
-                      <span className="px-2">1</span>
-                      <button
-                        onClick={() => {
-                          // TODO: Implement quantity change
-                          console.log('Cambiar cantidad');
-                        }}
-                        disabled={isDeleting}
-                        className="px-2 text-gray-700 bg-slate-200 border border-gray-300 rounded disabled:opacity-50"
-                      >
-                        +
-                      </button>
-                    </div>
                     <button
                       onClick={() => {
                         setProductoAEliminar(favorite.id);
@@ -212,7 +190,9 @@ export default function DetalleListaSection({
                       {isDeleting ? (
                         <div className="w-5 h-5 border-2 border-red-300 border-t-red-500 rounded-full animate-spin"></div>
                       ) : (
-                        <TrashIcon className="w-5 h-5" />
+                        <div className="cursor-pointer">
+                          <TrashIcon className="w-5 h-5" />
+                        </div>
                       )}
                     </button>
                   </div>

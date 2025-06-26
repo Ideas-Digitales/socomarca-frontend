@@ -72,6 +72,11 @@ export interface FetchSearchProductsByFiltersProps {
   min?: number;
   max?: number;
   sort?: 'asc' | 'desc';
+  unit?: string;
+  category_id?: number;
+  subcategory_id?: number;
+  brand_id?: number;
+  is_favorite?: boolean;
 }
 
 export interface SearchWithPaginationProps
