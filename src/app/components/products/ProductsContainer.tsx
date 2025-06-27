@@ -20,6 +20,7 @@ export default function ProductsContainer() {
     isLoadingProducts,
     viewMode,
     setViewMode,
+    isFiltered,
   } = useStore();
 
   const handlePageChange = (pageNumber: number) => {
@@ -39,7 +40,7 @@ export default function ProductsContainer() {
         {!isTablet && (
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium">
-              Arroz y legumbres ({filteredProducts.length} productos)
+              {isFiltered ? 'Todos' : 'Por filtro'} ({filteredProducts.length} productos)
             </h2>
             <div className="flex gap-2">
               <button

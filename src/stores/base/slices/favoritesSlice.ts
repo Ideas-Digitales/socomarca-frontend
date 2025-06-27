@@ -38,16 +38,16 @@ export const createFavoritesSlice: StateCreator<
         });
       } else {
         console.error('Error fetching favorite lists:', response.error);
-        set({ 
+        set({
           isLoadingFavorites: false,
-          favoritesInitialized: true 
+          favoritesInitialized: true,
         });
       }
     } catch (error) {
       console.error('Error in fetchFavorites:', error);
-      set({ 
+      set({
         isLoadingFavorites: false,
-        favoritesInitialized: true 
+        favoritesInitialized: true,
       });
     }
   },
@@ -58,7 +58,7 @@ export const createFavoritesSlice: StateCreator<
     const tempId = Date.now() * -1; // ID negativo temporal
     const tempList = {
       id: tempId,
-      name: name.trim(),
+      name: name?.trim() || '', // Usar optional chaining y fallback
       user_id: 0, // Se actualizará con la respuesta del servidor
       favorites: [],
       isOptimistic: true, // Flag para identificar listas optimistas
@@ -75,19 +75,26 @@ export const createFavoritesSlice: StateCreator<
       const response = await fetchCreateFavoriteList(name);
 
       if (response.ok && response.data) {
-        // Reemplazar la lista temporal con la real del servidor
-        const updatedLists = favoriteLists.map((list) =>
-          list.id === tempId ? { ...response.data, isOptimistic: false } : list
+        // Eliminar la lista temporal y agregar solo la lista real
+        const filteredLists = get().favoriteLists.filter(
+          (list) => list.id !== tempId
         );
 
-        // Agregar la nueva lista si no existía (por si acaso)
-        if (!updatedLists.some((list) => list.id === response.data.id)) {
-          updatedLists.push({ ...response.data, isOptimistic: false });
-        }
+        // Verificar si la lista real ya existe para evitar duplicados
+        const alreadyExists = filteredLists.some(
+          (list) => list.id === response.data.id
+        );
 
-        // Remover la lista temporal y agregar la real
-        const finalLists = updatedLists.filter((list) => list.id !== tempId);
-        finalLists.push({ ...response.data, isOptimistic: false });
+        // Asegurar que la lista real tenga el nombre correcto
+        const realList = {
+          ...response.data,
+          name: response.data.name || name, // Usar el nombre del backend o fallback al original
+          isOptimistic: false,
+        };
+
+        const finalLists = alreadyExists
+          ? filteredLists
+          : [...filteredLists, realList];
 
         set({
           favoriteLists: finalLists,
@@ -98,7 +105,9 @@ export const createFavoritesSlice: StateCreator<
       } else {
         // Rollback: remover la lista temporal en caso de error
         set({
-          favoriteLists: favoriteLists.filter((list) => list.id !== tempId),
+          favoriteLists: get().favoriteLists.filter(
+            (list) => list.id !== tempId
+          ),
           isLoadingFavorites: false,
         });
 
@@ -114,7 +123,7 @@ export const createFavoritesSlice: StateCreator<
     } catch (error) {
       // Rollback: remover la lista temporal en caso de error
       set({
-        favoriteLists: favoriteLists.filter((list) => list.id !== tempId),
+        favoriteLists: get().favoriteLists.filter((list) => list.id !== tempId),
         isLoadingFavorites: false,
       });
 

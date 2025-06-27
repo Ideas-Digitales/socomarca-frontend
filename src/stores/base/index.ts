@@ -78,6 +78,7 @@ const initialState: StoreState = {
   isBrandsOpen: false,
   isFavoritesOpen: false,
   isPriceOpen: true,
+  isFiltered: false,
 
   // Sidebar states
   activeItem: null,

@@ -246,6 +246,7 @@ export interface FiltersSlice {
   isBrandsOpen: boolean;
   isFavoritesOpen: boolean;
   isPriceOpen: boolean;
+  isFiltered: boolean;
   
   setSelectedCategories: (categories: number[]) => void;
   toggleCategorySelection: (categoryId: number) => void;
@@ -352,7 +353,7 @@ export interface StoreState extends LoadingStates, AuthState {
   modalTitle: string;
   modalSize: ModalSize;
   modalContent: React.ReactNode;
-
+  isFiltered: boolean;
 
   isQaMode: boolean;
 }

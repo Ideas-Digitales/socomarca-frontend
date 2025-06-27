@@ -22,6 +22,7 @@ export const createFiltersSlice: StateCreator<
   selectedFavorites: [],
   minPrice: 0,
   maxPrice: 0,
+  isFiltered: false,
 
   selectedMinPrice: 0,
   selectedMaxPrice: 0,
@@ -90,11 +91,6 @@ export const createFiltersSlice: StateCreator<
 
     const boundedMin = Math.max(minPrice, Math.min(selectedMin, maxPrice));
     const boundedMax = Math.min(maxPrice, Math.max(selectedMax, minPrice));
-
-    console.log('👤 User selected price range:', {
-      selectedMin: boundedMin,
-      selectedMax: boundedMax,
-    });
 
     set({
       selectedMinPrice: boundedMin,
@@ -167,26 +163,16 @@ export const createFiltersSlice: StateCreator<
       selectedMinPrice,
       selectedMaxPrice,
       productPaginationMeta,
-      showOnlyFavorites,
     } = get();
 
     try {
       set({ isLoadingProducts: true });
-
-      console.log('🔍 Applying filters:', {
-        categories: selectedCategories,
-        brands: selectedBrands,
-        priceRange: [selectedMinPrice, selectedMaxPrice],
-        favorites: selectedFavorites,
-        showOnlyFavorites,
-      });
 
       const searchParams: SearchWithPaginationProps = {
         page: 1,
         size: productPaginationMeta?.per_page || 9,
         min: selectedMinPrice,
         max: selectedMaxPrice,
-        unit: 'kg',
       };
 
       if (selectedCategories.length > 0) {
@@ -225,7 +211,7 @@ export const createFiltersSlice: StateCreator<
         const { setFilteredProducts } = get();
         setFilteredProducts(filteredProducts);
 
-        set({ isLoadingProducts: false });
+        set({ isLoadingProducts: false, isFiltered: true });
       } else {
         console.error('Error applying filters:', response.error);
         set({ isLoadingProducts: false });
@@ -239,8 +225,6 @@ export const createFiltersSlice: StateCreator<
   clearAllFilters: async () => {
     const { fetchProducts, productPaginationMeta, minPrice, maxPrice } = get();
 
-    console.log('🧹 Clearing all filters');
-
     set({
       selectedCategories: [],
       selectedBrands: [],
@@ -249,7 +233,10 @@ export const createFiltersSlice: StateCreator<
       showOnlyFavorites: false,
       selectedMinPrice: minPrice,
       selectedMaxPrice: maxPrice,
+      isFiltered: false,
     });
+
+    console.log('isFiltered state after clearing:', get().isFiltered);
 
     try {
       await fetchProducts(1, productPaginationMeta?.per_page || 9);
@@ -259,8 +246,6 @@ export const createFiltersSlice: StateCreator<
   },
 
   resetFiltersState: () => {
-    console.log('🔄 Resetting complete filter state');
-
     set({
       selectedCategories: [],
       selectedBrands: [],
@@ -276,6 +261,7 @@ export const createFiltersSlice: StateCreator<
       isBrandsOpen: false,
       isFavoritesOpen: false,
       isPriceOpen: true,
+      isFiltered: false,
     });
   },
 

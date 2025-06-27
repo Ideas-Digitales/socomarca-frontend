@@ -67,7 +67,10 @@ export default function MiCuentaPage() {
               setSelected={setSelected}
               validSections={SECCIONES_VALIDAS}
             />
-          </Suspense>          <div className="flex-1 h-fit rounded-lg sm:px-6">            {selected === 'favoritos' && (
+          </Suspense>{' '}
+          <div className="flex-1 h-fit rounded-lg sm:px-6">
+            {' '}
+            {selected === 'favoritos' && (
               <FavoritosSection
                 setNombreNuevaLista={setNombreNuevaLista}
                 setErrorNombreLista={setErrorNombreLista}
@@ -75,26 +78,21 @@ export default function MiCuentaPage() {
                 onViewListDetail={handleViewList}
               />
             )}
-            
             {selected === 'detalle-lista' && (
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <DetalleListaSection onVolver={handleBackToFavorites} />
-              </div>
+              
+              <DetalleListaSection onVolver={handleBackToFavorites} />
             )}
-            
             {selected === 'datos' && (
               <div className="bg-white p-6 rounded-lg shadow-md">
-              <DatosPersonalesForm />
+                <DatosPersonalesForm />
               </div>
             )}
-            
             {selected === 'direcciones' && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-bold mb-4">Direcciones</h2>
                 <p>Sección temporalmente deshabilitada</p>
               </div>
             )}
-            
             {selected === 'compras' && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-bold mb-4">Compras</h2>
@@ -102,7 +100,8 @@ export default function MiCuentaPage() {
               </div>
             )}
           </div>
-        </div>        {modalLogoutVisible && (
+        </div>{' '}
+        {modalLogoutVisible && (
           <ModalLogout onClose={() => setModalLogoutVisible(false)} />
         )}
         {modalCrearListaVisible && (
