@@ -72,6 +72,7 @@ export async function fetchCreateFavoriteList(name: string) {
     }
 
     const data = await response.json();
+    console.log('Favorite list created successfully:', data);
     return {
       ok: true,
       data,
