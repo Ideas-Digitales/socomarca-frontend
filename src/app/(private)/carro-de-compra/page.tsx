@@ -1,7 +1,3 @@
-/**
- * Página del carrito de compras
- * Permite visualizar, modificar y gestionar productos del carrito
- */
 'use client';
 import Pagination from '@/app/components/global/Pagination';
 import { useCartPage } from '@/hooks/useCartPage';
@@ -16,9 +12,6 @@ import {
   DeleteConfirmationModal,
 } from './components';
 
-/**
- * Componente principal de la página del carrito de compras
- */
 export default function CarroDeCompraPage() {
   const {
     // Estados

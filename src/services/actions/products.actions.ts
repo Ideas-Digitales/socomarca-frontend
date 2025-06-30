@@ -1,3 +1,12 @@
+/**
+ * Product Actions Service
+ * 
+ * This module provides functions to fetch, search, and manage product data, supporting both QA (mock) and real API modes.
+ * It includes utilities for pagination, filtering, cache management, and price range retrieval.
+ *
+ * @module services/actions/products.actions
+ */
+
 'use server';
 import {
   Product,
@@ -11,39 +20,16 @@ import {
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 
-interface ProductsMock {
-  data: Product[];
-  links: {
-    first: string | null;
-    last: string | null;
-    prev: string | null;
-    next: string | null;
-  };
-  meta: {
-    current_page: number;
-    from: number;
-    last_page: number;
-    path: string;
-    per_page: number;
-    to: number;
-    total: number;
-    links: Array<{
-      url: string | null;
-      label: string;
-      active: boolean;
-    }>;
-  };
-}
-
-interface FetchGetProductsProps {
-  page: number;
-  size: number;
-}
-
+/**
+ * Formats paginated product data into a Laravel-style API response.
+ * @param paginatedData - Paginated product data
+ * @param baseUrl - Base URL for links (defaults to BACKEND_URL)
+ * @returns Formatted response object
+ */
 const createLaravelStyleResponse = (
   paginatedData: PaginatedResult<Product>,
   baseUrl: string = BACKEND_URL || 'https://api.example.com'
-): ProductsMock => {
+) => {
   const { data, total, page, per_page, total_pages, has_next, has_prev } =
     paginatedData;
 
@@ -103,9 +89,16 @@ const createLaravelStyleResponse = (
   };
 };
 
+/**
+ * In-memory cache for mock products (QA mode only)
+ */
 let cachedProducts: Product[] | null = null;
 const TOTAL_MOCK_PRODUCTS = 150;
 
+/**
+ * Returns cached mock products, generating them if not present.
+ * @returns Array of mock products
+ */
 const getCachedProducts = (): Product[] => {
   if (!cachedProducts) {
     cachedProducts = generateProducts(TOTAL_MOCK_PRODUCTS);
@@ -113,10 +106,18 @@ const getCachedProducts = (): Product[] => {
   return cachedProducts;
 };
 
+/**
+ * Fetches paginated products (mock or real API).
+ * @param params - Pagination params: page, size
+ * @returns API-like response with product data
+ */
 export const fetchGetProducts = async ({
-  page,
-  size,
-}: FetchGetProductsProps) => {
+  page ,
+  size ,
+}: {
+  page: number;
+  size: number;
+}) => {
   try {
     if (IS_QA_MODE) {
       // Simular delay de red
@@ -178,6 +179,12 @@ export const fetchGetProducts = async ({
   }
 };
 
+/**
+ * Fetches products by filters (mock or real API).
+ * Supports filtering by name, category, subcategory, brand, price range, favorites, and sorting.
+ * @param filters - Filtering and pagination options
+ * @returns API-like response with filtered product data and filter info
+ */
 export const fetchSearchProductsByFilters = async (
   filters: SearchWithPaginationProps
 ) => {
@@ -375,17 +382,29 @@ export const fetchSearchProductsByFilters = async (
   }
 };
 
-// Función adicional para limpiar el cache (útil para testing)
+/**
+ * Clears the in-memory product cache (QA mode only).
+ * Useful for testing or refreshing mock data.
+ */
 export const clearProductsCache = async () => {
   cachedProducts = null;
 };
 
-// Función para pre-cargar el cache (opcional)
+/**
+ * Preloads the in-memory product cache (QA mode only).
+ * Useful for warming up the cache before tests.
+ */
 export const preloadProductsCache = async () => {
   getCachedProducts();
 };
 
-// Funciones auxiliares para casos específicos
+/**
+ * Fetches products by category (mock or real API).
+ * @param categoryId - Category ID
+ * @param page - Page number (default 1)
+ * @param size - Page size (default 21)
+ * @returns API-like response with category-filtered products
+ */
 export const fetchGetProductsByCategory = async (
   categoryId: number,
   page: number = 1,
@@ -412,6 +431,13 @@ export const fetchGetProductsByCategory = async (
   return fetchGetProducts({ page, size });
 };
 
+/**
+ * Searches products by a text query (mock or real API).
+ * @param query - Search string
+ * @param page - Page number (default 1)
+ * @param size - Page size (default 21)
+ * @returns API-like response with search results
+ */
 export const fetchSearchProducts = async (
   query: string,
   page: number = 1,
@@ -444,6 +470,10 @@ export const fetchSearchProducts = async (
   return fetchGetProducts({ page, size });
 };
 
+/**
+ * Fetches the minimum and maximum product prices (mock or real API).
+ * @returns Object with min_price and max_price
+ */
 export const fetchMinMaxPrice = async () => {
   try {
     if (IS_QA_MODE) {

@@ -54,18 +54,16 @@ export const createFavoritesSlice: StateCreator<
   createFavoriteList: async (name: string) => {
     const { favoriteLists } = get();
 
-    // Crear una lista temporal con ID negativo para optimistic update
-    const tempId = Date.now() * -1; // ID negativo temporal
+    const tempId = Date.now() * -1;
     const tempList = {
       id: tempId,
-      name: name?.trim() || '', // Usar optional chaining y fallback
-      user_id: 0, // Se actualizará con la respuesta del servidor
+      name: name?.trim() || '',
+      user_id: 0,
       favorites: [],
-      isOptimistic: true, // Flag para identificar listas optimistas
+      isOptimistic: false,
     };
 
     try {
-      // Optimistic update: agregar la lista inmediatamente
       set({
         favoriteLists: [...favoriteLists, tempList],
         isLoadingFavorites: false,
@@ -75,35 +73,36 @@ export const createFavoritesSlice: StateCreator<
       const response = await fetchCreateFavoriteList(name);
 
       if (response.ok && response.data) {
-        // Eliminar la lista temporal y agregar solo la lista real
-        const filteredLists = get().favoriteLists.filter(
-          (list) => list.id !== tempId
-        );
+        // // Eliminar la lista temporal y agregar solo la lista real
+        // const filteredLists = get().favoriteLists.filter(
+        //   (list) => list.id !== tempId
+        // );
 
-        // Verificar si la lista real ya existe para evitar duplicados
-        const alreadyExists = filteredLists.some(
-          (list) => list.id === response.data.id
-        );
+        // // Verificar si la lista real ya existe para evitar duplicados
+        // const alreadyExists = filteredLists.some(
+        //   (list) => list.id === response.data.id
+        // );
 
-        // Asegurar que la lista real tenga el nombre correcto
-        const realList = {
-          ...response.data,
-          name: response.data.name || name, // Usar el nombre del backend o fallback al original
-          isOptimistic: false,
-        };
+        // // Asegurar que la lista real tenga el nombre correcto
+        // const realList = {
+        //   ...response.data,
+        //   name: response.data.name || name, // Usar el nombre del backend o fallback al original
+        //   isOptimistic: false,
+        // };
 
-        const finalLists = alreadyExists
-          ? filteredLists
-          : [...filteredLists, realList];
+        // const finalLists = alreadyExists
+        //   ? filteredLists
+        //   : [...filteredLists, realList];
 
-        set({
-          favoriteLists: finalLists,
-          isLoadingFavorites: false,
-        });
+        // set({
+        //   favoriteLists: finalLists,
+        //   isLoadingFavorites: false,
+        // });
+
+        await get().fetchFavorites(); // Recargar las listas después de crear
 
         return { ok: true, data: response.data };
       } else {
-        // Rollback: remover la lista temporal en caso de error
         set({
           favoriteLists: get().favoriteLists.filter(
             (list) => list.id !== tempId
@@ -121,7 +120,6 @@ export const createFavoritesSlice: StateCreator<
         };
       }
     } catch (error) {
-      // Rollback: remover la lista temporal en caso de error
       set({
         favoriteLists: get().favoriteLists.filter((list) => list.id !== tempId),
         isLoadingFavorites: false,

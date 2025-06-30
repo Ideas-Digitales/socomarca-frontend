@@ -39,18 +39,16 @@ export default function ModalCrearLista({
     }
 
     setIsLoading(true);
-    setError(''); // Clear any previous errors
+    setError('');
 
     try {
       const result = await handleCreateList(nombre.trim());
 
       if (result.ok) {
-        // Success: close modal and reset form
         onClose();
         setNombre('');
         setError('');
       } else {
-        // Error: show alert and keep modal open
         const errorMessage =
           typeof result.error === 'string'
             ? result.error
