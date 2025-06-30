@@ -1,48 +1,51 @@
-'use client'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/solid'
-import LoadingSpinner from '@/app/components/global/LoadingSpinner'
+"use client";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import LoadingSpinner from "@/app/components/global/LoadingSpinner";
+import { useState } from "react";
+import { addOrderToCart } from "@/services/actions/cart.actions";
 
 // Tipos de datos que recibe el componente:
 
 // Representa un producto dentro de una compra
 export interface ProductoCompra {
-  nombre: string
-  marca: string
-  imagen: string
-  precio: number
-  cantidad: number
+  nombre: string;
+  marca: string;
+  imagen: string;
+  precio: number;
+  cantidad: number;
 }
 
 // Representa una compra completa realizada por el usuario
 export interface Compra {
-  fecha: string         // Fecha en que se realizó la compra
-  numero: string        // ID de la compra
-  hora: string          // Hora en que se registró
-  total: number         // Monto total de la compra
-  productos: ProductoCompra[]  // Lista de productos comprados
+  fecha: string; // Fecha en que se realizó la compra
+  numero: string; // ID de la compra
+  hora: string; // Hora en que se registró
+  total: number; // Monto total de la compra
+  productos: ProductoCompra[]; // Lista de productos comprados
 }
 
 export default function ComprasSection({
-  compras,               // Todas las compras obtenidas desde el backend
-  busqueda,              // Texto de búsqueda para filtrar por número de pedido
-  setBusqueda,           // Función para actualizar el texto de búsqueda
+  compras, // Todas las compras obtenidas desde el backend
+  busqueda, // Texto de búsqueda para filtrar por número de pedido
+  setBusqueda, // Función para actualizar el texto de búsqueda
   setPedidoSeleccionado, // Función para guardar el pedido seleccionado (para detalle)
-  setSelected,           // Función para cambiar la vista activa (ej: a 'detalle-compra')
-  router,                // Next.js router para navegar (ej: para repetir pedido)
-  loading,               // Booleano que indica si los datos aún están cargando
+  setSelected, // Función para cambiar la vista activa (ej: a 'detalle-compra')
+  router, // Next.js router para navegar (ej: para repetir pedido)
+  loading, // Booleano que indica si los datos aún están cargando
 }: {
-  compras: Compra[]
-  busqueda: string
-  setBusqueda: (v: string) => void
-  setPedidoSeleccionado: (c: Compra) => void
-  setSelected: (v: string) => void
-  router: any
-  loading: boolean
+  compras: Compra[];
+  busqueda: string;
+  setBusqueda: (v: string) => void;
+  setPedidoSeleccionado: (c: Compra) => void;
+  setSelected: (v: string) => void;
+  router: any;
+  loading: boolean;
 }) {
   // Filtra las compras que contienen el número buscado
   const comprasFiltradas = compras.filter((c) =>
     c.numero.includes(busqueda.trim())
-  )
+  );
+  const [repeatingOrderId, setRepeatingOrderId] = useState<string | null>(null);
 
   return (
     <div className="p-4 rounded">
@@ -50,12 +53,11 @@ export default function ComprasSection({
 
       {/* Filtro por número de pedido */}
       <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-
         {/* Botón para limpiar búsqueda */}
         <div className="w-[80px]">
           {busqueda.trim() ? (
             <button
-              onClick={() => setBusqueda('')}
+              onClick={() => setBusqueda("")}
               className="text-sm text-lime-600 hover:underline"
             >
               Ver todos
@@ -97,7 +99,7 @@ export default function ComprasSection({
               <div className="flex justify-between mb-2 border-b border-b-slate-200 pb-1">
                 <span className="font-semibold">{c.fecha}</span>
                 <span className="font-bold">
-                  ${c.total.toLocaleString('es-CL')}
+                  ${c.total.toLocaleString("es-CL")}
                 </span>
               </div>
 
@@ -115,8 +117,8 @@ export default function ComprasSection({
                     src={producto.imagen}
                     alt={producto.nombre}
                     onError={(e) => {
-                      e.currentTarget.onerror = null
-                      e.currentTarget.src = '/assets/global/logo_plant.png'
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/assets/global/logo_plant.png";
                     }}
                     className="w-12 h-16 object-contain rounded"
                   />
@@ -127,8 +129,8 @@ export default function ComprasSection({
               <div className="flex gap-2">
                 <button
                   onClick={() => {
-                    setPedidoSeleccionado(c) // Guarda el pedido para detalle
-                    setSelected('detalle-compra') // Cambia la vista
+                    setPedidoSeleccionado(c); // Guarda el pedido para detalle
+                    setSelected("detalle-compra"); // Cambia la vista
                   }}
                   className="bg-gray-300 hover:bg-gray-400 text-white px-4 py-2 rounded text-sm"
                 >
@@ -136,10 +138,28 @@ export default function ComprasSection({
                 </button>
 
                 <button
-                  onClick={() => router.push('/carro-de-compra')}
-                  className="bg-lime-500 hover:bg-lime-600 text-white px-4 py-2 rounded text-sm"
+                  onClick={async () => {
+                    setRepeatingOrderId(c.numero);
+                    const result = await addOrderToCart(Number(c.numero));
+                    if (result.ok) {
+                      router.push("/carro-de-compra");
+                    } else {
+                      alert("Error al repetir pedido: " + result.error);
+                    }
+                    setRepeatingOrderId(null);
+                  }}
+                  disabled={repeatingOrderId === c.numero}
+                  className={`${
+                    repeatingOrderId === c.numero
+                      ? "bg-lime-300"
+                      : "bg-lime-500 hover:bg-lime-600"
+                  } text-white px-4 py-2 rounded text-sm flex items-center justify-center`}
                 >
-                  Repetir Pedido
+                  {repeatingOrderId === c.numero ? (
+                    <span className="text-xs">Procesando...</span>
+                  ) : (
+                    "Repetir Pedido"
+                  )}
                 </button>
               </div>
             </div>
@@ -152,5 +172,5 @@ export default function ComprasSection({
         )}
       </div>
     </div>
-  )
+  );
 }

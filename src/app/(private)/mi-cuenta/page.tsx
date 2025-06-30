@@ -154,7 +154,7 @@ export default function MiCuentaPage() {
                 />
               </div>
             )}
-            {selected === "direcciones" && (
+            {/* selected === "direcciones" && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 {loadingDirecciones ? (
                   <div className="flex justify-center items-center py-10">
@@ -168,6 +168,14 @@ export default function MiCuentaPage() {
                     setModalAbierto={setModalAbiertoState}
                   />
                 )}
+              </div>
+            ) */}
+            {selected === "direcciones" && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="text-center py-12 text-gray-500">
+                  🚧 Sección de direcciones en desarrollo. Pronto estará
+                  disponible.
+                </div>
               </div>
             )}
             {selected === "compras" && (
@@ -188,7 +196,7 @@ export default function MiCuentaPage() {
         {modalLogoutVisible && (
           <ModalLogout onClose={() => setModalLogoutVisible(false)} />
         )}
-         {modalAbierto && (
+        {modalAbierto && (
           <ModalLogout onClose={() => setModalLogoutVisible(false)} />
         )}
         {modalCrearListaVisible && (
