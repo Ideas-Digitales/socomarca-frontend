@@ -1,5 +1,10 @@
 import { StateCreator } from 'zustand';
-import { FiltersSlice, StoreState, ProductsSlice, FavoritesSlice } from '../types';
+import {
+  FiltersSlice,
+  StoreState,
+  ProductsSlice,
+  FavoritesSlice,
+} from '../types';
 import {
   Product,
   SearchWithPaginationProps,
@@ -12,23 +17,23 @@ export const createFiltersSlice: StateCreator<
   [],
   FiltersSlice
 > = (set, get) => ({
-  // Estados de filtros
   selectedCategories: [],
   selectedBrands: [],
   selectedFavorites: [],
   minPrice: 0,
   maxPrice: 0,
-  lowerPrice: 0,
-  upperPrice: 0,
+  isFiltered: false,
+
+  selectedMinPrice: 0,
+  selectedMaxPrice: 0,
+
   priceInitialized: false,
 
-  // Estados de UI de filtros
   isMainCategoryOpen: true,
   isBrandsOpen: false,
   isFavoritesOpen: false,
   isPriceOpen: true,
 
-  // Acciones para manejar categorías
   setSelectedCategories: (categories) => {
     set({ selectedCategories: categories });
   },
@@ -42,7 +47,6 @@ export const createFiltersSlice: StateCreator<
     set({ selectedCategories: newSelection });
   },
 
-  // Acciones para manejar marcas
   setSelectedBrands: (brands) => {
     set({ selectedBrands: brands });
   },
@@ -56,7 +60,6 @@ export const createFiltersSlice: StateCreator<
     set({ selectedBrands: newSelection });
   },
 
-  // Acciones para manejar favoritos
   setSelectedFavorites: (favorites) => {
     set({ selectedFavorites: favorites });
   },
@@ -69,83 +72,54 @@ export const createFiltersSlice: StateCreator<
 
     set({ selectedFavorites: newSelection });
   },
+  setAvailablePriceRange: (min, max) => {
+    console.log('🏪 Setting available price range from backend:', { min, max });
 
-  // Acciones para manejar precios
-  setPriceRange: (min, max, lower, upper) => {
     set({
       minPrice: min,
       maxPrice: max,
-      lowerPrice: lower,
-      upperPrice: upper,
+
+      selectedMinPrice: min,
+      selectedMaxPrice: max,
+
       priceInitialized: true,
     });
   },
 
-  setLowerPrice: (price) => {
-    const { minPrice, upperPrice } = get();
-    const boundedPrice = Math.max(minPrice, Math.min(price, upperPrice));
-    set({ lowerPrice: boundedPrice });
+  setSelectedPriceRange: (selectedMin, selectedMax) => {
+    const { minPrice, maxPrice } = get();
+
+    const boundedMin = Math.max(minPrice, Math.min(selectedMin, maxPrice));
+    const boundedMax = Math.min(maxPrice, Math.max(selectedMax, minPrice));
+
+    set({
+      selectedMinPrice: boundedMin,
+      selectedMaxPrice: boundedMax,
+    });
   },
 
-  setUpperPrice: (price) => {
-    const { maxPrice, lowerPrice } = get();
-    const boundedPrice = Math.min(maxPrice, Math.max(price, lowerPrice));
-    set({ upperPrice: boundedPrice });
+  setSelectedMinPrice: (price) => {
+    const { minPrice, selectedMaxPrice } = get();
+    const boundedPrice = Math.max(minPrice, Math.min(price, selectedMaxPrice));
+
+    set({
+      selectedMinPrice: boundedPrice,
+    });
+  },
+
+  setSelectedMaxPrice: (price) => {
+    const { maxPrice, selectedMinPrice } = get();
+    const boundedPrice = Math.min(maxPrice, Math.max(price, selectedMinPrice));
+
+    set({
+      selectedMaxPrice: boundedPrice,
+    });
   },
 
   handlePriceRangeChange: (lower, upper) => {
-    set({ lowerPrice: lower, upperPrice: upper });
+    const { setSelectedPriceRange } = get();
+    setSelectedPriceRange(lower, upper);
   },
-
-  // Inicializar rango de precios basado en productos mostrados
-  initializePriceRange: (products) => {
-    if (!products || products.length === 0) {
-      set({
-        minPrice: 0,
-        maxPrice: 1000,
-        lowerPrice: 0,
-        upperPrice: 1000,
-        priceInitialized: true,
-      });
-      return;
-    }
-
-    const allPrices = products.map((product) => {
-      let price = product.price;
-
-      // Convertir string a number si es necesario
-      if (typeof price === 'string') {
-        price = parseFloat((price as string).replace(/[^\d.,]/g, '').replace(',', '.'));
-      }
-
-      return price;
-    });
-
-    const validPrices = allPrices.filter(
-      (price) => !isNaN(price) && price >= 0
-    );
-
-    if (validPrices.length > 0) {
-      const min = Math.floor(Math.min(...validPrices));
-      let max = Math.ceil(Math.max(...validPrices));
-
-      // Asegurar que max > min
-      if (min === max) {
-        max = min + 100;
-      }
-
-      // Siempre resetear la selección cuando se actualiza el rango
-      set({
-        minPrice: min,
-        maxPrice: max,
-        lowerPrice: min,
-        upperPrice: max,
-        priceInitialized: true,
-      });
-    }
-  },
-
-  // Acciones para manejar el estado de UI de filtros
   setMainCategoryOpen: (isOpen) => {
     set({ isMainCategoryOpen: isOpen });
   },
@@ -181,146 +155,96 @@ export const createFiltersSlice: StateCreator<
     const { isPriceOpen } = get();
     set({ isPriceOpen: !isPriceOpen });
   },
-  // Aplicar filtros con conexión al backend
-  applyFilters: async () => {    const {
+  applyFilters: async () => {
+    const {
       selectedCategories,
       selectedBrands,
       selectedFavorites,
-      lowerPrice,
-      upperPrice,
-      minPrice,
-      maxPrice,
+      selectedMinPrice,
+      selectedMaxPrice,
       productPaginationMeta,
-      initializePriceRange,
-      showOnlyFavorites,
     } = get();
 
     try {
       set({ isLoadingProducts: true });
 
-      // Construir parámetros de búsqueda
       const searchParams: SearchWithPaginationProps = {
         page: 1,
         size: productPaginationMeta?.per_page || 9,
-      };      // Determinar filtro principal para el backend
-      let hasBackendFilter = false;
+        min: selectedMinPrice,
+        max: selectedMaxPrice,
+      };
 
       if (selectedCategories.length > 0) {
-        searchParams.field = 'category_id';
+        searchParams.field = 'name' as const;
         searchParams.value = selectedCategories[0].toString();
-        searchParams.operator = '=';
-        hasBackendFilter = true;
-      } else if (selectedBrands.length > 0) {
-        searchParams.field = 'brand_id';
-        searchParams.value = selectedBrands[0].toString();
-        searchParams.operator = '=';
-        hasBackendFilter = true;
-      } else if (showOnlyFavorites) {
-        // Filtro de favoritos como filtro principal de backend
-        searchParams.field = 'is_favorite';
-        searchParams.value = 'true';
-        searchParams.operator = '=';
-        hasBackendFilter = true;
-      }      let response;
-      if (hasBackendFilter) {
-        response = await fetchSearchProductsByFilters(searchParams);
-      } else {
-        // Caso normal: cargar todos los productos sin filtros especiales
-        const { fetchProducts } = get();
-        await fetchProducts(1, searchParams.size);
-        set({ isLoadingProducts: false });
-        return;
       }
+
+      if (selectedBrands.length > 0) {
+        searchParams.field = 'name' as const;
+        searchParams.value = selectedBrands[0].toString();
+      }
+
+      const response = await fetchSearchProductsByFilters(searchParams);
 
       if (response.ok && response.data) {
         let filteredProducts = response.data.data;
 
-        // Filtros del lado cliente
-
-        // Filtrar por múltiples categorías
         if (selectedCategories.length > 1) {
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedCategories.includes(product.category.id)
           );
         }
 
-        // Filtrar por múltiples marcas
         if (selectedBrands.length > 1) {
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedBrands.includes(product.brand.id)
           );
         }
 
-        // Filtrar por favoritos específicos (si se implementa selección múltiple)
         if (selectedFavorites.length > 0) {
           filteredProducts = filteredProducts.filter((product: Product) =>
             selectedFavorites.includes(product.id)
           );
-        }// Filtrar por rango de precios
-        if (lowerPrice !== minPrice || upperPrice !== maxPrice) {
-          filteredProducts = filteredProducts.filter((product: Product) => {
-            let price = product.price;
-            
-            // Convertir string a number si es necesario
-            if (typeof price === 'string') {
-              price = parseFloat((price as string).replace(/[^\d.,]/g, '').replace(',', '.'));
-            }
-            
-            return price >= lowerPrice && price <= upperPrice;
-          });        }
+        }
 
-        // Actualizar rango de precios basado en productos filtrados
-        initializePriceRange(filteredProducts);
+        const { setFilteredProducts } = get();
+        setFilteredProducts(filteredProducts);
 
-        // Actualizar estado
-        const updatedMeta = {
-          ...response.data.meta,
-          total: filteredProducts.length,
-          to: Math.min(filteredProducts.length, response.data.meta.per_page),
-          from: filteredProducts.length > 0 ? 1 : 0,
-          last_page: Math.max(
-            1,
-            Math.ceil(filteredProducts.length / response.data.meta.per_page)
-          ),
-        };
-
-        set({
-          filteredProducts,
-          productPaginationMeta: updatedMeta,
-          productPaginationLinks: response.data.links,
-          currentPage: 1,
-          isLoadingProducts: false,
-        });
+        set({ isLoadingProducts: false, isFiltered: true });
       } else {
-        console.error('Error aplicando filtros:', response.error);
+        console.error('Error applying filters:', response.error);
         set({ isLoadingProducts: false });
       }
     } catch (error) {
-      console.error('Error en applyFilters:', error);
+      console.error('Error in applyFilters:', error);
       set({ isLoadingProducts: false });
     }
   },
-  // Limpiar todos los filtros
-  clearAllFilters: async () => {
-    const { fetchProducts, productPaginationMeta } = get();
 
-    // Resetear estados de filtros
+  clearAllFilters: async () => {
+    const { fetchProducts, productPaginationMeta, minPrice, maxPrice } = get();
+
     set({
       selectedCategories: [],
       selectedBrands: [],
       selectedFavorites: [],
       searchTerm: '',
       showOnlyFavorites: false,
+      selectedMinPrice: minPrice,
+      selectedMaxPrice: maxPrice,
+      isFiltered: false,
     });
 
-    // Recargar productos originales
+    console.log('isFiltered state after clearing:', get().isFiltered);
+
     try {
       await fetchProducts(1, productPaginationMeta?.per_page || 9);
     } catch (error) {
-      console.error('Error al limpiar filtros:', error);
+      console.error('Error clearing filters:', error);
     }
   },
-  // Resetear completamente el estado de filtros
+
   resetFiltersState: () => {
     set({
       selectedCategories: [],
@@ -328,25 +252,29 @@ export const createFiltersSlice: StateCreator<
       selectedFavorites: [],
       minPrice: 0,
       maxPrice: 0,
-      lowerPrice: 0,
-      upperPrice: 0,
+      selectedMinPrice: 0,
+      selectedMaxPrice: 0,
       priceInitialized: false,
+      searchTerm: '',
+      showOnlyFavorites: false,
       isMainCategoryOpen: true,
       isBrandsOpen: false,
       isFavoritesOpen: false,
       isPriceOpen: true,
-      showOnlyFavorites: false,
+      isFiltered: false,
     });
-  },// Verificar si hay filtros activos
+  },
+
   hasActiveFilters: () => {
     const {
       selectedCategories,
       selectedBrands,
       selectedFavorites,
-      lowerPrice,
-      upperPrice,
+      selectedMinPrice,
+      selectedMaxPrice,
       minPrice,
       maxPrice,
+      searchTerm,
       showOnlyFavorites,
     } = get();
 
@@ -354,25 +282,21 @@ export const createFiltersSlice: StateCreator<
       selectedCategories.length > 0 ||
       selectedBrands.length > 0 ||
       selectedFavorites.length > 0 ||
-      lowerPrice !== minPrice ||
-      upperPrice !== maxPrice ||
+      selectedMinPrice > minPrice ||
+      selectedMaxPrice < maxPrice ||
+      searchTerm.length > 0 ||
       showOnlyFavorites
     );
   },
 
-  // Filtrar productos por marcas (función adicional si se necesita)
   filterProductsByBrands: () => {
     const { products, selectedBrands } = get();
-    
-    if (selectedBrands.length === 0) {
-      set({ filteredProducts: products });
-      return;
-    }
-    
+    if (selectedBrands.length === 0) return products;
+
     const filteredProducts = products.filter((product: Product) =>
       selectedBrands.includes(product.brand.id)
     );
-    
+
     set({ filteredProducts });
   },
 });

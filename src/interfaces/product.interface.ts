@@ -72,10 +72,46 @@ export interface FetchSearchProductsByFiltersProps {
   min?: number;
   max?: number;
   sort?: 'asc' | 'desc';
+  unit?: string;
+  category_id?: number;
+  subcategory_id?: number;
+  brand_id?: number;
+  is_favorite?: boolean;
 }
 
 export interface SearchWithPaginationProps
   extends FetchSearchProductsByFiltersProps {
   page?: number;
   size?: number;
+}
+
+export interface BackendFilters {
+  min_price: number | null;
+  max_price: number | null;
+  unit: string | null;
+}
+
+export interface ProductSearchResponse {
+  data: Product[];
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    path: string;
+    per_page: number;
+    to: number;
+    total: number;
+    links: Array<{
+      url: string | null;
+      label: string;
+      active: boolean;
+    }>;
+  };
+  filters?: BackendFilters;
 }

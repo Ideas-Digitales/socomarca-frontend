@@ -15,7 +15,7 @@ export const createModalSlice: StateCreator<any, [], [], ModalSlice> = (
     set({
       isModalOpen: true,
       modalTitle: options.title || content,
-      modalSize: options.size || 'md',
+      modalSize: options.size || ('md' as ModalSize),
       modalContent: options.content || null,
     });
   },
@@ -26,6 +26,12 @@ export const createModalSlice: StateCreator<any, [], [], ModalSlice> = (
       modalTitle: '',
       modalSize: 'md' as ModalSize,
       modalContent: null,
+    });
+  },
+
+  updateModalContent: (content: any) => {
+    set({
+      modalContent: content,
     });
   },
 });

@@ -7,6 +7,7 @@ declare namespace Cypress {
     loginAsAdmin(rut: string, password: string): Chainable<Element>;
     loginAsSuperAdmin(rut: string, password: string): Chainable<Element>;
     logout(): Chainable<Element>;
+    logoutFromMobileMenu(): Chainable<Element>;
     checkUserData(expectedData: {
       name?: string;
       email?: string;

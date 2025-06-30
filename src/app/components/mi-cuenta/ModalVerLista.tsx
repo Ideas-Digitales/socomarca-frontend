@@ -12,7 +12,7 @@ export default function ModalVerLista({
   return (
     <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-lg shadow max-w-xl w-full relative">
-        <h2 className="text-xl font-bold mb-4">Lista: {lista.nombre}</h2>
+        <h2 className="text-xl font-bold mb-4">Lista: {lista.name}</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           {lista.productos.map((prod, i) => (
@@ -22,14 +22,14 @@ export default function ModalVerLista({
             >
               <img
                 src={prod.imagen}
-                alt={prod.nombre}
+                alt={prod.name}
                 className="w-20 h-24 object-contain rounded mb-2"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = '/assets/global/logo_default.png';
                 }}
               />
-              <span>{prod.nombre}</span>
+              <span>{prod.name}</span>
             </div>
           ))}
         </div>

@@ -1,124 +1,44 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Product } from '@/interfaces/product.interface';
 import useStore from '@/stores/base';
 import ListsModal from '@/app/components/global/ListsModal';
-import { FavoriteList } from '@/interfaces/favorite.inteface';
 
 export const useFavorites = () => {
   const {
     favoriteLists,
     selectedFavoriteList,
     isLoadingFavorites,
+    favoritesInitialized,
     fetchFavorites,
     setSelectedFavoriteList,
     createFavoriteList,
     addProductToFavoriteList,
     removeProductFromFavorites,
+    removeFavoriteList,
+    changeListName,
     openModal,
     closeModal,
+    toggleProductFavorite,
   } = useStore();
-  const [favorites, setFavorites] = useState<Set<number>>(new Set());
-  const [removingFavorites, setRemovingFavorites] = useState<Set<number>>(
-    new Set()
-  );
   const hasInitialized = useRef(false);
-
-  // Efecto para cargar las listas de favoritos al inicializar el hook
+  
   useEffect(() => {
-    if (
-      !hasInitialized.current &&
-      favoriteLists.length === 0 &&
-      !isLoadingFavorites
-    ) {
+    // Solo inicializar si no hemos iniciado el proceso y no estamos cargando
+    if (!hasInitialized.current && !isLoadingFavorites && !favoritesInitialized) {
       hasInitialized.current = true;
       fetchFavorites();
     }
-  }, [favoriteLists.length, isLoadingFavorites, fetchFavorites]);
-  // Efecto para sincronizar productos favoritos del backend con el estado local
-  useEffect(() => {
-    if (favoriteLists.length > 0) {
-      const allFavoriteProductIds = new Set<number>();
+  }, [isLoadingFavorites, favoritesInitialized, fetchFavorites]);
+  const toggleFavorite = async (productId: number, product?: Product) => {
+    const result = await toggleProductFavorite(productId, product);
 
-      favoriteLists.forEach((list) => {
-        if (list.favorites) {
-          list.favorites.forEach((favorite) => {
-            allFavoriteProductIds.add(favorite.product.id);
-          });
-        }
-      });
-
-      setFavorites((prevFavorites) => {
-        const newFavorites = new Set(prevFavorites);
-        allFavoriteProductIds.forEach((id) => newFavorites.add(id));
-        return newFavorites;
-      });
+    if (result.requiresListSelection && result.product) {
+      openListsModal(result.product);
+      return result;
     }
-  }, [favoriteLists]);
-  const toggleFavorite = async (productId: number) => {
-    const wasFavorite = favorites.has(productId);
 
-    // Actualizar estado local inmediatamente para feedback visual
-    setFavorites((prev) => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(productId)) {
-        newFavorites.delete(productId);
-      } else {
-        newFavorites.add(productId);
-      }
-      return newFavorites;
-    });
-
-    // Si se está removiendo de favoritos, llamar al backend
-    if (wasFavorite) {
-      return;
-      setRemovingFavorites((prev) => new Set(prev).add(productId));
-      try {
-        const result = await removeProductFromFavorites(productId);
-        if (!result.ok) {
-          console.error(
-            'Error removiendo producto de favoritos:',
-            result.error
-          );
-          // Revertir el cambio local si falló
-          setFavorites((prev) => {
-            const newFavorites = new Set(prev);
-            newFavorites.add(productId);
-            return newFavorites;
-          });
-        }
-      } catch (error) {
-        console.error('Error removiendo producto de favoritos:', error);
-        setFavorites((prev) => {
-          const newFavorites = new Set(prev);
-          newFavorites.add(productId);
-          return newFavorites;
-        });
-      } finally {
-        setRemovingFavorites((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(productId);
-          return newSet;
-        });
-      }
-    }
+    return result;
   };
-  const isFavorite = (productId: number, product?: Product) => {
-    if (favorites.has(productId)) {
-      return true;
-    }
-
-    if (product && product.is_favorite) {
-      return true;
-    }
-
-    if (favoriteLists.length > 0) {
-      return favoriteLists.some((list) =>
-        list.favorites?.some((favorite) => favorite.product.id === productId)
-      );
-    }
-
-    return false;
-  }; // Función para crear una nueva lista
   const handleCreateList = useCallback(
     async (name: string) => {
       try {
@@ -131,12 +51,21 @@ export const useFavorites = () => {
     },
     [createFavoriteList]
   );
+  const isFavorite = useCallback(
+    (productId: number) => {
+      // Si aún está cargando o no se han inicializado los favoritos, retornamos null
+      if (isLoadingFavorites || !favoritesInitialized) {
+        return null;
+      }
+      
+      return favoriteLists.some((list) =>
+        list.favorites?.some((favorite) => favorite.product.id === productId)
+      );
+    },
+    [favoriteLists, isLoadingFavorites, favoritesInitialized]
+  );
   const openListsModal = useCallback(
-    (product: Product, currentLists: FavoriteList[]) => {
-      const adaptedLists = currentLists.map((list) => ({
-        id: list.id.toString(),
-        name: list.name,
-      }));
+    (product: Product) => {
       const handleListSelection = async (listId: string) => {
         try {
           console.log(
@@ -144,11 +73,11 @@ export const useFavorites = () => {
           );
           const result = await addProductToFavoriteList(
             parseInt(listId),
-            product.id
+            product.id,
+            product.unit
           );
 
           if (result.ok) {
-            setFavorites((prev) => new Set(prev).add(product.id));
             await fetchFavorites();
           } else {
             console.error('Error agregando producto a la lista:', result.error);
@@ -183,7 +112,6 @@ export const useFavorites = () => {
         size: 'md',
         content: (
           <ListsModal
-            lists={adaptedLists}
             product={product}
             onAddToList={handleListSelection}
             onCreateNewList={handleCreateNewList}
@@ -202,7 +130,7 @@ export const useFavorites = () => {
     ]
   );
   const handleAddToList = (product: Product) => {
-    openListsModal(product, favoriteLists);
+    openListsModal(product);
   };
   // Función para ver el detalle de una lista
   const handleViewListDetail = useCallback(
@@ -225,35 +153,92 @@ export const useFavorites = () => {
   const getAllFavoriteProductIds = useCallback(() => {
     const allIds = new Set<number>();
 
-    // Agregar IDs del estado local
-    favorites.forEach((id) => allIds.add(id));
-
     // Agregar IDs de las listas del backend
     favoriteLists.forEach((list) => {
       list.favorites?.forEach((favorite) => {
         allIds.add(favorite.product.id);
       });
     });
-
     return Array.from(allIds);
-  }, [favorites, favoriteLists]);
-  const isRemovingFavorite = (productId: number) => {
-    return removingFavorites.has(productId);
+  }, [favoriteLists]);
+
+  // Función para eliminar una lista de favoritos
+  const handleDeleteList = useCallback(
+    async (listId: number) => {
+      try {
+        const result = await removeFavoriteList(listId);
+        if (result.ok) {
+          // Limpiar la lista seleccionada si es la que se eliminó
+          if (selectedFavoriteList?.id === listId) {
+            clearSelectedList();
+          }
+        }
+        return result;
+      } catch (error) {
+        console.error('Error deleting list:', error);
+        return {
+          ok: false,
+          error: 'Error al eliminar la lista',
+        };
+      }
+    },
+    [removeFavoriteList, selectedFavoriteList?.id, clearSelectedList]
+  );
+
+  // Función para cambiar el nombre de una lista de favoritos
+  const handleChangeListName = useCallback(
+    async (listId: number, newName: string) => {
+      try {
+        const result = await changeListName(listId, newName);
+        return result;
+      } catch (error) {
+        console.error('Error changing list name:', error);
+        return {
+          ok: false,
+          error: 'Error al cambiar el nombre de la lista',
+        };
+      }
+    },
+    [changeListName]
+  );
+
+  // Función para eliminar un producto de favoritos
+  const handleRemoveProductFromFavorites = useCallback(
+    async (favoriteId: number) => {
+      try {
+        const result = await removeProductFromFavorites(favoriteId);
+        return result;
+      } catch (error) {
+        console.error('Error removing product from favorites:', error);
+        return {
+          ok: false,
+          error: 'Error al eliminar el producto de favoritos',
+        };
+      }
+    },
+    [removeProductFromFavorites]
+  );
+
+  const isRemovingFavorite = () => {
+    // Como ahora manejamos todo en el store, no necesitamos un estado local de "removing"
+    return false;
   };
   return {
-    favorites,
     lists: Array.isArray(favoriteLists) ? favoriteLists : [],
     selectedFavoriteList,
     isLoadingFavorites,
     toggleFavorite,
-    isFavorite,
     isRemovingFavorite,
     handleAddToList,
     fetchFavorites,
     handleCreateList,
     handleViewListDetail,
+    handleDeleteList,
+    handleChangeListName,
+    handleRemoveProductFromFavorites,
     setSelectedFavoriteList,
     clearSelectedList,
     getAllFavoriteProductIds,
+    isFavorite, // Ahora puede retornar boolean | null
   };
 };

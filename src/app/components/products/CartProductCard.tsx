@@ -1,7 +1,12 @@
 import { CartItem } from '@/interfaces/product.interface';
 import useStore from '@/stores/base';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { 
+  QuantitySelector, 
+  ProductImage, 
+  ProductInfo 
+} from '@/app/components/atoms';
 
 interface Props {
   product: CartItem;
@@ -10,30 +15,23 @@ interface Props {
 
 export default function CartProductCard({ product, index }: Props) {
   const {
-    addProductToCart,
-    removeProductFromCart,
+    addProductToCartOptimistic,
+    removeProductFromCartOptimistic,
   } = useStore();
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [backgroundImage, setBackgroundImage] = useState(
-    `url(${product.image})`
-  );
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = product.image;
-    img.onerror = () => {
-      setBackgroundImage(`url(/assets/global/logo_plant.png)`);
-    };
-  }, [product.image]);
-
   const decreaseQuantity = async () => {
     setIsLoading(true);
+    
     if (product.quantity > 1) {
-      const response = await removeProductFromCart(product, 1);
-      if (!response.ok) {
-        console.error('Error decrementing product in cart:');
+      try {
+        const response = await removeProductFromCartOptimistic(product, 1);
+        if (!response.ok) {
+          console.error('Error decrementing product in cart:');
+        }
+      } catch (error) {
+        console.error('Error decrementing product:', error);
       }
     }
     setIsLoading(false);
@@ -41,27 +39,30 @@ export default function CartProductCard({ product, index }: Props) {
 
   const increaseQuantity = async () => {
     setIsLoading(true);
+    
     if (product.quantity < product.stock) {
-      const response = await addProductToCart(product.id, 1, product.unit);
-      if (!response.ok) {
-        console.error('Error adding product to cart:');
+      try {
+        const response = await addProductToCartOptimistic(product.id, 1, product.unit, product);
+        if (!response.ok) {
+          console.error('Error adding product to cart:');
+        }
+      } catch (error) {
+        console.error('Error adding product:', error);
       }
     }
     setIsLoading(false);
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length > maxLength) {
-      return text.substring(0, maxLength) + '...';
-    }
-    return text;
-  };
-  
   const deleteAllQuantity = async () => {
     setIsLoading(true);
-    const response = await removeProductFromCart(product, product.quantity);
-    if (!response.ok) {
-      console.error('Error removing all quantity of product from cart:');
+    
+    try {
+      const response = await removeProductFromCartOptimistic(product, product.quantity);
+      if (!response.ok) {
+        console.error('Error removing all quantity of product from cart:');
+      }
+    } catch (error) {
+      console.error('Error removing product:', error);
     }
     setIsLoading(false);
   };
@@ -74,13 +75,6 @@ export default function CartProductCard({ product, index }: Props) {
     }
   );
 
-  const isBrandTruncated = product.brand?.name.length > 10;
-  const isNameTruncated = product.name.length > 10;
-
-  // Condiciones para deshabilitar botones
-  const isDecreaseDisabled = product.quantity <= 1 || isLoading;
-  const isIncreaseDisabled = product.quantity >= product.stock || isLoading;
-
   return (
     <div
       className={`flex w-full min-w-0 p-3 items-center gap-2 bg-white border-r border-l border-b border-slate-300 relative ${
@@ -89,60 +83,35 @@ export default function CartProductCard({ product, index }: Props) {
     >
       {/* Imagen del producto - fijo */}
       <div className="flex-shrink-0">
-        <div
-          className="w-[45px] h-[46px] p-[2px] bg-contain bg-no-repeat bg-center"
-          style={{ backgroundImage }}
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          variant="cart"
         />
       </div>
       
       {/* Información del producto - flexible con truncado */}
-      <div className="flex flex-col min-w-0 flex-shrink-0 w-[80px]">
-        <span
-          className="text-[#64748B] text-[12px] font-medium cursor-help truncate"
-          title={isBrandTruncated ? product.brand.name : undefined}
-        >
-          {truncateText(product.brand.name, 10)}
-        </span>
-        <span
-          className="text-[12px] font-medium cursor-help truncate"
-          title={isNameTruncated ? product.name : undefined}
-        >
-          {truncateText(product.name, 10)}
-        </span>
-      </div>
+      <ProductInfo
+        brand={product.brand}
+        name={product.name}
+        price={product.price}
+        variant="cart"
+        truncateLength={{ brand: 10, name: 10 }}
+      />
       
       {/* Controles y precio - flexible */}
       <div className="flex flex-1 min-w-0 justify-end items-center gap-2">
         {/* Controles de cantidad */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <button
-            disabled={isDecreaseDisabled}
-            className={`flex w-7 h-7 justify-center items-center rounded-[6px] transition-all duration-200 ${
-              isDecreaseDisabled
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-50'
-                : 'bg-slate-100 hover:bg-slate-200 cursor-pointer text-slate-700'
-            }`}
-            onClick={decreaseQuantity}
-          >
-            <span className="text-sm">-</span>
-          </button>
-
-          <span className="w-6 h-7 flex items-center justify-center text-xs font-medium">
-            {product.quantity}
-          </span>
-
-          <button
-            disabled={isIncreaseDisabled}
-            className={`flex w-7 h-7 justify-center items-center rounded-[6px] transition-all duration-200 ${
-              isIncreaseDisabled
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-50'
-                : 'bg-slate-100 hover:bg-slate-200 cursor-pointer text-slate-700'
-            }`}
-            onClick={increaseQuantity}
-          >
-            <span className="text-sm">+</span>
-          </button>
-        </div>
+        <QuantitySelector
+          quantity={product.quantity}
+          minQuantity={1}
+          maxQuantity={product.stock}
+          onDecrease={decreaseQuantity}
+          onIncrease={increaseQuantity}
+          onChange={() => {}} // No se usa en el cart
+          disabled={isLoading}
+          size="sm"
+        />
         
         {/* Precio - con ancho máximo */}
         <div className="flex items-center justify-end min-w-0 max-w-[80px]">

@@ -1,9 +1,9 @@
-import { Category } from '@/interfaces/category.interface';
+import { CategoryComplexData } from '@/interfaces/category.interface';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useDropdown } from '@/hooks/useDropdown';
 
 interface CategoryDropdownProps {
-  categories: Category[];
+  categories: CategoryComplexData[];
   selectedIds: number[];
   onSelectionChange: (selectedIds: number[]) => void;
   className?: string;

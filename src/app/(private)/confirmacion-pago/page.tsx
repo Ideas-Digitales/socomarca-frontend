@@ -89,14 +89,18 @@ Fecha transacción: ${new Date(transaction_date).toLocaleString('es-CL')}
             <h2 className="text-xl font-bold mb-2 mt-5 text-neutral-900">
               Confirmando tu pago...
             </h2>
-            <p className="text-gray-600">Estamos validando la transacción con WebPay.</p>
+            <p className="text-gray-600">
+              Estamos validando la transacción con WebPay.
+            </p>
           </>
         )}
 
         {estado.status === 'error' && (
           <>
             <XCircleIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2 text-neutral-800">Hubo un problema</h2>
+            <h2 className="text-xl font-bold mb-2 text-neutral-800">
+              Hubo un problema
+            </h2>
             <p className="text-gray-600">{estado.message}</p>
             <button
               onClick={() => router.push('/')}

@@ -14,11 +14,12 @@ export const createLogoutModal = (
         <QuestionMarkCircleIcon className="w-6 h-6 text-blue-500 mt-1" />
         <div>
           <h2 className="text-lg font-bold">¿Deseas cerrar sesión?</h2>
-          <p className="text-sm text-gray-600">
+          {/* <p className="text-sm text-gray-600">
             Se perderán los datos no guardados.
-          </p>
+          </p> */}
         </div>
-      </div>      <div className="flex gap-3 mt-6">
+      </div>{' '}
+      <div className="flex gap-3 mt-6">
         <button
           onClick={onLogout}
           className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
@@ -44,7 +45,6 @@ export const getSidebarConfig = (
   closeModal: () => void,
   router: { push: (url: string) => void }
 ): SidebarConfig => {
-  console.log('🔧 getSidebarConfig called with userRole:', userRole);
   const handleLogout = async () => {
     await logoutAction();
     closeModal();

@@ -6,11 +6,13 @@ import {
   CategoriesSlice,
   ProductsSlice,
   FiltersSlice,
+  AuthSlice,
 } from '../types';
 
 export const createStoreSlice: StateCreator<
   StoreState &
     StoreSlice &
+    AuthSlice &
     BrandsSlice &
     CategoriesSlice &
     ProductsSlice &
@@ -19,16 +21,13 @@ export const createStoreSlice: StateCreator<
   [],
   StoreSlice
 > = (set, get) => ({
+  // Reset individual states
   resetBrandsState: () => {
-    set({
-      brands: [],
-    });
+    set({ brands: [] });
   },
 
   resetCategoriesState: () => {
-    set({
-      categories: [],
-    });
+    set({ categories: [] });
   },
 
   resetProductsState: () => {
@@ -38,6 +37,7 @@ export const createStoreSlice: StateCreator<
       productPaginationMeta: null,
       productPaginationLinks: null,
       currentPage: 1,
+      searchTerm: '',
     });
   },
 
@@ -48,8 +48,8 @@ export const createStoreSlice: StateCreator<
       selectedFavorites: [],
       minPrice: 0,
       maxPrice: 0,
-      lowerPrice: 0,
-      upperPrice: 0,
+      selectedMinPrice: 0,
+      selectedMaxPrice: 0,
       priceInitialized: false,
       isMainCategoryOpen: true,
       isBrandsOpen: false,
@@ -58,10 +58,11 @@ export const createStoreSlice: StateCreator<
     });
   },
 
-  // CORREGIDO: Resetear estados y recargar productos
+  // Reset search-related states and reload products
   resetSearchRelatedStates: async () => {
     const { fetchProducts, productPaginationMeta } = get();
 
+    // Reset search and filter states
     set({
       searchTerm: '',
       selectedCategories: [],
@@ -71,6 +72,7 @@ export const createStoreSlice: StateCreator<
     });
 
     try {
+      // Reload products with default pagination
       await fetchProducts(1, productPaginationMeta?.per_page || 9);
       console.log('Estados de búsqueda reseteados y productos recargados');
     } catch (error) {
@@ -78,8 +80,17 @@ export const createStoreSlice: StateCreator<
     }
   },
 
+  // Reset all states
   resetAllStates: async () => {
     const { resetSearchRelatedStates } = get();
+
+    // Reset all individual states
+    get().resetBrandsState();
+    get().resetCategoriesState();
+    get().resetProductsState();
+    get().resetFiltersState();
+
+    // Reset search-related states and reload data
     await resetSearchRelatedStates();
   },
 });

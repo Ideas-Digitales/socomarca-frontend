@@ -3,26 +3,26 @@
 // Comandos personalizados para autenticación
 Cypress.Commands.add('loginAsClient', (rut, password) => {
   cy.visit('/auth/login');
-  
+
   // Limpiar campos primero
   cy.get('#rut').clear();
   cy.get('#password').clear();
-  
+
   // Escribir RUT y esperar que se valide
   cy.get('#rut').type(rut);
-  
+
   // Escribir contraseña
   cy.get('#password').type(password);
-  
+
   // Esperar a que el botón se habilite (el RUT debe ser válido)
   cy.get('[data-cy=btn-login]').should('not.be.disabled');
-  
+
   // Hacer click en el botón
   cy.get('[data-cy=btn-login]').click();
-  
+
   // Esperar un poco para que se procese
   cy.wait(2000);
-  
+
   // Verificar que la autenticación fue exitosa O que falló correctamente
   cy.url().then((currentUrl) => {
     if (currentUrl.includes('/auth/login')) {
@@ -39,26 +39,26 @@ Cypress.Commands.add('loginAsClient', (rut, password) => {
 
 Cypress.Commands.add('loginAsClientSuccess', (rut, password) => {
   cy.visit('/auth/login');
-  
+
   // Limpiar campos primero
   cy.get('#rut').clear();
   cy.get('#password').clear();
-  
+
   // Escribir RUT y esperar que se valide
   cy.get('#rut').type(rut);
-  
+
   // Escribir contraseña
   cy.get('#password').type(password);
-  
+
   // Esperar a que el botón se habilite (el RUT debe ser válido)
   cy.get('[data-cy=btn-login]').should('not.be.disabled');
-  
+
   // Hacer click en el botón
   cy.get('[data-cy=btn-login]').click();
-  
+
   // Esperar a que la autenticación se complete exitosamente
   cy.url().should('not.include', '/auth/login');
-  
+
   // Verificar que las cookies de autenticación estén presentes
   cy.getCookie('token').should('exist');
   cy.getCookie('userData').should('exist');
@@ -66,26 +66,26 @@ Cypress.Commands.add('loginAsClientSuccess', (rut, password) => {
 
 Cypress.Commands.add('loginAsAdmin', (rut, password) => {
   cy.visit('/auth/login-admin');
-  
+
   // Limpiar campos primero
   cy.get('#rut').clear();
   cy.get('#password').clear();
-  
+
   // Escribir RUT y esperar que se valide
   cy.get('#rut').type(rut);
-  
+
   // Escribir contraseña
   cy.get('#password').type(password);
-  
+
   // Esperar a que el botón se habilite
   cy.get('[data-cy=btn-login]').should('not.be.disabled');
-  
+
   // Hacer click en el botón
   cy.get('[data-cy=btn-login]').click();
-  
+
   // Esperar a que redirija a admin
   cy.url().should('include', '/admin');
-  
+
   // Verificar cookies
   cy.getCookie('token').should('exist');
   cy.getCookie('userData').should('exist');
@@ -93,26 +93,26 @@ Cypress.Commands.add('loginAsAdmin', (rut, password) => {
 
 Cypress.Commands.add('loginAsSuperAdmin', (rut, password) => {
   cy.visit('/auth/login-admin');
-  
+
   // Limpiar campos primero
   cy.get('#rut').clear();
   cy.get('#password').clear();
-  
+
   // Escribir RUT y esperar que se valide
   cy.get('#rut').type(rut);
-  
+
   // Escribir contraseña
   cy.get('#password').type(password);
-  
+
   // Esperar a que el botón se habilite
   cy.get('[data-cy=btn-login]').should('not.be.disabled');
-  
+
   // Hacer click en el botón
   cy.get('[data-cy=btn-login]').click();
-  
+
   // Esperar a que redirija a super-admin
   cy.url().should('include', '/super-admin');
-  
+
   // Verificar cookies
   cy.getCookie('token').should('exist');
   cy.getCookie('userData').should('exist');
@@ -133,14 +133,14 @@ Cypress.Commands.add('logout', () => {
       cy.contains('li', 'Cerrar').click({ force: true });
     }
   });
-  
+
   // Esperar a que aparezca el modal de confirmación
   cy.get('[data-cy=confirm-logout]', { timeout: 10000 }).should('be.visible');
   cy.get('[data-cy=confirm-logout]').click();
-  
+
   // Verificar que se redirigió al login
   cy.url().should('include', '/auth/login');
-  
+
   // Verificar que las cookies fueron eliminadas
   cy.getCookie('token').should('not.exist');
   cy.getCookie('userData').should('not.exist');
@@ -153,14 +153,14 @@ Cypress.Commands.add('checkUserData', (expectedData) => {
       try {
         // Intentar decodificar la cookie si está codificada
         let cookieValue = cookie.value;
-        
+
         // Si la cookie está codificada en URL, decodificarla
         if (cookieValue.includes('%')) {
           cookieValue = decodeURIComponent(cookieValue);
         }
-        
+
         const userData = JSON.parse(cookieValue);
-        
+
         if (expectedData.name) {
           expect(userData.name).to.include(expectedData.name);
         }
@@ -172,7 +172,8 @@ Cypress.Commands.add('checkUserData', (expectedData) => {
         }
         if (expectedData.roles) {
           expect(userData.roles).to.deep.equal(expectedData.roles);
-        }      } catch (error: any) {
+        }
+      } catch (error: any) {
         // Si hay error al parsear JSON, mostrar información útil
         cy.log('Error parsing userData cookie:', error);
         cy.log('Cookie value:', cookie.value);

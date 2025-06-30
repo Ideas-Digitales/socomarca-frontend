@@ -8,11 +8,14 @@ export const createCategoriesSlice: StateCreator<
   [],
   CategoriesSlice
 > = (set) => ({
+  // Estado inicial
+  categories: [],
+
+  // Acciones
   setCategories: (categories) => {
-    set({
-      categories: categories,
-    });
+    set({ categories });
   },
+
   fetchCategories: async () => {
     try {
       set({ isLoading: true });
@@ -25,11 +28,17 @@ export const createCategoriesSlice: StateCreator<
         });
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
-        set({ isLoading: false });
+        set({
+          categories: [],
+          isLoading: false,
+        });
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-      set({ isLoading: false });
+      set({
+        categories: [],
+        isLoading: false,
+      });
     }
   },
 });

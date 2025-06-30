@@ -8,9 +8,7 @@
     "lint": "next lint",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "test:auth": "cypress run --spec 'cypress/e2e/auth.cy.ts'",
-    "test:auth:simple": "cypress run --spec 'cypress/e2e/auth-simple.cy.ts'",
-    "test:auth:open": "cypress open --e2e --browser chrome"
+    "cy:open": "npx cypress open"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

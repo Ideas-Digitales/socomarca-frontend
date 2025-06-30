@@ -2,36 +2,38 @@
 
 import { Product } from '@/interfaces/product.interface';
 import { useEffect, useState } from 'react';
-import { ArrowPathIcon, HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useFavorites } from '@/hooks/useFavorites';
 import useStore from '@/stores/base';
+import {
+  QuantitySelector,
+  FavoriteButton,
+  AddToCartButton,
+  ProductImage,
+} from '@/app/components/atoms';
 
 interface Props {
   product: Product;
 }
 
 export default function ProductCardGrid({ product }: Props) {
-  const { isFavorite, toggleFavorite, handleAddToList } = useFavorites();
-  const { addProductToCart } = useStore();
+  const { toggleFavorite, isFavorite } = useFavorites();
+  const { addProductToCartOptimistic, isQaMode } = useStore();
   const [quantity, setQuantity] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [backgroundImage, setBackgroundImage] = useState(
-    `url(${product.image})`
-  );
+  const [isOptimisticUpdate, setIsOptimisticUpdate] = useState(false);
 
   useEffect(() => {
-    const img = new Image();
-    img.src = product.image;
-    img.onerror = () => {
-      setBackgroundImage(`url(/assets/global/logo_plant.png)`);
-    };
-  }, [product.image]);  const handleSetFavorite = async () => {
-    if (isFavorite(product.id, product)) {
-      await toggleFavorite(product.id);
-    } else {
-      handleAddToList(product);
+    if (isOptimisticUpdate && !isLoading) {
+      const timer = setTimeout(() => {
+        setIsOptimisticUpdate(false);
+      }, 1500);
+
+      return () => clearTimeout(timer);
     }
+  }, [isOptimisticUpdate, isLoading]);
+
+  const handleSetFavorite = async () => {
+    await toggleFavorite(product.id, product);
   };
 
   const decreaseQuantity = () => {
@@ -72,58 +74,58 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   const addToCart = async () => {
+    if (quantity <= 0) return;
+
     setIsLoading(true);
-    if (quantity > 0) {
-      const response = await addProductToCart(
+
+    if (isQaMode) {
+      setQuantity(0);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Establecer estado optimista inmediatamente
+      setIsOptimisticUpdate(true);
+
+      const response = await addProductToCartOptimistic(
         product.id,
         quantity,
-        product.unit
+        product.unit,
+        product
       );
 
       if (response.ok) {
         setQuantity(0);
+        // El estado isOptimisticUpdate se mantendrá true hasta que el useEffect lo resetee
       } else {
+        // Si falla, quitar el estado optimista inmediatamente
+        setIsOptimisticUpdate(false);
         console.error('Error adding product to cart');
       }
+    } catch (error) {
+      console.error('Error al agregar producto:', error);
+      setIsOptimisticUpdate(false);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length > maxLength) {
-      return text.substring(0, maxLength) + '...';
-    }
-    return text;
-  };
-
-  const isProductFavorite = isFavorite(product.id, product);
+  const isProductFavorite = isFavorite(product.id);
 
   return (
     <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b relative">
       {/* Imagen del producto */}
       <div className="flex items-center justify-center h-[100px] w-full relative">
-        <div
-          className="w-full bg-contain bg-no-repeat bg-center h-[87px]"
-          style={{ backgroundImage }}
-        />        {/* Botón de favorito */}
-        <div className="rounded-full bg-slate-100 items-center justify-center flex p-[6px] absolute top-2 right-2">
-          {!isProductFavorite ? (
-            <HeartIcon
-              className="cursor-pointer"
-              color="#475569"
-              width={16}
-              height={16}
-              onClick={handleSetFavorite}
-            />
-          ) : (
-            <HeartIconSolid
-              className="cursor-pointer"
-              color="#7ccf00"
-              width={16}
-              height={16}
-              onClick={handleSetFavorite}
-            />
-          )}
+        <ProductImage src={product.image} alt={product.name} variant="grid" />
+        {/* Botón de favorito */}
+        <div className="absolute top-2 right-2">
+          <FavoriteButton
+            isFavorite={isProductFavorite}
+            onToggle={handleSetFavorite}
+            size="md"
+            variant="grid"
+          />
         </div>
       </div>
 
@@ -133,7 +135,9 @@ export default function ProductCardGrid({ product }: Props) {
           {product.brand.name}
         </span>
         <span className="text-sm font-medium text-center">
-          {truncateText(product.name, 25)}
+          {product.name.length > 25
+            ? product.name.substring(0, 25) + '...'
+            : product.name}
         </span>
         <span className="text-lime-500 font-bold text-center text-lg mt-1">
           {product.price !== null && product.price !== undefined
@@ -157,54 +161,26 @@ export default function ProductCardGrid({ product }: Props) {
           </p>
         </div>
         <div className="flex items-center justify-center gap-1">
-          <button
-            disabled={quantity === 0}
-            className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
-              quantity === 0
-                ? 'bg-slate-200 opacity-50 cursor-not-allowed'
-                : 'bg-slate-100 text-slate-950'
-            }`}
-            onClick={decreaseQuantity}
-          >
-            -
-          </button>
-
-          <input
-            type="number"
-            min="0"
-            max={Math.min(product.stock, 999)}
-            value={quantity}
+          <QuantitySelector
+            quantity={quantity}
+            maxQuantity={Math.min(product.stock, 999)}
+            onDecrease={decreaseQuantity}
+            onIncrease={increaseQuantity}
             onChange={handleQuantityChange}
-            className="w-8 h-8 text-center border border-slate-300 rounded-[4px] focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 text-sm mx-0 p-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-            placeholder="0"
+            disabled={isLoading}
+            size="md"
           />
-
-          <button
-            disabled={quantity === Math.min(product.stock, 999)}
-            className={`flex w-8 h-8 p-2 justify-between items-center rounded-[6px] cursor-pointer ${
-              quantity === Math.min(product.stock, 999)
-                ? 'bg-slate-200 opacity-50 cursor-not-allowed'
-                : 'bg-slate-100  text-slate-950'
-            }`}
-            onClick={increaseQuantity}
-          >
-            +
-          </button>
         </div>
 
-        <button
+        <AddToCartButton
           onClick={addToCart}
-          disabled={quantity === 0 || product.stock === 0 || isLoading}
-          className="flex w-full p-2 flex-col justify-center items-center rounded-[6px] bg-[#84CC16] text-white hover:bg-[#257f00] h-[32px] text-[12px] cursor-pointer  disabled:cursor-not-allowed transition-all duration-300 ease-in-out"
-        >
-          {isLoading ? (
-            <span className="animate-spin">
-              <ArrowPathIcon width={16} />
-            </span>
-          ) : (
-            'Agregar al carro'
-          )}
-        </button>
+          disabled={quantity === 0 || product.stock === 0}
+          isLoading={isLoading}
+          isSuccess={isOptimisticUpdate}
+          quantity={quantity}
+          variant="full-width"
+          size="md"
+        />
       </div>
     </div>
   );

@@ -8,11 +8,14 @@ export const createBrandsSlice: StateCreator<
   [],
   BrandsSlice
 > = (set) => ({
+  // Estado inicial
+  brands: [],
+
+  // Acciones
   setBrands: (brands) => {
-    set({
-      brands: brands,
-    });
+    set({ brands });
   },
+
   fetchBrands: async () => {
     try {
       set({ isLoading: true });
@@ -25,10 +28,17 @@ export const createBrandsSlice: StateCreator<
         });
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
-        set({ isLoading: false });
-      }    } catch (error) {
+        set({
+          brands: [],
+          isLoading: false,
+        });
+      }
+    } catch (error) {
       console.error('Error fetching brands:', error);
-      set({ isLoading: false });
+      set({
+        brands: [],
+        isLoading: false,
+      });
     }
   },
 });

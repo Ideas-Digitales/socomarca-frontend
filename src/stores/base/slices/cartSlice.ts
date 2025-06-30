@@ -1,12 +1,19 @@
 import { StateCreator } from 'zustand';
-import { CartSlice, StoreState } from '../types';
+import { CartSlice, StoreState, ApiResponse } from '../types';
 import {
   fetchDeleteCart,
   fetchDeleteCartItem,
   fetchGetCart,
   fetchPostAddToCart,
 } from '@/services/actions/cart.actions';
-import { CartItem } from '@/interfaces/product.interface';
+import { CartItem, Product } from '@/interfaces/product.interface';
+import {
+  createErrorHandler,
+  createSuccessResponse,
+  createErrorResponse,
+} from '../utils/storeUtils';
+
+const errorHandler = createErrorHandler('Cart');
 
 export const createCartSlice: StateCreator<
   StoreState & CartSlice,
@@ -14,15 +21,76 @@ export const createCartSlice: StateCreator<
   [],
   CartSlice
 > = (set, get) => ({
+  // Estado inicial
+  cartProducts: [],
+
+  // Acciones
   addProductToCart: async (
     product_id: number,
     quantity: number,
     unit: string
-  ) => {
+  ): Promise<ApiResponse> => {
     try {
+      set({ isCartLoading: true });
+
+      const response = await fetchPostAddToCart({
+        product_id,
+        quantity,
+        unit,
+      });
+      if (response.ok && response.data) {
+        await get().fetchCartProducts();
+        return createSuccessResponse(response.data);
+      } else {
+        return createErrorResponse('Error al agregar producto al carrito');
+      }
+    } catch (error) {
+      return errorHandler(error);
+    } finally {
+      set({ isCartLoading: false });
+    }
+  },
+  addProductToCartOptimistic: async (
+    product_id: number,
+    quantity: number,
+    unit: string,
+    product: Product
+  ): Promise<ApiResponse> => {
+    const { cartProducts } = get();
+    const previousCartProducts = [...cartProducts];
+
+    try {
+      // Update optimista: agregar el producto inmediatamente al carrito
+      const existingItemIndex = cartProducts.findIndex(
+        (item) => item.id === product_id
+      );
+
+      let updatedCart;
+      if (existingItemIndex !== -1) {
+        // Si el producto ya existe, incrementar la cantidad
+        updatedCart = cartProducts.map((item, index) =>
+          index === existingItemIndex
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        // Si es un producto nuevo, agregarlo al carrito
+        const newCartItem = {
+          ...product,
+          quantity,
+          subtotal: product.price * quantity,
+          unit,
+        };
+        updatedCart = [...cartProducts, newCartItem];
+      }
+
+      // Actualizar estado optimísticamente
       set({
+        cartProducts: updatedCart,
         isCartLoading: true,
       });
+
+      // Realizar petición al servidor
       const response = await fetchPostAddToCart({
         product_id,
         quantity,
@@ -30,25 +98,20 @@ export const createCartSlice: StateCreator<
       });
 
       if (response.ok && response.data) {
+        // Si la petición es exitosa, sincronizar con el servidor
         await get().fetchCartProducts();
-        return {
-          ok: true,
-        };
+        return createSuccessResponse(response.data);
       } else {
-        return {
-          ok: false,
-        };
+        // Si falla, revertir al estado anterior
+        set({ cartProducts: previousCartProducts });
+        return createErrorResponse('Error al agregar producto al carrito');
       }
     } catch (error) {
-      console.error('Error in addProductToCart:', error);
-
-      return {
-        ok: false,
-      };
+      // En caso de error, revertir al estado anterior
+      set({ cartProducts: previousCartProducts });
+      return errorHandler(error);
     } finally {
-      set({
-        isCartLoading: false,
-      });
+      set({ isCartLoading: false });
     }
   },
 
@@ -97,36 +160,97 @@ export const createCartSlice: StateCreator<
     );
     set({ cartProducts: updatedCart });
   },
-
-  removeProductFromCart: async (product: CartItem, quantity: number) => {
+  removeProductFromCart: async (
+    product: CartItem,
+    quantity: number
+  ): Promise<ApiResponse> => {
     try {
-      set({
-        isCartLoading: true,
-      });
+      set({ isCartLoading: true });
+
       const response = await fetchDeleteCartItem(
         product.id,
         quantity,
         product.unit
       );
+
       if (response.ok && response.data) {
         await get().fetchCartProducts();
-        return {
-          ok: true,
-        };
+        return createSuccessResponse(response.data);
       } else {
-        return {
-          ok: false,
-        };
+        return createErrorResponse('Error al eliminar producto del carrito');
       }
     } catch (error) {
-      console.error('Error in removeProductFromCart:', error);
-      return {
-        ok: false,
-      };
+      return errorHandler(error);
     } finally {
+      set({ isCartLoading: false });
+    }
+  },
+  removeProductFromCartOptimistic: async (
+    product: CartItem,
+    quantity: number
+  ): Promise<ApiResponse> => {
+    const { cartProducts } = get();
+    const previousCartProducts = [...cartProducts];
+
+    try {
+      // Update optimista: actualizar el carrito inmediatamente
+      let updatedCart;
+      const existingItemIndex = cartProducts.findIndex(
+        (item) => item.id === product.id
+      );
+
+      if (existingItemIndex !== -1) {
+        const currentItem = cartProducts[existingItemIndex];
+        const newQuantity = currentItem.quantity - quantity;
+
+        if (newQuantity <= 0) {
+          // Eliminar el producto completamente
+          updatedCart = cartProducts.filter((item) => item.id !== product.id);
+        } else {
+          // Reducir la cantidad
+          updatedCart = cartProducts.map((item, index) =>
+            index === existingItemIndex
+              ? {
+                  ...item,
+                  quantity: newQuantity,
+                  subtotal: item.price * newQuantity,
+                }
+              : item
+          );
+        }
+      } else {
+        // Si no encuentra el producto, no hacer nada
+        updatedCart = cartProducts;
+      }
+
+      // Actualizar estado optimísticamente
       set({
-        isCartLoading: false,
+        cartProducts: updatedCart,
+        isCartLoading: true,
       });
+
+      // Realizar petición al servidor
+      const response = await fetchDeleteCartItem(
+        product.id,
+        quantity,
+        product.unit
+      );
+
+      if (response.ok && response.data) {
+        // Si la petición es exitosa, sincronizar con el servidor
+        await get().fetchCartProducts();
+        return createSuccessResponse(response.data);
+      } else {
+        // Si falla, revertir al estado anterior
+        set({ cartProducts: previousCartProducts });
+        return createErrorResponse('Error al eliminar producto del carrito');
+      }
+    } catch (error) {
+      // En caso de error, revertir al estado anterior
+      set({ cartProducts: previousCartProducts });
+      return errorHandler(error);
+    } finally {
+      set({ isCartLoading: false });
     }
   },
 
@@ -135,16 +259,22 @@ export const createCartSlice: StateCreator<
     const updatedCart = cartProducts.filter((item) => item.id !== productId);
     set({ cartProducts: updatedCart });
   },
-
   clearCart: async () => {
-    const response = await fetchDeleteCart();
-    if (response.ok) {
-      set({
-        cartProducts: [],
-      });
-      return {
-        ok: true,
-      };
+    try {
+      set({ isCartLoading: true });
+      const response = await fetchDeleteCart();
+
+      if (response.ok) {
+        set({
+          cartProducts: [],
+        });
+      } else {
+        console.error('Error clearing cart:', response.error);
+      }
+    } catch (error) {
+      console.error('Error in clearCart:', error);
+    } finally {
+      set({ isCartLoading: false });
     }
   },
 });

@@ -1,3 +1,12 @@
+/**
+ * Product Actions Service
+ * 
+ * This module provides functions to fetch, search, and manage product data, supporting both QA (mock) and real API modes.
+ * It includes utilities for pagination, filtering, cache management, and price range retrieval.
+ *
+ * @module services/actions/products.actions
+ */
+
 'use server';
 import {
   Product,
@@ -11,39 +20,16 @@ import {
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 
-interface ProductsMock {
-  data: Product[];
-  links: {
-    first: string | null;
-    last: string | null;
-    prev: string | null;
-    next: string | null;
-  };
-  meta: {
-    current_page: number;
-    from: number;
-    last_page: number;
-    path: string;
-    per_page: number;
-    to: number;
-    total: number;
-    links: Array<{
-      url: string | null;
-      label: string;
-      active: boolean;
-    }>;
-  };
-}
-
-interface FetchGetProductsProps {
-  page: number;
-  size: number;
-}
-
+/**
+ * Formats paginated product data into a Laravel-style API response.
+ * @param paginatedData - Paginated product data
+ * @param baseUrl - Base URL for links (defaults to BACKEND_URL)
+ * @returns Formatted response object
+ */
 const createLaravelStyleResponse = (
   paginatedData: PaginatedResult<Product>,
   baseUrl: string = BACKEND_URL || 'https://api.example.com'
-): ProductsMock => {
+) => {
   const { data, total, page, per_page, total_pages, has_next, has_prev } =
     paginatedData;
 
@@ -103,9 +89,16 @@ const createLaravelStyleResponse = (
   };
 };
 
+/**
+ * In-memory cache for mock products (QA mode only)
+ */
 let cachedProducts: Product[] | null = null;
 const TOTAL_MOCK_PRODUCTS = 150;
 
+/**
+ * Returns cached mock products, generating them if not present.
+ * @returns Array of mock products
+ */
 const getCachedProducts = (): Product[] => {
   if (!cachedProducts) {
     cachedProducts = generateProducts(TOTAL_MOCK_PRODUCTS);
@@ -113,10 +106,18 @@ const getCachedProducts = (): Product[] => {
   return cachedProducts;
 };
 
+/**
+ * Fetches paginated products (mock or real API).
+ * @param params - Pagination params: page, size
+ * @returns API-like response with product data
+ */
 export const fetchGetProducts = async ({
-  page,
-  size,
-}: FetchGetProductsProps) => {
+  page ,
+  size ,
+}: {
+  page: number;
+  size: number;
+}) => {
   try {
     if (IS_QA_MODE) {
       // Simular delay de red
@@ -178,6 +179,12 @@ export const fetchGetProducts = async ({
   }
 };
 
+/**
+ * Fetches products by filters (mock or real API).
+ * Supports filtering by name, category, subcategory, brand, price range, favorites, and sorting.
+ * @param filters - Filtering and pagination options
+ * @returns API-like response with filtered product data and filter info
+ */
 export const fetchSearchProductsByFilters = async (
   filters: SearchWithPaginationProps
 ) => {
@@ -245,15 +252,38 @@ export const fetchSearchProductsByFilters = async (
           }
         });
       }
-
       const page = filters.page || 1;
       const size = filters.size || 20;
       const paginatedData = paginateProducts(filteredProducts, page, size);
       const response = createLaravelStyleResponse(paginatedData);
 
+      // Agregar información de filtros simulada para el modo QA
+      const mockFilters = {
+        min_price:
+          filteredProducts.length > 0
+            ? Math.min(
+                ...filteredProducts.map((p) =>
+                  typeof p.price === 'string' ? parseFloat(p.price) : p.price
+                )
+              )
+            : null,
+        max_price:
+          filteredProducts.length > 0
+            ? Math.max(
+                ...filteredProducts.map((p) =>
+                  typeof p.price === 'string' ? parseFloat(p.price) : p.price
+                )
+              )
+            : null,
+        unit: null,
+      };
+
       return {
         ok: true,
-        data: response,
+        data: {
+          ...response,
+          filters: mockFilters,
+        },
         error: null,
       };
     } else {
@@ -276,32 +306,47 @@ export const fetchSearchProductsByFilters = async (
         per_page: per_page.toString(),
       });
 
-      // Construir el body con mejor soporte para múltiples filtros
-      const filterObjects = [];
-
-      // Filtro principal (field, value, operator)
-      if (filters.field && filters.value) {
-        filterObjects.push({
-          field: filters.field,
-          value: filters.value,
-          operator: filters.operator || '=',
-        });
-      }
-
-      // Filtro de precio como objeto separado
-      if (filters.min !== undefined || filters.max !== undefined) {
-        filterObjects.push({
-          field: 'price',
-          min: filters.min,
-          max: filters.max,
-          operator: 'range',
-        });
-      }
-
-      const requestBody = {
-        filters: filterObjects,
-        ...(filters.sort && { sort: filters.sort }),
+      // Construir el body con la nueva estructura
+      const requestBody: any = {
+        filters: {
+          // Price siempre va sin excepción
+          price: {
+            min: filters.min !== undefined ? filters.min : 0,
+            max: filters.max !== undefined ? filters.max : 999999,
+          },
+        },
       };
+
+      // Agregar unit solo si tiene valor
+      if (filters.unit) {
+        requestBody.filters.price.unit = filters.unit;
+      }
+
+      // Agregar otros filtros solo si vienen en filters
+      if (filters.category_id !== undefined) {
+        requestBody.filters.category_id = filters.category_id;
+      }
+
+      if (filters.subcategory_id !== undefined) {
+        requestBody.filters.subcategory_id = filters.subcategory_id;
+      }
+
+      if (filters.brand_id !== undefined) {
+        requestBody.filters.brand_id = filters.brand_id;
+      }
+
+      if (filters.field === 'name' && filters.value) {
+        requestBody.filters.name = filters.value;
+      }
+
+      if (filters.is_favorite !== undefined) {
+        requestBody.filters.is_favorite = filters.is_favorite;
+      }
+
+      // Agregar sort si existe
+      if (filters.sort) {
+        requestBody.sort = filters.sort;
+      }
 
       const response = await fetch(
         `${BACKEND_URL}/products/search?${queryParams}`,
@@ -315,12 +360,11 @@ export const fetchSearchProductsByFilters = async (
           body: JSON.stringify(requestBody),
         }
       );
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);
       }
-      const data = await response.json();
-      console.log('Data fetched by filters:', data);
 
       return {
         ok: true,
@@ -338,21 +382,33 @@ export const fetchSearchProductsByFilters = async (
   }
 };
 
-// Función adicional para limpiar el cache (útil para testing)
+/**
+ * Clears the in-memory product cache (QA mode only).
+ * Useful for testing or refreshing mock data.
+ */
 export const clearProductsCache = async () => {
   cachedProducts = null;
 };
 
-// Función para pre-cargar el cache (opcional)
+/**
+ * Preloads the in-memory product cache (QA mode only).
+ * Useful for warming up the cache before tests.
+ */
 export const preloadProductsCache = async () => {
   getCachedProducts();
 };
 
-// Funciones auxiliares para casos específicos
+/**
+ * Fetches products by category (mock or real API).
+ * @param categoryId - Category ID
+ * @param page - Page number (default 1)
+ * @param size - Page size (default 21)
+ * @returns API-like response with category-filtered products
+ */
 export const fetchGetProductsByCategory = async (
   categoryId: number,
   page: number = 1,
-  size: number = 20
+  size: number = 21
 ) => {
   if (IS_QA_MODE) {
     await new Promise((resolve) => setTimeout(resolve, 600));
@@ -375,10 +431,17 @@ export const fetchGetProductsByCategory = async (
   return fetchGetProducts({ page, size });
 };
 
+/**
+ * Searches products by a text query (mock or real API).
+ * @param query - Search string
+ * @param page - Page number (default 1)
+ * @param size - Page size (default 21)
+ * @returns API-like response with search results
+ */
 export const fetchSearchProducts = async (
   query: string,
   page: number = 1,
-  size: number = 20
+  size: number = 21
 ) => {
   if (IS_QA_MODE) {
     await new Promise((resolve) => setTimeout(resolve, 400));
@@ -405,4 +468,88 @@ export const fetchSearchProducts = async (
 
   // Lógica para API real aquí
   return fetchGetProducts({ page, size });
+};
+
+/**
+ * Fetches the minimum and maximum product prices (mock or real API).
+ * @returns Object with min_price and max_price
+ */
+export const fetchMinMaxPrice = async () => {
+  try {
+    if (IS_QA_MODE) {
+      // Simular delay de red
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      
+      // Obtener precios desde los productos mock
+      const allProducts = getCachedProducts();
+      if (allProducts.length === 0) {
+        return {
+          ok: true,
+          data: {
+            min_price: 0,
+            max_price: 1000,
+          },
+          error: null,
+        };
+      }
+      
+      const prices = allProducts.map(product => {
+        let price = product.price;
+        if (typeof price === 'string') {
+          price = parseFloat((price as string).replace(/[^\d.,]/g, '').replace(',', '.'));
+        }
+        return price;
+      }).filter(price => !isNaN(price) && price >= 0);
+      
+      const min_price = Math.floor(Math.min(...prices));
+      const max_price = Math.ceil(Math.max(...prices));
+      
+      return {
+        ok: true,
+        data: {
+          min_price,
+          max_price,
+        },
+        error: null,
+      };
+    }
+
+    const { getCookie } = await cookiesManagement();
+    const cookie = getCookie('token');
+
+    if (!cookie) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token provided',
+      };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/products/price-extremes`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${cookie}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    const data = await response.json();
+    return {
+      ok: true,
+      data: {
+        min_price: data.lowest_price_product,
+        max_price: data.highest_price_product,
+      },
+      error: null,
+    };
+  } catch (error) {
+    console.log('Error fetching min/max price:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
 };

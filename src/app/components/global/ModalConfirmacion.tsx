@@ -34,9 +34,9 @@ export default function ModalConfirmacion({
             className="border border-gray-300 text-gray-700 px-4 py-2 rounded"
           >
             Cancelar
-          </button>
-          <button
+          </button>          <button
             onClick={onConfirm}
+            data-cy="btn-confirmar-eliminacion"
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
           >
             Eliminar

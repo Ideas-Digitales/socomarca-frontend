@@ -7,6 +7,12 @@ export const createUiSlice: StateCreator<
   [],
   UiSlice
 > = (set, get) => ({
+  // Estados de UI
+  isMobile: false,
+  isTablet: false,
+  viewMode: 'grid',
+
+  // Acciones
   checkIsMobile: () => {
     if (typeof window !== 'undefined') {
       const isMobile = window.innerWidth < 640;
