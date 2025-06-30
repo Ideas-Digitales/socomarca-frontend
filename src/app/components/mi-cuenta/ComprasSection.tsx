@@ -3,6 +3,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import LoadingSpinner from "@/app/components/global/LoadingSpinner";
 import { useState } from "react";
 import { addOrderToCart } from "@/services/actions/cart.actions";
+import useStore from "@/stores/base";
 
 // Tipos de datos que recibe el componente:
 
@@ -46,7 +47,7 @@ export default function ComprasSection({
     c.numero.includes(busqueda.trim())
   );
   const [repeatingOrderId, setRepeatingOrderId] = useState<string | null>(null);
-
+  const store = useStore.getState();
   return (
     <div className="p-4 rounded">
       <h2 className="text-xl font-bold mb-6">Mis compras</h2>
@@ -140,12 +141,17 @@ export default function ComprasSection({
                 <button
                   onClick={async () => {
                     setRepeatingOrderId(c.numero);
+
                     const result = await addOrderToCart(Number(c.numero));
+
                     if (result.ok) {
+                      const store = useStore.getState();
+                      await store.fetchCartProducts();
                       router.push("/carro-de-compra");
                     } else {
                       alert("Error al repetir pedido: " + result.error);
                     }
+
                     setRepeatingOrderId(null);
                   }}
                   disabled={repeatingOrderId === c.numero}
