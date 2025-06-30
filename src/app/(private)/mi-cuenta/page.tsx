@@ -16,12 +16,10 @@ import ComprasSection, {
   Compra,
 } from "@/app/components/mi-cuenta/ComprasSection";
 import DetalleCompra from "@/app/components/mi-cuenta/DetalleCompra";
-import {
+/*import {
   getUserAddresses,
   type Address,
-} from "@/services/actions/addressees.actions";
-import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
-import LoadingSpinner from "@/app/components/global/LoadingSpinner";
+} from "@/services/actions/addressees.actions";*/
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -47,10 +45,8 @@ export default function MiCuentaPage() {
   const [loadingOrders, setLoadingOrders] = useState(true);
 
   /* Estados para seccion de direcciones del usuario */
-  const [direcciones, setDirecciones] = useState<Address[]>([]);
-  const [loadingDirecciones, setLoadinDirecciones] = useState(true);
-  const [favoritaIndex, setFavoritaIndex] = useState<number | null>(null);
-  const [modalAbierto, setModalAbiertoState] = useState(false);
+  //const [direcciones, setDirecciones] = useState<Address[]>([]);
+  //const [loadingDirecciones, setLoadinDirecciones] = useState(true);
 
   const router = useRouter();
   const { handleViewListDetail, clearSelectedList } = useFavorites();
@@ -99,16 +95,16 @@ export default function MiCuentaPage() {
     fetchOrders();
   }, []);
 
-  /* Trae las direcciones del usuario */
+  /* Trae las direcciones del usuario 
   useEffect(() => {
     const fetchDirecciones = async () => {
       const data = await getUserAddresses();
-      if (data) setDirecciones(data);
-      setLoadinDirecciones(false);
+     // if (data) setDirecciones(data);
+     // setLoadinDirecciones(false);
     };
 
     fetchDirecciones();
-  }, []);
+  }, []);*/
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen px-4">
