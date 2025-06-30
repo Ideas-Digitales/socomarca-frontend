@@ -47,7 +47,6 @@ export default function ComprasSection({
     c.numero.includes(busqueda.trim())
   );
   const [repeatingOrderId, setRepeatingOrderId] = useState<string | null>(null);
-  const store = useStore.getState();
   return (
     <div className="p-4 rounded">
       <h2 className="text-xl font-bold mb-6">Mis compras</h2>
