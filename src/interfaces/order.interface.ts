@@ -38,3 +38,65 @@ export interface OrderDataForm {
   direccionId: number;
   detallesDireccion: string;
 }
+
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
+  sku: string;
+  image: string;
+  category_id: number;
+  subcategory_id: number;
+  brand_id: number;
+  status: boolean;
+  created_at: string;
+  updated_at: string;
+  random_product_id: string | null;
+}
+
+export interface OrderItem {
+  id: number;
+  product: Product;
+  unit: string;
+  quantity: number;
+  price: string;
+  subtotal: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Order {
+  id: number;
+  user: UserData;
+  subtotal: number;
+  amount: number;
+  status: string;
+  order_items: OrderItem[];
+  order_meta: string; // viene como string, tipo JSON
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderResponse {
+  data: Order[];
+  links: {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    per_page: number;
+    to: number;
+    total: number;
+    path: string;
+    links: {
+      url: string | null;
+      label: string;
+      active: boolean;
+    }[];
+  };
+}
