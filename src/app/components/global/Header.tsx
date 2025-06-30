@@ -84,7 +84,6 @@ export default function Header({ carro }: Props) {
   const menuItems = [
     { name: 'Inicio', href: '/' },
     { name: 'Datos personales', href: '/mi-cuenta?section=datos' },
-    { name: 'Historial de compra', href: '/mis-compras' },
     { name: 'Favoritos', href: '/mi-cuenta?section=favoritos' },
     { name: 'Direcciones', href: '/mi-cuenta?section=direcciones' },
     { name: 'Mis Compras', href: '/mi-cuenta?section=compras' },

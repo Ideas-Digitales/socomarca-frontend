@@ -238,3 +238,62 @@ export const fetchDeleteCart = async (): Promise<ActionResult<any>> => {
     };
   }
 };
+
+
+export const addOrderToCart = async (
+  orderId: number
+): Promise<ActionResult<any>> => {
+  try {
+    if (IS_QA_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return {
+        ok: true,
+        data: {
+          message: 'Orden añadida al carrito (mock)',
+          order_id: orderId,
+        },
+        error: null,
+      };
+    }
+
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token found',
+      };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/cart/add-order`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ order_id: orderId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    return {
+      ok: true,
+      data,
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error adding order to cart:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+};
