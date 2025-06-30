@@ -79,7 +79,6 @@ export default function MiCuentaPage() {
               />
             )}
             {selected === 'detalle-lista' && (
-              
               <DetalleListaSection onVolver={handleBackToFavorites} />
             )}
             {selected === 'datos' && (
