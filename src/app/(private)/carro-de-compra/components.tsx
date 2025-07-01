@@ -2,11 +2,13 @@
  * Subcomponentes para la página del carrito de compras
  */
 import Image from 'next/image';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
+import { ChevronLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import CarroCompraCard from '@/app/components/carro-de-compra/CarroCompraCard';
 import CarroCompraCardMobile from '@/app/components/carro-de-compra/CarroCompraCardMobile';
 import { CART_PAGE_CONFIG, CART_PAGE_STYLES } from './constants';
 import { CartItem } from '@/interfaces/product.interface';
+import useStore from '@/stores/base';
 
 interface EmptyCartProps {
   onGoHome: () => void;
@@ -39,22 +41,59 @@ interface CartHeaderProps {
   onGoBack: () => void;
 }
 
-export const CartHeader = ({ totalProducts, onGoBack }: CartHeaderProps) => (
-  <div className="flex items-center gap-3 mb-4">
-    <ChevronLeftIcon
-      className="w-5 h-5 font-bold lg:hidden cursor-pointer"
-      strokeWidth={3}
-      onClick={onGoBack}
-      aria-label="Volver atrás"
-    />
-    <h2 className="text-2xl font-bold">
-      Carro{' '}
-      <span className="text-lime-500 text-base font-normal">
-        ({totalProducts} productos)
-      </span>
-    </h2>
-  </div>
-);
+export const CartHeader = ({ totalProducts, onGoBack }: CartHeaderProps) => {
+  const { clearCart } = useStore();
+  const [isClearing, setIsClearing] = useState(false);
+
+  const handleEmptyCart = async () => {
+    setIsClearing(true);
+    try {
+      await clearCart();
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-3">
+        <ChevronLeftIcon
+          className="w-5 h-5 font-bold lg:hidden cursor-pointer"
+          strokeWidth={3}
+          onClick={onGoBack}
+          aria-label="Volver atrás"
+        />
+        <h2 className="text-2xl font-bold">
+          Carro{' '}
+          <span className="text-lime-500 text-base font-normal">
+            ({totalProducts} productos)
+          </span>
+        </h2>
+      </div>
+      {totalProducts > 0 && (
+        <span
+          onClick={isClearing ? undefined : handleEmptyCart}
+          className={`flex gap-2 items-center font-semibold ${
+            isClearing 
+              ? 'text-gray-400 cursor-not-allowed' 
+              : 'text-lime-500 cursor-pointer hover:text-lime-700'
+          }`}
+        >
+          {isClearing ? (
+            <>
+              Vaciando... 
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-lime-500"></div>
+            </>
+          ) : (
+            <>
+              Vaciar carro <TrashIcon width={14} height={14} />
+            </>
+          )}
+        </span>
+      )}
+    </div>
+  );
+};
 
 interface PaginationInfoProps {
   from: number;

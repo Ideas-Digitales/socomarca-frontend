@@ -102,7 +102,7 @@ export const createAuthSlice: StateCreator<
       } // Actualizar el estado del store
       set({
         isLoggedIn: true,
-        isLoading: false,
+        // No seteamos isLoading: false aquí para mantener el loader hasta la redirección
         user: {
           id: response.user.id,
           name: response.user.name,
