@@ -16,6 +16,7 @@ import { createStoreSlice } from './slices/storeSlice';
 import { createFiltersSlice } from './slices/filterSlice';
 import { createModalSlice } from './slices/modalSlice';
 import { createFavoritesSlice } from './slices/favoritesSlice';
+import { createReportsSlice } from './slices/reportsSlice';
 
 // Estado inicial optimizado
 const initialState: StoreState = {
@@ -62,6 +63,17 @@ const initialState: StoreState = {
   selectedFavoriteList: null,
   showOnlyFavorites: false,
   favoritesInitialized: false,
+
+  // Reports states
+  transactionsList: [],
+  selectedTransaction: null,
+  reportsCurrentPage: 1,
+  reportsPagination: null,
+  isLoadingReports: false,
+  reportsFilters: {
+    start: '',
+    end: '',
+  },
 
   // Filter states
   selectedCategories: [],
@@ -111,6 +123,7 @@ const useStore = create<Store>()((...a) => ({
   ...createFiltersSlice(...a),
   ...createModalSlice(...a),
   ...createFavoritesSlice(...a),
+  ...createReportsSlice(...a),
 }));
 
 // Hook optimizado para manejar la detección de dispositivos móviles

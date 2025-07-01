@@ -3,6 +3,8 @@ import { useRouter } from "next/navigation";
 import { Compra } from "./ComprasSection";
 import { usePagination } from "@/hooks/usePagination";
 import Pagination from "../global/Pagination";
+import { addOrderToCart } from "@/services/actions/cart.actions";
+import useStore from "@/stores/base";
 
 export default function DetalleCompra({
   pedido,
@@ -93,7 +95,16 @@ export default function DetalleCompra({
             Impuestos y envíos calculados al finalizar la compra
           </p>
           <button
-            onClick={() => router.push("/carro-de-compra")}
+            onClick={async () => {
+              const result = await addOrderToCart(Number(pedido.numero));
+              if (result.ok) {
+                const store = useStore.getState();
+                await store.fetchCartProducts();
+                router.push("/carro-de-compra");
+              } else {
+                alert("Error al continuar con la compra: " + result.error);
+              }
+            }}
             className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded"
           >
             Continuar con la compra
