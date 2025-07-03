@@ -159,7 +159,7 @@ export const fetchGetOrdersReportsTransactionsList = async (
       return {
         ok: false,
         data: null,
-        error: `Server returned non-JSON response. Status: ${response.status}. Content-Type: ${contentType}`,
+        error: `Server returned non-JSON response. Status: ${response.status}. Content-Type: ${contentType}. Response: ${textResponse}`,
       };
     }
 
@@ -249,7 +249,7 @@ export const fetchGetOrdersReportsFailedTransactionsList = async (
       return {
         ok: false,
         data: null,
-        error: `Server returned non-JSON response. Status: ${response.status}. Content-Type: ${contentType}`,
+        error: `Server returned non-JSON response. Status: ${response.status}. Content-Type: ${contentType}. Response: ${textResponse}`,
       };
     }
 
@@ -352,7 +352,6 @@ export const fetchGetOrdersReportsCharts = async (
 
     const endpointUrl = `${BACKEND_URL}/orders/reports`;
 
-    // Crear el body según la documentación del API
     const requestBody = {
       start,
       end,
@@ -369,7 +368,6 @@ export const fetchGetOrdersReportsCharts = async (
       body: JSON.stringify(requestBody),
     });
     
-    // Verificar el content-type antes de parsear JSON
     const contentType = response.headers.get('content-type');
     
     if (!contentType || !contentType.includes('application/json')) {
@@ -377,7 +375,7 @@ export const fetchGetOrdersReportsCharts = async (
       return {
         ok: false,
         data: null,
-        error: `Server returned non-JSON response. Status: ${response.status}. Content-Type: ${contentType}`,
+        error: `Server returned non-JSON response. Status: ${response.status}. Content-Type: ${contentType}. Response: ${textResponse}`,
       };
     }
 
