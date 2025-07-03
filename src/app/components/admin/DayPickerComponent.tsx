@@ -2,11 +2,46 @@
 import { DayPicker, DateRange } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { es } from 'date-fns/locale';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 
-export default function DayPickerComponent() {
+interface DayPickerComponentProps {
+  onDateRangeChange?: (start: string, end: string) => void;
+  initialDateRange?: {
+    start?: string;
+    end?: string;
+  };
+}
+
+export default function DayPickerComponent({ 
+  onDateRangeChange,
+  initialDateRange 
+}: DayPickerComponentProps = {}) {
   const [selected, setSelected] = useState<DateRange | undefined>();
+
+  // Inicializar con el rango de fechas proporcionado
+  useEffect(() => {
+    if (initialDateRange?.start || initialDateRange?.end) {
+      const from = initialDateRange.start ? new Date(initialDateRange.start) : undefined;
+      const to = initialDateRange.end ? new Date(initialDateRange.end) : undefined;
+      setSelected({ from, to });
+    }
+  }, [initialDateRange]);
+
+  // Manejar cambios en la selección de fechas
+  const handleSelect = (range: DateRange | undefined) => {
+    setSelected(range);
+    
+    if (range?.from && range?.to && onDateRangeChange) {
+      const startDate = format(range.from, 'yyyy-MM-dd');
+      const endDate = format(range.to, 'yyyy-MM-dd');
+      onDateRangeChange(startDate, endDate);
+    } else if (range?.from && !range?.to && onDateRangeChange) {
+      // Si solo hay fecha de inicio, usar la misma para inicio y fin
+      const startDate = format(range.from, 'yyyy-MM-dd');
+      onDateRangeChange(startDate, startDate);
+    }
+  };
 
   // Función para formatear el rango de fechas seleccionado
   const getSelectedText = () => {
@@ -31,7 +66,7 @@ export default function DayPickerComponent() {
         locale={es}
         mode="range"
         selected={selected}
-        onSelect={setSelected}
+        onSelect={handleSelect}
         className="mb-3"
         modifiersClassNames={{
           selected: 'bg-lime-500 text-white',

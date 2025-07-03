@@ -334,10 +334,12 @@ export interface StoreState extends LoadingStates, AuthState {
 
   transactionsList: TableDetail[];
   selectedTransaction: TableDetail | null;
+  uniqueClients: string[];
   reportsCurrentPage: number;
   reportsPagination: PaginationMeta | null;
   isLoadingReports: boolean;
   reportsFilters: ReportsFilters;
+  lastApiParameters: any;
 
   selectedCategories: number[];
   selectedBrands: number[];

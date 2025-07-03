@@ -2,41 +2,18 @@
 
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
 import { logoutAction } from '@/services/actions/auth.actions';
-import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
+import ModalLogout from '@/app/components/mi-cuenta/ModalLogout';
 
 export const createLogoutModal = (
-  onLogout: () => void,
+  onLogout: () => Promise<void>,
   onCancel: () => void
 ) => (
-  <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] flex justify-center items-center z-50">
-    <div className="bg-white p-6 rounded-lg shadow max-w-md w-full">
-      <div className="flex items-start gap-2 mb-4">
-        <QuestionMarkCircleIcon className="w-6 h-6 text-blue-500 mt-1" />
-        <div>
-          <h2 className="text-lg font-bold">¿Deseas cerrar sesión?</h2>
-          {/* <p className="text-sm text-gray-600">
-            Se perderán los datos no guardados.
-          </p> */}
-        </div>
-      </div>{' '}
-      <div className="flex gap-3 mt-6">
-        <button
-          onClick={onLogout}
-          className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
-          data-cy="confirm-logout"
-        >
-          Continuar
-        </button>
-        <button
-          onClick={onCancel}
-          className="border border-gray-300 text-gray-700 px-6 py-2 rounded"
-          data-cy="cancel-logout"
-        >
-          Cancelar
-        </button>
-      </div>
-    </div>
-  </div>
+  <ModalLogout
+    onClose={onCancel}
+    onLogout={onLogout}
+    dataCyConfirm="confirm-logout"
+    dataCyCancel="cancel-logout"
+  />
 );
 
 export const getSidebarConfig = (
@@ -45,7 +22,7 @@ export const getSidebarConfig = (
   closeModal: () => void,
   router: { push: (url: string) => void }
 ): SidebarConfig => {
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     await logoutAction();
     closeModal();
     router.push('/auth/login');

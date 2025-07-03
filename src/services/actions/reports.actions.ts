@@ -1,5 +1,13 @@
 'use server'
 
+// Mapeo de los posibles endpoints y el valor con el que se va a mostrar 
+const ENDPOINTS = {
+  products: 'top-products-list',
+  transactions: 'transactions-list',
+  failedTransactions: 'failed-transactions-list',
+  clients: 'clients-list',
+}
+
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 
@@ -36,16 +44,37 @@ interface ActionResult<T> {
   error: string | null;
 }
 
+type Endpoint = 'products' | 'transactions' | 'failedTransactions' | 'clients';
+
+type ChartReportType = 'transactions' | 'sales' | 'revenue' | 'top-clients' | 'top-products' | 'top-categories' | 'transactions-failed' | 'top-municipalities';
+
+interface ChartReportsResponse {
+  months: string[];
+  clients: string[];
+  totals: {
+    month: string;
+    sales_by_client: {
+      client: string;
+      total: number;
+    }[];
+  }[];
+  total_buyers_per_month: {
+    month: string;
+    total_buyers: number;
+  }[];
+}
+
 export const fetchGetOrdersReportsTransactionsList = async (
   start: string,
   end: string,
   per_page: number,
-  page: number
-): Promise<ActionResult<Response>> => {
+  page: number,
+  endpoint: Endpoint,
+  client: string | null = null,
+  type: 'exitosa'
+): Promise<ActionResult<any>> => {
   try {
     if (IS_QA_MODE) {
-      console.log('QA MODE: Using mock data for transactions list');
-      console.log('Request params:', { start, end, per_page, page });
       
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
@@ -58,21 +87,35 @@ export const fetchGetOrdersReportsTransactionsList = async (
         status: 'successful'
       }));
 
+      // Aplicar filtros mock si están presentes
+      let filteredData = mockData;
+      if (client) {
+        filteredData = filteredData.filter(item => item.customer.includes(client));
+      }
+
       const startIndex = (page - 1) * per_page;
       const endIndex = startIndex + per_page;
-      const paginatedData = mockData.slice(startIndex, endIndex);
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+
+      // Crear lista de clientes únicos mock
+      const uniqueClients = Array.from(new Set(filteredData.map(item => item.customer))).sort();
 
       const mockResponse = {
         table_detail: paginatedData,
         pagination: {
           current_page: page,
-          last_page: Math.ceil(mockData.length / per_page),
+          last_page: Math.ceil(filteredData.length / per_page),
           per_page: per_page,
-          total: mockData.length,
+          total: filteredData.length,
+        },
+        clients: uniqueClients,
+        parameters: {
+          start: start || undefined,
+          end: end || undefined,
+          client: client || null,
+          type: type || null,
         }
       };
-      
-      console.log('QA MODE: Mock response:', mockResponse);
 
       return {
         ok: true,
@@ -92,27 +135,32 @@ export const fetchGetOrdersReportsTransactionsList = async (
       };
     }
 
-    const response = await fetch(`${BACKEND_URL}/orders/reports/transactions-list`, {
+    const endpointUrl = `${BACKEND_URL}/orders/reports/${ENDPOINTS[endpoint]}`;
+
+    // Crear el body según la documentación del API
+    const requestBody: any = {
+      per_page,
+      page,
+    };
+
+    // Agregar filtros opcionales solo si tienen valores
+    if (start) requestBody.start = start;
+    if (end) requestBody.end = end;
+    if (client) requestBody.client = client;
+    if (type) requestBody.type = type;
+
+    const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        start,
-        end,
-        per_page,
-        page,
-      }),
+      body: JSON.stringify(requestBody),
     });
-
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
     
     // Verificar el content-type antes de parsear JSON
     const contentType = response.headers.get('content-type');
-    console.log('Content-Type:', contentType);
     
     if (!contentType || !contentType.includes('application/json')) {
       const textResponse = await response.text();
@@ -125,7 +173,6 @@ export const fetchGetOrdersReportsTransactionsList = async (
     }
 
     const data = await response.json();
-    console.log({respuesta: data});
 
     if (!response.ok) {
       return {
@@ -137,7 +184,6 @@ export const fetchGetOrdersReportsTransactionsList = async (
 
     // Extraer la estructura correcta que espera el slice
     const responseData = data.respuesta || data;
-    console.log('Extracted responseData:', responseData);
 
     return {
       ok: true,
@@ -152,4 +198,226 @@ export const fetchGetOrdersReportsTransactionsList = async (
       error: error instanceof Error ? error.message : 'Error desconocido',
     };
   }
-}; 
+};
+
+// Lista por transacciones fallidas
+// La función recibe los siguientes valores en el body:
+// - start: "2025-01-01"
+// - end: "2025-01-31"
+// - per_page: 15
+// - page: 1
+
+export const fetchGetOrdersReportsFailedTransactionsList = async (
+  start: string,
+  end: string,
+  per_page: number,
+  page: number,
+  endpoint: Endpoint, 
+  client: string | null = null,
+  type: 'fallida'
+) => {
+
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token found',
+      };
+    }
+
+    const endpointUrl = `${BACKEND_URL}/orders/reports/${ENDPOINTS[endpoint]}`;
+
+    const requestBody: any = {
+      per_page,
+      page,
+    };
+    
+    if (start) requestBody.start = start;
+    if (end) requestBody.end = end;
+    if (client) requestBody.client = client;
+    if (type) requestBody.type = type;
+
+    const response = await fetch(endpointUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    })
+
+    const contentType = response.headers.get('content-type');
+    
+    if (!contentType || !contentType.includes('application/json')) {
+      const textResponse = await response.text();
+      console.log('Non-JSON response:', textResponse);
+      return {
+        ok: false,
+        data: null,
+        error: `Server returned non-JSON response. Status: ${response.status}. Content-Type: ${contentType}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        data: null,
+        error: data.message || `HTTP Error: ${response.status}`,
+      };
+    }
+
+
+    const responseData = data.respuesta || data;
+
+    return {
+      ok: true,
+      data: responseData,
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error fetching orders reports failed transactions list:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+
+}
+
+// Reportes para gráficos
+// La función recibe los siguientes valores en el body:
+// - start: "2025-01-01"
+// - end: "2025-06-30"  
+// - type: "sales" | "transactions" | "revenue" | etc.
+
+export const fetchGetOrdersReportsCharts = async (
+  start: string,
+  end: string,
+  type: ChartReportType
+): Promise<ActionResult<ChartReportsResponse>> => {
+  try {
+    if (IS_QA_MODE) {
+      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Mock data para QA
+      const mockResponse: ChartReportsResponse = {
+        months: ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06"],
+        clients: ["Armando Meza", "Brody Hoeger PhD", "Cliente 3", "Cliente 4"],
+        totals: [
+          {
+            month: "2025-01",
+            sales_by_client: [
+              { client: "Armando Meza", total: 17534144 },
+              { client: "Brody Hoeger PhD", total: 26128752 },
+              { client: "Cliente 3", total: 15000000 },
+              { client: "Cliente 4", total: 8500000 }
+            ]
+          },
+          {
+            month: "2025-02", 
+            sales_by_client: [
+              { client: "Armando Meza", total: 19234144 },
+              { client: "Brody Hoeger PhD", total: 24128752 },
+              { client: "Cliente 3", total: 17000000 },
+              { client: "Cliente 4", total: 9500000 }
+            ]
+          }
+        ],
+        total_buyers_per_month: [
+          { month: "2025-01", total_buyers: 12 },
+          { month: "2025-02", total_buyers: 15 },
+          { month: "2025-03", total_buyers: 18 },
+          { month: "2025-04", total_buyers: 14 },
+          { month: "2025-05", total_buyers: 20 },
+          { month: "2025-06", total_buyers: 16 }
+        ]
+      };
+
+      return {
+        ok: true,
+        data: mockResponse,
+        error: null,
+      };
+    }
+
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token found',
+      };
+    }
+
+    const endpointUrl = `${BACKEND_URL}/orders/reports`;
+
+    // Crear el body según la documentación del API
+    const requestBody = {
+      start,
+      end,
+      type,
+    };
+
+    const response = await fetch(endpointUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+    
+    // Verificar el content-type antes de parsear JSON
+    const contentType = response.headers.get('content-type');
+    
+    if (!contentType || !contentType.includes('application/json')) {
+      const textResponse = await response.text();
+      console.log('Non-JSON response:', textResponse);
+      return {
+        ok: false,
+        data: null,
+        error: `Server returned non-JSON response. Status: ${response.status}. Content-Type: ${contentType}`,
+      };
+    }
+
+    const data = await response.json();
+
+    console.log('data', data);
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        data: null,
+        error: data.message || `HTTP Error: ${response.status}`,
+      };
+    }
+
+    // Extraer la estructura correcta que espera el slice
+    const responseData = data.respuesta || data;
+
+    return {
+      ok: true,
+      data: responseData,
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error fetching orders reports charts:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+};
