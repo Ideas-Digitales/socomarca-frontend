@@ -93,6 +93,16 @@ export interface TopProductsResponse {
   total_sales: number;
 }
 
+export interface TopCategoriesResponse {
+  top_categories: {
+    month: string;
+    category: string;
+    total: number;
+  }[];
+  total_sales: number;
+  average_sales: number;
+}
+
 export interface ReportsFilters {
   start: string;
   end: string;
@@ -135,6 +145,10 @@ export interface ReportsState {
   // Top products data
   topProductsData: TopProductsResponse | null;
   isLoadingTopProducts: boolean;
+  
+  // Top categories data
+  topCategoriesData: TopCategoriesResponse | null;
+  isLoadingTopCategories: boolean;
   
   // Filter states
   reportsFilters: ReportsFilters;
@@ -185,6 +199,13 @@ export interface ReportsSlice extends ReportsState {
     end: string
   ) => Promise<ApiResponse<TopProductsResponse>>;
   clearTopProducts: () => void;
+  
+  // Actions - Top categories
+  fetchTopCategories: (
+    start: string,
+    end: string
+  ) => Promise<ApiResponse<TopCategoriesResponse>>;
+  clearTopCategories: () => void;
   
   // Client management
   // extractUniqueClients: () => void;
@@ -248,6 +269,10 @@ const initialReportsState: ReportsState = {
   // Top products data
   topProductsData: null,
   isLoadingTopProducts: false,
+  
+  // Top categories data
+  topCategoriesData: null,
+  isLoadingTopCategories: false,
   
   // Filter states
   reportsFilters: {
@@ -527,6 +552,49 @@ export const createReportsSlice: StateCreator<
   // Clear top products data
   clearTopProducts: () => {
     set({ topProductsData: null });
+  },
+
+  // Fetch top categories
+  fetchTopCategories: async (start: string, end: string) => {
+    set({ isLoadingTopCategories: true });
+    
+    try {
+      const result = await fetchGetOrdersReportsCharts(start, end, 'top-categories');
+      
+      if (result.ok && result.data) {
+        set({
+          topCategoriesData: result.data as unknown as TopCategoriesResponse,
+          isLoadingTopCategories: false,
+        });
+        
+        return {
+          ok: true,
+          data: result.data as unknown as TopCategoriesResponse,
+        };
+      } else {
+        set({ isLoadingTopCategories: false });
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al cargar datos de categorías',
+          },
+        };
+      }
+    } catch (error) {
+      set({ isLoadingTopCategories: false });
+      console.error('Error in fetchTopCategories:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  // Clear top categories data
+  clearTopCategories: () => {
+    set({ topCategoriesData: null });
   },
 
   // Filter actions - Successful transactions
