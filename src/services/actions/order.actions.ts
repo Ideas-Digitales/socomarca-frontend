@@ -26,7 +26,6 @@ export async function createOrderFromCart({ shippingAddressId }: { shippingAddre
   });
 
   const json = await res.json();
-  console.log('Respuesta de crear orden:', json);
   if (!res.ok) {
     throw new Error(
       json.message || 'Error al crear la orden y generar el pago'
@@ -45,7 +44,6 @@ export async function createOrderFromCart({ shippingAddressId }: { shippingAddre
 
 export async function getUserOrders(page = 1, per_page = 20): Promise<OrderResponse | null> {
 
-  console.log("Obteniendo órdenes del usuario...");
  const { getCookie } = await cookiesManagement();
   const token = getCookie("token");
   if (!token) return null

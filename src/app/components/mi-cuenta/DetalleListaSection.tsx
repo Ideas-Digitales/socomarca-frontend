@@ -34,7 +34,6 @@ export default function DetalleListaSection({
   const [eliminandoProducto, setEliminandoProducto] = useState<number | null>(
     null
   );
-  console.log(selectedFavoriteList);
   const [eliminarLista, setEliminarLista] = useState(false);
   const [modalEditarVisible, setModalEditarVisible] = useState(false);
   const [nombreEditado, setNombreEditado] = useState(

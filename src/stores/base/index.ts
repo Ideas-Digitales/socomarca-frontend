@@ -74,6 +74,8 @@ const initialState: StoreState = {
     start: '',
     end: '',
   },
+  uniqueClients: [],
+  lastApiParameters: null,
 
   // Filter states
   selectedCategories: [],

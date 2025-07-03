@@ -102,8 +102,6 @@ const [comuna, setComuna] = useState('')
             setDireccionAEliminar(null)
           }}
           onConfirm={() => {
-            console.log('Eliminar dirección:', direccionAEliminar.id)
-            // Aquí iría la lógica real para eliminar
             setModalVisible(false)
             setDireccionAEliminar(null)
           }}

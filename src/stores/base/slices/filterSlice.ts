@@ -73,7 +73,6 @@ export const createFiltersSlice: StateCreator<
     set({ selectedFavorites: newSelection });
   },
   setAvailablePriceRange: (min, max) => {
-    console.log('🏪 Setting available price range from backend:', { min, max });
 
     set({
       minPrice: min,
@@ -236,7 +235,6 @@ export const createFiltersSlice: StateCreator<
       isFiltered: false,
     });
 
-    console.log('isFiltered state after clearing:', get().isFiltered);
 
     try {
       await fetchProducts(1, productPaginationMeta?.per_page || 9);

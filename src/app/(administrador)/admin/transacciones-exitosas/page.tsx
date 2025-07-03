@@ -40,7 +40,6 @@ export default function TransaccionesExitosas() {
     // selectedTransaction, // Comentado temporalmente
     reportsPagination,
     reportsFilters,
-    reportsCurrentPage, // Agregar página actual del store
     isLoadingReports,
     uniqueClients, // Obtener clientes únicos del store (ahora viene del backend)
     fetchTransactionsList,
@@ -51,7 +50,6 @@ export default function TransaccionesExitosas() {
     isLoadingChartReports,
     fetchChartReports,
     clearChartReports,
-    // getFilteredTransactions ya no es necesario - filtrado en backend
     // setSelectedTransaction, // Comentado temporalmente
   } = useStore();
 
@@ -86,9 +84,9 @@ export default function TransaccionesExitosas() {
       fetchTransactionsList(start, end, 1, PER_PAGE),
       fetchChartReports(start, end, 'transactions')
     ]).finally(() => {
-      setIsInitialLoad(false); // Marcar que ya no es la primera carga
+      setIsInitialLoad(false);
     });
-  }, [fetchTransactionsList, fetchChartReports, PER_PAGE]);
+  }, [fetchTransactionsList, fetchChartReports, PER_PAGE, reportsFilters.start, reportsFilters.end]);
 
 
 
@@ -178,9 +176,9 @@ Estado: ${transaccion.originalData.status}`);
 
   // Función para manejar cambio de página - simplificada
   const handlePageChange = (page: number) => {
-    const { start, end, selectedClient, selectedCategory, type } = reportsFilters;
+    const { start, end, selectedClient } = reportsFilters;
     setReportsCurrentPage(page);
-    fetchTransactionsList(start, end, page, PER_PAGE, selectedClient, selectedCategory, type);
+    fetchTransactionsList(start, end, page, PER_PAGE, selectedClient);
   };
 
   // Definir columnas para transacciones
@@ -215,9 +213,9 @@ Estado: ${transaccion.originalData.status}`);
     setAmountFilter(amount);
     // Nota: El filtro de montos se podría implementar en el backend si se requiere
     // Por ahora mantenemos la funcionalidad básica
-    const { start, end, selectedClient, selectedCategory, type } = reportsFilters;
+    const { start, end, selectedClient } = reportsFilters;
     setReportsCurrentPage(1);
-    fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient, selectedCategory, type);
+    fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient);
   };
 
   const handleClientFilter = (clientId: number) => {
@@ -230,8 +228,8 @@ Estado: ${transaccion.originalData.status}`);
       setReportsFilters({ selectedClient: undefined });
       
       // Refetch con filtros actualizados
-      const { start, end, selectedCategory, type } = reportsFilters;
-      fetchTransactionsList(start, end, 1, PER_PAGE, null, selectedCategory, type);
+      const { start, end } = reportsFilters;
+      fetchTransactionsList(start, end, 1, PER_PAGE, null);
     } else {
       const client = clients.find((c) => c.id === clientId);
       if (client) {
@@ -240,17 +238,17 @@ Estado: ${transaccion.originalData.status}`);
         setReportsFilters({ selectedClient: client.name });
         
         // Refetch con filtros actualizados
-        const { start, end, selectedCategory, type } = reportsFilters;
-        fetchTransactionsList(start, end, 1, PER_PAGE, client.name, selectedCategory, type);
+        const { start, end } = reportsFilters;
+        fetchTransactionsList(start, end, 1, PER_PAGE, client.name);
       }
     }
   };
 
   const handleFilter = () => {
     // Aplicar filtros ya configurados
-    const { start, end, selectedClient, selectedCategory, type } = reportsFilters;
+    const { start, end, selectedClient } = reportsFilters;
     setReportsCurrentPage(1);
-    fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient, selectedCategory, type);
+    fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient);
   };
 
   const handleClearSearch = () => {
@@ -262,20 +260,20 @@ Estado: ${transaccion.originalData.status}`);
     // Limpiar tanto datos de transacciones como de gráficos y recargar
     clearChartReports();
     Promise.all([
-      fetchTransactionsList('', '', 1, PER_PAGE, null, null, null),
+      fetchTransactionsList('', '', 1, PER_PAGE, null),
       fetchChartReports('', '', 'transactions')
     ]);
   };
 
   // Manejar cambios en el rango de fechas del DatePicker
   const handleDateRangeChange = (start: string, end: string) => {
-    const { selectedClient, selectedCategory, type } = reportsFilters;
+    const { selectedClient } = reportsFilters;
     setReportsFilters({ start, end });
     setReportsCurrentPage(1);
     
     // Cargar tanto la lista como los datos de gráficos con las nuevas fechas
     Promise.all([
-      fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient, selectedCategory, type),
+      fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient),
       fetchChartReports(start, end, 'transactions')
     ]);
   };

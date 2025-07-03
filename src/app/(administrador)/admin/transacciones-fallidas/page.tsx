@@ -30,16 +30,9 @@ export interface Client {
   name: string;
 }
 
-const clients: Client[] = [
-  { id: 1, name: 'Cliente 1' },
-  { id: 2, name: 'Cliente 2' },
-  { id: 3, name: 'Cliente 3' },
-  { id: 4, name: 'Cliente 4' },
-];
-
 export default function TransaccionesFallidas() {
   // Configuración de paginación
-  const PER_PAGE = 10; // Configurable desde aquí
+  const PER_PAGE = 10;
 
   // Store hooks
   const {
@@ -83,7 +76,7 @@ export default function TransaccionesFallidas() {
     fetchFailedTransactionsList(start, end, 1, PER_PAGE).finally(() => {
       setIsInitialLoad(false); // Marcar que ya no es la primera carga
     });
-  }, [fetchFailedTransactionsList, PER_PAGE]);
+  }, [fetchFailedTransactionsList, PER_PAGE, failedReportsFilters.start, failedReportsFilters.end]);
 
   // Log para verificar datos de paginación y estados
   useEffect(() => {
@@ -175,9 +168,9 @@ Estado: ${transaccion.originalData.status}`);
 
   // Función para manejar cambio de página - simplificada
   const handlePageChange = (page: number) => {
-    const { start, end, selectedClient, selectedCategory, type } = failedReportsFilters;
+    const { start, end, selectedClient } = failedReportsFilters;
     setFailedReportsCurrentPage(page);
-    fetchFailedTransactionsList(start, end, page, PER_PAGE, selectedClient, selectedCategory, type);
+    fetchFailedTransactionsList(start, end, page, PER_PAGE, selectedClient);
   };
 
   // Definir columnas para transacciones
@@ -212,9 +205,9 @@ Estado: ${transaccion.originalData.status}`);
     setAmountFilter(amount);
     // Nota: El filtro de montos se podría implementar en el backend si se requiere
     // Por ahora mantenemos la funcionalidad básica
-    const { start, end, selectedClient, selectedCategory, type } = failedReportsFilters;
+    const { start, end, selectedClient } = failedReportsFilters;
     setFailedReportsCurrentPage(1);
-    fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient, selectedCategory, type);
+    fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient);
   };
 
   const handleClientFilter = (clientId: number) => {
@@ -227,8 +220,8 @@ Estado: ${transaccion.originalData.status}`);
       setFailedReportsFilters({ selectedClient: undefined });
       
       // Refetch con filtros actualizados
-      const { start, end, selectedCategory, type } = failedReportsFilters;
-      fetchFailedTransactionsList(start, end, 1, PER_PAGE, null, selectedCategory, type);
+      const { start, end } = failedReportsFilters;
+      fetchFailedTransactionsList(start, end, 1, PER_PAGE, null);
     } else {
       const client = clients.find((c) => c.id === clientId);
       if (client) {
@@ -237,17 +230,17 @@ Estado: ${transaccion.originalData.status}`);
         setFailedReportsFilters({ selectedClient: client.name });
         
         // Refetch con filtros actualizados
-        const { start, end, selectedCategory, type } = failedReportsFilters;
-        fetchFailedTransactionsList(start, end, 1, PER_PAGE, client.name, selectedCategory, type);
+        const { start, end } = failedReportsFilters;
+        fetchFailedTransactionsList(start, end, 1, PER_PAGE, client.name);
       }
     }
   };
 
   const handleFilter = () => {
     // Aplicar filtros ya configurados
-    const { start, end, selectedClient, selectedCategory, type } = failedReportsFilters;
+    const { start, end, selectedClient } = failedReportsFilters;
     setFailedReportsCurrentPage(1);
-    fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient, selectedCategory, type);
+    fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient);
   };
 
   const handleClearSearch = () => {
@@ -255,16 +248,16 @@ Estado: ${transaccion.originalData.status}`);
     setAmountFilter({ min: '', max: '' });
     setFailedReportsCurrentPage(1);
     setFailedReportsFilters({ start: '', end: '', selectedClient: undefined, selectedCategory: undefined, type: null });
-    fetchFailedTransactionsList('', '', 1, PER_PAGE, null, null, null);
+    fetchFailedTransactionsList('', '', 1, PER_PAGE, null);
   };
 
   // Manejar cambios en el rango de fechas del DatePicker
   const handleDateRangeChange = (start: string, end: string) => {
     console.log('📅 Cambio de fechas transacciones fallidas:', { start, end });
-    const { selectedClient, selectedCategory, type } = failedReportsFilters;
+    const { selectedClient } = failedReportsFilters;
     setFailedReportsFilters({ start, end });
     setFailedReportsCurrentPage(1);
-    fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient, selectedCategory, type);
+    fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient);
   };
 
   // Mostrar loading spinner completo solo en la carga inicial

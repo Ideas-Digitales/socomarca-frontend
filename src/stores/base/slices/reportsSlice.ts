@@ -152,9 +152,7 @@ export interface ReportsSlice extends ReportsState {
     end: string,
     page?: number,
     per_page?: number,
-    client?: string | null,
-    category?: string | null,
-    type?: 'exitosa' | 'fallida' | null
+    client?: string | null
   ) => Promise<ApiResponse<TransactionsApiResponse>>;
   
   // Actions - Failed transactions
@@ -163,9 +161,7 @@ export interface ReportsSlice extends ReportsState {
     end: string,
     page?: number,
     per_page?: number,
-    client?: string | null,
-    category?: string | null,
-    type?: 'exitosa' | 'fallida' | null
+    client?: string | null
   ) => Promise<ApiResponse<FailedTransactionsApiResponse>>;
   
   // Actions - Chart reports
@@ -303,7 +299,7 @@ export const createReportsSlice: StateCreator<
   ...initialReportsState,
 
   // Fetch transactions list con paginación y filtros
-  fetchTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null, type = null) => {
+  fetchTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null) => {
     set({ isLoadingReports: true });
     const endpoint = 'transactions';
     
@@ -348,7 +344,7 @@ export const createReportsSlice: StateCreator<
   },
 
   // Fetch failed transactions list con paginación y filtros
-  fetchFailedTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null, type = null) => {
+  fetchFailedTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null) => {
     set({ isLoadingFailedReports: true });
     const endpoint = 'failedTransactions';
     
@@ -586,7 +582,7 @@ export const createReportsSlice: StateCreator<
       const newPage = reportsCurrentPage + 1;
       const perPage = reportsPagination.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ reportsCurrentPage: newPage });
-      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient, reportsFilters.selectedCategory, reportsFilters.type);
+      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient);
     }
   },
 
@@ -596,7 +592,7 @@ export const createReportsSlice: StateCreator<
       const newPage = reportsCurrentPage - 1;
       const perPage = reportsPagination?.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ reportsCurrentPage: newPage });
-      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient, reportsFilters.selectedCategory, reportsFilters.type);
+      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient);
     }
   },
 
@@ -611,7 +607,7 @@ export const createReportsSlice: StateCreator<
       const newPage = failedReportsCurrentPage + 1;
       const perPage = failedReportsPagination.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ failedReportsCurrentPage: newPage });
-      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient, failedReportsFilters.selectedCategory, failedReportsFilters.type);
+      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient);
     }
   },
 
@@ -621,7 +617,7 @@ export const createReportsSlice: StateCreator<
       const newPage = failedReportsCurrentPage - 1;
       const perPage = failedReportsPagination?.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ failedReportsCurrentPage: newPage });
-      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient, failedReportsFilters.selectedCategory, failedReportsFilters.type);
+      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient);
     }
   },
 

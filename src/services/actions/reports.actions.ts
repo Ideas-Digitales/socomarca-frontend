@@ -26,17 +26,9 @@ type TableDetail = {
   status: string;
 }
 
-type Pagination = {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-}
 
-interface Response {
-  table_detail: TableDetail[];
-  pagination: Pagination;
-}
+
+
 
 interface ActionResult<T> {
   ok: boolean;
@@ -164,7 +156,6 @@ export const fetchGetOrdersReportsTransactionsList = async (
     
     if (!contentType || !contentType.includes('application/json')) {
       const textResponse = await response.text();
-      console.log('Non-JSON response:', textResponse);
       return {
         ok: false,
         data: null,
@@ -255,7 +246,6 @@ export const fetchGetOrdersReportsFailedTransactionsList = async (
     
     if (!contentType || !contentType.includes('application/json')) {
       const textResponse = await response.text();
-      console.log('Non-JSON response:', textResponse);
       return {
         ok: false,
         data: null,
@@ -384,7 +374,6 @@ export const fetchGetOrdersReportsCharts = async (
     
     if (!contentType || !contentType.includes('application/json')) {
       const textResponse = await response.text();
-      console.log('Non-JSON response:', textResponse);
       return {
         ok: false,
         data: null,
@@ -394,7 +383,6 @@ export const fetchGetOrdersReportsCharts = async (
 
     const data = await response.json();
 
-    console.log('data', data);
 
     if (!response.ok) {
       return {

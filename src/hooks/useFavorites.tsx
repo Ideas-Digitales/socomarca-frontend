@@ -68,9 +68,6 @@ export const useFavorites = () => {
     (product: Product) => {
       const handleListSelection = async (listId: string) => {
         try {
-          console.log(
-            `Agregando producto ${product.name} a la lista ${listId}`
-          );
           const result = await addProductToFavoriteList(
             parseInt(listId),
             product.id,
