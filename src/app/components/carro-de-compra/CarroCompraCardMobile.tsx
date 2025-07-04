@@ -25,11 +25,13 @@ export default function CarroCompraCardMobile({
   }, [p.image]);
   return (
     <div
+      data-cy="cart-item"
       key={p.id}
       className="relative flex gap-4 bg-white p-4 border-b border-b-slate-200"
     >
       {/* Botón eliminar arriba a la derecha */}
       <button
+        data-cy="delete-product-btn"
         onClick={() => setIdProductoAEliminar(p.id)}
         className="absolute top-2 right-2 text-red-500"
         title="Eliminar producto"
@@ -56,20 +58,22 @@ export default function CarroCompraCardMobile({
 
       <div className="flex-1 pr-6">
         <p className="text-xs text-slate-400">{p.brand.name}</p>
-        <p className="text-sm font-semibold text-black">{p.name}</p>
-        <p className="text-sm font-bold text-gray-700 mt-1">
+        <p data-cy="cart-item-name" className="text-sm font-semibold text-black">{p.name}</p>
+        <p data-cy="cart-item-price" className="text-sm font-bold text-gray-700 mt-1">
           ${(p.price * p.quantity).toLocaleString('es-CL')}
         </p>
 
         <div className="flex items-center gap-2 mt-2">
           <button
+            data-cy="decrease-quantity-btn"
             onClick={() => decrementProductInCart(p.id)}
             className="px-2 py-1 bg-gray-200 rounded"
           >
             −
           </button>
-          <span className="w-6 text-center">{p.quantity}</span>
+          <span data-cy="cart-item-quantity" className="w-6 text-center">{p.quantity}</span>
           <button
+            data-cy="increase-quantity-btn"
             onClick={() => incrementProductInCart(p.id)}
             className="px-2 py-1 bg-gray-200 rounded"
           >

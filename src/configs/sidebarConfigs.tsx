@@ -11,8 +11,8 @@ export const createLogoutModal = (
   <ModalLogout
     onClose={onCancel}
     onLogout={onLogout}
-    dataCyConfirm="confirm-logout"
-    dataCyCancel="cancel-logout"
+    dataCyConfirm="confirm-logout-btn"
+    dataCyCancel="cancel-logout-btn"
   />
 );
 

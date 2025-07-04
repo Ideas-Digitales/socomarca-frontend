@@ -44,6 +44,7 @@ export default function ProductsContainer() {
             </h2>
             <div className="flex gap-2">
               <button
+                data-cy="view-mode-list"
                 onClick={() => handleViewChange('list')}
                 className={`p-2 rounded-md cursor-pointer ${
                   viewMode === 'list' ? 'bg-gray-200' : ''
@@ -53,6 +54,7 @@ export default function ProductsContainer() {
                 <ListBulletIcon width={24} height={24} />
               </button>
               <button
+                data-cy="view-mode-grid"
                 onClick={() => handleViewChange('grid')}
                 className={`p-2 rounded-md cursor-pointer ${
                   viewMode === 'grid' ? 'bg-gray-200' : ''
@@ -75,6 +77,7 @@ export default function ProductsContainer() {
           </div>
         ) : (
           <div
+            data-cy="products-container"
             className={`
             ${
               viewMode === 'grid'

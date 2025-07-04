@@ -110,10 +110,10 @@ export default function ProductInfo({
       <span className={`text-[#64748B] ${variant === 'list' ? 'text-[12px]' : 'text-xs'} font-medium ${textAlignment}`}>
         {brandInfo.text}
       </span>
-      <span className={`${variant === 'list' ? 'text-[12px]' : 'text-sm'} font-medium ${textAlignment}`}>
+      <span data-cy="product-name" className={`${variant === 'list' ? 'text-[12px]' : 'text-sm'} font-medium ${textAlignment}`}>
         {nameInfo.text}
       </span>
-      <span className={`text-lime-500 font-bold ${textAlignment} text-lg mt-1`}>
+      <span data-cy="product-price" className={`text-lime-500 font-bold ${textAlignment} text-lg mt-1`}>
         {formatPrice(price)}
       </span>
       

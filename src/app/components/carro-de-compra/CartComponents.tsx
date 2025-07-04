@@ -47,6 +47,7 @@ export const ProductInfo = ({
       {isBrandTruncated ? truncateText(brandName) : brandName}
     </p>
     <p
+      data-cy="cart-item-name"
       className="text-black text-xs cursor-help"
       title={isNameTruncated ? productName : undefined}
     >
@@ -78,6 +79,7 @@ export const QuantityControls = ({
   return (
     <div className="flex items-center justify-center gap-2">
       <button
+        data-cy="decrease-quantity-btn"
         disabled={isDecreaseDisabled}
         className={`${STYLES.button.base} ${
           isDecreaseDisabled ? STYLES.button.disabled : STYLES.button.enabled
@@ -90,6 +92,7 @@ export const QuantityControls = ({
       </button>
       
       <span 
+        data-cy="cart-item-quantity"
         className="w-8 text-center font-medium"
         aria-label={`Cantidad: ${quantity}`}
       >
@@ -97,6 +100,7 @@ export const QuantityControls = ({
       </span>
       
       <button
+        data-cy="increase-quantity-btn"
         disabled={isIncreaseDisabled}
         className={`${STYLES.button.base} ${
           isIncreaseDisabled ? STYLES.button.disabled : STYLES.button.enabled
@@ -125,8 +129,9 @@ export const PriceAndDelete = ({
   productId 
 }: PriceAndDeleteProps) => (
   <div className="flex flex-row justify-between items-center">
-    <span className="font-bold text-gray-700">{totalPrice}</span>
+    <span data-cy="cart-item-price" className="font-bold text-gray-700">{totalPrice}</span>
     <button
+      data-cy="delete-product-btn"
       onClick={onDelete}
       disabled={isLoading}
       className={`text-red-500 transition-colors ${
