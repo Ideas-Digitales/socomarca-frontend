@@ -7,6 +7,7 @@ import { Category, CategoryComplexData } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
 import { FavoriteList } from '@/interfaces/favorite.inteface';
+import { ReportsSlice, TableDetail, ReportsFilters } from './slices/reportsSlice';
 
 // ===== BASE TYPES =====
 export type ViewMode = 'grid' | 'list';
@@ -331,6 +332,13 @@ export interface StoreState extends LoadingStates, AuthState {
   showOnlyFavorites: boolean;
   favoritesInitialized: boolean;
 
+  transactionsList: TableDetail[];
+  selectedTransaction: TableDetail | null;
+  reportsCurrentPage: number;
+  reportsPagination: PaginationMeta | null;
+  isLoadingReports: boolean;
+  reportsFilters: ReportsFilters;
+
   selectedCategories: number[];
   selectedBrands: number[];
   selectedFavorites: number[];
@@ -371,4 +379,5 @@ export type Store = StoreState &
   SidebarSlice &
   StoreSlice &
   ModalSlice &
-  FavoritesSlice;
+  FavoritesSlice &
+  ReportsSlice;

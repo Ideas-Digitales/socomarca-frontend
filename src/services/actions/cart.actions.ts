@@ -61,8 +61,6 @@ export const fetchPostAddToCart = async (
       unit: payload.unit,
     };
 
-    console.log('POST payload:', payloadToString);
-
     const response = await fetch(`${BACKEND_URL}/cart/items`, {
       method: 'POST',
       headers: {
