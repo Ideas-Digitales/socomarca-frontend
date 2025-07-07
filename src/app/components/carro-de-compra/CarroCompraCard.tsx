@@ -36,7 +36,7 @@ export default function CarroCompraCard({ product }: CartCardProps) {
   } = useCartItem(product);
 
   return (
-    <tr key={product.id} className="border border-slate-100">
+    <tr data-cy="cart-item" key={product.id} className="border border-slate-100">
       {/* Información del producto */}
       <td className="px-4 py-4 flex items-center gap-4">
         <ProductImage

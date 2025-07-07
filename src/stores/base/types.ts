@@ -8,6 +8,8 @@ import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
 import { FavoriteList } from '@/interfaces/favorite.inteface';
 import { ReportsSlice, TableDetail, ReportsFilters } from './slices/reportsSlice';
+import { FAQSlice } from './slices/faqSlice';
+import { FAQItem, FAQPaginationMeta, FAQPaginationLinks } from '@/services/actions/faq.actions';
 
 // ===== BASE TYPES =====
 export type ViewMode = 'grid' | 'list';
@@ -334,10 +336,19 @@ export interface StoreState extends LoadingStates, AuthState {
 
   transactionsList: TableDetail[];
   selectedTransaction: TableDetail | null;
+  uniqueClients: string[];
   reportsCurrentPage: number;
   reportsPagination: PaginationMeta | null;
   isLoadingReports: boolean;
   reportsFilters: ReportsFilters;
+  lastApiParameters: any;
+
+  faqs: FAQItem[];
+  currentFAQ: FAQItem | null;
+  faqPaginationMeta: FAQPaginationMeta | null;
+  faqPaginationLinks: FAQPaginationLinks | null;
+  isLoadingFAQ: boolean;
+  faqError: string | null;
 
   selectedCategories: number[];
   selectedBrands: number[];
@@ -380,4 +391,5 @@ export type Store = StoreState &
   StoreSlice &
   ModalSlice &
   FavoritesSlice &
-  ReportsSlice;
+  ReportsSlice &
+  FAQSlice;

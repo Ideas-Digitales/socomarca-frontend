@@ -31,6 +31,7 @@ export default function Sidebar({
       {items.map((item) => (
         <button
           key={item.key}
+          data-cy={item.key === 'logout' ? 'logout-btn' : undefined}
           onClick={() =>
             item.key === 'logout' ? onLogoutClick?.() : onSelect(item.key)
           }

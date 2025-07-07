@@ -78,8 +78,11 @@ export default function ProductCard({ product }: Props) {
     setIsLoading(true);
 
     if (isQaMode) {
-      setQuantity(0);
-      setIsLoading(false);
+      setIsOptimisticUpdate(true);
+      setTimeout(() => {
+        setQuantity(0);
+        setIsLoading(false);
+      }, 500);
       return;
     }
 
@@ -109,7 +112,7 @@ export default function ProductCard({ product }: Props) {
   const isProductFavorite = isFavorite(product.id);
 
   return (
-    <div className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative">
+    <div data-cy="product-card" className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative">
       <div className="flex items-center gap-[6px]">
         <div className="hidden sm:flex">
           <FavoriteButton

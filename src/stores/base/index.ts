@@ -17,6 +17,7 @@ import { createFiltersSlice } from './slices/filterSlice';
 import { createModalSlice } from './slices/modalSlice';
 import { createFavoritesSlice } from './slices/favoritesSlice';
 import { createReportsSlice } from './slices/reportsSlice';
+import { createFAQSlice } from './slices/faqSlice';
 
 // Estado inicial optimizado
 const initialState: StoreState = {
@@ -74,6 +75,8 @@ const initialState: StoreState = {
     start: '',
     end: '',
   },
+  uniqueClients: [],
+  lastApiParameters: null,
 
   // Filter states
   selectedCategories: [],
@@ -106,6 +109,14 @@ const initialState: StoreState = {
 
   // System states
   isQaMode: IS_QA_MODE,
+
+  // FAQ states
+  faqs: [],
+  currentFAQ: null,
+  faqPaginationMeta: null,
+  faqPaginationLinks: null,
+  isLoadingFAQ: false,
+  faqError: null,
 };
 
 // Crear el store combinando todos los slices de manera optimizada
@@ -124,6 +135,7 @@ const useStore = create<Store>()((...a) => ({
   ...createModalSlice(...a),
   ...createFavoritesSlice(...a),
   ...createReportsSlice(...a),
+  ...createFAQSlice(...a),
 }));
 
 // Hook optimizado para manejar la detección de dispositivos móviles

@@ -101,6 +101,7 @@ export default function Header({ carro }: Props) {
           <div className="flex gap-3 items-center">
             {isTablet ? (
               <button
+                data-cy="mobile-menu-btn"
                 id="menu-toggle-btn"
                 onClick={toggleMobileMenu}
                 className="cursor-pointer"
@@ -167,10 +168,10 @@ export default function Header({ carro }: Props) {
                 <UserIcon width={24} height={24} />
               </Link>
               <Link href="/carro-de-compra">
-                <div className="relative">
+                <div data-cy="cart-link" className="relative">
                   <ShoppingCartIcon width={24} height={24} />
                   {carro?.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    <span data-cy="cart-counter" className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                       {carro.length}
                     </span>
                   )}
@@ -230,6 +231,7 @@ export default function Header({ carro }: Props) {
               </li>
             ))}
             <li
+              data-cy="logout-btn"
               className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b border-gray-100"
               onClick={() => {
                 openModal('logout', {

@@ -74,9 +74,6 @@ export function useFilters<T extends Record<string, any>>({
     if (filters.sortOption) {
       const { key, direction } = filters.sortOption;
 
-      console.log('Aplicando ordenamiento:', key, direction);
-      console.log('Datos antes de ordenar:', result.slice(0, 3));
-
       result.sort((a, b) => {
         const aValue = a[key as keyof T];
         const bValue = b[key as keyof T];
@@ -114,7 +111,6 @@ export function useFilters<T extends Record<string, any>>({
         return direction === 'asc' ? comparison : -comparison;
       });
 
-      console.log('Datos después de ordenar:', result.slice(0, 3));
     }
 
     return result;
@@ -126,7 +122,6 @@ export function useFilters<T extends Record<string, any>>({
   };
 
   const updateSortOption = (option: SortOption | null) => {
-    console.log('updateSortOption llamado con:', option);
     setFilters((prev) => ({ ...prev, sortOption: option }));
   };
 

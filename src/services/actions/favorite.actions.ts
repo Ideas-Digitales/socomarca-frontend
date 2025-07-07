@@ -72,7 +72,6 @@ export async function fetchCreateFavoriteList(name: string) {
     }
 
     const data = await response.json();
-    console.log('Favorite list created successfully:', data);
     return {
       ok: true,
       data,
@@ -166,17 +165,9 @@ export async function fetchRemoveProductFromFavorites(favoriteId: number) {
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorData.error || errorMessage;
-        console.log('Server error response:', errorData);
       } catch {
         console.log('Could not parse error response as JSON');
       }
-      
-      console.log('Failed to remove product from favorites:', {
-        favoriteId,
-        status: response.status,
-        statusText: response.statusText,
-        url: `${BACKEND_URL}/favorites/${favoriteId}`
-      });
       
       return {
         ok: false,

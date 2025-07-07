@@ -23,7 +23,7 @@ export const EmptyCart = ({ onGoHome }: EmptyCartProps) => (
       height={96}
       className="mb-6"
     />
-    <h2 className="text-2xl font-bold mb-4">Tu carrito está vacío</h2>
+    <h2 data-cy="empty-cart-message" className="text-2xl font-bold mb-4">Tu carrito está vacío</h2>
     <p className="text-gray-500 mb-4">
       Agrega productos a tu carrito para comenzar a comprar.
     </p>
@@ -72,6 +72,7 @@ export const CartHeader = ({ totalProducts, onGoBack }: CartHeaderProps) => {
       </div>
       {totalProducts > 0 && (
         <span
+          data-cy="empty-cart-btn"
           onClick={isClearing ? undefined : handleEmptyCart}
           className={`flex gap-2 items-center font-semibold ${
             isClearing 

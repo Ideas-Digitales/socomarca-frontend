@@ -30,13 +30,6 @@ export interface Client {
   name: string;
 }
 
-const clients: Client[] = [
-  { id: 1, name: 'Cliente 1' },
-  { id: 2, name: 'Cliente 2' },
-  { id: 3, name: 'Cliente 3' },
-  { id: 4, name: 'Cliente 4' },
-];
-
 export default function TransaccionesExitosas() {
   // Configuración de paginación
   const PER_PAGE = 10; // Configurable desde aquí
@@ -48,9 +41,15 @@ export default function TransaccionesExitosas() {
     reportsPagination,
     reportsFilters,
     isLoadingReports,
+    uniqueClients, // Obtener clientes únicos del store (ahora viene del backend)
     fetchTransactionsList,
     setReportsCurrentPage,
     setReportsFilters,
+    // Chart reports
+    chartReportsData,
+    isLoadingChartReports,
+    fetchChartReports,
+    clearChartReports,
     // setSelectedTransaction, // Comentado temporalmente
   } = useStore();
 
@@ -67,39 +66,32 @@ export default function TransaccionesExitosas() {
   // Estado para controlar si es la primera carga
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Convertir clientes únicos del store al formato Client[]
+  const clients: Client[] = uniqueClients.map((clientName, index) => ({
+    id: index + 1, // Usar índice como ID temporal
+    name: clientName,
+  }));
+
   // Cargar datos iniciales
   useEffect(() => {
     // Usar fechas por defecto si no hay filtros
     const start = reportsFilters.start || '';
     const end = reportsFilters.end || '';
-    console.log('🔄 Carga inicial con fechas:', { start, end });
-    fetchTransactionsList(start, end, 1, PER_PAGE).finally(() => {
-      setIsInitialLoad(false); // Marcar que ya no es la primera carga
-    });
-  }, [fetchTransactionsList, PER_PAGE]);
 
-  // Log para verificar datos de paginación y estados
-  useEffect(() => {
-    console.log('Estados actuales:', {
-      isLoadingReports,
-      isInitialLoad,
-      transactionsListLength: transactionsList.length,
-      paginationTotal: reportsPagination?.total,
-      currentPage: reportsPagination?.current_page
-    });
     
-    if (reportsPagination) {
-      console.log('Paginación recibida:', {
-        total: reportsPagination.total,
-        current_page: reportsPagination.current_page,
-        last_page: reportsPagination.last_page,
-        from: reportsPagination.from,
-        to: reportsPagination.to
-      });
-    }
-  }, [reportsPagination, isLoadingReports, isInitialLoad, transactionsList]);
+    // Cargar tanto la lista de transacciones como los datos de gráficos
+    Promise.all([
+      fetchTransactionsList(start, end, 1, PER_PAGE),
+      fetchChartReports(start, end, 'transactions')
+    ]).finally(() => {
+      setIsInitialLoad(false);
+    });
+  }, [fetchTransactionsList, fetchChartReports, PER_PAGE, reportsFilters.start, reportsFilters.end]);
 
-  // Transformar datos para la tabla
+
+
+  // Simplificar - ya no necesitamos filtrado local, todo se hace en el backend
+  // Transformar datos para la tabla directamente desde transactionsList
   const transaccionesFixed: TransaccionFormateada[] = transactionsList.map(
     (transaction: TableDetail) => ({
       id: String(transaction.id),
@@ -113,7 +105,7 @@ export default function TransaccionesExitosas() {
     })
   );
 
-  // Definir las métricas basadas en datos del store
+  // Definir las métricas basadas en datos del backend
   const metrics: MetricCard[] = [
     {
       label: 'Transacciones exitosas',
@@ -122,7 +114,22 @@ export default function TransaccionesExitosas() {
     },
     {
       label: 'Valor total procesado',
-      value: `$${transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0).toLocaleString()}`,
+      value: (() => {
+        // Si tenemos datos de gráficos, usar esos para un cálculo más preciso
+        if (chartReportsData?.totals && Array.isArray(chartReportsData.totals) && chartReportsData.totals.length > 0) {
+          const totalFromCharts = chartReportsData.totals.reduce((sum, monthData) => {
+            if (monthData?.sales_by_client && Array.isArray(monthData.sales_by_client)) {
+              return sum + monthData.sales_by_client.reduce((monthSum, clientData) => {
+                return monthSum + (clientData?.total || 0);
+              }, 0);
+            }
+            return sum;
+          }, 0);
+          return `$${totalFromCharts.toLocaleString()}`;
+        }
+        // Fallback a los datos de la tabla actual
+        return `$${transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0).toLocaleString()}`;
+      })(),
       color: 'gray',
     },
   ];
@@ -167,18 +174,11 @@ Estado: ${transaccion.originalData.status}`);
   };
   */
 
-  // Función para manejar cambio de página
+  // Función para manejar cambio de página - simplificada
   const handlePageChange = (page: number) => {
-    const start = reportsFilters.start || '';
-    const end = reportsFilters.end || '';
-    console.log('🔄 Cambiando a página:', page, {
-      start,
-      end,
-      PER_PAGE,
-      currentDataLength: transactionsList.length
-    });
+    const { start, end, selectedClient } = reportsFilters;
     setReportsCurrentPage(page);
-    fetchTransactionsList(start, end, page, PER_PAGE);
+    fetchTransactionsList(start, end, page, PER_PAGE, selectedClient);
   };
 
   // Definir columnas para transacciones
@@ -190,17 +190,6 @@ Estado: ${transaccion.originalData.status}`);
       label: 'Monto',
       render: (value: number) => `$${value.toLocaleString()}`,
     },
-    {
-      key: 'monto2',
-      label: 'Monto',
-      render: (value: number) => `$${value.toLocaleString()}`,
-    },
-    {
-      key: 'monto3',
-      label: 'Monto',
-      render: (value: number) => `$${value.toLocaleString()}`,
-    },
-    { key: 'fecha', label: 'Fecha' },
     {
       key: 'fecha',
       label: 'Fecha',
@@ -222,47 +211,79 @@ Estado: ${transaccion.originalData.status}`);
 
   const handleAmountFilter = (amount: AmountRange) => {
     setAmountFilter(amount);
-    // Para simplicidad, solo filtraremos por fechas
-    const start = reportsFilters.start || '';
-    const end = reportsFilters.end || '';
-    fetchTransactionsList(start, end, 1, PER_PAGE);
+    // Nota: El filtro de montos se podría implementar en el backend si se requiere
+    // Por ahora mantenemos la funcionalidad básica
+    const { start, end, selectedClient } = reportsFilters;
+    setReportsCurrentPage(1);
+    fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient);
   };
 
   const handleClientFilter = (clientId: number) => {
+    // Resetear a la primera página cuando cambie el filtro
+    setReportsCurrentPage(1);
+    
     if (clientId === -1 || clientId === 0) {
+      // Limpiar filtro de cliente
       setSelectedClients([]);
+      setReportsFilters({ selectedClient: undefined });
+      
+      // Refetch con filtros actualizados
+      const { start, end } = reportsFilters;
+      fetchTransactionsList(start, end, 1, PER_PAGE, null);
     } else {
       const client = clients.find((c) => c.id === clientId);
       if (client) {
         setSelectedClients([client]);
+        // Establecer filtro por cliente en el store
+        setReportsFilters({ selectedClient: client.name });
+        
+        // Refetch con filtros actualizados
+        const { start, end } = reportsFilters;
+        fetchTransactionsList(start, end, 1, PER_PAGE, client.name);
       }
     }
-    // Para simplicidad, solo filtraremos por fechas
-    const start = reportsFilters.start || '';
-    const end = reportsFilters.end || '';
-    fetchTransactionsList(start, end, 1, PER_PAGE);
   };
 
   const handleFilter = () => {
     // Aplicar filtros ya configurados
-    const start = reportsFilters.start || '';
-    const end = reportsFilters.end || '';
-    fetchTransactionsList(start, end, 1, PER_PAGE);
+    const { start, end, selectedClient } = reportsFilters;
+    setReportsCurrentPage(1);
+    fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient);
   };
 
   const handleClearSearch = () => {
     setSelectedClients([]);
     setAmountFilter({ min: '', max: '' });
-    setReportsFilters({ start: '', end: '' });
-    fetchTransactionsList('', '', 1, PER_PAGE);
+    setReportsCurrentPage(1);
+    setReportsFilters({ start: '', end: '', selectedClient: undefined, selectedCategory: undefined, type: null });
+    
+    // Limpiar tanto datos de transacciones como de gráficos y recargar
+    clearChartReports();
+    Promise.all([
+      fetchTransactionsList('', '', 1, PER_PAGE, null),
+      fetchChartReports('', '', 'transactions')
+    ]);
+  };
+
+  // Manejar cambios en el rango de fechas del DatePicker
+  const handleDateRangeChange = (start: string, end: string) => {
+    const { selectedClient } = reportsFilters;
+    setReportsFilters({ start, end });
+    setReportsCurrentPage(1);
+    
+    // Cargar tanto la lista como los datos de gráficos con las nuevas fechas
+    Promise.all([
+      fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient),
+      fetchChartReports(start, end, 'transactions')
+    ]);
   };
 
   // Mostrar loading spinner completo solo en la carga inicial
-  if (isLoadingReports && isInitialLoad) {
+  if ((isLoadingReports || isLoadingChartReports) && isInitialLoad) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
-        <p className="text-gray-600 text-sm">Cargando transacciones...</p>
+        <p className="text-gray-600 text-sm">Cargando transacciones y gráficos...</p>
       </div>
     );
   }
@@ -301,14 +322,22 @@ Estado: ${transaccion.originalData.status}`);
         amountValue={amountFilter}
         onClearSearch={handleClearSearch}
         searchableDropdown={true}
+        onDateRangeChange={handleDateRangeChange}
+        initialDateRange={{
+          start: reportsFilters.start || undefined,
+          end: reportsFilters.end || undefined,
+        }}
       />
 
       {/* Loading overlay sutil para cambios de página/filtros */}
-      {isLoadingReports && !isInitialLoad && (
+      {(isLoadingReports || isLoadingChartReports) && !isInitialLoad && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
-            <span className="text-gray-700 text-sm">Actualizando datos...</span>
+            <span className="text-gray-700 text-sm">
+              {isLoadingReports && isLoadingChartReports ? 'Actualizando datos y gráficos...' :
+               isLoadingReports ? 'Actualizando datos...' : 'Actualizando gráficos...'}
+            </span>
           </div>
         </div>
       )}

@@ -17,7 +17,7 @@ export default function SectionSync({
     if (sectionParam && validSections.includes(sectionParam)) {
       setSelected(sectionParam);
     }
-  }, [searchParams]);
+  }, [searchParams, setSelected, validSections]);
 
   return null;
 }

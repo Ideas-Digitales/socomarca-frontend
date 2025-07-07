@@ -17,7 +17,7 @@ import {
   EyeSlashIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getUsersAction } from '@/services/actions/user.actions';
 import { transformApiUserToUser, ApiMeta } from '@/interfaces/user.interface';
 
@@ -481,7 +481,7 @@ export default function UsersPage() {
   const { openModal, closeModal } = useStore();
 
   // Función para cargar usuarios
-  const loadUsers = async (page: number = 1, search: string = '') => {
+  const loadUsers = useCallback(async (page: number = 1, search: string = '') => {
     setLoading(true);
     setError(null);
 
@@ -518,12 +518,12 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [perPage]);
 
   // Cargar usuarios al montar el componente
   useEffect(() => {
     loadUsers(currentPage, searchTerm);
-  }, [currentPage]);
+  }, [currentPage, searchTerm, loadUsers]);
 
   // Manejar búsqueda
   const onSearch = (search: string) => {

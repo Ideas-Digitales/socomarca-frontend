@@ -42,12 +42,10 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   searchableDropdown,
 }: DashboardTableLayoutProps<T>) => {
   const handleSearch = (searchTermValue: string) => {
-    console.log('Searching for:', searchTermValue);
     onSearch?.(searchTermValue);
   };
 
   const handleClearSearch = () => {
-    console.log('Search cleared');
     onClearSearch?.();
   };
 

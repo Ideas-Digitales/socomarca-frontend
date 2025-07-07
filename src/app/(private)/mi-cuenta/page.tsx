@@ -188,7 +188,11 @@ export default function MiCuentaPage() {
           </div>
         </div>{' '}
         {modalLogoutVisible && (
-          <ModalLogout onClose={() => setModalLogoutVisible(false)} />
+          <ModalLogout 
+            onClose={() => setModalLogoutVisible(false)} 
+            dataCyConfirm="confirm-logout-btn"
+            dataCyCancel="cancel-logout-btn"
+          />
         )}
         {modalCrearListaVisible && (
           <ModalCrearLista

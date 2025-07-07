@@ -67,6 +67,7 @@ export default function AddToCartButton({
 
   return (
     <button
+      data-cy="add-to-cart-btn"
       onClick={onClick}
       disabled={isDisabled}
       className={getButtonClass()}

@@ -79,8 +79,12 @@ export default function ProductCardGrid({ product }: Props) {
     setIsLoading(true);
 
     if (isQaMode) {
-      setQuantity(0);
-      setIsLoading(false);
+      // En modo QA, simular el estado de éxito para los tests
+      setIsOptimisticUpdate(true);
+      setTimeout(() => {
+        setQuantity(0);
+        setIsLoading(false);
+      }, 500);
       return;
     }
 
@@ -114,7 +118,7 @@ export default function ProductCardGrid({ product }: Props) {
   const isProductFavorite = isFavorite(product.id);
 
   return (
-    <div className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b relative">
+    <div data-cy="product-card" className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b relative">
       {/* Imagen del producto */}
       <div className="flex items-center justify-center h-[100px] w-full relative">
         <ProductImage src={product.image} alt={product.name} variant="grid" />
@@ -134,12 +138,12 @@ export default function ProductCardGrid({ product }: Props) {
         <span className="text-[#64748B] text-xs font-medium">
           {product.brand.name}
         </span>
-        <span className="text-sm font-medium text-center">
+        <span data-cy="product-name" className="text-sm font-medium text-center">
           {product.name.length > 25
             ? product.name.substring(0, 25) + '...'
             : product.name}
         </span>
-        <span className="text-lime-500 font-bold text-center text-lg mt-1">
+        <span data-cy="product-price" className="text-lime-500 font-bold text-center text-lg mt-1">
           {product.price !== null && product.price !== undefined
             ? product.price.toLocaleString('es-CL', {
                 style: 'currency',

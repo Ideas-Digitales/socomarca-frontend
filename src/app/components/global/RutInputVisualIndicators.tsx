@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
 
 interface RutInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -67,16 +67,9 @@ const RutInput: React.FC<RutInputProps> = ({
   const [isValid, setIsValid] = useState<boolean>(true);
   const [isDirty, setIsDirty] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (value !== undefined && value !== internalValue) {
-      setInternalValue(value);
-      validateInput(value);
-    }
-  }, [value]);
-
-  const validateInput = (rutValue: string): void => {
+  const validateInput = useCallback((rutValue: string): void => {
     if (!rutValue || rutValue.length < 3) {
-      setIsValid(true); // No mostrar error si está vacío o muy corto
+      setIsValid(true);
       if (onValidationChange) {
         onValidationChange(false);
       }
@@ -89,7 +82,14 @@ const RutInput: React.FC<RutInputProps> = ({
     if (onValidationChange) {
       onValidationChange(valid);
     }
-  };
+  }, [onValidationChange]);
+
+  useEffect(() => {
+    if (value !== undefined && value !== internalValue) {
+      setInternalValue(value);
+      validateInput(value);
+    }
+  }, [value, internalValue, validateInput]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const rawValue = e.target.value;

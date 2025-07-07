@@ -59,7 +59,6 @@ export const fetchLogin = async (
     const roles = user?.roles || [];
     const userId = String(user?.id || null);
 
-    console.log('Datos de usuario:', userId);
     if (token && user) {
       setCookie(token, 'token');
       setCookie(roles.join(','), 'role');

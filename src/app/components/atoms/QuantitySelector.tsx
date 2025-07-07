@@ -33,6 +33,7 @@ export default function QuantitySelector({
   return (
     <div className="flex items-center gap-1">
       <button
+        data-cy="quantity-decrease-btn"
         disabled={isDecreaseDisabled}
         className={`flex ${buttonClass} justify-center items-center rounded-[6px] transition-all duration-200 ${
           isDecreaseDisabled
@@ -50,6 +51,7 @@ export default function QuantitySelector({
         </span>
       ) : (
         <input
+          data-cy="quantity-input"
           type="number"
           min={minQuantity}
           max={maxQuantity}
@@ -64,6 +66,7 @@ export default function QuantitySelector({
       )}
 
       <button
+        data-cy="quantity-increase-btn"
         disabled={isIncreaseDisabled}
         className={`flex ${buttonClass} justify-center items-center rounded-[6px] transition-all duration-200 ${
           isIncreaseDisabled

@@ -88,4 +88,11 @@ export interface DashboardTableLayoutProps<T = any> {
   // Funciones de búsqueda
   onSearch?: (searchTerm: string) => void;
   onClearSearch?: () => void;
+
+  // Props para DatePicker
+  onDateRangeChange?: (start: string, end: string) => void;
+  initialDateRange?: {
+    start?: string;
+    end?: string;
+  };
 }

@@ -74,7 +74,6 @@ export const createStoreSlice: StateCreator<
     try {
       // Reload products with default pagination
       await fetchProducts(1, productPaginationMeta?.per_page || 9);
-      console.log('Estados de búsqueda reseteados y productos recargados');
     } catch (error) {
       console.error('Error al resetear estados de búsqueda:', error);
     }
