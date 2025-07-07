@@ -37,8 +37,6 @@ export default function MiCuentaPage() {
   const [nombreNuevaLista, setNombreNuevaLista] = useState("");
   const [errorNombreLista, setErrorNombreLista] = useState("");
   const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
-  const [favoritaIndex, setFavoritaIndex] = useState<number | null>(null);
-  const [modalAbiertoState, setModalAbiertoState] = useState<boolean>(false);
 
   /* Estados para seccion de ordenes del uFsuario */
   const [compras, setCompras] = useState<Compra[]>([]);

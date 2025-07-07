@@ -35,9 +35,6 @@ export default function ModalEditarDireccion({
   const [comunas, setComunas] = useState<Municipality[]>([]);
   const [regionId, setRegionId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [postalCode, setPostalCode] = useState("");
-  const [type, setType] = useState<"shipping" | "billing">("shipping");
-  const [isDefault, setIsDefault] = useState(false);
 
   // Obtener regiones al cargar
   useEffect(() => {
@@ -106,9 +103,6 @@ export default function ModalEditarDireccion({
     onSave({
       address_line1: direccionLinea1,
       address_line2: direccionLinea2,
-      postal_code: postalCode,
-      is_default: isDefault,
-      type,
       phone: telefono,
       contact_name: contacto,
       municipality_id: Number(comuna),
