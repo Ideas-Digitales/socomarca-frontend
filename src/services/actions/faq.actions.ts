@@ -3,8 +3,6 @@
 import { cookiesManagement } from "@/stores/base/utils/cookiesManagement";
 import { BACKEND_URL } from "@/utils/getEnv";
 
-// ===== TIPOS SIMPLIFICADOS =====
-
 export interface FAQItem {
   id: number;
   question: string;
@@ -48,8 +46,6 @@ export type ApiResponse<T = any> = {
   data: T | null;
   error: string | null;
 };
-
-// ===== FUNCIONES UTILITARIAS =====
 
 const getAuthHeaders = async () => {
   const { getCookie } = await cookiesManagement();
@@ -103,8 +99,6 @@ const handleApiRequest = async <T>(
     };
   }
 };
-
-// ===== FUNCIONES PRINCIPALES =====
 
 export const fetchGetFAQ = async (params: {
   page: number;
@@ -160,8 +154,6 @@ export const fetchDeleteFAQ = async (params: {
     method: 'DELETE',
   });
 };
-
-// ===== FUNCIONES ADICIONALES PARA CASOS ESPECÍFICOS =====
 
 export const fetchFAQById = async (id: number): Promise<ApiResponse<FAQSingleResponse>> => {
   return handleApiRequest<FAQSingleResponse>(`${BACKEND_URL}/faq/${id}`, {
