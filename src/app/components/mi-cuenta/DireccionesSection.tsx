@@ -11,6 +11,7 @@ import {
   updateUserAddress,
   createUserAddress,
   replaceUserAddress,
+  deleteUserAddress, // <-- importar la nueva función
 } from "@/services/actions/addressees.actions";
 
 export default function DireccionesSection({
@@ -142,9 +143,23 @@ export default function DireccionesSection({
             setModalVisible(false);
             setDireccionAEliminar(null);
           }}
-          onConfirm={() => {
-            setModalVisible(false)
-            setDireccionAEliminar(null)
+          onConfirm={async () => {
+            // Optimistic update: eliminar de inmediato
+            const prevDirecciones = [...direccionesState];
+            if (direccionAEliminar) {
+              setDireccionesState((prev) =>
+                prev.filter((d) => d.id !== direccionAEliminar.id)
+              );
+              setModalVisible(false);
+              setDireccionAEliminar(null);
+              // Llamar a la server action
+              const ok = await deleteUserAddress(direccionAEliminar.id);
+              if (!ok) {
+                // Revertir si falla
+                setDireccionesState(prevDirecciones);
+                // Aquí podrías mostrar un mensaje de error
+              }
+            }
           }}
         />
       )}
