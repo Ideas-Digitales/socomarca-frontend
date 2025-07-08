@@ -34,17 +34,27 @@ export default function DireccionesSection({
   const marcarComoPrincipal = async (direccion: Address) => {
     if (direccion.is_default) return;
 
+    // 1. Guardar el estado anterior para poder revertirlo si falla
+    const prevDirecciones = [...direccionesState];
+
+    // 2. Optimistic update: marcar como principal en el estado local
+    setDireccionesState((prev) =>
+      prev.map((d) =>
+        d.id === direccion.id
+          ? { ...d, is_default: true }
+          : { ...d, is_default: false }
+      )
+    );
+
+    // 3. Hacer la petición real
     const actualizada = await updateUserAddress(direccion.id, {
       is_default: true,
     });
-    if (actualizada) {
-      setDireccionesState((prev) =>
-        prev.map((d) =>
-          d.id === direccion.id
-            ? { ...d, is_default: true }
-            : { ...d, is_default: false }
-        )
-      );
+
+    // 4. Si falla, revertir el estado
+    if (!actualizada) {
+      setDireccionesState(prevDirecciones);
+      // Aquí podrías mostrar un mensaje de error
     }
   };
 
