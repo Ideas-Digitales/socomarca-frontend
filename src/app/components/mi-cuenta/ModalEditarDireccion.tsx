@@ -35,6 +35,7 @@ export default function ModalEditarDireccion({
   const [comunas, setComunas] = useState<Municipality[]>([]);
   const [regionId, setRegionId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Obtener regiones al cargar
   useEffect(() => {
@@ -97,8 +98,51 @@ export default function ModalEditarDireccion({
     }
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Validar región
+    if (!regionId) {
+      newErrors.region = "La región es requerida";
+    }
+
+    // Validar comuna
+    if (!comuna) {
+      newErrors.comuna = "La comuna es requerida";
+    }
+
+    // Validar dirección
+    if (!direccionLinea1.trim()) {
+      newErrors.direccion = "La dirección es requerida";
+    }
+
+    // Validar alias
+    if (!alias.trim()) {
+      newErrors.alias = "El alias es requerido";
+    }
+
+    // Validar teléfono
+    if (!telefono.trim()) {
+      newErrors.telefono = "El teléfono es requerido";
+    } else if (!/^\d{9}$/.test(telefono.replace(/\s/g, ''))) {
+      newErrors.telefono = "El teléfono debe tener 9 dígitos (ej: 945454545)";
+    }
+
+    // Validar contacto
+    if (!contacto.trim()) {
+      newErrors.contacto = "El nombre del contacto es requerido";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
 
     onSave({
       address_line1: direccionLinea1,
@@ -143,7 +187,7 @@ export default function ModalEditarDireccion({
             <select
               value={regionId ?? ""}
               onChange={handleRegionChange}
-              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
+              className={`w-full mt-1 p-2 bg-[#edf2f7] rounded ${errors.region ? 'border-red-500 border' : ''}`}
             >
               <option value="">Selecciona una región</option>
               {regiones.map((r) => (
@@ -152,6 +196,9 @@ export default function ModalEditarDireccion({
                 </option>
               ))}
             </select>
+            {errors.region && (
+              <p className="text-red-500 text-sm mt-1">{errors.region}</p>
+            )}
           </div>
 
           {/* Comuna */}
@@ -163,7 +210,7 @@ export default function ModalEditarDireccion({
               value={comuna}
               onChange={(e) => setComuna(Number(e.target.value))}
               disabled={!regionId}
-              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
+              className={`w-full mt-1 p-2 bg-[#edf2f7] rounded ${errors.comuna ? 'border-red-500 border' : ''}`}
             >
               <option value="">Selecciona una comuna</option>
               {comunas.map((c) => (
@@ -172,18 +219,24 @@ export default function ModalEditarDireccion({
                 </option>
               ))}
             </select>
+            {errors.comuna && (
+              <p className="text-red-500 text-sm mt-1">{errors.comuna}</p>
+            )}
           </div>
 
           {/* Dirección 1 */}
           <div className="md:col-span-1">
-            <label className="block font-medium">Dirección*</label>
+            <label className="block font-medium">Dirección<span className="text-red-500">*</span></label>
             <input
               type="text"
               value={direccionLinea1}
               onChange={(e) => setDireccionLinea1(e.target.value)}
-              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
-              required
+              className={`w-full mt-1 p-2 bg-[#edf2f7] rounded ${errors.direccion ? 'border-red-500 border' : ''}`}
+              placeholder="Ej: Av. Providencia 1234"
             />
+            {errors.direccion && (
+              <p className="text-red-500 text-sm mt-1">{errors.direccion}</p>
+            )}
           </div>
 
           {/* Dirección 2 */}
@@ -194,40 +247,53 @@ export default function ModalEditarDireccion({
               value={direccionLinea2}
               onChange={(e) => setDireccionLinea2(e.target.value)}
               className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
+              placeholder="Ej: Depto 45, Oficina 2"
             />
           </div>
 
           {/* Alias */}
           <div className="md:col-span-1">
-            <label className="block font-medium">Alias</label>
+            <label className="block font-medium">Alias<span className="text-red-500">*</span></label>
             <input
               type="text"
               value={alias}
               onChange={(e) => setAlias(e.target.value)}
-              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
+              className={`w-full mt-1 p-2 bg-[#edf2f7] rounded ${errors.alias ? 'border-red-500 border' : ''}`}
+              placeholder="Ej: Casa, Trabajo, Universidad"
             />
+            {errors.alias && (
+              <p className="text-red-500 text-sm mt-1">{errors.alias}</p>
+            )}
           </div>
 
           {/* Teléfono */}
           <div className="md:col-span-1">
-            <label className="block font-medium">Teléfono</label>
+            <label className="block font-medium">Teléfono<span className="text-red-500">*</span></label>
             <input
               type="text"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
-              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
+              className={`w-full mt-1 p-2 bg-[#edf2f7] rounded ${errors.telefono ? 'border-red-500 border' : ''}`}
+              placeholder="945454545"
             />
+            {errors.telefono && (
+              <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>
+            )}
           </div>
 
           {/* Contacto */}
           <div className="md:col-span-2">
-            <label className="block font-medium">Nombre del contacto</label>
+            <label className="block font-medium">Nombre del contacto<span className="text-red-500">*</span></label>
             <input
               type="text"
               value={contacto}
               onChange={(e) => setContacto(e.target.value)}
-              className="w-full mt-1 p-2 bg-[#edf2f7] rounded"
+              className={`w-full mt-1 p-2 bg-[#edf2f7] rounded ${errors.contacto ? 'border-red-500 border' : ''}`}
+              placeholder="Ej: Juan Pérez"
             />
+            {errors.contacto && (
+              <p className="text-red-500 text-sm mt-1">{errors.contacto}</p>
+            )}
           </div>
 
           {/* Botones */}
