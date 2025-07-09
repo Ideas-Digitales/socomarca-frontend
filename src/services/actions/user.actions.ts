@@ -3,19 +3,29 @@
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { BACKEND_URL } from '@/utils/getEnv';
 
-export interface ApiUser {
+export interface ApiAddress {
   id: number;
-  name: string;
-  email: string;
-  email_verified_at: string | null;
+  address_line1: string;
+  address_line2: string;
+  postal_code: string;
+  is_default: boolean;
+  type: string;
   phone: string;
+  contact_name: string;
+  municipality_name: string;
+  region_name: string;
+  alias: string | null;
+}
+
+export interface ApiUser {
   rut: string;
+  name: string;
   business_name: string;
+  email: string;
+  phone: string;
   is_active: boolean;
-  last_login: string | null;
-  password_changed_at: string | null;
-  created_at: string;
-  updated_at: string;
+  billing_address: ApiAddress;
+  default_shipping_address: ApiAddress;
 }
 
 export interface ApiMeta {
@@ -42,18 +52,13 @@ export interface UsersApiResponse {
 export async function getUserData() {
   const { getCookie } = await cookiesManagement();
 
-  const userId = getCookie('userId');
   const token = getCookie('token');
-
-  if (!userId) {
-    throw new Error('No userId found in cookies');
-  }
 
   if (!token) {
     throw new Error('No token found in cookies');
   }
 
-  const res = await fetch(`${BACKEND_URL}/users/${userId}`, {
+  const res = await fetch(`${BACKEND_URL}/profile`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -65,9 +70,9 @@ export async function getUserData() {
   if (!res.ok) {
     throw new Error(`Failed to fetch user data: ${res.statusText}`);
   }
-const data = await res.json();
-return data;
-
+  
+  const data = await res.json();
+  return data;
 }
 
 
