@@ -6,12 +6,11 @@ export default async function PoliticaPrivacidadPage() {
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen p-6 md:p-12">
-      <div className="w-full flex px-2 shado">
+      <div className="w-full flex shado max-w-4xl mx-auto">
         <div className="h-2 w-1/3 bg-[#267E00]"></div>
         <div className="h-2 w-2/3 bg-[#6CB409]"></div>
       </div>
       <div className="max-w-4xl mx-auto bg-white p-8 shadow">
-        <h1 className="text-3xl font-bold mb-8">Política y privacidad</h1>
 
         {content ? (
           <div 
