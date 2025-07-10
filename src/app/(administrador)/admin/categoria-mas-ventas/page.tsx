@@ -170,17 +170,29 @@ export default function CategoriasMasVentas() {
 
   };
 
-  const handleClientFilter = (clientId: number) => {
-    console.log('Filtrar por cliente:', clientId);
+  // TEMPORAL: Actualizar para manejar tanto number como string
+  const handleClientFilter = (clientId: number | string) => {
+    console.log('Filtrar por cliente:', clientId, typeof clientId);
 
-    if (clientId === -1 || clientId === 0) {
-      // Limpiar selección
-      setSelectedClients([]);
-    } else {
-      const client = clients.find((c) => c.id === clientId);
-      if (client) {
-        setSelectedClients([client]);
+    if (typeof clientId === 'string') {
+      // TEMPORAL: Nuevo comportamiento - usar el string directamente
+      if (clientId.trim() === '') {
+        // Limpiar selección
+        setSelectedClients([]);
+      } else {
+        setSelectedClients([{ id: 0, name: clientId }]); // ID temporal para mantener compatibilidad
       }
+    } else {
+      // TEMPORAL: Comportamiento original para números (comentado para referencia)
+      // if (clientId === -1 || clientId === 0) {
+      //   // Limpiar selección
+      //   setSelectedClients([]);
+      // } else {
+      //   const client = clients.find((c) => c.id === clientId);
+      //   if (client) {
+      //     setSelectedClients([client]);
+      //   }
+      // }
     }
   };
 
@@ -280,6 +292,10 @@ export default function CategoriasMasVentas() {
         onClearSearch={handleClearSearch}
         // Callback para el DatePicker
         onDateRangeChange={handleDateRangeChange}
+        onClearClientInput={() => {
+          // TEMPORAL: Limpiar el filtro de cliente cuando se limpia la búsqueda
+          setSelectedClients([]);
+        }}
       />
 
       {/* Loading overlay sutil para cambios de filtros */}

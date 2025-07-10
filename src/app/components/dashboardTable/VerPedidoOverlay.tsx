@@ -1,13 +1,16 @@
-import { TransaccionExitosa } from '@/mock/transaccionesExitosas';
-import { CartItem } from '@/interfaces/product.interface';
+'use client';
+
+import { useEffect } from 'react';
+import { TransactionDetails } from '@/services/actions/reports.actions';
+import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import VerPedidoItemCard from './VerPedidoItemCard';
 import Pagination from '../global/Pagination';
 import { usePagination } from '@/hooks/usePagination';
 
-interface Props {
+interface VerPedidoOverlayProps {
   isOpen: boolean;
-  detailSelected: TransaccionExitosa | null;
+  detailSelected: TransactionDetails | null;
   onClose: () => void;
 }
 
@@ -15,13 +18,45 @@ export default function VerPedidoOverlay({
   isOpen,
   detailSelected,
   onClose,
-}: Props) {
-  const { paginatedItems, productPaginationMeta, changePage } = usePagination(
-    detailSelected?.productos || []
-  );
+}: VerPedidoOverlayProps) {
+  // Cerrar con Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
 
-  // El componente siempre se renderiza para que las animaciones funcionen
-  // Solo ocultamos el contenido cuando no hay data
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
+
+  // Convertir los datos de la transacción al formato esperado por VerPedidoItemCard
+  const orderItems = detailSelected?.order.order_items.map(item => ({
+    id: item.id,
+    name: item.product,
+    price: item.price,
+    quantity: item.quantity,
+    image: '/assets/global/logo_default.png', // Imagen por defecto
+    brand: { name: 'Producto' }, // Marca por defecto
+  })) || [];
+
+  const { paginatedItems, productPaginationMeta, changePage } = usePagination(orderItems);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <>
@@ -46,10 +81,10 @@ export default function VerPedidoOverlay({
             <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white sticky top-0 z-10">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Detalle del Pedido #{detailSelected.id}
+                  Detalle del Pedido #{detailSelected.order.id}
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
-                  {detailSelected.cliente} • {detailSelected.fecha}
+                  {detailSelected.order.order_meta.user.name} • {new Date(detailSelected.order.created_at).toLocaleDateString('es-CL')}
                 </p>
               </div>
               <button
@@ -71,7 +106,7 @@ export default function VerPedidoOverlay({
                         Monto Total
                       </h3>
                       <p className="text-2xl font-bold text-lime-600">
-                        ${detailSelected.monto.toLocaleString()}
+                        {formatCurrency(detailSelected.order.amount)}
                       </p>
                     </div>
                     <div>
@@ -79,7 +114,7 @@ export default function VerPedidoOverlay({
                         Categoría
                       </h3>
                       <p className="text-lg font-semibold text-gray-900">
-                        {detailSelected.categoria}
+                        Transacción
                       </p>
                     </div>
                   </div>
@@ -88,15 +123,16 @@ export default function VerPedidoOverlay({
                 {/* Header de productos */}
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">
-                    Productos ({detailSelected.productos.length})
+                    Productos ({detailSelected.order.order_items.length})
                   </h3>
                 </div>
 
                 {/* Lista de productos */}
-                <ul className="space-y-4 mb-6 max-h-[45dvh] md:max-h-[85dvh] overflow-y-auto">
-                  {(paginatedItems as CartItem[])?.map((item: CartItem) => (
+                <ul className="space-y-4 mb-6 max-h-[45dvh] md:max-h-[60dvh] overflow-y-auto">
+                  {(paginatedItems as any[])?.map((item: any) => (
                     <VerPedidoItemCard key={item.id} cartItem={item} />
                   ))}
+
                 </ul>
 
                 {/* Paginación */}
@@ -111,6 +147,16 @@ export default function VerPedidoOverlay({
               </div>
             </div>
           </>
+        )}
+
+        {/* Mostrar loading cuando no hay datos */}
+        {!detailSelected && (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <LoadingSpinner />
+              <p className="mt-4 text-gray-600">Cargando detalles...</p>
+            </div>
+          </div>
         )}
       </div>
     </>

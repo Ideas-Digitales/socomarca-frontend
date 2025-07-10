@@ -118,14 +118,25 @@ export default function ProductosMasVentas() {
     // Nota: Los filtros específicos podrían implementarse en el backend en el futuro
   };
 
-  const handleClientFilter = (clientId: number) => {
-    if (clientId === -1 || clientId === 0) {
-      setSelectedClients([]);
-    } else {
-      const client = clients.find((c) => c.id === clientId);
-      if (client) {
-        setSelectedClients([client]);
+  // TEMPORAL: Actualizar para manejar tanto number como string
+  const handleClientFilter = (clientId: number | string) => {
+    if (typeof clientId === 'string') {
+      // TEMPORAL: Nuevo comportamiento - usar el string directamente
+      if (clientId.trim() === '') {
+        setSelectedClients([]);
+      } else {
+        setSelectedClients([{ id: 0, name: clientId }]); // ID temporal para mantener compatibilidad
       }
+    } else {
+      // TEMPORAL: Comportamiento original para números (comentado para referencia)
+      // if (clientId === -1 || clientId === 0) {
+      //   setSelectedClients([]);
+      // } else {
+      //   const client = clients.find((c) => c.id === clientId);
+      //   if (client) {
+      //     setSelectedClients([client]);
+      //   }
+      // }
     }
   };
 
@@ -201,6 +212,10 @@ export default function ProductosMasVentas() {
         initialDateRange={{
           start: undefined,
           end: undefined,
+        }}
+        onClearClientInput={() => {
+          // TEMPORAL: Limpiar el filtro de cliente cuando se limpia la búsqueda
+          setSelectedClients([]);
         }}
       />
 

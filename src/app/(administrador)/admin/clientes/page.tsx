@@ -7,58 +7,74 @@ import {
   TableColumn,
 } from '@/interfaces/dashboard.interface';
 import { comunasRegiones } from '@/mock/comunasVentas';
+import { ClientDetail } from '@/interfaces/client.interface';
 import useStore from '@/stores/base';
-import { useMemo, useState } from 'react';
-
-// TODO: Esperar actualización del backend. Se está utilizando datos de CATEGORIAS, pero debería ser CLIENTES!!
+import { useEffect, useMemo, useState } from 'react';
 
 interface ClientRow {
   id: string;
-  categoria: string;
-  rut: string;
-  createdAt: string;
+  cliente: string;
+  monto: string;
+  fecha: string;
+  estado: string;
 }
 
 export default function ClientesAdmin() {
-  const { categories } = useStore();
+  const { 
+    clientsList, 
+    clientsPagination, 
+    isLoadingClients, 
+    clientsError,
+    fetchClients,
+    clientsCurrentPage 
+  } = useStore();
+
+
   const comunas = comunasRegiones;
 
   // Estado para las comunas seleccionadas
   const [selectedCommunes, setSelectedCommunes] = useState<string[]>([]);
 
   // Definir las columnas de la tabla
-  const categoriasColumns: TableColumn<ClientRow>[] = [
+  const clientesColumns: TableColumn<ClientRow>[] = [
     { key: 'id', label: 'ID' },
-    { key: 'categoria', label: 'Categoría' },
-    { key: 'rut', label: 'Rut (Path)' },
-    { key: 'createdAt', label: 'Fecha de creación' },
+    { key: 'cliente', label: 'Cliente' },
+    { key: 'monto', label: 'Monto' },
+    { key: 'fecha', label: 'Fecha' },
+    { key: 'estado', label: 'Estado' },
   ];
 
   // Transformar datos una sola vez
-  const categoriesData = useMemo(
-    () =>
-      categories.map((category) => ({
-        id: String(category.id),
-        categoria: category.name,
-        rut: category.name || `categoria-${category.id}`,
-        createdAt: category.created_at
-          ? new Date(category.created_at).toLocaleDateString()
-          : 'N/A',
-      })),
-    [categories]
+  const clientsData = useMemo(
+    () => {
+      if (!clientsList || !Array.isArray(clientsList)) {
+        return [];
+      }
+      
+      return clientsList.map((client: ClientDetail) => ({
+        id: String(client.id),
+        cliente: client.cliente || client.customer || 'Sin nombre',
+        monto: new Intl.NumberFormat('es-CL', {
+          style: 'currency',
+          currency: 'CLP',
+        }).format(client.monto || client.amount || 0),
+        fecha: new Date(client.fecha || client.date || '').toLocaleDateString('es-CL'),
+        estado: client.estado || client.status || 'Sin estado',
+      }));
+    },
+    [clientsList]
   );
 
   // Hook para manejar filtros y ordenamiento
   const {
     filters,
     filteredAndSortedData,
-    // updateCategoryFilter,
     updateSortOption,
     updateSearchTerm,
   } = useFilters({
-    data: categoriesData,
-    searchKeys: ['categoria', 'rut'],
-    sortableColumns: categoriasColumns,
+    data: clientsData,
+    searchKeys: ['cliente', 'estado'],
+    sortableColumns: clientesColumns,
   });
 
   const config: DashboardTableConfig = {
@@ -66,6 +82,13 @@ export default function ClientesAdmin() {
     showTable: true,
     tableTitle: 'Clientes',
   };
+
+  // Cargar datos iniciales
+  useEffect(() => {
+
+    
+    fetchClients('', '', 15, 1);
+  }, [fetchClients]);
 
   // Manejar el cambio de comunas seleccionadas
   const handleComuneFilter = (selectedIds: string[]) => {
@@ -82,13 +105,13 @@ export default function ClientesAdmin() {
     <DashboardTableLayout
       config={config}
       tableData={filteredAndSortedData}
-      tableColumns={categoriasColumns}
+      tableColumns={clientesColumns}
       onFilter={handleFilter}
       onCommuneFilter={handleComuneFilter}
       communes={comunas}
       selectedCommunes={selectedCommunes}
       onSortBy={updateSortOption}
-      categories={categories}
+      categories={[]}
       selectedCategories={filters.selectedCategories}
       selectedSortOption={filters.sortOption}
       onSearch={updateSearchTerm}

@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, JSX } from 'react';
+import React, { useState, JSX, useEffect } from 'react';
 import {
   CheckCircleIcon,
   PlusIcon,
   GlobeAltIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
+import useStore from '@/stores/base';
+import { SiteInformation } from '@/interfaces/siteInformation.interface';
 
 const socialOptions = ['Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'YouTube', 'TikTok'];
 
@@ -20,6 +22,16 @@ const socialIcons: Record<string, JSX.Element> = {
 };
 
 export default function ContactForm() {
+  const {
+    siteInformation,
+    isLoadingSiteInfo,
+    isUpdatingSiteInfo,
+    siteInfoError,
+    fetchSiteInformation,
+    updateSiteInformation,
+    clearSiteInfoError
+  } = useStore();
+
   const [form, setForm] = useState({
     headerPhone: '',
     headerEmail: '',
@@ -30,6 +42,31 @@ export default function ContactForm() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [socialInputs, setSocialInputs] = useState([{ platform: 'Facebook', url: '' }]);
   const [socialLinks, setSocialLinks] = useState<{ platform: string; url: string }[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    fetchSiteInformation();
+  }, [fetchSiteInformation]);
+
+  // Actualizar formulario cuando se cargan los datos
+  useEffect(() => {
+    if (siteInformation) {
+      setForm({
+        headerPhone: siteInformation.header.contact_phone || '',
+        headerEmail: siteInformation.header.contact_email || '',
+        footerPhone: siteInformation.footer.contact_phone || '',
+        footerEmail: siteInformation.footer.contact_email || '',
+      });
+
+      // Convertir las redes sociales del backend al formato del formulario
+      const convertedSocialLinks = siteInformation.social_media.map((social: any) => ({
+        platform: social.label.charAt(0).toUpperCase() + social.label.slice(1),
+        url: social.link
+      }));
+      setSocialLinks(convertedSocialLinks);
+    }
+  }, [siteInformation]);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -44,8 +81,10 @@ export default function ContactForm() {
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearSiteInfoError();
+    setSuccessMessage('');
 
     const foundErrors = validate();
     if (Object.keys(foundErrors).length > 0) {
@@ -55,8 +94,34 @@ export default function ContactForm() {
 
     // Agregar todas las redes sociales válidas
     const newValidLinks = socialInputs.filter((s) => s.url.startsWith('http'));
-    setSocialLinks([...socialLinks, ...newValidLinks]);
-    setSocialInputs([{ platform: 'Facebook', url: '' }]); // limpiar
+    const allSocialLinks = [...socialLinks, ...newValidLinks];
+
+    // Preparar datos para enviar al backend
+    const siteInfoData: SiteInformation = {
+      header: {
+        contact_phone: form.headerPhone,
+        contact_email: form.headerEmail
+      },
+      footer: {
+        contact_phone: form.footerPhone,
+        contact_email: form.footerEmail
+      },
+      social_media: allSocialLinks.map(link => ({
+        label: link.platform.toLowerCase(),
+        link: link.url
+      }))
+    };
+
+    // Enviar al backend
+    const result = await updateSiteInformation(siteInfoData);
+    
+    if (result.success) {
+      setSuccessMessage('Información actualizada correctamente');
+      setSocialLinks(allSocialLinks);
+      setSocialInputs([{ platform: 'Facebook', url: '' }]);
+    } else {
+      setErrors({ submit: result.error || 'Error al actualizar' });
+    }
   };
 
   const updateSocialInput = (index: number, field: 'platform' | 'url', value: string) => {
@@ -77,6 +142,16 @@ export default function ContactForm() {
 
   const inputStyle =
     'w-full mt-1 p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-lime-400';
+
+  if (isLoadingSiteInfo) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 bg-white rounded shadow">
+        <div className="flex items-center justify-center h-32">
+          <div className="text-slate-600">Cargando información del sitio...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded shadow space-y-10">
@@ -208,15 +283,61 @@ export default function ContactForm() {
           )}
         </section>
 
+        {/* Mensajes de error y éxito */}
+        {siteInfoError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {siteInfoError}
+          </div>
+        )}
+        
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+            {successMessage}
+          </div>
+        )}
+
+        {errors.submit && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {errors.submit}
+          </div>
+        )}
+
         <div className="flex justify-end gap-4">
-          <button type="reset" className="border px-4 py-2 rounded">
+          <button 
+            type="reset" 
+            className="border px-4 py-2 rounded hover:bg-slate-50"
+            onClick={() => {
+              if (siteInformation) {
+                setForm({
+                  headerPhone: siteInformation.header.contact_phone || '',
+                  headerEmail: siteInformation.header.contact_email || '',
+                  footerPhone: siteInformation.footer.contact_phone || '',
+                  footerEmail: siteInformation.footer.contact_email || '',
+                });
+                const convertedSocialLinks = siteInformation.social_media.map((social: any) => ({
+                  platform: social.label.charAt(0).toUpperCase() + social.label.slice(1),
+                  url: social.link
+                }));
+                setSocialLinks(convertedSocialLinks);
+                setSocialInputs([{ platform: 'Facebook', url: '' }]);
+              }
+              setErrors({});
+              setSuccessMessage('');
+              clearSiteInfoError();
+            }}
+          >
             Cancelar
           </button>
           <button
             type="submit"
-            className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600"
+            disabled={isUpdatingSiteInfo}
+            className={`px-4 py-2 rounded text-white ${
+              isUpdatingSiteInfo 
+                ? 'bg-slate-400 cursor-not-allowed' 
+                : 'bg-lime-500 hover:bg-lime-600'
+            }`}
           >
-            Guardar cambios
+            {isUpdatingSiteInfo ? 'Guardando...' : 'Guardar cambios'}
           </button>
         </div>
       </form>

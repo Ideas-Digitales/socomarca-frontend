@@ -35,7 +35,13 @@ export default function AmountFilter({
 }: AmountFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [errors, setErrors] = useState<{ min?: string; max?: string }>({});
+  const [localValue, setLocalValue] = useState<AmountRange>(value);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sincronizar localValue con value prop
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -94,30 +100,34 @@ export default function AmountFilter({
 
   const handleMinChange = (minValue: string) => {
     const newValue = {
-      ...value,
+      ...localValue,
       min: minValue || '',
     };
 
-    // Validar antes de actualizar
+    // Solo validar, no disparar onChange automáticamente
     validateValues(newValue.min, newValue.max);
-    onChange(newValue);
+    
+    // Actualizar el estado local sin disparar la petición
+    setLocalValue(newValue);
   };
 
   const handleMaxChange = (maxValue: string) => {
     const newValue = {
-      ...value,
+      ...localValue,
       max: maxValue || '',
     };
 
-    // Validar antes de actualizar
+    // Solo validar, no disparar onChange automáticamente
     validateValues(newValue.min, newValue.max);
-    onChange(newValue);
+    
+    // Actualizar el estado local sin disparar la petición
+    setLocalValue(newValue);
   };
 
   // Determinar el texto del botón
   const getButtonText = () => {
-    const minVal = value.min || '';
-    const maxVal = value.max || '';
+    const minVal = localValue.min || '';
+    const maxVal = localValue.max || '';
 
     if (minVal && maxVal) {
       return `${parseFloat(minVal).toLocaleString()} - ${parseFloat(
@@ -176,7 +186,7 @@ export default function AmountFilter({
                 </label>
                 <input
                   type="number"
-                  value={value.min || ''}
+                  value={localValue.min || ''}
                   onChange={(e) => handleMinChange(e.target.value)}
                   placeholder={placeholder.min}
                   min={minAllowed}
@@ -201,7 +211,7 @@ export default function AmountFilter({
                 </label>
                 <input
                   type="number"
-                  value={value.max || ''}
+                  value={localValue.max || ''}
                   onChange={(e) => handleMaxChange(e.target.value)}
                   placeholder={placeholder.max}
                   min={minAllowed}
@@ -221,21 +231,35 @@ export default function AmountFilter({
               </div>
             </div>
 
-            {/* Botón para limpiar valores */}
-            {(value.min || value.max) && (
-              <div className="pt-2 border-t border-gray-100">
+            {/* Botones de acción */}
+            <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(localValue);
+                  setIsOpen(false);
+                }}
+                disabled={hasErrors}
+                className="px-4 py-2 bg-lime-500 text-white rounded hover:bg-lime-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+              >
+                Aplicar
+              </button>
+              
+              {(localValue.min || localValue.max) && (
                 <button
                   type="button"
                   onClick={() => {
-                    onChange({ min: '', max: '' });
+                    const emptyValue = { min: '', max: '' };
+                    setLocalValue(emptyValue);
+                    onChange(emptyValue);
                     setErrors({});
                   }}
                   className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  Limpiar filtros
+                  Limpiar
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}

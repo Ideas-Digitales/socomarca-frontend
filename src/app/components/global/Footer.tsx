@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect } from 'react';
 import FacebookIcon from '../icons/FacebookIcon';
 import TwitterIcon from '../icons/TwitterIcon';
 import InstagramIcon from '../icons/InstagramIcon';
@@ -6,6 +9,7 @@ import YoutubeIcon from '../icons/YoutubeIcon';
 import PinterestIcon from '../icons/PinterestIcon';
 import { EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import Logo from './Logo';
+import useStore from '@/stores/base';
 
 const masterCardImageUrl = '/assets/footer/mastercard.png';
 const americanExpressImageUrl = '/assets/footer/american-express.png';
@@ -15,6 +19,35 @@ const visaImageUrl = '/assets/footer/visa.png';
 // Icon RRSS
 
 export default function Footer() {
+  const {
+    siteInformation,
+    fetchSiteInformation
+  } = useStore();
+
+  // Cargar información del sitio al montar el componente
+  useEffect(() => {
+    fetchSiteInformation();
+  }, [fetchSiteInformation]);
+
+  // Función para renderizar el icono de red social según el label
+  const renderSocialIcon = (label: string) => {
+    const normalizedLabel = label.toLowerCase();
+    
+    switch (normalizedLabel) {
+      case 'facebook':
+        return <FacebookIcon width={16} height={16} />;
+      case 'twitter':
+        return <TwitterIcon width={16} height={13} />;
+      case 'instagram':
+        return <InstagramIcon width={13} height={13} />;
+      case 'youtube':
+        return <YoutubeIcon width={16} height={12} />;
+      case 'pinterest':
+        return <PinterestIcon width={16} height={16} />;
+      default:
+        return <FacebookIcon width={16} height={16} />; // Icono por defecto
+    }
+  };
   return (
     <footer className="bg-white text-sm text-gray-600">
       {/* Línea verde superior */}
@@ -65,53 +98,57 @@ export default function Footer() {
             </li>
           </ul>
         </div>
-        {/* Contacto */}
+        {/* Contacto y Redes sociales */}
         <div className="flex flex-col items-start gap-[10px]">
           <h3 className="text-gray-500 font-bold">Contacto</h3>
-          <div className="flex gap-1">
-            <span className="text-lime-600">
-              <PhoneIcon width={25} height={24} />
-            </span>
-            <div>
-              <p className="flex flex-col gap-1">
-                <span className="text-lime-600 text-[16px]">
-                  <strong>Teléfono:</strong>
-                </span>
-                <span className="text-slate-400">+56 9 9999 9999</span>
-              </p>
+          {siteInformation?.footer?.contact_phone && (
+            <div className="flex gap-1">
+              <span className="text-lime-600">
+                <PhoneIcon width={25} height={24} />
+              </span>
+              <div>
+                <p className="flex flex-col gap-1">
+                  <span className="text-lime-600 text-[16px]">
+                    <strong>Teléfono:</strong>
+                  </span>
+                  <span className="text-slate-400">{siteInformation.footer.contact_phone}</span>
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-1">
-            <span className="text-lime-600">
-              <EnvelopeIcon width={25} height={24} />
-            </span>
-            <div>
-              <p className="flex flex-col gap-1">
-                <span className="text-lime-600 text-[16px]">
-                  <strong>Email:</strong>
-                </span>
-                <span className="text-slate-400">contacto@socomarca.cl</span>
-              </p>
+          )}
+          {siteInformation?.footer?.contact_email && (
+            <div className="flex gap-1">
+              <span className="text-lime-600">
+                <EnvelopeIcon width={25} height={24} />
+              </span>
+              <div>
+                <p className="flex flex-col gap-1">
+                  <span className="text-lime-600 text-[16px]">
+                    <strong>Email:</strong>
+                  </span>
+                  <span className="text-slate-400">{siteInformation.footer.contact_email}</span>
+                </p>
+              </div>
             </div>
-          </div>
-        </div>{' '}
-        {/* Redes sociales */}
-        <div className="flex items-center justify-center md:justify-start gap-1">
-          <div className="w-[38px] h-[38px] flex justify-center items-center">
-            <FacebookIcon width={16} height={16} />
-          </div>
-          <div className="w-[38px] h-[38px] flex justify-center items-center">
-            <TwitterIcon width={16} height={13} />
-          </div>
-          <div className="w-[38px] h-[38px] flex justify-center items-center">
-            <InstagramIcon width={13} height={13} />
-          </div>
-          <div className="w-[38px] h-[38px] flex justify-center items-center">
-            <PinterestIcon width={16} height={16} />
-          </div>
-          <div className="w-[38px] h-[38px] flex justify-center items-center">
-            <YoutubeIcon width={16} height={12} />
-          </div>
+          )}
+          
+          {/* Redes sociales */}
+          {siteInformation?.social_media && siteInformation.social_media.length > 0 && (
+            <div className="flex items-center justify-start gap-1 mt-4">
+              {siteInformation.social_media.map((social: any, index: number) => (
+                <a
+                  key={index}
+                  href={social.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-[38px] h-[38px] flex justify-center items-center hover:bg-slate-100 rounded transition-colors"
+                  title={social.label.charAt(0).toUpperCase() + social.label.slice(1)}
+                >
+                  {renderSocialIcon(social.label)}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

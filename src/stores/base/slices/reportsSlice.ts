@@ -3,6 +3,9 @@ import {
   fetchGetOrdersReportsTransactionsList,
   fetchGetOrdersReportsFailedTransactionsList,
   fetchGetOrdersReportsCharts,
+  fetchGetTransactionDetails,
+  TransactionDetails,
+  fetchGetClientsMostPurchasesList,
 } from '@/services/actions/reports.actions';
 import { ApiResponse, PaginationMeta } from '../types';
 
@@ -109,6 +112,23 @@ export interface ReportsFilters {
   selectedClient?: string;
   selectedCategory?: string;
   type?: 'exitosa' | 'fallida' | null;
+  total_min?: number;
+  total_max?: number;
+}
+
+export interface ClientsMostPurchasesDetail {
+  id: number;
+  cliente: string;
+  monto: number;
+  fecha: string;
+  acciones?: string;
+}
+
+export interface ClientsMostPurchasesFilters {
+  start?: string;
+  end?: string;
+  total_min?: number;
+  total_max?: number;
 }
 
 export interface ReportsState {
@@ -121,6 +141,10 @@ export interface ReportsState {
   failedTransactionsList: FailedTransactionDetail[];
   selectedFailedTransaction: FailedTransactionDetail | null;
   uniqueFailedClients: string[];
+  
+  // Transaction details state
+  transactionDetails: TransactionDetails | null;
+  isLoadingTransactionDetails: boolean;
   
   // Pagination states - Successful transactions
   reportsCurrentPage: number;
@@ -157,6 +181,13 @@ export interface ReportsState {
   // API response parameters
   lastApiParameters: TransactionsApiResponse['parameters'] | null;
   lastFailedApiParameters: TransactionsApiResponse['parameters'] | null;
+  
+  // Clientes con más compras
+  clientsMostPurchasesList: ClientsMostPurchasesDetail[];
+  clientsMostPurchasesPagination: PaginationMeta | null;
+  isLoadingClientsMostPurchases: boolean;
+  clientsMostPurchasesFilters: ClientsMostPurchasesFilters;
+  clientsMostPurchasesCurrentPage: number;
 }
 
 export interface ReportsSlice extends ReportsState {
@@ -166,7 +197,9 @@ export interface ReportsSlice extends ReportsState {
     end: string,
     page?: number,
     per_page?: number,
-    client?: string | null
+    client?: string | null,
+    total_min?: number,
+    total_max?: number
   ) => Promise<ApiResponse<TransactionsApiResponse>>;
   
   // Actions - Failed transactions
@@ -175,8 +208,16 @@ export interface ReportsSlice extends ReportsState {
     end: string,
     page?: number,
     per_page?: number,
-    client?: string | null
+    client?: string | null,
+    total_min?: number,
+    total_max?: number
   ) => Promise<ApiResponse<FailedTransactionsApiResponse>>;
+  
+  // Actions - Transaction details
+  fetchTransactionDetails: (
+    transactionId: number
+  ) => Promise<ApiResponse<TransactionDetails>>;
+  clearTransactionDetails: () => void;
   
   // Actions - Chart reports
   fetchChartReports: (
@@ -206,6 +247,19 @@ export interface ReportsSlice extends ReportsState {
     end: string
   ) => Promise<ApiResponse<TopCategoriesResponse>>;
   clearTopCategories: () => void;
+  
+  // Clientes con más compras
+  fetchClientsMostPurchasesList: (
+    start: string,
+    end: string,
+    per_page: number,
+    page: number,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<void>;
+  setClientsMostPurchasesFilters: (filters: ClientsMostPurchasesFilters) => void;
+  setClientsMostPurchasesCurrentPage: (page: number) => void;
+  clearClientsMostPurchasesFilters: () => void;
   
   // Client management
   // extractUniqueClients: () => void;
@@ -246,6 +300,10 @@ const initialReportsState: ReportsState = {
   selectedFailedTransaction: null,
   uniqueFailedClients: [],
   
+  // Transaction details state
+  transactionDetails: null,
+  isLoadingTransactionDetails: false,
+  
   // Pagination states - Successful transactions
   reportsCurrentPage: 1,
   reportsPagination: null,
@@ -281,6 +339,8 @@ const initialReportsState: ReportsState = {
     selectedClient: undefined,
     selectedCategory: undefined,
     type: null,
+    total_min: undefined,
+    total_max: undefined,
   },
   failedReportsFilters: {
     start: '',
@@ -288,11 +348,20 @@ const initialReportsState: ReportsState = {
     selectedClient: undefined,
     selectedCategory: undefined,
     type: null,
+    total_min: undefined,
+    total_max: undefined,
   },
   
   // API response
   lastApiParameters: null,
   lastFailedApiParameters: null,
+  
+  // Clientes con más compras
+  clientsMostPurchasesList: [],
+  clientsMostPurchasesPagination: null,
+  isLoadingClientsMostPurchases: false,
+  clientsMostPurchasesFilters: {},
+  clientsMostPurchasesCurrentPage: 1,
 };
 
 // Función helper para convertir paginación del backend al formato esperado por los componentes
@@ -324,12 +393,12 @@ export const createReportsSlice: StateCreator<
   ...initialReportsState,
 
   // Fetch transactions list con paginación y filtros
-  fetchTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null) => {
+  fetchTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null, total_min?: number, total_max?: number) => {
     set({ isLoadingReports: true });
     const endpoint = 'transactions';
     
     try {
-      const result = await fetchGetOrdersReportsTransactionsList(start, end, per_page, page, endpoint, client, 'exitosa');
+      const result = await fetchGetOrdersReportsTransactionsList(start, end, per_page, page, endpoint, client, 'exitosa', total_min, total_max);
       
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
@@ -369,12 +438,12 @@ export const createReportsSlice: StateCreator<
   },
 
   // Fetch failed transactions list con paginación y filtros
-  fetchFailedTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null) => {
+  fetchFailedTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null, total_min?: number, total_max?: number) => {
     set({ isLoadingFailedReports: true });
     const endpoint = 'failedTransactions';
     
     try {
-      const result = await fetchGetOrdersReportsFailedTransactionsList(start, end, per_page, page, endpoint, client, 'fallida');
+      const result = await fetchGetOrdersReportsFailedTransactionsList(start, end, per_page, page, endpoint, client, 'fallida', total_min, total_max);
       
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
@@ -423,6 +492,49 @@ export const createReportsSlice: StateCreator<
         },
       };
     }
+  },
+
+  // Fetch transaction details
+  fetchTransactionDetails: async (transactionId: number) => {
+    set({ isLoadingTransactionDetails: true });
+    
+    try {
+      const result = await fetchGetTransactionDetails(transactionId);
+      
+      if (result.ok && result.data) {
+        set({
+          transactionDetails: result.data,
+          isLoadingTransactionDetails: false,
+        });
+        
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        set({ isLoadingTransactionDetails: false });
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al cargar detalles de la transacción',
+          },
+        };
+      }
+    } catch (error) {
+      set({ isLoadingTransactionDetails: false });
+      console.error('Error in fetchTransactionDetails:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  // Clear transaction details
+  clearTransactionDetails: () => {
+    set({ transactionDetails: null });
   },
 
   // Fetch chart reports
@@ -597,6 +709,40 @@ export const createReportsSlice: StateCreator<
     set({ topCategoriesData: null });
   },
 
+  // Clientes con más compras
+  fetchClientsMostPurchasesList: async (start, end, per_page, page, total_min, total_max) => {
+    set({ isLoadingClientsMostPurchases: true });
+    try {
+      const result = await fetchGetClientsMostPurchasesList(start, end, per_page, page, total_min, total_max);
+      if (result.ok && result.data) {
+        set({
+          clientsMostPurchasesList: result.data.table_detail || [],
+          clientsMostPurchasesPagination: result.data.pagination || null,
+          clientsMostPurchasesCurrentPage: page,
+          isLoadingClientsMostPurchases: false,
+        });
+      } else {
+        set({
+          isLoadingClientsMostPurchases: false,
+        });
+      }
+    } catch (error) {
+      set({ isLoadingClientsMostPurchases: false });
+    }
+  },
+  setClientsMostPurchasesFilters: (filters: ClientsMostPurchasesFilters) => {
+    set({ clientsMostPurchasesFilters: filters });
+  },
+  setClientsMostPurchasesCurrentPage: (page: number) => {
+    set({ clientsMostPurchasesCurrentPage: page });
+  },
+  clearClientsMostPurchasesFilters: () => {
+    set({
+      clientsMostPurchasesFilters: {},
+      clientsMostPurchasesCurrentPage: 1,
+    });
+  },
+
   // Filter actions - Successful transactions
   setReportsFilters: (filters: Partial<ReportsFilters>) => {
     set({ 
@@ -613,6 +759,8 @@ export const createReportsSlice: StateCreator<
         selectedClient: undefined,
         selectedCategory: undefined,
         type: null,
+        total_min: undefined,
+        total_max: undefined,
       },
       reportsCurrentPage: 1
     });
@@ -634,6 +782,8 @@ export const createReportsSlice: StateCreator<
         selectedClient: undefined,
         selectedCategory: undefined,
         type: null,
+        total_min: undefined,
+        total_max: undefined,
       },
       failedReportsCurrentPage: 1
     });
@@ -650,7 +800,7 @@ export const createReportsSlice: StateCreator<
       const newPage = reportsCurrentPage + 1;
       const perPage = reportsPagination.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ reportsCurrentPage: newPage });
-      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient);
+      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient, reportsFilters.total_min, reportsFilters.total_max);
     }
   },
 
@@ -660,7 +810,7 @@ export const createReportsSlice: StateCreator<
       const newPage = reportsCurrentPage - 1;
       const perPage = reportsPagination?.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ reportsCurrentPage: newPage });
-      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient);
+      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient, reportsFilters.total_min, reportsFilters.total_max);
     }
   },
 
@@ -675,7 +825,7 @@ export const createReportsSlice: StateCreator<
       const newPage = failedReportsCurrentPage + 1;
       const perPage = failedReportsPagination.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ failedReportsCurrentPage: newPage });
-      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient);
+      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient, failedReportsFilters.total_min, failedReportsFilters.total_max);
     }
   },
 
@@ -685,7 +835,7 @@ export const createReportsSlice: StateCreator<
       const newPage = failedReportsCurrentPage - 1;
       const perPage = failedReportsPagination?.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ failedReportsCurrentPage: newPage });
-      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient);
+      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient, failedReportsFilters.total_min, failedReportsFilters.total_max);
     }
   },
 

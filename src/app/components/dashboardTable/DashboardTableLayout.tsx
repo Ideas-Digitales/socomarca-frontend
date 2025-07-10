@@ -37,9 +37,14 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onAmountFilter,
   onClientFilter,
   clients = [],
+  customers = [],
   selectedClients = [],
   amountValue = { min: '', max: '' },
   searchableDropdown,
+  
+  // Props para DatePicker
+  onDateRangeChange,
+  initialDateRange,
 }: DashboardTableLayoutProps<T>) => {
   const handleSearch = (searchTermValue: string) => {
     onSearch?.(searchTermValue);
@@ -59,7 +64,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
             className="w-full"
             onSearch={handleSearch}
             onClear={handleClearSearch}
-            placeholder="Busca productos ahora"
+            placeholder="Buscar..."
           />
         )}
 
@@ -79,6 +84,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           amountValue={amountValue}
           onClientFilter={onClientFilter}
           clients={clients}
+          customers={customers}
           selectedClients={selectedClients}
           searchableDropdown={searchableDropdown}
         />
@@ -90,7 +96,10 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           {showDatePicker && (
             <div className="flex flex-col justify-between items-center h-full">
               <div className="flex h-full items-center">
-                <DayPickerComponent />
+                <DayPickerComponent 
+                  onDateRangeChange={onDateRangeChange}
+                  initialDateRange={initialDateRange}
+                />
               </div>
             </div>
           )}

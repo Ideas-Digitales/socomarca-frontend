@@ -9,6 +9,7 @@ import AmountFilter from '../filters/AmountFilter';
 import SearchableDropdown, {
   SearchableOption,
 } from '../filters/SearchableDropdown';
+import { Customer } from '@/services/actions/clients.actions';
 
 interface AmountRange {
   min: string;
@@ -30,6 +31,7 @@ interface Props {
   onAmountFilter?: (amount: AmountRange) => void;
   amountValue?: AmountRange;
   clients?: Client[];
+  customers?: Customer[];
   onClientFilter?: (clientId: number) => void;
   selectedClients?: Client[];
   searchableDropdown?: boolean;
@@ -50,6 +52,7 @@ export default function FilterOptions({
   onAmountFilter,
   amountValue = { min: '', max: '' },
   clients = [],
+  customers = [],
   onClientFilter,
   selectedClients = [],
   searchableDropdown = false,
@@ -72,10 +75,10 @@ export default function FilterOptions({
     name: client.name,
   }));
 
-  // Convertir clientes a SearchableOption (para SearchableDropdown)
-  const searchableClientOptions: SearchableOption[] = clients.map((client) => ({
-    id: client.id,
-    name: client.name,
+  // Convertir customers a SearchableOption (para SearchableDropdown)
+  const searchableCustomerOptions: SearchableOption[] = customers.map((customer) => ({
+    id: customer.id,
+    name: customer.customer,
   }));
 
   const handleCategoryChange = (selectedIds: (string | number)[]) => {
@@ -94,8 +97,8 @@ export default function FilterOptions({
     onClientFilter?.(numericIds[0]); // Solo toma el primero ya que es selección única
   };
 
-  // Handler para SearchableDropdown de clientes
-  const handleSearchableClientChange = (option: SearchableOption | null) => {
+  // Handler para SearchableDropdown de customers
+  const handleSearchableCustomerChange = (option: SearchableOption | null) => {
     if (option) {
       onClientFilter?.(option.id as number);
     } else {
@@ -104,8 +107,8 @@ export default function FilterOptions({
     }
   };
 
-  // Obtener el cliente seleccionado para SearchableDropdown
-  const getSelectedClient = (): SearchableOption | null => {
+  // Obtener el customer seleccionado para SearchableDropdown
+  const getSelectedCustomer = (): SearchableOption | null => {
     if (selectedClients.length > 0) {
       const selected = selectedClients[0];
       return { id: selected.id, name: selected.name };
@@ -125,7 +128,7 @@ export default function FilterOptions({
             />
           )}
 
-          {onClientFilter &&
+          {onClientFilter && (
             (!searchableDropdown ? (
               <Dropdown
                 options={clientOptions}
@@ -137,14 +140,15 @@ export default function FilterOptions({
               />
             ) : (
               <SearchableDropdown
-                options={searchableClientOptions}
-                selectedOption={getSelectedClient()}
-                onSelectionChange={handleSearchableClientChange}
+                options={searchableCustomerOptions}
+                selectedOption={getSelectedCustomer()}
+                onSelectionChange={handleSearchableCustomerChange}
                 placeholder="Buscar cliente"
                 noResultsText="No se encontró el cliente"
                 className="w-full md:max-w-[216px] md:w-full"
               />
-            ))}
+            ))
+          )}
 
           {onCategoryFilter && (
             <Dropdown

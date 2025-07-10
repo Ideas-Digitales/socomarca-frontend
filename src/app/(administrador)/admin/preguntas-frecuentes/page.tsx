@@ -36,7 +36,7 @@ export default function FaqEditor() {
   const SuccessModal = ({ message, onClose }: { message: string; onClose: () => void }) => (
     <div className="text-center space-y-4">
       <div className="flex justify-center">
-        <CheckCircleIcon className="w-16 h-16 text-green-500" />
+        <CheckCircleIcon className="w-16 h-16 text-lime-500" />
       </div>
       <div className="space-y-2">
         <h3 className="text-lg font-medium text-gray-900">¡Éxito!</h3>
@@ -44,7 +44,7 @@ export default function FaqEditor() {
       </div>
       <button
         onClick={onClose}
-        className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+        className="w-full px-4 py-2 bg-lime-500 text-white rounded-md hover:bg-lime-600 transition-colors cursor-pointer"
       >
         Aceptar
       </button>
@@ -62,7 +62,7 @@ export default function FaqEditor() {
       </div>
       <button
         onClick={onClose}
-        className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+        className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors cursor-pointer"
       >
         Aceptar
       </button>

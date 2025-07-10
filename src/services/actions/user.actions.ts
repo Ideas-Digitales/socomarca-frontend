@@ -53,20 +53,31 @@ export async function getUserData() {
     throw new Error('No token found in cookies');
   }
 
-  const res = await fetch(`${BACKEND_URL}/users/${userId}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  });
+  console.log(userId, token);
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch user data: ${res.statusText}`);
+  try {
+        
+    const res = await fetch(`${BACKEND_URL}/users/${userId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    const data = await res.json();
+
+    console.log(data);
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw new Error('Failed to fetch user data');
   }
-const data = await res.json();
-return data;
 
 }
 
@@ -97,7 +108,7 @@ export async function getUsersAction(params: {
         'Authorization': `Bearer ${token}`,
       },
       next: {
-        revalidate: 0, // No cache para datos que cambian frecuentemente
+        revalidate: 0,
       }
     });
 
