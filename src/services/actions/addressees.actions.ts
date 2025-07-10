@@ -233,3 +233,32 @@ export async function replaceUserAddress(
     return null;
   }
 }
+
+export async function deleteUserAddress(id: number): Promise<boolean> {
+  const { getCookie } = await cookiesManagement();
+  const authToken = getCookie("token");
+
+  if (!authToken) return false;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/addresses/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.error("Error al eliminar dirección:", res.statusText);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error de red al eliminar dirección:", error);
+    return false;
+  }
+}

@@ -11,6 +11,7 @@ import {
   updateUserAddress,
   createUserAddress,
   replaceUserAddress,
+  deleteUserAddress, // <-- importar la nueva función
 } from "@/services/actions/addressees.actions";
 
 export default function DireccionesSection({
@@ -34,17 +35,27 @@ export default function DireccionesSection({
   const marcarComoPrincipal = async (direccion: Address) => {
     if (direccion.is_default) return;
 
+    // 1. Guardar el estado anterior para poder revertirlo si falla
+    const prevDirecciones = [...direccionesState];
+
+    // 2. Optimistic update: marcar como principal en el estado local
+    setDireccionesState((prev) =>
+      prev.map((d) =>
+        d.id === direccion.id
+          ? { ...d, is_default: true }
+          : { ...d, is_default: false }
+      )
+    );
+
+    // 3. Hacer la petición real
     const actualizada = await updateUserAddress(direccion.id, {
       is_default: true,
     });
-    if (actualizada) {
-      setDireccionesState((prev) =>
-        prev.map((d) =>
-          d.id === direccion.id
-            ? { ...d, is_default: true }
-            : { ...d, is_default: false }
-        )
-      );
+
+    // 4. Si falla, revertir el estado
+    if (!actualizada) {
+      setDireccionesState(prevDirecciones);
+      // Aquí podrías mostrar un mensaje de error
     }
   };
 
@@ -132,9 +143,23 @@ export default function DireccionesSection({
             setModalVisible(false);
             setDireccionAEliminar(null);
           }}
-          onConfirm={() => {
-            setModalVisible(false)
-            setDireccionAEliminar(null)
+          onConfirm={async () => {
+            // Optimistic update: eliminar de inmediato
+            const prevDirecciones = [...direccionesState];
+            if (direccionAEliminar) {
+              setDireccionesState((prev) =>
+                prev.filter((d) => d.id !== direccionAEliminar.id)
+              );
+              setModalVisible(false);
+              setDireccionAEliminar(null);
+              // Llamar a la server action
+              const ok = await deleteUserAddress(direccionAEliminar.id);
+              if (!ok) {
+                // Revertir si falla
+                setDireccionesState(prevDirecciones);
+                // Aquí podrías mostrar un mensaje de error
+              }
+            }
           }}
         />
       )}
