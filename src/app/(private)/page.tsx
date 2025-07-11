@@ -7,18 +7,42 @@ import CategoryFilterMobile, {
 } from '../components/products/CategoryFilterMobile';
 import Search from '../components/global/Search';
 import Caroussel from '../components/global/Caroussel';
-import { useState } from 'react';
+import CarouselSkeleton from '../components/global/CarouselSkeleton';
+import { useState, useEffect } from 'react';
 import { SearchWithPaginationProps } from '@/interfaces/product.interface';
 
-const images = [
+// Imágenes por defecto para el carrusel
+const defaultImages = [
   '/assets/global/bg-blue.webp',
   '/assets/global/bg-pink.webp',
   '/assets/global/bg-yellow.webp',
 ];
 
 export default function PrivatePage() {
-  const { isTablet, setSearchTerm, resetSearchRelatedStates, searchTerm } = useStore();
+  const { 
+    isTablet, 
+    setSearchTerm, 
+    resetSearchRelatedStates,
+    customerMessage,
+    isLoadingCustomerMessage,
+    fetchCustomerMessage
+  } = useStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Cargar el customer message al montar el componente
+  useEffect(() => {
+    fetchCustomerMessage();
+  }, [fetchCustomerMessage]);
+
+  // Determinar qué imágenes usar para el carrusel
+  const getCarouselImages = () => {
+    if (customerMessage?.banner?.desktop_image && customerMessage?.banner?.mobile_image) {
+      // Si hay imágenes del banner configuradas, usarlas
+      return [customerMessage.banner.desktop_image, customerMessage.banner.mobile_image];
+    }
+    // Si no hay imágenes configuradas, usar las imágenes por defecto
+    return defaultImages;
+  };
 
   const handleSearch = (term: string) => {
     if (!term || term.trim() === '') {
@@ -64,7 +88,14 @@ export default function PrivatePage() {
     <div className="bg-slate-100 sm:py-7">
       <div className="flex flex-col mb-2 sm:py-2 space-y-2">
         {isTablet && componentSearch}
-        <Caroussel images={images} />
+        {/* Mostrar skeleton mientras carga, o carrusel si está habilitado */}
+        {isLoadingCustomerMessage ? (
+          <CarouselSkeleton />
+        ) : (
+          customerMessage?.banner?.enabled && (
+            <Caroussel images={getCarouselImages()} />
+          )
+        )}
         {!isTablet && componentSearch}
       </div>
 

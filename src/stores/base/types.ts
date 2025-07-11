@@ -16,6 +16,7 @@ import { TerminosCondicionesSlice } from './slices/terminos-condicionesSlice';
 import { SiteInformationSlice } from './slices/siteInformationSlice';
 import { ChartSlice } from './slices/chartSlice';
 import { LocationSlice } from './slices/locationSlice';
+import { CustomerMessageSlice } from './slices/customerMessageSlice';
 
 // ===== BASE TYPES =====
 export type ViewMode = 'grid' | 'list';
@@ -389,6 +390,25 @@ export interface StoreState extends LoadingStates, AuthState {
   isLoadingLocation: boolean;
   locationError: string | null;
 
+  // Customer message states
+  customerMessage: {
+    header: {
+      color: string;
+      content: string;
+    };
+    banner: {
+      desktop_image: string;
+      mobile_image: string;
+      enabled: boolean;
+    };
+    modal: {
+      image: string;
+      enabled: boolean;
+    };
+  } | null;
+  isLoadingCustomerMessage: boolean;
+  customerMessageError: string | null;
+
   selectedCategories: number[];
   selectedBrands: number[];
   selectedFavorites: number[];
@@ -447,4 +467,5 @@ export type Store = StoreState &
   TerminosCondicionesSlice &
   SiteInformationSlice &
   ChartSlice &
-  LocationSlice;
+  LocationSlice &
+  CustomerMessageSlice;

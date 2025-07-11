@@ -15,7 +15,15 @@ export interface SubCategory {
 }
 
 export interface CategoryComponent extends Category {
+  description?: string;
+  code?: string;
+  level?: number;
+  key?: string;
+  subcategories_count?: number;
+  products_count?: number;
+  created_at?: string;
+  updated_at?: string;
   isOpen?: boolean;
-  hasSubCategories: boolean;
+  hasSubCategories?: boolean;
   subCategories?: SubCategory[];
 }
