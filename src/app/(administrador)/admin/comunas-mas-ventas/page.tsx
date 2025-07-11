@@ -57,10 +57,12 @@ export default function ComunasMasVentas() {
     clearReportsFilters();
     const start = '';
     const end = '';
+    const total_min = undefined;
+    const total_max = undefined;
     
     // Cargar datos de municipalidades
     Promise.all([
-      fetchChartReports(start, end, 'top-municipalities'),
+      fetchChartReports(start, end, 'top-municipalities', total_min, total_max),
       fetchChartRawData(start, end, null)
     ]).finally(() => {
       console.log('fetchChartReports');
@@ -151,9 +153,9 @@ export default function ComunasMasVentas() {
 
   const handleFilter = () => {
     // Aplicar filtros
-    const { start, end, selectedMunicipality } = reportsFilters;
+    const { start, end, selectedMunicipality, total_min, total_max } = reportsFilters;
     Promise.all([
-      fetchChartReports(start, end, 'top-municipalities'),
+      fetchChartReports(start, end, 'top-municipalities', total_min, total_max),
       fetchChartRawData(start, end, selectedMunicipality || null)
     ]);
   };
