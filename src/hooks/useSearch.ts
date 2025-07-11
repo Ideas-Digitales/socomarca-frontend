@@ -16,6 +16,20 @@ export function useSearch({
   const [inputValue, setInputValue] = useState(initialValue);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Limpiar el timeout cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Sincronizar con initialValue cuando cambie
+  useEffect(() => {
+    setInputValue(initialValue);
+  }, [initialValue]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
@@ -35,15 +49,6 @@ export function useSearch({
       }
     }, debounceDelay);
   };
-
-  // Limpiar el timeout cuando el componente se desmonte
-  useEffect(() => {
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleSearch = () => {
     // Cancelar cualquier debounce pendiente

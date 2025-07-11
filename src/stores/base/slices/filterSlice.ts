@@ -4,6 +4,7 @@ import {
   StoreState,
   ProductsSlice,
   FavoritesSlice,
+  StoreSlice,
 } from '../types';
 import {
   Product,
@@ -12,7 +13,7 @@ import {
 import { fetchSearchProductsByFilters } from '@/services/actions/products.actions';
 
 export const createFiltersSlice: StateCreator<
-  StoreState & FiltersSlice & ProductsSlice & FavoritesSlice,
+  StoreState & FiltersSlice & ProductsSlice & FavoritesSlice & StoreSlice,
   [],
   [],
   FiltersSlice
@@ -72,53 +73,39 @@ export const createFiltersSlice: StateCreator<
 
     set({ selectedFavorites: newSelection });
   },
-  setAvailablePriceRange: (min, max) => {
 
+  setAvailablePriceRange: (min, max) => {
     set({
       minPrice: min,
       maxPrice: max,
-
       selectedMinPrice: min,
       selectedMaxPrice: max,
-
       priceInitialized: true,
     });
   },
 
   setSelectedPriceRange: (selectedMin, selectedMax) => {
-    const { minPrice, maxPrice } = get();
-
-    const boundedMin = Math.max(minPrice, Math.min(selectedMin, maxPrice));
-    const boundedMax = Math.min(maxPrice, Math.max(selectedMax, minPrice));
-
     set({
-      selectedMinPrice: boundedMin,
-      selectedMaxPrice: boundedMax,
+      selectedMinPrice: selectedMin,
+      selectedMaxPrice: selectedMax,
     });
   },
 
   setSelectedMinPrice: (price) => {
-    const { minPrice, selectedMaxPrice } = get();
-    const boundedPrice = Math.max(minPrice, Math.min(price, selectedMaxPrice));
-
-    set({
-      selectedMinPrice: boundedPrice,
-    });
+    set({ selectedMinPrice: price });
   },
 
   setSelectedMaxPrice: (price) => {
-    const { maxPrice, selectedMinPrice } = get();
-    const boundedPrice = Math.min(maxPrice, Math.max(price, selectedMinPrice));
-
-    set({
-      selectedMaxPrice: boundedPrice,
-    });
+    set({ selectedMaxPrice: price });
   },
 
   handlePriceRangeChange: (lower, upper) => {
-    const { setSelectedPriceRange } = get();
-    setSelectedPriceRange(lower, upper);
+    set({
+      selectedMinPrice: lower,
+      selectedMaxPrice: upper,
+    });
   },
+
   setMainCategoryOpen: (isOpen) => {
     set({ isMainCategoryOpen: isOpen });
   },
@@ -154,11 +141,12 @@ export const createFiltersSlice: StateCreator<
     const { isPriceOpen } = get();
     set({ isPriceOpen: !isPriceOpen });
   },
+
   applyFilters: async () => {
     const {
       selectedCategories,
       selectedBrands,
-      selectedFavorites,
+      //    selectedFavorites,
       selectedMinPrice,
       selectedMaxPrice,
       productPaginationMeta,
@@ -194,52 +182,32 @@ export const createFiltersSlice: StateCreator<
       const response = await fetchSearchProductsByFilters(searchParams);
 
       if (response.ok && response.data) {
-        let filteredProducts = response.data.data;
-
-        if (selectedCategories.length > 1) {
-          filteredProducts = filteredProducts.filter((product: Product) =>
-            selectedCategories.includes(product.category.id)
-          );
-        }
-
-        if (selectedBrands.length > 1) {
-          filteredProducts = filteredProducts.filter((product: Product) =>
-            selectedBrands.includes(product.brand.id)
-          );
-        }
-
-        if (selectedFavorites.length > 0) {
-          filteredProducts = filteredProducts.filter((product: Product) =>
-            selectedFavorites.includes(product.id)
-          );
-        }
-
-        const { setFilteredProducts } = get();
-        setFilteredProducts(filteredProducts);
-
-        set({ isLoadingProducts: false, isFiltered: true });
+        set({
+          filteredProducts: response.data.data,
+          productPaginationMeta: response.data.meta,
+          productPaginationLinks: response.data.links,
+          currentPage: response.data.meta.current_page,
+          isLoadingProducts: false,
+          isFiltered: true,
+        });
       } else {
-        console.error('Error applying filters:', response.error);
+        console.error('Error en la respuesta del servidor:', response.error);
         set({ isLoadingProducts: false });
       }
     } catch (error) {
-      console.error('Error in applyFilters:', error);
+      console.error('Error applying filters:', error);
       set({ isLoadingProducts: false });
     }
   },
 
   clearAllFilters: async () => {
     const { 
-      fetchProducts, 
-      productPaginationMeta, 
+      // fetchProducts, 
+      // productPaginationMeta, 
       minPrice, 
       maxPrice,
-      searchTerm,
-      setSearchTerm
+      resetSearchRelatedStates
     } = get();
-
-    // Guardamos el término de búsqueda actual
-    const currentSearchTerm = searchTerm;
 
     set({
       selectedCategories: [],
@@ -252,13 +220,8 @@ export const createFiltersSlice: StateCreator<
     });
 
     try {
-      if (currentSearchTerm) {
-        // Si hay un término de búsqueda, lo reaplica
-        await setSearchTerm({ value: currentSearchTerm });
-      } else {
-        // Si no hay búsqueda, carga todos los productos
-        await fetchProducts(1, productPaginationMeta?.per_page || 9);
-      }
+      // Limpiar búsqueda y recargar productos
+      await resetSearchRelatedStates();
     } catch (error) {
       console.error('Error clearing filters:', error);
     }

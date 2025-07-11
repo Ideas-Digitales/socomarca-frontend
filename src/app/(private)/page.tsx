@@ -17,7 +17,7 @@ const images = [
 ];
 
 export default function PrivatePage() {
-  const { isTablet, setSearchTerm, resetSearchRelatedStates } = useStore();
+  const { isTablet, setSearchTerm, resetSearchRelatedStates, searchTerm } = useStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleSearch = (term: string) => {
@@ -56,6 +56,7 @@ export default function PrivatePage() {
       onClear={handleClearSearch}
       placeholder="Busca productos ahora"
       label="Encuentra justo lo que necesitas con solo un clic en nuestro buscador"
+      initialValue={searchTerm}
     />
   );
 
