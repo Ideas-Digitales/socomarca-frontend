@@ -49,7 +49,7 @@ const CustomTable = <T extends Record<string, any> = any>({
                   colSpan={columns.length}
                   className="text-center py-8 text-gray-500 text-sm"
                 >
-                  No se encontraron productos
+                  No se encontraron resultados
                 </td>
               </tr>
             ) : (

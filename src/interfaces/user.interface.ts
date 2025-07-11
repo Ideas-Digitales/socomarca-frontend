@@ -52,13 +52,16 @@ export interface UsersApiResponse {
 export interface SearchFilter {
   field: string;
   operator: string;
-  value: string | boolean;
+  value: string | boolean | number;
 }
 
 export interface SearchUsersRequest {
   filters: SearchFilter[];
   roles: string[];
   per_page: number;
+  sort_by?: string;
+  sort_order?: 'asc' | 'desc';
+  page?: number;
 }
 
 // Función auxiliar para transformar ApiUser a User para la tabla
