@@ -12,6 +12,7 @@ import {
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
 import { TopMunicipalitiesResponse } from '@/stores/base/types';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface MunicipalityFormatted {
   id: string;
@@ -92,7 +93,7 @@ export default function ComunasMasVentas() {
     },
     {
       label: 'Total compras por municipalidad',
-      value: `$${municipalitiesFormatted.reduce((sum, m) => sum + m.total_purchases, 0).toLocaleString()}`,
+      value: formatCurrency(municipalitiesFormatted.reduce((sum, m) => sum + m.total_purchases, 0)),
       color: 'gray',
     },
   ];
@@ -119,7 +120,7 @@ export default function ComunasMasVentas() {
     {
       key: 'total_purchases',
       label: 'Total Compras',
-      render: (value: number) => `$${value.toLocaleString()}`,
+      render: (value: number) => formatCurrency(value),
     },
     {
       key: 'quantity',

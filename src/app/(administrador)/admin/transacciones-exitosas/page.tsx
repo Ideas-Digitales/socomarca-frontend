@@ -13,6 +13,7 @@ import {
 import { TableDetail } from '@/stores/base/slices/reportsSlice';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface TransaccionFormateada {
   id: string;
@@ -157,10 +158,10 @@ export default function TransaccionesExitosas() {
             }
             return sum;
           }, 0);
-          return `$${totalFromCharts.toLocaleString()}`;
+          return formatCurrency(totalFromCharts);
         }
         // Fallback a los datos de la tabla actual
-        return `$${transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0).toLocaleString()}`;
+        return formatCurrency(transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0));
       })(),
       color: 'gray',
     },
@@ -215,7 +216,7 @@ export default function TransaccionesExitosas() {
     {
       key: 'monto1',
       label: 'Monto',
-      render: (value: number) => `$${value.toLocaleString()}`,
+      render: (value: number) => formatCurrency(value),
     },
     {
       key: 'fecha',

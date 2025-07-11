@@ -11,6 +11,7 @@ import {
 } from '@/interfaces/dashboard.interface';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface ProductoFormatted {
   id: string;
@@ -93,7 +94,7 @@ export default function ProductosMasVentas() {
     },
     {
       label: 'Total en ventas',
-      value: `$${(topProductsData?.total_sales || 0).toLocaleString()}`,
+      value: formatCurrency(topProductsData?.total_sales || 0),
       color: 'gray',
     },
   ];
@@ -120,7 +121,7 @@ export default function ProductosMasVentas() {
     {
       key: 'total',
       label: 'Total',
-      render: (value: number) => `$${value.toLocaleString()}`,
+      render: (value: number) => formatCurrency(value),
     },
   ];
 

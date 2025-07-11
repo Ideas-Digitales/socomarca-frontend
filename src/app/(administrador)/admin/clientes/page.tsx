@@ -10,6 +10,7 @@ import { comunasRegiones } from '@/mock/comunasVentas';
 import { ClientDetail } from '@/interfaces/client.interface';
 import useStore from '@/stores/base';
 import { useEffect, useMemo, useState } from 'react';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface ClientRow {
   id: string;
@@ -50,10 +51,7 @@ export default function ClientesAdmin() {
       return clientsList.map((client: ClientDetail) => ({
         id: String(client.id),
         cliente: client.cliente || client.customer || 'Sin nombre',
-        monto: new Intl.NumberFormat('es-CL', {
-          style: 'currency',
-          currency: 'CLP',
-        }).format(client.monto || client.amount || 0),
+        monto: formatCurrency(client.monto || client.amount || 0),
         fecha: new Date(client.fecha || client.date || '').toLocaleDateString('es-CL'),
         estado: client.estado || client.status || 'Sin estado',
       }));

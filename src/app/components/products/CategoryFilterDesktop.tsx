@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
+import { formatNumber } from '@/utils/formatCurrency';
 
 export default function CategoryFilterDesktop() {
   const {
@@ -48,7 +49,7 @@ export default function CategoryFilterDesktop() {
   } = useStore();
 
   const formatPrice = useCallback((price: number): string => {
-    return price.toLocaleString('es-CL');
+    return formatNumber(price);
   }, []);
 
   // Handle input changes for lower price

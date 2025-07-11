@@ -13,6 +13,7 @@ import {
 import { FailedTransactionDetail } from '@/stores/base/slices/reportsSlice';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface TransaccionFormateada {
   id: string;
@@ -133,7 +134,7 @@ export default function TransaccionesFallidas() {
     },
     {
       label: 'Valor total procesado',
-      value: `$${transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0).toLocaleString()}`,
+      value: formatCurrency(transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0)),
       color: 'gray',
     },
   ];
@@ -187,7 +188,7 @@ export default function TransaccionesFallidas() {
     {
       key: 'monto1',
       label: 'Monto',
-      render: (value: number) => `$${value.toLocaleString()}`,
+      render: (value: number) => formatCurrency(value),
     },
     {
       key: 'fecha',

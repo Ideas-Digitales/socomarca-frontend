@@ -12,6 +12,7 @@ import {
 } from '@/interfaces/dashboard.interface';
 import useStore from '@/stores/base';
 import { useState, useEffect } from 'react';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface CategoriaConRanking {
   categoria: string;
@@ -144,9 +145,9 @@ export default function CategoriasMasVentas() {
       value: (() => {
         // Usar el promedio del backend si está disponible, sino calcular local
         if (topCategoriesData?.average_sales) {
-          return `$${topCategoriesData.average_sales.toLocaleString()}`;
+          return formatCurrency(topCategoriesData.average_sales);
         }
-        return `$${promedioVentas.toLocaleString()}`;
+        return formatCurrency(promedioVentas);
       })(),
       color: 'gray',
     },
@@ -155,9 +156,9 @@ export default function CategoriasMasVentas() {
       value: (() => {
         // Usar el total del backend si está disponible, sino calcular local
         if (topCategoriesData?.total_sales) {
-          return `$${topCategoriesData.total_sales.toLocaleString()}`;
+          return formatCurrency(topCategoriesData.total_sales);
         }
-        return `$${totalVentas.toLocaleString()}`;
+        return formatCurrency(totalVentas);
       })(),
       color: 'lime',
     },
@@ -190,7 +191,7 @@ export default function CategoriasMasVentas() {
     {
       key: 'venta',
       label: 'Ventas',
-      render: (value: number) => `$${value.toLocaleString()}`,
+      render: (value: number) => formatCurrency(value),
     },
   ];
 

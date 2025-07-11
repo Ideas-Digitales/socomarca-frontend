@@ -1,6 +1,7 @@
 'use client';
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
+import { formatCurrency, formatNumber } from '@/utils/formatCurrency';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import {
   ExtendedDashboardTableConfig,
@@ -102,7 +103,7 @@ export default function TotalDeVentas() {
   const ventasColumns: TableColumn<any>[] = [
     { key: 'id', label: 'ID' },
     { key: 'cliente', label: 'Cliente' },
-    { key: 'monto', label: 'Monto', render: (value: number) => `$${value.toLocaleString()}` },
+    { key: 'monto', label: 'Monto', render: (value: number) => formatCurrency(value) },
     { key: 'fecha', label: 'Fecha' },
     { key: 'estado', label: 'Estado' },
   ];
@@ -116,7 +117,7 @@ export default function TotalDeVentas() {
     },
     {
       label: 'Monto total',
-      value: `$${ventasFixed.reduce((sum, v) => sum + v.monto, 0).toLocaleString()}`,
+      value: formatCurrency(ventasFixed.reduce((sum, v) => sum + v.monto, 0)),
       color: 'gray',
     },
   ];

@@ -11,6 +11,7 @@ import {
 } from '@/interfaces/dashboard.interface';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function ClientesMasCompra() {
   const PER_PAGE = 10;
@@ -70,7 +71,7 @@ export default function ClientesMasCompra() {
     },
     {
       label: 'Valor total en compras',
-      value: `$${(totalCompras || 0).toLocaleString()}`,
+      value: formatCurrency(totalCompras || 0),
       color: 'gray',
     },
   ];
@@ -94,7 +95,7 @@ export default function ClientesMasCompra() {
   const clientesColumns: TableColumn<any>[] = [
     { key: 'id', label: 'ID' },
     { key: 'cliente', label: 'Cliente' },
-    { key: 'monto', label: 'Monto', render: (value: number) => `$${(value || 0).toLocaleString()}` },
+    { key: 'monto', label: 'Monto', render: (value: number) => formatCurrency(value || 0) },
     { key: 'fecha', label: 'Fecha' },
     { key: 'acciones', label: 'Acciones', render: (value: string) => <div className="text-lime-500">{value}</div> },
   ];

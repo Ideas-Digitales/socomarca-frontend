@@ -9,6 +9,7 @@ import {
 } from '@/interfaces/dashboard.interface';
 import useStore from '@/stores/base';
 import { useMemo } from 'react';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface Producto {
   id: string;
@@ -35,7 +36,7 @@ export default function ProductsAdmin() {
     {
       key: 'precio_unitario',
       label: 'Precio Unitario',
-      render: (value: number) => `$${value.toLocaleString()}`,
+      render: (value: number) => formatCurrency(value),
     },
     { key: 'stock', label: 'Stock' },
   ];
