@@ -20,14 +20,6 @@ import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 // total_min: 350000
 // total_max: 600000
 
-type TableDetail = {
-  id: number;
-  customer: string;
-  amount: number;
-  date: string;
-  status: string;
-}
-
 interface ActionResult<T> {
   ok: boolean;
   data: T | null;
@@ -37,6 +29,16 @@ interface ActionResult<T> {
 type Endpoint = 'products' | 'transactions' | 'failedTransactions' | 'clients';
 
 type ChartReportType = 'transactions' | 'sales' | 'revenue' | 'top-clients' | 'top-products' | 'top-categories' | 'transactions-failed' | 'top-municipalities';
+
+// Interfaz para la respuesta de productos más vendidos
+interface TopProductsChartResponse {
+  top_products: {
+    month: string;
+    product: string;
+    total: number;
+  }[];
+  total_sales: number;
+}
 
 interface ChartReportsResponse {
   months: string[];
@@ -71,45 +73,41 @@ export const fetchGetOrdersReportsTransactionsList = async (
       
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      // Mock data para QA
-      const mockData: TableDetail[] = Array.from({ length: 50 }, (_, i) => ({
+      // Mock data para QA usando la nueva estructura del backend
+      const mockData = Array.from({ length: 50 }, (_, i) => ({
         id: i + 1,
-        customer: `Cliente ${i + 1}`,
-        amount: Math.floor(Math.random() * 500000) + 50000,
-        date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        status: 'successful'
+        cliente: `Cliente ${i + 1}`,
+        monto: Math.floor(Math.random() * 500000) + 50000,
+        fecha: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        estado: 'completed'
       }));
 
       // Aplicar filtros mock si están presentes
       let filteredData = mockData;
       if (client) {
-        filteredData = filteredData.filter(item => item.customer.includes(client));
+        filteredData = filteredData.filter(item => item.cliente.includes(client));
       }
       
       // Aplicar filtros de monto si están presentes
       if (total_min !== undefined) {
-        filteredData = filteredData.filter(item => item.amount >= total_min);
+        filteredData = filteredData.filter(item => item.monto >= total_min);
       }
       if (total_max !== undefined) {
-        filteredData = filteredData.filter(item => item.amount <= total_max);
+        filteredData = filteredData.filter(item => item.monto <= total_max);
       }
 
       const startIndex = (page - 1) * per_page;
       const endIndex = startIndex + per_page;
       const paginatedData = filteredData.slice(startIndex, endIndex);
 
-      // Crear lista de clientes únicos mock
-      const uniqueClients = Array.from(new Set(filteredData.map(item => item.customer))).sort();
-
       const mockResponse = {
-        table_detail: paginatedData,
+        detalle_tabla: paginatedData,
         pagination: {
           current_page: page,
           last_page: Math.ceil(filteredData.length / per_page),
           per_page: per_page,
           total: filteredData.length,
         },
-        clients: uniqueClients,
         parameters: {
           start: start || undefined,
           end: end || undefined,
@@ -152,7 +150,6 @@ export const fetchGetOrdersReportsTransactionsList = async (
     if (client && client.trim() !== '') requestBody.client = client;
     if (type) requestBody.type = type;
     
-    // TEMPORAL: Lógica para manejar total_min y total_max
     // Si se envía total_min, usarlo; si no se envía pero se envía total_max, usar 0 como default
     if (total_min !== undefined && total_min !== null && total_min >= 0) {
       requestBody.total_min = total_min;
@@ -163,7 +160,6 @@ export const fetchGetOrdersReportsTransactionsList = async (
     
     if (total_max !== undefined && total_max !== null && total_max > 0) requestBody.total_max = total_max;
 
-    console.log(requestBody, 123)
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: {
@@ -188,7 +184,6 @@ export const fetchGetOrdersReportsTransactionsList = async (
 
     const data = await response.json();
 
-    console.log(data);
     if (!response.ok) {
       return {
         ok: false,
@@ -329,13 +324,55 @@ export const fetchGetOrdersReportsCharts = async (
   start: string,
   end: string,
   type: ChartReportType
-): Promise<ActionResult<ChartReportsResponse>> => {
+): Promise<ActionResult<any>> => {
   try {
     if (IS_QA_MODE) {
       
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      // Mock data para QA
+      // Mock data específico según el tipo
+      if (type === 'top-products') {
+        const mockTopProductsResponse: TopProductsChartResponse = {
+          top_products: [
+            { month: "2025-01", product: "Pan de pasas", total: 17534144 },
+            { month: "2025-01", product: "Pastas secas", total: 26128752 },
+            { month: "2025-02", product: "Avena instantánea", total: 15000000 },
+            { month: "2025-02", product: "Vinos", total: 8500000 },
+            { month: "2025-03", product: "Chuleta de cerdo", total: 19234144 },
+            { month: "2025-03", product: "Leche", total: 24128752 }
+          ],
+          total_sales: 112425792
+        };
+
+        return {
+          ok: true,
+          data: mockTopProductsResponse,
+          error: null,
+        };
+      }
+      
+      if (type === 'top-municipalities') {
+        const mockTopMunicipalitiesResponse = {
+          top_municipalities: [
+            { month: "2025-01", municipality: "Santiago", total_purchases: 17534144, quantity: 45 },
+            { month: "2025-01", municipality: "Las Condes", total_purchases: 26128752, quantity: 38 },
+            { month: "2025-02", municipality: "Providencia", total_purchases: 15000000, quantity: 32 },
+            { month: "2025-02", municipality: "Ñuñoa", total_purchases: 8500000, quantity: 28 },
+            { month: "2025-03", municipality: "La Reina", total_purchases: 19234144, quantity: 41 },
+            { month: "2025-03", municipality: "Vitacura", total_purchases: 24128752, quantity: 35 }
+          ],
+          total_purchases: 112425792,
+          quantity: 219
+        };
+
+        return {
+          ok: true,
+          data: mockTopMunicipalitiesResponse,
+          error: null,
+        };
+      }
+      
+      // Mock data para otros tipos de gráficos
       const mockResponse: ChartReportsResponse = {
         months: ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06"],
         clients: ["Armando Meza", "Brody Hoeger PhD", "Cliente 3", "Cliente 4"],

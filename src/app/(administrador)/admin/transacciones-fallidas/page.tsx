@@ -11,7 +11,6 @@ import {
   AmountRange,
 } from '@/interfaces/dashboard.interface';
 import { FailedTransactionDetail } from '@/stores/base/slices/reportsSlice';
-import { TransactionDetails } from '@/services/actions/reports.actions';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
 
@@ -48,12 +47,10 @@ export default function TransaccionesFallidas() {
     clearFailedReportsFilters,
     // Transaction details
     transactionDetails,
-    isLoadingTransactionDetails,
     fetchTransactionDetails,
     clearTransactionDetails,
     // Customers
     customersList,
-    isLoadingCustomers,
     fetchCustomers,
   } = useStore();
 
@@ -87,10 +84,18 @@ export default function TransaccionesFallidas() {
   // Cargar datos iniciales
   useEffect(() => {
     clearFailedReportsFilters();
-    const start = '';
-    const end = '';
+    
+    // Usar fechas por defecto para obtener datos reales desde el inicio
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const start = startOfMonth.toISOString().split('T')[0]; // YYYY-MM-DD
+    const end = endOfMonth.toISOString().split('T')[0]; // YYYY-MM-DD
+    
     const total_min = undefined;
     const total_max = undefined;
+    
     Promise.all([
       fetchFailedTransactionsList(start, end, 1, PER_PAGE, undefined, total_min, total_max),
       fetchCustomers()
@@ -98,6 +103,14 @@ export default function TransaccionesFallidas() {
       setIsInitialLoad(false);
     });
   }, [fetchFailedTransactionsList, fetchCustomers, PER_PAGE, clearFailedReportsFilters]);
+
+  // Cleanup: limpiar datos cuando el componente se desmonta
+  useEffect(() => {
+    return () => {
+      // No hay datos específicos que limpiar para transacciones fallidas
+      // Los datos se manejan de forma independiente
+    };
+  }, []);
 
   // Transformar datos para la tabla directamente desde failedTransactionsList
   const transaccionesFixed: TransaccionFormateada[] = failedTransactionsList.map(
@@ -242,10 +255,19 @@ export default function TransaccionesFallidas() {
     setSelectedClients([]);
     setAmountFilter({ min: '', max: '' });
     setFailedReportsCurrentPage(1);
-    setFailedReportsFilters({ start: '', end: '', selectedClient: undefined, selectedCategory: undefined, type: null, total_min: undefined, total_max: undefined });
+    
+    // Usar fechas por defecto en lugar de fechas vacías
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const start = startOfMonth.toISOString().split('T')[0];
+    const end = endOfMonth.toISOString().split('T')[0];
+    
+    setFailedReportsFilters({ start, end, selectedClient: undefined, selectedCategory: undefined, type: null, total_min: undefined, total_max: undefined });
     
     // Limpiar datos y recargar
-    fetchFailedTransactionsList('', '', 1, PER_PAGE, null, undefined, undefined);
+    fetchFailedTransactionsList(start, end, 1, PER_PAGE, null, undefined, undefined);
   };
 
   // Manejar cambios en el rango de fechas del DatePicker

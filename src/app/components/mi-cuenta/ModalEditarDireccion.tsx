@@ -7,7 +7,7 @@ import {
   getMunicipalities,
   Region,
   Municipality,
-} from "@/services/actions/location.actions";
+} from "@/services/actions/location.client";
 
 export default function ModalEditarDireccion({
   region,
@@ -81,11 +81,11 @@ export default function ModalEditarDireccion({
         setContacto(direccion.contact_name || "");
       }
 
-      setIsLoading(false); // ✅ finaliza la carga
+      setIsLoading(false);
     }
 
     cargarDatosDesdeDireccion();
-  }, [direccion]);
+  }, [direccion, setRegion, setComuna, regiones, getRegions, getMunicipalities]);
 
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = Number(e.target.value);

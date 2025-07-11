@@ -66,7 +66,7 @@ export interface DashboardTableLayoutProps<T = any> {
   onCategoryFilter?: (selectedIds: number[]) => void;
   onProviderFilter?: () => void;
   onSortBy?: (option: SortOption | null) => void;
-  onCommuneFilter?: (selectedIds: string[]) => void;
+  onCommuneFilter?: (selectedIds: (string | number)[]) => void;
 
   // Filtros específicos para gráficos
   onAmountFilter?: (amount: AmountRange) => void;

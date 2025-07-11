@@ -32,7 +32,19 @@ export default function Header({ carro }: Props) {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   useInitMobileDetection();
 
-  const { isTablet, closeModal, openModal } = useStore();
+  const { 
+    isTablet, 
+    closeModal, 
+    openModal,
+    siteInformation,
+    fetchSiteInformation,
+    isLoadingSiteInfo
+  } = useStore();
+
+  // Cargar información del sitio al montar el componente
+  useEffect(() => {
+    fetchSiteInformation();
+  }, [fetchSiteInformation]);
 
   const handleLogout = async () => {
     await logoutAction();
@@ -116,11 +128,19 @@ export default function Header({ carro }: Props) {
                 </div>
                 <div>
                   <p className="font-bold">Teléfono </p>
-                  <p>
-                    <a href="tel:+56200000000" className="">
-                      +56 2 0000 0000
-                    </a>
-                  </p>
+                  <div>
+                    {isLoadingSiteInfo || !siteInformation ? (
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      </div>
+                    ) : siteInformation?.header?.contact_phone && siteInformation.header.contact_phone.trim() !== '' ? (
+                      <a href={`tel:${siteInformation.header.contact_phone.replace(/\s+/g, '')}`} className="">
+                        {siteInformation.header.contact_phone}
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">No disponible</span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

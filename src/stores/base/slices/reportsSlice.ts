@@ -17,6 +17,15 @@ export interface TableDetail {
   status: string;
 }
 
+// Nueva interfaz para la respuesta del backend en español
+export interface BackendTableDetail {
+  id: number;
+  cliente: string;
+  monto: number;
+  fecha: string;
+  estado: string;
+}
+
 export interface FailedTransactionDetail {
   id: number;
   client: string;
@@ -45,6 +54,20 @@ export interface TransactionsApiResponse {
   };
 }
 
+// Nueva interfaz para la respuesta del backend
+export interface BackendTransactionsApiResponse {
+  detalle_tabla: BackendTableDetail[];
+  pagination: Pagination;
+  clients?: string[];
+  parameters?: {
+    start?: string;
+    end?: string;
+    client?: string | null;
+    category?: string | null;
+    type?: 'exitosa' | 'fallida' | null;
+  };
+}
+
 export interface FailedTransactionsApiResponse {
   table_detail: FailedTransactionDetail[];
   pagination: Pagination;
@@ -59,6 +82,8 @@ export interface FailedTransactionsApiResponse {
 }
 
 export type ChartReportType = 'transactions' | 'sales' | 'revenue' | 'top-clients' | 'top-products' | 'top-categories' | 'transactions-failed' | 'top-municipalities';
+
+export type ChartReportsResponseType = ChartReportsResponse | TopMunicipalitiesResponse;
 
 export interface ChartReportsResponse {
   months: string[];
@@ -160,7 +185,7 @@ export interface ReportsState {
   isLoadingChartReports: boolean;
   
   // Chart reports data
-  chartReportsData: ChartReportsResponse | null;
+  chartReportsData: ChartReportsResponseType | null;
   
   // Top municipalities data
   topMunicipalitiesData: TopMunicipalitiesResponse | null;
@@ -224,7 +249,7 @@ export interface ReportsSlice extends ReportsState {
     start: string,
     end: string,
     type: ChartReportType
-  ) => Promise<ApiResponse<ChartReportsResponse>>;
+  ) => Promise<ApiResponse<ChartReportsResponseType>>;
   clearChartReports: () => void;
   
   // Actions - Top municipalities
@@ -237,7 +262,11 @@ export interface ReportsSlice extends ReportsState {
   // Actions - Top products
   fetchTopProducts: (
     start: string,
-    end: string
+    end: string,
+    selectedClient: string | null | undefined,
+    selectedCategory: string | null | undefined,
+    total_min: number | undefined,
+    total_max: number | undefined
   ) => Promise<ApiResponse<TopProductsResponse>>;
   clearTopProducts: () => void;
   
@@ -403,9 +432,21 @@ export const createReportsSlice: StateCreator<
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
         
+        // Mapear los datos del backend que vienen en español a nuestra interfaz
+        const mappedTableDetail: TableDetail[] = (result.data.detalle_tabla || result.data.table_detail || []).map((item: any) => ({
+          id: item.id,
+          customer: item.cliente || item.customer, // Usar 'cliente' si está disponible, sino 'customer'
+          amount: item.monto || item.amount, // Usar 'monto' si está disponible, sino 'amount'
+          date: item.fecha || item.date, // Usar 'fecha' si está disponible, sino 'date'
+          status: item.estado || item.status, // Usar 'estado' si está disponible, sino 'status'
+        }));
+        
+        // Extraer clientes únicos de los datos mapeados
+        const uniqueClients = Array.from(new Set(mappedTableDetail.map(item => item.customer))).sort();
+        
         set({
-          transactionsList: result.data.table_detail,
-          uniqueClients: result.data.clients || [], // Actualizar clientes únicos desde el backend
+          transactionsList: mappedTableDetail,
+          uniqueClients: uniqueClients,
           reportsPagination: convertedPagination,
           reportsCurrentPage: page,
           isLoadingReports: false,
@@ -448,18 +489,21 @@ export const createReportsSlice: StateCreator<
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
         
-        // Mapear los datos del backend que vienen con 'customer' a nuestra interfaz que espera 'client'
-        const mappedTableDetail: FailedTransactionDetail[] = result.data.table_detail.map((item: any) => ({
+        // Mapear los datos del backend que vienen en español a nuestra interfaz
+        const mappedTableDetail: FailedTransactionDetail[] = (result.data.detalle_tabla || result.data.table_detail || []).map((item: any) => ({
           id: item.id,
-          client: item.client || item.customer, // Usar 'client' si está disponible, sino 'customer'
-          amount: item.amount,
-          date: item.date,
-          status: item.status,
+          client: item.cliente || item.client || item.customer, // Usar 'cliente' si está disponible, sino 'client' o 'customer'
+          amount: item.monto || item.amount, // Usar 'monto' si está disponible, sino 'amount'
+          date: item.fecha || item.date, // Usar 'fecha' si está disponible, sino 'date'
+          status: item.estado || item.status, // Usar 'estado' si está disponible, sino 'status'
         }));
+        
+        // Extraer clientes únicos de los datos mapeados
+        const uniqueFailedClients = Array.from(new Set(mappedTableDetail.map(item => item.client))).sort();
         
         set({
           failedTransactionsList: mappedTableDetail,
-          uniqueFailedClients: result.data.clients || [], // Actualizar clientes únicos desde el backend
+          uniqueFailedClients: uniqueFailedClients,
           failedReportsPagination: convertedPagination,
           failedReportsCurrentPage: page,
           isLoadingFailedReports: false,
@@ -588,14 +632,21 @@ export const createReportsSlice: StateCreator<
       const result = await fetchGetOrdersReportsCharts(start, end, 'top-municipalities');
       
       if (result.ok && result.data) {
+        // Asegurar que los datos coincidan con la interfaz TopMunicipalitiesResponse
+        const topMunicipalitiesData: TopMunicipalitiesResponse = {
+          top_municipalities: result.data.top_municipalities || [],
+          total_purchases: result.data.total_purchases || 0,
+          quantity: result.data.quantity || 0,
+        };
+        
         set({
-          topMunicipalitiesData: result.data as unknown as TopMunicipalitiesResponse,
+          topMunicipalitiesData,
           isLoadingTopMunicipalities: false,
         });
         
         return {
           ok: true,
-          data: result.data as unknown as TopMunicipalitiesResponse,
+          data: topMunicipalitiesData,
         };
       } else {
         set({ isLoadingTopMunicipalities: false });
@@ -624,12 +675,14 @@ export const createReportsSlice: StateCreator<
   },
 
   // Fetch top products
-  fetchTopProducts: async (start: string, end: string) => {
+  fetchTopProducts: async (
+    start: string,
+    end: string,
+  ) => {
     set({ isLoadingTopProducts: true });
-    
     try {
       const result = await fetchGetOrdersReportsCharts(start, end, 'top-products');
-      
+      console.log('result', result);
       if (result.ok && result.data) {
         set({
           topProductsData: result.data as unknown as TopProductsResponse,
@@ -727,6 +780,7 @@ export const createReportsSlice: StateCreator<
         });
       }
     } catch (error) {
+      console.error('Error in fetchClientsMostPurchasesList:', error);
       set({ isLoadingClientsMostPurchases: false });
     }
   },

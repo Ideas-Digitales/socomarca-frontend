@@ -11,6 +11,7 @@ import {
 } from '@/interfaces/dashboard.interface';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
+import { TopMunicipalitiesResponse } from '@/stores/base/types';
 
 interface MunicipalityFormatted {
   id: string;
@@ -36,10 +37,14 @@ const clients: Client[] = [
 export default function ComunasMasVentas() {
   // Store hooks
   const {
-    topMunicipalitiesData,
-    isLoadingTopMunicipalities,
-    fetchTopMunicipalities,
-    clearTopMunicipalities,
+    chartReportsData,
+    isLoadingChartReports,
+    fetchChartReports,
+    clearChartReports,
+    reportsFilters,
+    setReportsFilters,
+    clearReportsFilters,
+    isLoadingChart,
   } = useStore();
 
   // Estados para manejar filtros
@@ -55,17 +60,25 @@ export default function ComunasMasVentas() {
 
   // Cargar datos iniciales
   useEffect(() => {
+    clearReportsFilters();
     const start = '';
     const end = '';
     
-    fetchTopMunicipalities(start, end).finally(() => {
+    // Cargar datos de municipalidades
+    fetchChartReports(start, end, 'top-municipalities').finally(() => {
+      console.log('fetchChartReports');
       setIsInitialLoad(false);
     });
-  }, [fetchTopMunicipalities]);
+
+    // Cleanup: limpiar datos cuando el componente se desmonta
+    return () => {
+      clearChartReports();
+    };
+  }, [fetchChartReports, clearReportsFilters, clearChartReports]);
 
   // Transformar datos para la tabla
-  const municipalitiesFormatted: MunicipalityFormatted[] = topMunicipalitiesData?.top_municipalities?.map(
-    (item, index) => ({
+  const municipalitiesFormatted: MunicipalityFormatted[] = (chartReportsData as TopMunicipalitiesResponse)?.top_municipalities?.map(
+    (item: TopMunicipalitiesResponse['top_municipalities'][0], index: number) => ({
       id: String(index + 1),
       municipality: item.municipality,
       month: item.month,
@@ -78,12 +91,12 @@ export default function ComunasMasVentas() {
   const metrics: MetricCard[] = [
     {
       label: 'Municipalidades con más ventas',
-      value: topMunicipalitiesData?.quantity || municipalitiesFormatted.length,
+      value: municipalitiesFormatted.length,
       color: 'lime',
     },
     {
       label: 'Total compras por municipalidad',
-      value: `$${(topMunicipalitiesData?.total_purchases || 0).toLocaleString()}`,
+      value: `$${municipalitiesFormatted.reduce((sum, m) => sum + m.total_purchases, 0).toLocaleString()}`,
       color: 'gray',
     },
   ];
@@ -121,37 +134,20 @@ export default function ComunasMasVentas() {
 
   const handleAmountFilter = (amount: AmountRange) => {
     setAmountFilter(amount);
-    // Nota: Los filtros específicos podrían implementarse en el backend en el futuro
+    const total_min = amount.min ? Number(amount.min) : undefined;
+    const total_max = amount.max ? Number(amount.max) : undefined;
+    setReportsFilters({ total_min, total_max });
   };
 
-  // TEMPORAL: Actualizar para manejar tanto number como string
-  const handleClientFilter = (clientId: number | string) => {
-    if (typeof clientId === 'string') {
-      // TEMPORAL: Nuevo comportamiento - usar el string directamente
-      if (clientId.trim() === '') {
-        setSelectedClients([]);
-      } else {
-        setSelectedClients([{ id: 0, name: clientId }]); // ID temporal para mantener compatibilidad
-      }
-    } else {
-      // TEMPORAL: Comportamiento original para números (comentado para referencia)
-      // if (clientId === -1 || clientId === 0) {
-      //   setSelectedClients([]);
-      // } else {
-      //   const client = clients.find((c) => c.id === clientId);
-      //   if (client) {
-      //     setSelectedClients([client]);
-      //   }
-      // }
-    }
-  };
 
-  const handleCommuneFilter = (communeIds: string[]) => {
-    setSelectedCommunes(communeIds);
+  const handleCommuneFilter = (communeIds: (string | number)[]) => {
+    setSelectedCommunes(communeIds.map(id => String(id)));
   };
 
   const handleFilter = () => {
-    // Aplicar filtros cuando estén implementados
+    // Aplicar filtros
+    const { start, end } = reportsFilters;
+    fetchChartReports(start, end, 'top-municipalities');
   };
 
   const handleClearSearch = () => {
@@ -159,18 +155,21 @@ export default function ComunasMasVentas() {
     setSelectedCommunes([]);
     setAmountFilter({ min: '', max: '' });
     
+    // Limpiar filtros del store
+    clearReportsFilters();
+    
     // Recargar datos sin filtros
-    clearTopMunicipalities();
-    fetchTopMunicipalities('', '');
+    clearChartReports();
+    fetchChartReports('', '', 'top-municipalities');
   };
 
   // Manejar cambios en el rango de fechas del DatePicker
   const handleDateRangeChange = (start: string, end: string) => {
-    fetchTopMunicipalities(start, end);
+    setReportsFilters({ start, end });
   };
 
   // Mostrar loading spinner completo solo en la carga inicial
-  if (isLoadingTopMunicipalities && isInitialLoad) {
+  if ((isLoadingChartReports || isLoadingChart) && isInitialLoad) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
@@ -180,7 +179,7 @@ export default function ComunasMasVentas() {
   }
 
   // Mostrar mensaje cuando no hay datos
-  if (!isLoadingTopMunicipalities && !isInitialLoad && municipalitiesFormatted.length === 0) {
+  if (!isLoadingChartReports && !isLoadingChart && !isInitialLoad && municipalitiesFormatted.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <div className="text-gray-500">
@@ -205,7 +204,7 @@ export default function ComunasMasVentas() {
         chartConfig={chartConfig}
         showDatePicker={true}
         onAmountFilter={handleAmountFilter}
-        onClientFilter={handleClientFilter}
+        // onClientFilter={handleClientFilter}
         onCommuneFilter={handleCommuneFilter}
         onFilter={handleFilter}
         clients={clients}
@@ -217,21 +216,21 @@ export default function ComunasMasVentas() {
         searchableDropdown={true}
         onDateRangeChange={handleDateRangeChange}
         initialDateRange={{
-          start: undefined,
-          end: undefined,
+          start: reportsFilters.start || undefined,
+          end: reportsFilters.end || undefined,
         }}
-        onClearClientInput={() => {
-          // TEMPORAL: Limpiar el filtro de cliente cuando se limpia la búsqueda
-          setSelectedClients([]);
-        }}
+        isLoadingChart={isLoadingChart}
       />
 
       {/* Loading overlay sutil para cambios de filtros */}
-      {isLoadingTopMunicipalities && !isInitialLoad && (
+      {(isLoadingChartReports || isLoadingChart) && !isInitialLoad && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
-            <span className="text-gray-700 text-sm">Actualizando datos...</span>
+            <span className="text-gray-700 text-sm">
+              {isLoadingChartReports && isLoadingChart ? 'Actualizando datos y gráficos...' :
+               isLoadingChartReports ? 'Actualizando datos...' : 'Actualizando gráficos...'}
+            </span>
           </div>
         </div>
       )}

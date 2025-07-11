@@ -51,35 +51,34 @@ export interface UsersApiResponse {
 
 
 export async function getUserData() {
-  const { getCookie } = await cookiesManagement();
+  try {
+    const { getCookie } = await cookiesManagement();
 
-  const token = getCookie('token');
+    const token = getCookie('token');
 
-  if (!token) {
-    throw new Error('No token found in cookies');
-  }
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
 
-  const res = await fetch(`${BACKEND_URL}/profile`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  });
+    const res = await fetch(`${BACKEND_URL}/profile`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
 
+    const data = await res.json();
     return data;
   } catch (error) {
     console.error('Error fetching user data:', error);
     throw new Error('Failed to fetch user data');
   }
-  
-  const data = await res.json();
-  return data;
 }
 
 export async function getUsersAction(params: {

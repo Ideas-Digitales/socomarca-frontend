@@ -14,6 +14,8 @@ import { ClientsSlice } from './slices/clientsSlice';
 import { ClientDetail, ClientPaginationMeta, ClientsFilters } from '@/interfaces/client.interface';
 import { TerminosCondicionesSlice } from './slices/terminos-condicionesSlice';
 import { SiteInformationSlice } from './slices/siteInformationSlice';
+import { ChartSlice } from './slices/chartSlice';
+import { LocationSlice } from './slices/locationSlice';
 
 // ===== BASE TYPES =====
 export type ViewMode = 'grid' | 'list';
@@ -381,6 +383,12 @@ export interface StoreState extends LoadingStates, AuthState {
   isUpdatingSiteInfo: boolean;
   siteInfoError: string | null;
 
+  // Location states
+  regions: any[];
+  municipalities: any[];
+  isLoadingLocation: boolean;
+  locationError: string | null;
+
   selectedCategories: number[];
   selectedBrands: number[];
   selectedFavorites: number[];
@@ -408,6 +416,17 @@ export interface StoreState extends LoadingStates, AuthState {
   isQaMode: boolean;
 }
 
+export interface TopMunicipalitiesResponse {
+  top_municipalities: {
+    month: string;
+    municipality: string;
+    total_purchases: number;
+    quantity: number;
+  }[];
+  total_purchases: number;
+  quantity: number;
+}
+
 // ===== COMPLETE STORE TYPE =====
 export type Store = StoreState &
   AuthSlice &
@@ -426,4 +445,6 @@ export type Store = StoreState &
   FAQSlice &
   ClientsSlice &
   TerminosCondicionesSlice &
-  SiteInformationSlice;
+  SiteInformationSlice &
+  ChartSlice &
+  LocationSlice;

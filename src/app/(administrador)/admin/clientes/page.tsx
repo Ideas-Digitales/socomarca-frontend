@@ -21,12 +21,8 @@ interface ClientRow {
 
 export default function ClientesAdmin() {
   const { 
-    clientsList, 
-    clientsPagination, 
-    isLoadingClients, 
-    clientsError,
+    clientsList,
     fetchClients,
-    clientsCurrentPage 
   } = useStore();
 
 
@@ -91,9 +87,9 @@ export default function ClientesAdmin() {
   }, [fetchClients]);
 
   // Manejar el cambio de comunas seleccionadas
-  const handleComuneFilter = (selectedIds: string[]) => {
+  const handleComuneFilter = (selectedIds: (string | number)[]) => {
     console.log('Comunas seleccionadas:', selectedIds);
-    setSelectedCommunes(selectedIds);
+    setSelectedCommunes(selectedIds.map(id => String(id)));
     // Aquí puedes agregar lógica adicional para filtrar los datos según las comunas
   };
 

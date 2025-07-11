@@ -6,11 +6,17 @@ import FilterOptions from './FilterOptions';
 import DayPickerComponent from '@/app/components/admin/DayPickerComponent';
 import LineChartContent from '@/app/components/admin/LineChartContent';
 import MetricsCard from './MetricsCard';
+import { useRef } from 'react';
 
 const DynamicLineChart = dynamic(() => Promise.resolve(LineChartContent), {
   ssr: false,
   loading: () => <div>Cargando gráfico...</div>,
 });
+
+interface DashboardTableLayoutExtraProps {
+  chartData?: { month: string; value: number }[];
+  isLoadingChart?: boolean;
+}
 
 const DashboardTableLayout = <T extends Record<string, any> = any>({
   config,
@@ -30,8 +36,6 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onClearSearch,
   onCommuneFilter,
   communes,
-
-  // Parámetros específicos para gráficos
   chartConfig,
   showDatePicker = false,
   onAmountFilter,
@@ -41,17 +45,31 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   selectedClients = [],
   amountValue = { min: '', max: '' },
   searchableDropdown,
-  
-  // Props para DatePicker
   onDateRangeChange,
   initialDateRange,
-}: DashboardTableLayoutProps<T>) => {
+  isLoadingChart,
+}: DashboardTableLayoutProps<T> & DashboardTableLayoutExtraProps) => {
+  const mainChartRef = useRef<{ updateChartWithFilters: () => void }>(null);
+  const bottomChartRef = useRef<{ updateChartWithFilters: () => void }>(null);
+
   const handleSearch = (searchTermValue: string) => {
     onSearch?.(searchTermValue);
   };
 
   const handleClearSearch = () => {
     onClearSearch?.();
+  };
+
+  const handleFilter = () => {
+    // Actualizar ambos gráficos cuando se presiona filtrar
+    if (mainChartRef.current) {
+      mainChartRef.current.updateChartWithFilters();
+    }
+    if (bottomChartRef.current) {
+      bottomChartRef.current.updateChartWithFilters();
+    }
+    // Llamar al onFilter original
+    onFilter?.();
   };
 
   return (
@@ -71,7 +89,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
         <FilterOptions
           onCommuneFilter={onCommuneFilter}
           selectedCommunes={selectedCommunes}
-          onFilter={onFilter}
+          onFilter={handleFilter}
           onCategoryFilter={onCategoryFilter}
           onProviderFilter={onProviderFilter}
           onSortBy={onSortBy}
@@ -107,8 +125,8 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           {/* Gráfico principal con métricas */}
           {chartConfig?.showMetricsChart && (
             <div className="flex flex-col items-start gap-4 flex-1-0-0 w-full">
-              <MetricsCard metrics={chartConfig.metrics || []}>
-                <DynamicLineChart />
+              <MetricsCard metrics={chartConfig.metrics || []} isLoading={isLoadingChart}>
+                <DynamicLineChart ref={mainChartRef} loading={isLoadingChart} />
               </MetricsCard>
             </div>
           )}
@@ -127,7 +145,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
                 {chartConfig.bottomChartValue || '20.000.000'}
               </h4>
             </div>
-            <DynamicLineChart />
+            <DynamicLineChart ref={bottomChartRef} loading={isLoadingChart} />
           </div>
         </div>
       )}

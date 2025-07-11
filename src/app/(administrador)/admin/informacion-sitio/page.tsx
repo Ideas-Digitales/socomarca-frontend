@@ -1,25 +1,15 @@
 'use client';
 
-import React, { useState, JSX, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CheckCircleIcon,
   PlusIcon,
-  GlobeAltIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import { SiteInformation } from '@/interfaces/siteInformation.interface';
 
 const socialOptions = ['Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'YouTube', 'TikTok'];
-
-const socialIcons: Record<string, JSX.Element> = {
-  Facebook: <GlobeAltIcon className="w-5 h-5 text-slate-500" />,
-  Instagram: <GlobeAltIcon className="w-5 h-5 text-slate-500" />,
-  Twitter: <GlobeAltIcon className="w-5 h-5 text-slate-500" />,
-  LinkedIn: <GlobeAltIcon className="w-5 h-5 text-slate-500" />,
-  YouTube: <GlobeAltIcon className="w-5 h-5 text-slate-500" />,
-  TikTok: <GlobeAltIcon className="w-5 h-5 text-slate-500" />,
-};
 
 export default function ContactForm() {
   const {
@@ -41,7 +31,7 @@ export default function ContactForm() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [socialInputs, setSocialInputs] = useState([{ platform: 'Facebook', url: '' }]);
-  const [socialLinks, setSocialLinks] = useState<{ platform: string; url: string }[]>([]);
+  const [existingSocialLinks, setExistingSocialLinks] = useState<{ platform: string; url: string; id?: string }[]>([]);
   const [successMessage, setSuccessMessage] = useState<string>('');
 
   // Cargar datos al montar el componente
@@ -51,7 +41,7 @@ export default function ContactForm() {
 
   // Actualizar formulario cuando se cargan los datos
   useEffect(() => {
-    if (siteInformation) {
+    if (siteInformation && siteInformation.header && siteInformation.footer) {
       setForm({
         headerPhone: siteInformation.header.contact_phone || '',
         headerEmail: siteInformation.header.contact_email || '',
@@ -60,11 +50,15 @@ export default function ContactForm() {
       });
 
       // Convertir las redes sociales del backend al formato del formulario
-      const convertedSocialLinks = siteInformation.social_media.map((social: any) => ({
-        platform: social.label.charAt(0).toUpperCase() + social.label.slice(1),
-        url: social.link
-      }));
-      setSocialLinks(convertedSocialLinks);
+      if (siteInformation.social_media && Array.isArray(siteInformation.social_media)) {
+        const convertedSocialLinks = siteInformation.social_media
+          .filter((social: any) => social && social.label && social.link && typeof social.label === 'string')
+          .map((social: any) => ({
+            platform: social.label.charAt(0).toUpperCase() + social.label.slice(1),
+            url: social.link
+          }));
+        setExistingSocialLinks(convertedSocialLinks);
+      }
     }
   }, [siteInformation]);
 
@@ -94,7 +88,7 @@ export default function ContactForm() {
 
     // Agregar todas las redes sociales válidas
     const newValidLinks = socialInputs.filter((s) => s.url.startsWith('http'));
-    const allSocialLinks = [...socialLinks, ...newValidLinks];
+    const allSocialLinks = [...existingSocialLinks, ...newValidLinks];
 
     // Preparar datos para enviar al backend
     const siteInfoData: SiteInformation = {
@@ -117,7 +111,7 @@ export default function ContactForm() {
     
     if (result.success) {
       setSuccessMessage('Información actualizada correctamente');
-      setSocialLinks(allSocialLinks);
+      setExistingSocialLinks(allSocialLinks);
       setSocialInputs([{ platform: 'Facebook', url: '' }]);
     } else {
       setErrors({ submit: result.error || 'Error al actualizar' });
@@ -138,6 +132,18 @@ export default function ContactForm() {
     const newInputs = [...socialInputs];
     newInputs.splice(index, 1);
     setSocialInputs(newInputs.length ? newInputs : [{ platform: 'Facebook', url: '' }]);
+  };
+
+  const updateExistingSocialLink = (index: number, field: 'platform' | 'url', value: string) => {
+    const newLinks = [...existingSocialLinks];
+    newLinks[index][field] = value;
+    setExistingSocialLinks(newLinks);
+  };
+
+  const removeExistingSocialLink = (index: number) => {
+    const newLinks = [...existingSocialLinks];
+    newLinks.splice(index, 1);
+    setExistingSocialLinks(newLinks);
   };
 
   const inputStyle =
@@ -222,65 +228,91 @@ export default function ContactForm() {
         {/* Redes Sociales */}
         <section>
           <h2 className="text-slate-700 font-semibold mb-3">Redes sociales</h2>
-          {socialInputs.map((social, index) => (
-            <div key={index} className="flex flex-col md:flex-row gap-3 items-center mb-3">
-              <select
-                value={social.platform}
-                onChange={(e) => updateSocialInput(index, 'platform', e.target.value)}
-                className="p-2 border border-slate-200 rounded w-full lg:w-40"
-              >
-                {socialOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-              <div className='flex  w-full gap-5'>
-              <input
-                type="url"
-                placeholder="https://..."
-                value={social.url}
-                onChange={(e) => updateSocialInput(index, 'url', e.target.value)}
-                className={`${inputStyle} md:flex-1`}
-              />
-              <button
-                type="button"
-                onClick={() => removeSocialInput(index)}
-                className="text-red-600 hover:text-red-800"
-                title="Eliminar"
-              >
-                <TrashIcon className="w-5 h-5" />
-              </button>
-              </div>
-            </div>
-          ))}
-
-          <button
-            type="button"
-            onClick={addSocialInput}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded hover:bg-slate-200"
-          >
-            <PlusIcon className="w-4 h-4" />
-            Añadir otra red social
-          </button>
-
-          {/* Lista final */}
-          {socialLinks.length > 0 && (
-            <div className="mt-6 space-y-2">
-              <h3 className="font-medium text-slate-600">Redes añadidas:</h3>
-              <ul className="text-sm text-slate-700 space-y-1">
-                {socialLinks.map((link, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    {socialIcons[link.platform] || <GlobeAltIcon className="w-5 h-5" />}
-                    <span className="font-medium">{link.platform}</span>:
-                    <a href={link.url} className="underline" target="_blank" rel="noopener noreferrer">
-                      {link.url}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+          
+          {/* Redes sociales existentes */}
+          {existingSocialLinks.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-slate-600 font-medium mb-3">Redes sociales existentes:</h3>
+              {existingSocialLinks.map((social, index) => (
+                <div key={`existing-${index}`} className="flex flex-col md:flex-row gap-3 items-center mb-3">
+                  <select
+                    value={social.platform}
+                    onChange={(e) => updateExistingSocialLink(index, 'platform', e.target.value)}
+                    className="p-2 border border-slate-200 rounded w-full lg:w-40"
+                  >
+                    {socialOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <div className='flex w-full gap-5'>
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={social.url}
+                      onChange={(e) => updateExistingSocialLink(index, 'url', e.target.value)}
+                      className={`${inputStyle} md:flex-1`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingSocialLink(index)}
+                      className="text-red-600 hover:text-red-800"
+                      title="Eliminar"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
+
+          {/* Nuevas redes sociales */}
+          <div className="mb-4">
+            <h3 className="text-slate-600 font-medium mb-3">Agregar nuevas redes sociales:</h3>
+            {socialInputs.map((social, index) => (
+              <div key={`new-${index}`} className="flex flex-col md:flex-row gap-3 items-center mb-3">
+                <select
+                  value={social.platform}
+                  onChange={(e) => updateSocialInput(index, 'platform', e.target.value)}
+                  className="p-2 border border-slate-200 rounded w-full lg:w-40"
+                >
+                  {socialOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <div className='flex w-full gap-5'>
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={social.url}
+                    onChange={(e) => updateSocialInput(index, 'url', e.target.value)}
+                    className={`${inputStyle} md:flex-1`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSocialInput(index)}
+                    className="text-red-600 hover:text-red-800"
+                    title="Eliminar"
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={addSocialInput}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded hover:bg-slate-200"
+            >
+              <PlusIcon className="w-4 h-4" />
+              Añadir otra red social
+            </button>
+          </div>
         </section>
 
         {/* Mensajes de error y éxito */}
@@ -307,18 +339,22 @@ export default function ContactForm() {
             type="reset" 
             className="border px-4 py-2 rounded hover:bg-slate-50"
             onClick={() => {
-              if (siteInformation) {
+              if (siteInformation && siteInformation.header && siteInformation.footer) {
                 setForm({
                   headerPhone: siteInformation.header.contact_phone || '',
                   headerEmail: siteInformation.header.contact_email || '',
                   footerPhone: siteInformation.footer.contact_phone || '',
                   footerEmail: siteInformation.footer.contact_email || '',
                 });
-                const convertedSocialLinks = siteInformation.social_media.map((social: any) => ({
-                  platform: social.label.charAt(0).toUpperCase() + social.label.slice(1),
-                  url: social.link
-                }));
-                setSocialLinks(convertedSocialLinks);
+                if (siteInformation.social_media && Array.isArray(siteInformation.social_media)) {
+                  const convertedSocialLinks = siteInformation.social_media
+                    .filter((social: any) => social && social.label && social.link && typeof social.label === 'string')
+                    .map((social: any) => ({
+                      platform: social.label.charAt(0).toUpperCase() + social.label.slice(1),
+                      url: social.link
+                    }));
+                  setExistingSocialLinks(convertedSocialLinks);
+                }
                 setSocialInputs([{ platform: 'Facebook', url: '' }]);
               }
               setErrors({});

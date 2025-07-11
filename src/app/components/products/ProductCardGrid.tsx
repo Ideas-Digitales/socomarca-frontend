@@ -18,7 +18,7 @@ interface Props {
 export default function ProductCardGrid({ product }: Props) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { addProductToCartOptimistic, isQaMode } = useStore();
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isOptimisticUpdate, setIsOptimisticUpdate] = useState(false);
 
@@ -37,7 +37,7 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   const decreaseQuantity = () => {
-    if (quantity > 0) {
+    if (quantity > 1) {
       setQuantity(quantity - 1);
     }
   };

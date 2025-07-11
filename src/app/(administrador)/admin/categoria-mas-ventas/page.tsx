@@ -83,7 +83,12 @@ export default function CategoriasMasVentas() {
     fetchTopCategories('', '').finally(() => {
       setIsInitialLoad(false);
     });
-  }, [fetchTopCategories]);
+
+    // Cleanup: limpiar datos cuando el componente se desmonta
+    return () => {
+      clearTopCategories();
+    };
+  }, [fetchTopCategories, clearTopCategories]);
 
   // Debug: Log de datos cuando cambien (solo para desarrollo)
   useEffect(() => {
@@ -229,9 +234,17 @@ export default function CategoriasMasVentas() {
     setSelectedClients([]);
     setSelectedCategories([]);
     
+    // Usar fechas por defecto en lugar de fechas vacías
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const start = startOfMonth.toISOString().split('T')[0];
+    const end = endOfMonth.toISOString().split('T')[0];
+    
     // Limpiar filtros y recargar datos
     clearTopCategories();
-    fetchTopCategories('', '');
+    fetchTopCategories(start, end);
   };
 
   // Manejar cambios en el rango de fechas del DatePicker
@@ -292,10 +305,6 @@ export default function CategoriasMasVentas() {
         onClearSearch={handleClearSearch}
         // Callback para el DatePicker
         onDateRangeChange={handleDateRangeChange}
-        onClearClientInput={() => {
-          // TEMPORAL: Limpiar el filtro de cliente cuando se limpia la búsqueda
-          setSelectedClients([]);
-        }}
       />
 
       {/* Loading overlay sutil para cambios de filtros */}

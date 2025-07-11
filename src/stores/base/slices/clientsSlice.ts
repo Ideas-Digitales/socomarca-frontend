@@ -29,7 +29,7 @@ export interface ClientsSlice {
   resetClientsState: () => void;
 }
 
-export const createClientsSlice: StateCreator<ClientsSlice> = (set, get) => ({
+export const createClientsSlice: StateCreator<ClientsSlice> = (set) => ({
   clientsList: [],
   clientsPagination: null,
   isLoadingClients: false,

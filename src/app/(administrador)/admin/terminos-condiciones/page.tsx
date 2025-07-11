@@ -14,11 +14,9 @@ export default function RichTextEditor() {
     isUpdatingTerms,
     termsError,
     hasUnsavedChanges,
-    currentContent,
     fetchTermsAndConditions,
     updateTermsAndConditions,
     setCurrentContent,
-    setHasUnsavedChanges,
     clearTermsError,
     openModal,
     closeModal

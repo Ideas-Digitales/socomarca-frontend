@@ -31,6 +31,10 @@ export default function Footer() {
 
   // Función para renderizar el icono de red social según el label
   const renderSocialIcon = (label: string) => {
+    if (!label || typeof label !== 'string') {
+      return <FacebookIcon width={16} height={16} />; // Icono por defecto
+    }
+    
     const normalizedLabel = label.toLowerCase();
     
     switch (normalizedLabel) {
@@ -101,7 +105,7 @@ export default function Footer() {
         {/* Contacto y Redes sociales */}
         <div className="flex flex-col items-start gap-[10px]">
           <h3 className="text-gray-500 font-bold">Contacto</h3>
-          {siteInformation?.footer?.contact_phone && (
+          {siteInformation?.footer?.contact_phone && siteInformation.footer.contact_phone.trim() !== '' && (
             <div className="flex gap-1">
               <span className="text-lime-600">
                 <PhoneIcon width={25} height={24} />
@@ -116,7 +120,7 @@ export default function Footer() {
               </div>
             </div>
           )}
-          {siteInformation?.footer?.contact_email && (
+          {siteInformation?.footer?.contact_email && siteInformation.footer.contact_email.trim() !== '' && (
             <div className="flex gap-1">
               <span className="text-lime-600">
                 <EnvelopeIcon width={25} height={24} />
@@ -133,16 +137,18 @@ export default function Footer() {
           )}
           
           {/* Redes sociales */}
-          {siteInformation?.social_media && siteInformation.social_media.length > 0 && (
+          {siteInformation?.social_media && Array.isArray(siteInformation.social_media) && siteInformation.social_media.length > 0 && (
             <div className="flex items-center justify-start gap-1 mt-4">
-              {siteInformation.social_media.map((social: any, index: number) => (
+                          {siteInformation.social_media
+              .filter((social: any) => social && social.label && social.link && typeof social.label === 'string')
+              .map((social: any, index: number) => (
                 <a
                   key={index}
                   href={social.link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-[38px] h-[38px] flex justify-center items-center hover:bg-slate-100 rounded transition-colors"
-                  title={social.label.charAt(0).toUpperCase() + social.label.slice(1)}
+                  title={social.label && typeof social.label === 'string' ? social.label.charAt(0).toUpperCase() + social.label.slice(1) : 'Red social'}
                 >
                   {renderSocialIcon(social.label)}
                 </a>

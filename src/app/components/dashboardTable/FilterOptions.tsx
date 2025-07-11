@@ -2,7 +2,6 @@ import { Category } from '@/interfaces/category.interface';
 import { SortOption, TableColumn } from '@/interfaces/dashboard.interface';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import SortDropdown from '../filters/SortDropdown';
-import { Comuna } from '@/mock/comunasVentas';
 import Dropdown, { DropdownOption } from '../filters/Dropdown';
 import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
 import AmountFilter from '../filters/AmountFilter';
@@ -10,6 +9,7 @@ import SearchableDropdown, {
   SearchableOption,
 } from '../filters/SearchableDropdown';
 import { Customer } from '@/services/actions/clients.actions';
+import CommuneDropdown from '../filters/CommuneDropdown';
 
 interface AmountRange {
   min: string;
@@ -25,9 +25,8 @@ interface Props {
   selectedCategories?: number[];
   tableColumns?: TableColumn<any>[];
   selectedSortOption?: SortOption | null;
-  onCommuneFilter?: (selectedIds: string[]) => void;
-  selectedCommunes?: string[];
-  communes?: Comuna[];
+  onCommuneFilter?: (selectedIds: (string | number)[]) => void;
+  selectedCommunes?: (string | number)[];
   onAmountFilter?: (amount: AmountRange) => void;
   amountValue?: AmountRange;
   clients?: Client[];
@@ -35,6 +34,7 @@ interface Props {
   onClientFilter?: (clientId: number) => void;
   selectedClients?: Client[];
   searchableDropdown?: boolean;
+  communes?: any[];
 }
 
 export default function FilterOptions({
@@ -48,7 +48,6 @@ export default function FilterOptions({
   selectedSortOption = null,
   onCommuneFilter,
   selectedCommunes = [],
-  communes = [],
   onAmountFilter,
   amountValue = { min: '', max: '' },
   clients = [],
@@ -61,12 +60,6 @@ export default function FilterOptions({
   const categoryOptions: DropdownOption[] = categories.map((category) => ({
     id: category.id,
     name: category.name,
-  }));
-
-  // Convertir comunas a DropdownOption
-  const communeOptions: DropdownOption[] = communes.map((commune) => ({
-    id: commune.comuna,
-    name: commune.comuna,
   }));
 
   // Convertir clientes a DropdownOption (para Dropdown normal)
@@ -84,11 +77,6 @@ export default function FilterOptions({
   const handleCategoryChange = (selectedIds: (string | number)[]) => {
     const numericIds = selectedIds.map((id) => Number(id));
     onCategoryFilter?.(numericIds);
-  };
-
-  const handleCommuneChange = (selectedIds: (string | number)[]) => {
-    const stringIds = selectedIds.map((id) => String(id));
-    onCommuneFilter?.(stringIds);
   };
 
   // Handler para Dropdown normal de clientes
@@ -172,13 +160,12 @@ export default function FilterOptions({
           )}
 
           {onCommuneFilter && (
-            <Dropdown
-              options={communeOptions}
+            <CommuneDropdown
               selectedIds={selectedCommunes}
-              onSelectionChange={handleCommuneChange}
+              onSelectionChange={onCommuneFilter}
               placeholder="Comuna"
               className="w-full md:max-w-[120px] md:w-full"
-              multiple={true} // Múltiples comunas
+              multiple={false}
             />
           )}
 

@@ -1,6 +1,7 @@
 'use client';
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
+import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import {
   ExtendedDashboardTableConfig,
   ChartConfig,
@@ -26,16 +27,18 @@ export default function TotalDeVentas() {
     transactionsList,
     reportsPagination,
     reportsFilters,
-    isLoadingReports,
     uniqueClients,
     fetchTransactionsList,
     setReportsCurrentPage,
     setReportsFilters,
     clearReportsFilters,
+    isLoadingReports,
     // Customers
     customersList,
-    isLoadingCustomers,
     fetchCustomers,
+    // Chart
+    fetchChartRawData,
+    isLoadingChart,
   } = useStore();
 
   // Estados para manejar filtros
@@ -67,11 +70,20 @@ export default function TotalDeVentas() {
     const end = '';
     const total_min = undefined;
     const total_max = undefined;
+    
     Promise.all([
       fetchTransactionsList(start, end, 1, PER_PAGE, undefined, total_min, total_max),
-      fetchCustomers()
-    ]).finally(() => setIsInitialLoad(false));
-  }, [fetchTransactionsList, fetchCustomers, PER_PAGE, clearReportsFilters]);
+      fetchCustomers(),
+      fetchChartRawData(start, end, null)
+    ]).finally(() => {
+      setIsInitialLoad(false);
+    });
+
+    // Cleanup al desmontar el componente
+    return () => {
+      clearReportsFilters();
+    };
+  }, [fetchTransactionsList, fetchCustomers, fetchChartRawData, PER_PAGE, clearReportsFilters]);
 
   // Transformar datos para la tabla
   let ventasFixed = transactionsList.map((venta: TableDetail) => ({
@@ -147,7 +159,10 @@ export default function TotalDeVentas() {
   const handleFilter = () => {
     const { start, end, selectedClient, total_min, total_max } = reportsFilters;
     setReportsCurrentPage(1);
-    fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient, total_min, total_max);
+    Promise.all([
+      fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient, total_min, total_max),
+      fetchChartRawData(start, end, selectedClient || null)
+    ]);
   };
 
   const handleClearSearch = () => {
@@ -155,35 +170,64 @@ export default function TotalDeVentas() {
     setAmountFilter({ min: '', max: '' });
     setReportsCurrentPage(1);
     setReportsFilters({ start: '', end: '', selectedClient: undefined, selectedCategory: undefined, type: null, total_min: undefined, total_max: undefined });
-    fetchTransactionsList('', '', 1, PER_PAGE, null, undefined, undefined);
+    Promise.all([
+      fetchTransactionsList('', '', 1, PER_PAGE, null, undefined, undefined),
+      fetchChartRawData('', '', null)
+    ]);
   };
 
   const handleDateRangeChange = (start: string, end: string) => {
     setReportsFilters({ start, end });
   };
 
+  // Mostrar loading spinner completo solo en la carga inicial
+  if ((isLoadingReports || isLoadingChart) && isInitialLoad) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <LoadingSpinner />
+        <p className="text-gray-600 text-sm">Cargando ventas y gráficos...</p>
+      </div>
+    );
+  }
+
   return (
-    <DashboardTableLayout
-      config={config}
-      tableData={ventasFixed}
-      tableColumns={ventasColumns}
-      productPaginationMeta={reportsPagination || undefined}
-      chartConfig={chartConfig}
-      showDatePicker={true}
-      onAmountFilter={handleAmountFilter}
-      onClientFilter={handleClientFilter}
-      onFilter={handleFilter}
-      clients={clients}
-      customers={customersList}
-      selectedClients={selectedClients}
-      amountValue={amountFilter}
-      onClearSearch={handleClearSearch}
-      searchableDropdown={true}
-      onDateRangeChange={handleDateRangeChange}
-      initialDateRange={{
-        start: reportsFilters.start || undefined,
-        end: reportsFilters.end || undefined,
-      }}
-    />
+    <div className="relative">
+      {/* Vista principal - siempre visible */}
+      <DashboardTableLayout
+        config={config}
+        tableData={ventasFixed}
+        tableColumns={ventasColumns}
+        productPaginationMeta={reportsPagination || undefined}
+        chartConfig={chartConfig}
+        showDatePicker={true}
+        onAmountFilter={handleAmountFilter}
+        onClientFilter={handleClientFilter}
+        onFilter={handleFilter}
+        clients={clients}
+        customers={customersList}
+        selectedClients={selectedClients}
+        amountValue={amountFilter}
+        onClearSearch={handleClearSearch}
+        searchableDropdown={true}
+        onDateRangeChange={handleDateRangeChange}
+        initialDateRange={{
+          start: reportsFilters.start || undefined,
+          end: reportsFilters.end || undefined,
+        }}
+      />
+
+      {/* Loading overlay sutil para cambios de página/filtros */}
+      {(isLoadingReports || isLoadingChart) && !isInitialLoad && (
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
+            <LoadingSpinner />
+            <span className="text-gray-700 text-sm">
+              {isLoadingReports && isLoadingChart ? 'Actualizando datos y gráficos...' :
+               isLoadingReports ? 'Actualizando datos...' : 'Actualizando gráficos...'}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

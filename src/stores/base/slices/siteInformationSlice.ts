@@ -15,7 +15,7 @@ export interface SiteInformationSlice {
   resetSiteInfoState: () => void;
 }
 
-export const createSiteInformationSlice: StateCreator<SiteInformationSlice> = (set, get) => ({
+export const createSiteInformationSlice: StateCreator<SiteInformationSlice> = (set) => ({
   siteInformation: null,
   isLoadingSiteInfo: false,
   isUpdatingSiteInfo: false,
@@ -33,6 +33,7 @@ export const createSiteInformationSlice: StateCreator<SiteInformationSlice> = (s
         set({ siteInfoError: response.error || 'Error al obtener la información del sitio' });
       }
     } catch (error) {
+      console.error('Error in fetchSiteInformation:', error);
       set({ siteInfoError: 'Error de conexión' });
     } finally {
       set({ isLoadingSiteInfo: false });
@@ -54,6 +55,7 @@ export const createSiteInformationSlice: StateCreator<SiteInformationSlice> = (s
         return { success: false, error: errorMessage };
       }
     } catch (error) {
+      console.error('Error in updateSiteInformation:', error);
       const errorMessage = 'Error de conexión';
       set({ siteInfoError: errorMessage });
       return { success: false, error: errorMessage };

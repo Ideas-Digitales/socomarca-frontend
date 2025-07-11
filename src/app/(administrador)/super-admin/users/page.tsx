@@ -18,7 +18,7 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 import { useState, useEffect, useCallback } from 'react';
-import { getUsersAction, searchUsersAction, deleteUserAction, updateUserAction, ApiUser, UpdateUserRequest } from '@/services/actions/user.actions';
+import { getUsersAction, searchUsersAction, updateUserAction, deleteUserAction, UpdateUserRequest } from '@/services/actions/user.actions';
 import { transformApiUserToUser, ApiMeta, SearchUsersRequest } from '@/interfaces/user.interface';
 
 export interface User {

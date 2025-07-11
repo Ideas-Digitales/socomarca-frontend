@@ -1,70 +1,45 @@
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { useDropdown } from '@/hooks/useDropdown';
-import { Comuna } from '@/mock/comunasVentas';
+import { useEffect } from 'react';
+import useStore from '@/stores/base';
+import Dropdown, { DropdownOption } from './Dropdown';
 
 interface CommuneDropdownProps {
-  communes: Comuna[];
-  selectedIds: string[];
-  onSelectionChange: (selectedIds: string[]) => void;
+  selectedIds: (string | number)[];
+  onSelectionChange: (selectedIds: (string | number)[]) => void;
+  placeholder?: string;
   className?: string;
+  multiple?: boolean;
 }
 
 export default function CommuneDropdown({
-  communes,
   selectedIds,
   onSelectionChange,
+  placeholder = 'Seleccionar comuna',
   className = '',
+  multiple = true,
 }: CommuneDropdownProps) {
-  const { isOpen, toggle, ref } = useDropdown();
+  const { municipalities, isLoadingLocation, fetchRegions } = useStore();
 
-  const handleCategoryToggle = (categoryId: string) => {
-    const newSelectedIds = selectedIds.includes(categoryId)
-      ? selectedIds.filter((id) => id !== categoryId)
-      : [...selectedIds, categoryId];
+  useEffect(() => {
+    // Cargar las regiones y comunas si no están cargadas
+    if (municipalities.length === 0 && !isLoadingLocation) {
+      fetchRegions();
+    }
+  }, [municipalities.length, isLoadingLocation, fetchRegions]);
 
-    onSelectionChange(newSelectedIds);
-  };
+  // Convertir las comunas del store al formato que espera el Dropdown
+  const communeOptions: DropdownOption[] = municipalities.map(municipality => ({
+    id: municipality.id,
+    name: municipality.name
+  }));
 
   return (
-    <div className={`relative ${className}`} ref={ref}>
-      <button
-        className="bg-gray-100 w-full flex justify-between items-center p-[10px] h-10 text-gray-500 text-md rounded cursor-pointer"
-        onClick={toggle}
-      >
-        Comuna
-        <ChevronDownIcon
-          width={20}
-          height={20}
-          className={`transform transition-transform ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-        />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-80 overflow-y-auto">
-          <div className="p-3">
-            <div className="space-y-2">
-              {communes.map((commune) => (
-                <label
-                  key={commune.comuna}
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(commune.comuna)}
-                    onChange={() => handleCategoryToggle(commune.comuna)}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                  />
-                  <span className="text-sm text-gray-700">
-                    {commune.comuna}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <Dropdown
+      options={communeOptions}
+      selectedIds={selectedIds}
+      onSelectionChange={onSelectionChange}
+      placeholder={isLoadingLocation ? 'Cargando comunas...' : placeholder}
+      className={className}
+      multiple={multiple}
+    />
   );
 }

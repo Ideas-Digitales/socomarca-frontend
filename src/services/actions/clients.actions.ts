@@ -2,7 +2,7 @@
 
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
-import { ClientsListResponse, ClientsFilters } from '@/interfaces/client.interface';
+import { ClientsListResponse } from '@/interfaces/client.interface';
 
 interface ActionResult<T> {
   ok: boolean;

@@ -1,6 +1,7 @@
 'use client';
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
+import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import {
   ExtendedDashboardTableConfig,
   ChartConfig,
@@ -10,7 +11,6 @@ import {
 } from '@/interfaces/dashboard.interface';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
-import { ClientsMostPurchasesDetail } from '@/stores/base/slices/reportsSlice';
 
 export default function ClientesMasCompra() {
   const PER_PAGE = 10;
@@ -19,11 +19,12 @@ export default function ClientesMasCompra() {
     clientsMostPurchasesPagination,
     isLoadingClientsMostPurchases,
     clientsMostPurchasesFilters,
-    clientsMostPurchasesCurrentPage,
     fetchClientsMostPurchasesList,
     setClientsMostPurchasesFilters,
     setClientsMostPurchasesCurrentPage,
     clearClientsMostPurchasesFilters,
+    // Chart loading
+    isLoadingChart,
   } = useStore();
 
   const [amountFilter, setAmountFilter] = useState<AmountRange>({
@@ -129,33 +130,51 @@ export default function ClientesMasCompra() {
     setClientsMostPurchasesFilters({ ...clientsMostPurchasesFilters, start, end });
   };
 
-  if (isLoadingClientsMostPurchases && isInitialLoad) {
+  // Mostrar loading spinner completo solo en la carga inicial
+  if ((isLoadingClientsMostPurchases || isLoadingChart) && isInitialLoad) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <span className="text-gray-600 text-sm">Cargando clientes con más compras...</span>
+        <LoadingSpinner />
+        <p className="text-gray-600 text-sm">Cargando clientes con más compras y gráficos...</p>
       </div>
     );
   }
 
   return (
-    <DashboardTableLayout
-      config={config}
-      tableData={clientesFixed}
-      tableColumns={clientesColumns}
-      productPaginationMeta={clientsMostPurchasesPagination || undefined}
-      onPageChange={handlePageChange}
-      chartConfig={chartConfig}
-      showDatePicker={true}
-      onAmountFilter={handleAmountFilter}
-      onFilter={handleFilter}
-      amountValue={amountFilter}
-      onClearSearch={handleClearSearch}
-      searchableDropdown={false}
-      onDateRangeChange={handleDateRangeChange}
-      initialDateRange={{
-        start: clientsMostPurchasesFilters.start || undefined,
-        end: clientsMostPurchasesFilters.end || undefined,
-      }}
-    />
+    <div className="relative">
+      <DashboardTableLayout
+        config={config}
+        tableData={clientesFixed}
+        tableColumns={clientesColumns}
+        productPaginationMeta={clientsMostPurchasesPagination || undefined}
+        onPageChange={handlePageChange}
+        chartConfig={chartConfig}
+        showDatePicker={true}
+        onAmountFilter={handleAmountFilter}
+        onFilter={handleFilter}
+        amountValue={amountFilter}
+        onClearSearch={handleClearSearch}
+        searchableDropdown={false}
+        onDateRangeChange={handleDateRangeChange}
+        initialDateRange={{
+          start: clientsMostPurchasesFilters.start || undefined,
+          end: clientsMostPurchasesFilters.end || undefined,
+        }}
+        isLoadingChart={isLoadingChart}
+      />
+
+      {/* Loading overlay sutil para cambios de filtros */}
+      {(isLoadingClientsMostPurchases || isLoadingChart) && !isInitialLoad && (
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
+            <LoadingSpinner />
+            <span className="text-gray-700 text-sm">
+              {isLoadingClientsMostPurchases && isLoadingChart ? 'Actualizando datos y gráficos...' :
+               isLoadingClientsMostPurchases ? 'Actualizando datos...' : 'Actualizando gráficos...'}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

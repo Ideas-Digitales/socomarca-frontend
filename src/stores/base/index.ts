@@ -21,9 +21,15 @@ import { createFAQSlice } from './slices/faqSlice';
 import { createClientsSlice } from './slices/clientsSlice';
 import { createTerminosCondicionesSlice } from './slices/terminos-condicionesSlice';
 import { createSiteInformationSlice } from './slices/siteInformationSlice';
+import { createChartSlice } from './slices/chartSlice';
+import { createLocationSlice } from './slices/locationSlice';
 
 // Estado inicial optimizado
 const initialState: StoreState = {
+  // Customers states
+  customersList: [],
+  isLoadingCustomers: false,
+  customersError: null,
   // Auth states
   isLoggedIn: false,
   user: {
@@ -142,6 +148,12 @@ const initialState: StoreState = {
   isLoadingSiteInfo: false,
   isUpdatingSiteInfo: false,
   siteInfoError: null,
+
+  // Location states
+  regions: [],
+  municipalities: [],
+  isLoadingLocation: false,
+  locationError: null,
 };
 
 // Crear el store combinando todos los slices de manera optimizada
@@ -164,6 +176,8 @@ const useStore = create<Store>()((...a) => ({
   ...createClientsSlice(...a),
   ...createTerminosCondicionesSlice(...a),
   ...createSiteInformationSlice(...a),
+  ...createChartSlice(...a), // <-- Agregado para incluir chartSlice
+  ...createLocationSlice(...a), // <-- Agregado para incluir locationSlice
 }));
 
 // Hook optimizado para manejar la detección de dispositivos móviles

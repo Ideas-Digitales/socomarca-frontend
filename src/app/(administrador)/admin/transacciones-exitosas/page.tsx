@@ -11,7 +11,6 @@ import {
   AmountRange,
 } from '@/interfaces/dashboard.interface';
 import { TableDetail } from '@/stores/base/slices/reportsSlice';
-import { TransactionDetails } from '@/services/actions/reports.actions';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
 
@@ -50,14 +49,14 @@ export default function TransaccionesExitosas() {
     isLoadingChartReports,
     fetchChartReports,
     clearChartReports,
+    // Chart raw data
+    fetchChartRawData,
     // Transaction details
     transactionDetails,
-    isLoadingTransactionDetails,
     fetchTransactionDetails,
     clearTransactionDetails,
     // Customers
     customersList,
-    isLoadingCustomers,
     fetchCustomers,
     clearReportsFilters,
   } = useStore();
@@ -99,11 +98,17 @@ export default function TransaccionesExitosas() {
     Promise.all([
       fetchTransactionsList(start, end, 1, PER_PAGE, undefined, total_min, total_max),
       fetchChartReports(start, end, 'transactions'),
+      fetchChartRawData(start, end, null),
       fetchCustomers()
     ]).finally(() => {
       setIsInitialLoad(false);
     });
-  }, [fetchTransactionsList, fetchChartReports, fetchCustomers, PER_PAGE, clearReportsFilters]);
+
+    // Cleanup: limpiar datos cuando el componente se desmonta
+    return () => {
+      clearChartReports();
+    };
+  }, [fetchTransactionsList, fetchChartReports, fetchCustomers, PER_PAGE, clearReportsFilters, clearChartReports, fetchChartRawData]);
 
 
 
@@ -121,6 +126,16 @@ export default function TransaccionesExitosas() {
       originalData: transaction,
     })
   );
+
+  // Debug: Log de datos cuando cambien
+  useEffect(() => {
+    console.log('transactionsList actualizada:', transactionsList);
+    console.log('transaccionesFixed:', transaccionesFixed);
+    console.log('isLoadingReports:', isLoadingReports);
+    console.log('chartReportsData:', chartReportsData);
+    console.log('isLoadingChartReports:', isLoadingChartReports);
+    console.log('chartRawData:', useStore.getState().chartRawData);
+  }, [transactionsList, transaccionesFixed, isLoadingReports, chartReportsData, isLoadingChartReports]);
 
   // Definir las métricas basadas en datos del backend
   const metrics: MetricCard[] = [
@@ -151,9 +166,9 @@ export default function TransaccionesExitosas() {
     },
   ];
 
-  // Configuración de gráficos
+  // Configuración de gráficos - solo mostrar si hay datos disponibles
   const chartConfig: ChartConfig = {
-    showMetricsChart: true,
+    showMetricsChart: chartReportsData !== null,
     showBottomChart: false,
     metrics: metrics,
   };
@@ -257,11 +272,11 @@ export default function TransaccionesExitosas() {
     console.log('handleFilter - filtros actuales:', { start, end, selectedClient, total_min, total_max });
     console.log('handleFilter - selectedClients state:', selectedClients);
     setReportsCurrentPage(1);
-    
     // Hacer la petición con todos los filtros configurados
     Promise.all([
       fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient, total_min, total_max),
-      fetchChartReports(start, end, 'transactions')
+      fetchChartReports(start, end, 'transactions'),
+      fetchChartRawData(start, end, selectedClient || null)
     ]);
   };
 
@@ -277,7 +292,8 @@ export default function TransaccionesExitosas() {
     clearChartReports();
     Promise.all([
       fetchTransactionsList('', '', 1, PER_PAGE, null, undefined, undefined),
-      fetchChartReports('', '', 'transactions')
+      fetchChartReports('', '', 'transactions'),
+      fetchChartRawData('', '', null)
     ]);
   };
 
