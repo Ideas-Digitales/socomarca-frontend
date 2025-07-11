@@ -162,6 +162,7 @@ export const createFiltersSlice: StateCreator<
       selectedMinPrice,
       selectedMaxPrice,
       productPaginationMeta,
+      searchTerm,
     } = get();
 
     try {
@@ -174,14 +175,20 @@ export const createFiltersSlice: StateCreator<
         max: selectedMaxPrice,
       };
 
-      if (selectedCategories.length > 0) {
-        searchParams.field = 'name' as const;
-        searchParams.value = selectedCategories[0].toString();
+      // Mantener el término de búsqueda si existe
+      if (searchTerm) {
+        searchParams.field = 'name';
+        searchParams.value = searchTerm;
       }
 
+      // Agregar categorías si están seleccionadas
+      if (selectedCategories.length > 0) {
+        searchParams.category_id = selectedCategories[0];
+      }
+
+      // Agregar marcas si están seleccionadas
       if (selectedBrands.length > 0) {
-        searchParams.field = 'name' as const;
-        searchParams.value = selectedBrands[0].toString();
+        searchParams.brand_id = selectedBrands[0];
       }
 
       const response = await fetchSearchProductsByFilters(searchParams);

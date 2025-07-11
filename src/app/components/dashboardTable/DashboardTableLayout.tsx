@@ -97,7 +97,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           selectedCategories={selectedCategories}
           tableColumns={tableColumns}
           selectedSortOption={selectedSortOption}
-          communes={communes}
+          communes={communes || []} // Aseguramos que siempre pasemos un array
           onAmountFilter={onAmountFilter}
           amountValue={amountValue}
           onClientFilter={onClientFilter}

@@ -26,14 +26,6 @@ export interface Client {
   name: string;
 }
 
-// Mock clients - estos pueden ser removidos cuando haya filtrado real
-const clients: Client[] = [
-  { id: 1, name: 'Cliente 1' },
-  { id: 2, name: 'Cliente 2' },
-  { id: 3, name: 'Cliente 3' },
-  { id: 4, name: 'Cliente 4' },
-];
-
 export default function ComunasMasVentas() {
   // Store hooks
   const {
@@ -45,6 +37,7 @@ export default function ComunasMasVentas() {
     setReportsFilters,
     clearReportsFilters,
     isLoadingChart,
+    fetchChartRawData,
   } = useStore();
 
   // Estados para manejar filtros
@@ -65,7 +58,10 @@ export default function ComunasMasVentas() {
     const end = '';
     
     // Cargar datos de municipalidades
-    fetchChartReports(start, end, 'top-municipalities').finally(() => {
+    Promise.all([
+      fetchChartReports(start, end, 'top-municipalities'),
+      fetchChartRawData(start, end, null)
+    ]).finally(() => {
       console.log('fetchChartReports');
       setIsInitialLoad(false);
     });
@@ -74,7 +70,7 @@ export default function ComunasMasVentas() {
     return () => {
       clearChartReports();
     };
-  }, [fetchChartReports, clearReportsFilters, clearChartReports]);
+  }, [fetchChartReports, clearReportsFilters, clearChartReports, fetchChartRawData]);
 
   // Transformar datos para la tabla
   const municipalitiesFormatted: MunicipalityFormatted[] = (chartReportsData as TopMunicipalitiesResponse)?.top_municipalities?.map(
@@ -140,14 +136,25 @@ export default function ComunasMasVentas() {
   };
 
 
-  const handleCommuneFilter = (communeIds: (string | number)[]) => {
-    setSelectedCommunes(communeIds.map(id => String(id)));
-  };
+  // const handleCommuneFilter = (communeIds: (string | number)[]) => {
+  //   // Convertimos los IDs a string para mantener consistencia
+  //   const stringIds = communeIds.map(id => String(id));
+  //   setSelectedCommunes(stringIds);
+    
+  //   // Actualizamos los filtros en el store
+  //   setReportsFilters({ 
+  //     ...reportsFilters,
+  //     selectedMunicipality: stringIds[0] // Como es selección única, tomamos el primer elemento
+  //   });
+  // };
 
   const handleFilter = () => {
     // Aplicar filtros
-    const { start, end } = reportsFilters;
-    fetchChartReports(start, end, 'top-municipalities');
+    const { start, end, selectedMunicipality, total_min, total_max } = reportsFilters;
+    Promise.all([
+      fetchChartReports(start, end, 'top-municipalities'),
+      fetchChartRawData(start, end, selectedMunicipality || null)
+    ]);
   };
 
   const handleClearSearch = () => {
@@ -205,9 +212,8 @@ export default function ComunasMasVentas() {
         showDatePicker={true}
         onAmountFilter={handleAmountFilter}
         // onClientFilter={handleClientFilter}
-        onCommuneFilter={handleCommuneFilter}
+        // onCommuneFilter={handleCommuneFilter}
         onFilter={handleFilter}
-        clients={clients}
         communes={[]} // Sin filtro de comunas por ahora
         selectedClients={selectedClients}
         selectedCommunes={selectedCommunes}
@@ -237,3 +243,4 @@ export default function ComunasMasVentas() {
     </div>
   );
 }
+

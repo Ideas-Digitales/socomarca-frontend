@@ -91,7 +91,7 @@ export default function TotalDeVentas() {
     cliente: venta.customer,
     monto: venta.amount,
     fecha: venta.date,
-    estado: venta.status,
+    estado: (venta.status === 'completed') ? 'Completado' : 'Fallido',
     originalData: venta,
   }));
 

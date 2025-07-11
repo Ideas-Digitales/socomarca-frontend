@@ -65,11 +65,13 @@ export default function Dropdown({
                 >
                   <input
                     type={multiple ? 'checkbox' : 'radio'}
-                    name={multiple ? undefined : 'dropdown-option'}
+                    name={multiple ? undefined : 'dropdown-radio-group'}
                     checked={selectedIds.includes(option.id)}
                     onChange={() => handleToggle(option.id)}
-                    className={`w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2 ${
-                      multiple ? 'rounded' : 'rounded-full'
+                    className={`w-4 h-4 ${
+                      multiple 
+                        ? 'text-lime-600 bg-gray-100 border-gray-300 rounded focus:ring-lime-500'
+                        : 'accent-lime-600 bg-gray-100 border-gray-300 rounded-full focus:ring-lime-500'
                     }`}
                   />
                   <span className="text-sm text-gray-700">{option.name}</span>

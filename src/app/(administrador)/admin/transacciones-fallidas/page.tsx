@@ -52,6 +52,9 @@ export default function TransaccionesFallidas() {
     // Customers
     customersList,
     fetchCustomers,
+    // Chart data
+    fetchChartRawData,
+    isLoadingChart,
   } = useStore();
 
   // Estados para el overlay deslizante
@@ -85,24 +88,19 @@ export default function TransaccionesFallidas() {
   useEffect(() => {
     clearFailedReportsFilters();
     
-    // Usar fechas por defecto para obtener datos reales desde el inicio
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
-    const start = startOfMonth.toISOString().split('T')[0]; // YYYY-MM-DD
-    const end = endOfMonth.toISOString().split('T')[0]; // YYYY-MM-DD
-    
+    const start = '';
+    const end = '';
     const total_min = undefined;
     const total_max = undefined;
     
     Promise.all([
       fetchFailedTransactionsList(start, end, 1, PER_PAGE, undefined, total_min, total_max),
-      fetchCustomers()
+      fetchCustomers(),
+      fetchChartRawData(start, end, null)
     ]).finally(() => {
       setIsInitialLoad(false);
     });
-  }, [fetchFailedTransactionsList, fetchCustomers, PER_PAGE, clearFailedReportsFilters]);
+  }, [fetchFailedTransactionsList, fetchCustomers, fetchChartRawData, PER_PAGE, clearFailedReportsFilters]);
 
   // Cleanup: limpiar datos cuando el componente se desmonta
   useEffect(() => {
@@ -248,7 +246,10 @@ export default function TransaccionesFallidas() {
     setFailedReportsCurrentPage(1);
     
     // Hacer la petición con todos los filtros configurados
-    fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient, total_min, total_max);
+    Promise.all([
+      fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient, total_min, total_max),
+      fetchChartRawData(start, end, selectedClient || null)
+    ]);
   };
 
   const handleClearSearch = () => {
@@ -256,18 +257,24 @@ export default function TransaccionesFallidas() {
     setAmountFilter({ min: '', max: '' });
     setFailedReportsCurrentPage(1);
     
-    // Usar fechas por defecto en lugar de fechas vacías
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const start = '';
+    const end = '';
     
-    const start = startOfMonth.toISOString().split('T')[0];
-    const end = endOfMonth.toISOString().split('T')[0];
-    
-    setFailedReportsFilters({ start, end, selectedClient: undefined, selectedCategory: undefined, type: null, total_min: undefined, total_max: undefined });
+    setFailedReportsFilters({ 
+      start, 
+      end, 
+      selectedClient: undefined, 
+      selectedCategory: undefined, 
+      type: null, 
+      total_min: undefined, 
+      total_max: undefined 
+    });
     
     // Limpiar datos y recargar
-    fetchFailedTransactionsList(start, end, 1, PER_PAGE, null, undefined, undefined);
+    Promise.all([
+      fetchFailedTransactionsList(start, end, 1, PER_PAGE, null, undefined, undefined),
+      fetchChartRawData(start, end, null)
+    ]);
   };
 
   // Manejar cambios en el rango de fechas del DatePicker
@@ -277,7 +284,7 @@ export default function TransaccionesFallidas() {
   };
 
   // Mostrar loading spinner completo solo en la carga inicial
-  if (isLoadingFailedReports && isInitialLoad) {
+  if ((isLoadingFailedReports || isLoadingChart) && isInitialLoad) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
@@ -316,11 +323,14 @@ export default function TransaccionesFallidas() {
       />
 
       {/* Loading overlay sutil para cambios de página/filtros */}
-      {isLoadingFailedReports && !isInitialLoad && (
+      {(isLoadingFailedReports || isLoadingChart) && !isInitialLoad && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
-            <span className="text-gray-700 text-sm">Actualizando datos...</span>
+            <span className="text-gray-700 text-sm">
+              {isLoadingFailedReports && isLoadingChart ? 'Actualizando datos y gráficos...' :
+               isLoadingFailedReports ? 'Actualizando datos...' : 'Actualizando gráficos...'}
+            </span>
           </div>
         </div>
       )}

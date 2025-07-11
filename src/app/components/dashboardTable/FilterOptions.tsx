@@ -9,7 +9,6 @@ import SearchableDropdown, {
   SearchableOption,
 } from '../filters/SearchableDropdown';
 import { Customer } from '@/services/actions/clients.actions';
-import CommuneDropdown from '../filters/CommuneDropdown';
 
 interface AmountRange {
   min: string;
@@ -55,6 +54,7 @@ export default function FilterOptions({
   onClientFilter,
   selectedClients = [],
   searchableDropdown = false,
+  communes = [],
 }: Props) {
   // Convertir categorías a DropdownOption
   const categoryOptions: DropdownOption[] = categories.map((category) => ({
@@ -149,6 +149,17 @@ export default function FilterOptions({
             />
           )}
 
+          {onCommuneFilter && (
+            <Dropdown
+              options={communes}
+              selectedIds={selectedCommunes}
+              onSelectionChange={onCommuneFilter}
+              placeholder="Comuna"
+              className="w-full md:max-w-[120px] md:w-full"
+              multiple={false}
+            />
+          )}
+
           {onProviderFilter && (
             <button
               className="w-full md:max-w-[216px] md:w-full bg-gray-100 flex justify-between items-center p-[10px] h-10 text-gray-500 text-md rounded"
@@ -157,16 +168,6 @@ export default function FilterOptions({
               Distribuidor/Proveedor
               <MagnifyingGlassIcon width={20} height={20} />
             </button>
-          )}
-
-          {onCommuneFilter && (
-            <CommuneDropdown
-              selectedIds={selectedCommunes}
-              onSelectionChange={onCommuneFilter}
-              placeholder="Comuna"
-              className="w-full md:max-w-[120px] md:w-full"
-              multiple={false}
-            />
           )}
 
           {onSortBy && tableColumns && tableColumns.length > 0 && (

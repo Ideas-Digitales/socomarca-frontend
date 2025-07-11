@@ -348,6 +348,8 @@ export const fetchSearchProductsByFilters = async (
         requestBody.sort = filters.sort;
       }
 
+      console.log('requestBody', requestBody);
+
       const response = await fetch(
         `${BACKEND_URL}/products/search?${queryParams}`,
         {

@@ -159,7 +159,7 @@ export const fetchGetOrdersReportsTransactionsList = async (
     }
     
     if (total_max !== undefined && total_max !== null && total_max > 0) requestBody.total_max = total_max;
-
+    console.log('requestBody', requestBody);
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: {
@@ -253,8 +253,6 @@ export const fetchGetOrdersReportsFailedTransactionsList = async (
     if (client && client.trim() !== '') requestBody.client = client;
     if (type) requestBody.type = type;
     
-    // TEMPORAL: Lógica para manejar total_min y total_max
-    // Si se envía total_min, usarlo; si no se envía pero se envía total_max, usar 0 como default
     if (total_min !== undefined && total_min !== null && total_min >= 0) {
       requestBody.total_min = total_min;
     } else if (total_max !== undefined && total_max !== null && total_max > 0) {
@@ -263,6 +261,8 @@ export const fetchGetOrdersReportsFailedTransactionsList = async (
     }
     
     if (total_max !== undefined && total_max !== null && total_max > 0) requestBody.total_max = total_max;
+
+    console.log('fetchGetOrdersReportsFailedTransactionsList requestBody:', requestBody);
 
     const response = await fetch(endpointUrl, {
       method: 'POST',
@@ -323,7 +323,9 @@ export const fetchGetOrdersReportsFailedTransactionsList = async (
 export const fetchGetOrdersReportsCharts = async (
   start: string,
   end: string,
-  type: ChartReportType
+  type: ChartReportType,
+  total_min?: number,
+  total_max?: number
 ): Promise<ActionResult<any>> => {
   try {
     if (IS_QA_MODE) {
@@ -347,6 +349,27 @@ export const fetchGetOrdersReportsCharts = async (
         return {
           ok: true,
           data: mockTopProductsResponse,
+          error: null,
+        };
+      }
+      
+      if (type === 'top-categories') {
+        const mockTopCategoriesResponse = {
+          top_categories: [
+            { month: "2025-01", category: "Higiene personal", total: 6622885 },
+            { month: "2025-02", category: "Salsas y condimentos", total: 5021690 },
+            { month: "2025-03", category: "Pescados y mariscos", total: 6643559 },
+            { month: "2025-04", category: "Temporada", total: 6318263 },
+            { month: "2025-05", category: "Lácteos y derivados", total: 6174085 },
+            { month: "2025-06", category: "Pescados y mariscos", total: 4503683 }
+          ],
+          total_sales: 35284165,
+          average_sales: 5880694
+        };
+
+        return {
+          ok: true,
+          data: mockTopCategoriesResponse,
           error: null,
         };
       }
@@ -426,11 +449,21 @@ export const fetchGetOrdersReportsCharts = async (
 
     const endpointUrl = `${BACKEND_URL}/orders/reports`;
 
-    const requestBody = {
+    const requestBody: any = {
       start,
       end,
       type,
     };
+
+    // Agregar filtros de montos si están presentes
+    if (total_min !== undefined && total_min !== null && total_min >= 0) {
+      requestBody.total_min = total_min;
+    }
+    if (total_max !== undefined && total_max !== null && total_max > 0) {
+      requestBody.total_max = total_max;
+    }
+
+    console.log('fetchGetOrdersReportsCharts requestBody:', requestBody);
 
     const response = await fetch(endpointUrl, {
       method: 'POST',

@@ -83,7 +83,7 @@ export interface FailedTransactionsApiResponse {
 
 export type ChartReportType = 'transactions' | 'sales' | 'revenue' | 'top-clients' | 'top-products' | 'top-categories' | 'transactions-failed' | 'top-municipalities';
 
-export type ChartReportsResponseType = ChartReportsResponse | TopMunicipalitiesResponse;
+export type ChartReportsResponseType = ChartReportsResponse | TopMunicipalitiesResponse | TopProductsResponse | TopCategoriesResponse;
 
 export interface ChartReportsResponse {
   months: string[];
@@ -136,6 +136,7 @@ export interface ReportsFilters {
   end: string;
   selectedClient?: string;
   selectedCategory?: string;
+  selectedMunicipality?: string;
   type?: 'exitosa' | 'fallida' | null;
   total_min?: number;
   total_max?: number;
@@ -273,7 +274,9 @@ export interface ReportsSlice extends ReportsState {
   // Actions - Top categories
   fetchTopCategories: (
     start: string,
-    end: string
+    end: string,
+    total_min?: number,
+    total_max?: number
   ) => Promise<ApiResponse<TopCategoriesResponse>>;
   clearTopCategories: () => void;
   
@@ -367,6 +370,7 @@ const initialReportsState: ReportsState = {
     end: '',
     selectedClient: undefined,
     selectedCategory: undefined,
+    selectedMunicipality: undefined,
     type: null,
     total_min: undefined,
     total_max: undefined,
@@ -376,6 +380,7 @@ const initialReportsState: ReportsState = {
     end: '',
     selectedClient: undefined,
     selectedCategory: undefined,
+    selectedMunicipality: undefined,
     type: null,
     total_min: undefined,
     total_max: undefined,
@@ -720,11 +725,11 @@ export const createReportsSlice: StateCreator<
   },
 
   // Fetch top categories
-  fetchTopCategories: async (start: string, end: string) => {
+  fetchTopCategories: async (start: string, end: string, total_min?: number, total_max?: number) => {
     set({ isLoadingTopCategories: true });
     
     try {
-      const result = await fetchGetOrdersReportsCharts(start, end, 'top-categories');
+      const result = await fetchGetOrdersReportsCharts(start, end, 'top-categories', total_min, total_max);
       
       if (result.ok && result.data) {
         set({
