@@ -160,7 +160,7 @@ export default function ComunasMasVentas() {
     ]);
   };
 
-  const handleClearSearch = () => {
+  const handleClearSearch = () => { 
     setSelectedClients([]);
     setSelectedCommunes([]);
     setAmountFilter({ min: '', max: '' });
