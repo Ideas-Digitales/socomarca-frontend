@@ -249,7 +249,9 @@ export interface ReportsSlice extends ReportsState {
   fetchChartReports: (
     start: string,
     end: string,
-    type: ChartReportType
+    type: ChartReportType,
+    total_min?: number,
+    total_max?: number
   ) => Promise<ApiResponse<ChartReportsResponseType>>;
   clearChartReports: () => void;
   
@@ -437,16 +439,14 @@ export const createReportsSlice: StateCreator<
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
         
-        // Mapear los datos del backend que vienen en español a nuestra interfaz
         const mappedTableDetail: TableDetail[] = (result.data.detalle_tabla || result.data.table_detail || []).map((item: any) => ({
           id: item.id,
-          customer: item.cliente || item.customer, // Usar 'cliente' si está disponible, sino 'customer'
-          amount: item.monto || item.amount, // Usar 'monto' si está disponible, sino 'amount'
-          date: item.fecha || item.date, // Usar 'fecha' si está disponible, sino 'date'
-          status: item.estado || item.status, // Usar 'estado' si está disponible, sino 'status'
+          customer: item.cliente || item.customer,
+          amount: item.monto || item.amount,
+          date: item.fecha || item.date,
+          status: item.estado || item.status,
         }));
         
-        // Extraer clientes únicos de los datos mapeados
         const uniqueClients = Array.from(new Set(mappedTableDetail.map(item => item.customer))).sort();
         
         set({
@@ -494,13 +494,12 @@ export const createReportsSlice: StateCreator<
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
         
-        // Mapear los datos del backend que vienen en español a nuestra interfaz
         const mappedTableDetail: FailedTransactionDetail[] = (result.data.detalle_tabla || result.data.table_detail || []).map((item: any) => ({
           id: item.id,
-          client: item.cliente || item.client || item.customer, // Usar 'cliente' si está disponible, sino 'client' o 'customer'
-          amount: item.monto || item.amount, // Usar 'monto' si está disponible, sino 'amount'
-          date: item.fecha || item.date, // Usar 'fecha' si está disponible, sino 'date'
-          status: item.estado || item.status, // Usar 'estado' si está disponible, sino 'status'
+          client: item.cliente || item.client || item.customer,
+          amount: item.monto || item.amount,
+          date: item.fecha || item.date,
+          status: item.estado || item.status,
         }));
         
         // Extraer clientes únicos de los datos mapeados
@@ -587,11 +586,13 @@ export const createReportsSlice: StateCreator<
   },
 
   // Fetch chart reports
-  fetchChartReports: async (start: string, end: string, type: ChartReportType) => {
+  fetchChartReports: async (start: string, end: string, type: ChartReportType, total_min?: number, total_max?: number) => {
     set({ isLoadingChartReports: true });
     
     try {
-      const result = await fetchGetOrdersReportsCharts(start, end, type);
+      const result = await fetchGetOrdersReportsCharts(start, end, type, total_min, total_max);
+
+      console.log('result', result);
       
       if (result.ok && result.data) {
         set({
@@ -769,6 +770,8 @@ export const createReportsSlice: StateCreator<
 
   // Clientes con más compras
   fetchClientsMostPurchasesList: async (start, end, per_page, page, total_min, total_max) => {
+    console.log('total_min', total_min);
+    console.log('total_max', total_max);
     set({ isLoadingClientsMostPurchases: true });
     try {
       const result = await fetchGetClientsMostPurchasesList(start, end, per_page, page, total_min, total_max);

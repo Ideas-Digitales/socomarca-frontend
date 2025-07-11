@@ -193,7 +193,7 @@ export default function FilterOptions({
 
         {onFilter && (
           <button
-            className="w-full cursor-pointer md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium"
+            className="w-full cursor-pointer md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium hover:bg-gray-100 transition-all duration-300"
             onClick={onFilter}
           >
             Filtrar

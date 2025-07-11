@@ -130,12 +130,6 @@ export default function TransaccionesExitosas() {
 
   // Debug: Log de datos cuando cambien
   useEffect(() => {
-    console.log('transactionsList actualizada:', transactionsList);
-    console.log('transaccionesFixed:', transaccionesFixed);
-    console.log('isLoadingReports:', isLoadingReports);
-    console.log('chartReportsData:', chartReportsData);
-    console.log('isLoadingChartReports:', isLoadingChartReports);
-    console.log('chartRawData:', useStore.getState().chartRawData);
   }, [transactionsList, transaccionesFixed, isLoadingReports, chartReportsData, isLoadingChartReports]);
 
   // Definir las métricas basadas en datos del backend

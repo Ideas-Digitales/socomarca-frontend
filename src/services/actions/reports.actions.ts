@@ -151,14 +151,16 @@ export const fetchGetOrdersReportsTransactionsList = async (
     if (type) requestBody.type = type;
     
     // Si se envía total_min, usarlo; si no se envía pero se envía total_max, usar 0 como default
-    if (total_min !== undefined && total_min !== null && total_min >= 0) {
+    if (total_min !== undefined && total_min !== null) {
       requestBody.total_min = total_min;
     } else if (total_max !== undefined && total_max !== null && total_max > 0) {
       // Si no hay total_min pero sí hay total_max, usar 0 como total_min
       requestBody.total_min = 0;
     }
     
-    if (total_max !== undefined && total_max !== null && total_max > 0) requestBody.total_max = total_max;
+    if (total_max !== undefined && total_max !== null && total_max > 0) {
+      requestBody.total_max = total_max;
+    }
     console.log('requestBody', requestBody);
     const response = await fetch(endpointUrl, {
       method: 'POST',
@@ -253,14 +255,16 @@ export const fetchGetOrdersReportsFailedTransactionsList = async (
     if (client && client.trim() !== '') requestBody.client = client;
     if (type) requestBody.type = type;
     
-    if (total_min !== undefined && total_min !== null && total_min >= 0) {
+    if (total_min !== undefined && total_min !== null) {
       requestBody.total_min = total_min;
     } else if (total_max !== undefined && total_max !== null && total_max > 0) {
       // Si no hay total_min pero sí hay total_max, usar 0 como total_min
       requestBody.total_min = 0;
     }
     
-    if (total_max !== undefined && total_max !== null && total_max > 0) requestBody.total_max = total_max;
+    if (total_max !== undefined && total_max !== null && total_max > 0) {
+      requestBody.total_max = total_max;
+    }
 
     console.log('fetchGetOrdersReportsFailedTransactionsList requestBody:', requestBody);
 
@@ -456,14 +460,17 @@ export const fetchGetOrdersReportsCharts = async (
     };
 
     // Agregar filtros de montos si están presentes
-    if (total_min !== undefined && total_min !== null && total_min >= 0) {
+    if (total_min !== undefined && total_min !== null) {
       requestBody.total_min = total_min;
+    } else if (total_max !== undefined && total_max !== null && total_max > 0) {
+      // Si no hay total_min pero sí hay total_max, usar 0 como total_min
+      requestBody.total_min = 0;
     }
+    
     if (total_max !== undefined && total_max !== null && total_max > 0) {
       requestBody.total_max = total_max;
     }
 
-    console.log('fetchGetOrdersReportsCharts requestBody:', requestBody);
 
     const response = await fetch(endpointUrl, {
       method: 'POST',
@@ -488,6 +495,7 @@ export const fetchGetOrdersReportsCharts = async (
 
     const data = await response.json();
 
+    console.log('fetchGetOrdersReportsCharts data:', data);
 
     if (!response.ok) {
       return {
@@ -744,6 +752,8 @@ export const fetchGetClientsMostPurchasesList = async (
   total_min?: number,
   total_max?: number
 ): Promise<ActionResult<any>> => {
+  console.log('total_min', total_min);
+  console.log('total_max', total_max);
   try {
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
@@ -764,9 +774,19 @@ export const fetchGetClientsMostPurchasesList = async (
       per_page,
       page,
     };
-    if (total_min !== undefined) requestBody.total_min = total_min;
-    if (total_max !== undefined) requestBody.total_max = total_max;
+    
+    if (total_min !== undefined && total_min !== null) {
+      requestBody.total_min = total_min;
+    } else if (total_max !== undefined && total_max !== null && total_max > 0) {
+      // Si no hay total_min pero sí hay total_max, usar 0 como total_min
+      requestBody.total_min = 0;
+    }
+    
+    if (total_max !== undefined && total_max !== null && total_max > 0) {
+      requestBody.total_max = total_max;
+    }
 
+    console.log('requestBody', requestBody);
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: {
