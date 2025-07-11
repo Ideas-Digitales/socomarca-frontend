@@ -85,7 +85,7 @@ export default function ModalEditarDireccion({
     }
 
     cargarDatosDesdeDireccion();
-  }, [direccion, setRegion, setComuna, regiones, getRegions, getMunicipalities]);
+  }, [direccion, setRegion, setComuna, regiones]);
 
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = Number(e.target.value);

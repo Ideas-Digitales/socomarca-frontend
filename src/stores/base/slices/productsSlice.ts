@@ -95,6 +95,8 @@ export const createProductsSlice: StateCreator<
     terms: FetchSearchProductsByFiltersProps & { page?: number; size?: number }
   ) => {
     try {
+      set({ isLoadingProducts: true });
+      
       const searchParams = {
         ...terms,
         page: terms.page || 1,
@@ -116,11 +118,14 @@ export const createProductsSlice: StateCreator<
         });
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
+        set({ isLoadingProducts: false });
       }
     } catch (error: any) {
       console.error('Error in setSearchTerm:', error);
+      set({ isLoadingProducts: false });
     }
   },
+
   fetchMinMaxPrice: async () => {
     const { setAvailablePriceRange } = get();
     const response = await fetchMinMaxPrice();
@@ -129,6 +134,7 @@ export const createProductsSlice: StateCreator<
       setAvailablePriceRange(min_price, max_price);
     }
   },
+
   fetchProducts: async (page = 1, size = 9) => {
     try {
       set({ isLoadingProducts: true });

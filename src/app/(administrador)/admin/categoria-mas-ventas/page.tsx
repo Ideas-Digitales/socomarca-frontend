@@ -49,8 +49,8 @@ export default function CategoriasMasVentas() {
   } = useStore();
 
   // Estados para manejar filtros
-  const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  // const [selectedClients, setSelectedClients] = useState<Client[]>([]);
+  // const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [amountFilter, setAmountFilter] = useState<AmountRange>({
     min: reportsFilters.total_min?.toString() || '',
     max: reportsFilters.total_max?.toString() || '',
@@ -207,35 +207,35 @@ export default function CategoriasMasVentas() {
   };
 
   // TEMPORAL: Actualizar para manejar tanto number como string
-  const handleClientFilter = (clientId: number | string) => {
-    console.log('Filtrar por cliente:', clientId, typeof clientId);
+  // const handleClientFilter = (clientId: number | string) => {
+  //   console.log('Filtrar por cliente:', clientId, typeof clientId);
 
-    if (typeof clientId === 'string') {
-      // TEMPORAL: Nuevo comportamiento - usar el string directamente
-      if (clientId.trim() === '') {
-        // Limpiar selección
-        setSelectedClients([]);
-      } else {
-        setSelectedClients([{ id: 0, name: clientId }]); // ID temporal para mantener compatibilidad
-      }
-    } else {
-      // TEMPORAL: Comportamiento original para números (comentado para referencia)
-      // if (clientId === -1 || clientId === 0) {
-      //   // Limpiar selección
-      //   setSelectedClients([]);
-      // } else {
-      //   const client = clients.find((c) => c.id === clientId);
-      //   if (client) {
-      //     setSelectedClients([client]);
-      //   }
-      // }
-    }
-  };
+  //   if (typeof clientId === 'string') {
+  //     // TEMPORAL: Nuevo comportamiento - usar el string directamente
+  //     if (clientId.trim() === '') {
+  //       // Limpiar selección
+  //       // setSelectedClients([]);
+  //     } else {
+  //       // setSelectedClients([{ id: 0, name: clientId }]); // ID temporal para mantener compatibilidad
+  //     }
+  //   } else {
+  //     // TEMPORAL: Comportamiento original para números (comentado para referencia)
+  //     // if (clientId === -1 || clientId === 0) {
+  //     //   // Limpiar selección
+  //     //   setSelectedClients([]);
+  //     // } else {
+  //     //   const client = clients.find((c) => c.id === clientId);
+  //     //   if (client) {
+  //     //     setSelectedClients([client]);
+  //     //   }
+  //     // }
+  //   }
+  // };
 
-  const handleCategoryFilter = (categoryIds: number[]) => {
-    console.log('Filtrar por categorías:', categoryIds);
-    setSelectedCategories(categoryIds);
-  };
+  // const handleCategoryFilter = (categoryIds: number[]) => {
+  //   console.log('Filtrar por categorías:', categoryIds);
+  //   // setSelectedCategories(categoryIds);
+  // };
 
   const handleFilter = () => {
     console.log('Aplicar filtros generales...');
@@ -271,8 +271,8 @@ export default function CategoriasMasVentas() {
   const handleClearSearch = () => {
     console.log('Limpiar búsqueda');
     setAmountFilter({ min: '', max: '' });
-    setSelectedClients([]);
-    setSelectedCategories([]);
+    // setSelectedClients([]);
+    // setSelectedCategories([]);
     
     // Limpiar filtros en el store
     setReportsFilters({

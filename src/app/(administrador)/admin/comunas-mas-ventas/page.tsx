@@ -150,7 +150,7 @@ export default function ComunasMasVentas() {
 
   const handleFilter = () => {
     // Aplicar filtros
-    const { start, end, selectedMunicipality, total_min, total_max } = reportsFilters;
+    const { start, end, selectedMunicipality } = reportsFilters;
     Promise.all([
       fetchChartReports(start, end, 'top-municipalities'),
       fetchChartRawData(start, end, selectedMunicipality || null)

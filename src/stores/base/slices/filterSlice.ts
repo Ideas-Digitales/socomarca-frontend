@@ -229,22 +229,36 @@ export const createFiltersSlice: StateCreator<
   },
 
   clearAllFilters: async () => {
-    const { fetchProducts, productPaginationMeta, minPrice, maxPrice } = get();
+    const { 
+      fetchProducts, 
+      productPaginationMeta, 
+      minPrice, 
+      maxPrice,
+      searchTerm,
+      setSearchTerm
+    } = get();
+
+    // Guardamos el término de búsqueda actual
+    const currentSearchTerm = searchTerm;
 
     set({
       selectedCategories: [],
       selectedBrands: [],
       selectedFavorites: [],
-      searchTerm: '',
       showOnlyFavorites: false,
       selectedMinPrice: minPrice,
       selectedMaxPrice: maxPrice,
       isFiltered: false,
     });
 
-
     try {
-      await fetchProducts(1, productPaginationMeta?.per_page || 9);
+      if (currentSearchTerm) {
+        // Si hay un término de búsqueda, lo reaplica
+        await setSearchTerm({ value: currentSearchTerm });
+      } else {
+        // Si no hay búsqueda, carga todos los productos
+        await fetchProducts(1, productPaginationMeta?.per_page || 9);
+      }
     } catch (error) {
       console.error('Error clearing filters:', error);
     }
