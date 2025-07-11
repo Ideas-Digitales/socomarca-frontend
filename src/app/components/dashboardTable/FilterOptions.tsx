@@ -157,7 +157,7 @@ export default function FilterOptions({
             />
           )}
 
-          {onProviderFilter && (
+          {/* onProviderFilter && (
             <button
               className="w-full md:max-w-[216px] md:w-full bg-gray-100 flex justify-between items-center p-[10px] h-10 text-gray-500 text-md rounded"
               onClick={onProviderFilter}
@@ -165,7 +165,7 @@ export default function FilterOptions({
               Distribuidor/Proveedor
               <MagnifyingGlassIcon width={20} height={20} />
             </button>
-          )}
+          ) */}
 
           {onCommuneFilter && (
             <Dropdown
