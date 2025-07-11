@@ -1,7 +1,7 @@
 'use client';
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
-import { formatCurrency, formatNumber } from '@/utils/formatCurrency';
+import { formatCurrency } from '@/utils/formatCurrency';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import {
   ExtendedDashboardTableConfig,
