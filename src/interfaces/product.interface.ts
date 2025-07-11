@@ -72,6 +72,8 @@ export interface FetchSearchProductsByFiltersProps {
   min?: number;
   max?: number;
   sort?: 'asc' | 'desc';
+  sort_field?: 'id' | 'name' | 'price' | 'stock' | 'category_name' | 'brand_name';
+  sort_direction?: 'asc' | 'desc';
   unit?: string;
   category_id?: number;
   subcategory_id?: number;

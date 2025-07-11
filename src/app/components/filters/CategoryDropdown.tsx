@@ -17,12 +17,13 @@ export default function CategoryDropdown({
 }: CategoryDropdownProps) {
   const { isOpen, toggle, ref } = useDropdown();
 
-  const handleCategoryToggle = (categoryId: number) => {
-    const newSelectedIds = selectedIds.includes(categoryId)
-      ? selectedIds.filter((id) => id !== categoryId)
-      : [...selectedIds, categoryId];
-
-    onSelectionChange(newSelectedIds);
+  const handleCategorySelect = (categoryId: number) => {
+    if (selectedIds[0] === categoryId) {
+      // Si ya está seleccionada, deselecciona
+      onSelectionChange([]);
+    } else {
+      onSelectionChange([categoryId]);
+    }
   };
 
   return (
@@ -52,8 +53,9 @@ export default function CategoryDropdown({
                 >
                   <input
                     type="checkbox"
-                    checked={selectedIds.includes(category.id)}
-                    onChange={() => handleCategoryToggle(category.id)}
+                    name="category-radio"
+                    checked={selectedIds[0] === category.id}
+                    onChange={() => handleCategorySelect(category.id)}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                   />
                   <span className="text-sm text-gray-700">{category.name}</span>
