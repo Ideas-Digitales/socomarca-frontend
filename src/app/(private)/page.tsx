@@ -80,6 +80,7 @@ export default function PrivatePage() {
       onClear={handleClearSearch}
       placeholder="Busca productos ahora"
       label="Encuentra justo lo que necesitas con solo un clic en nuestro buscador"
+      initialValue={searchTerm}
     />
   );
 
