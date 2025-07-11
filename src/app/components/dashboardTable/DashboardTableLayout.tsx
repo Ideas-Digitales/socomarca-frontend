@@ -26,7 +26,6 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onPageChange,
   onFilter,
   onCategoryFilter,
-  onProviderFilter,
   onSortBy,
   categories,
   selectedCategories = [],
@@ -91,7 +90,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           selectedCommunes={selectedCommunes}
           onFilter={handleFilter}
           onCategoryFilter={onCategoryFilter}
-          onProviderFilter={onProviderFilter}
+          //onProviderFilter={onProviderFilter}
           onSortBy={onSortBy}
           categories={categories}
           selectedCategories={selectedCategories}

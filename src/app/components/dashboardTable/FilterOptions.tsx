@@ -1,6 +1,5 @@
 import { Category } from '@/interfaces/category.interface';
 import { SortOption, TableColumn } from '@/interfaces/dashboard.interface';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import SortDropdown from '../filters/SortDropdown';
 import Dropdown, { DropdownOption } from '../filters/Dropdown';
 import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
@@ -39,7 +38,6 @@ interface Props {
 export default function FilterOptions({
   onFilter,
   onCategoryFilter,
-  onProviderFilter,
   onSortBy,
   categories = [],
   selectedCategories = [],
@@ -160,7 +158,18 @@ export default function FilterOptions({
             />
           )}
 
-          {onProviderFilter && (
+          {onCommuneFilter && (
+            <Dropdown
+              options={communes}
+              selectedIds={selectedCommunes}
+              onSelectionChange={onCommuneFilter}
+              placeholder="Comuna"
+              className="w-full md:max-w-[120px] md:w-full"
+              multiple={false}
+            />
+          )}
+
+          {/* onProviderFilter && (
             <button
               className="w-full md:max-w-[216px] md:w-full bg-gray-100 flex justify-between items-center p-[10px] h-10 text-gray-500 text-md rounded"
               onClick={onProviderFilter}
@@ -168,7 +177,9 @@ export default function FilterOptions({
               Distribuidor/Proveedor
               <MagnifyingGlassIcon width={20} height={20} />
             </button>
-          )}
+          ) */}
+
+
 
           {onSortBy && tableColumns && tableColumns.length > 0 && (
             <SortDropdown
