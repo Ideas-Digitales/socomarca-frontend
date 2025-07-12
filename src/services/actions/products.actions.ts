@@ -235,7 +235,48 @@ export const fetchSearchProductsByFilters = async (
       }
 
       // Aplicar ordenamiento si existe
-      if (filters.sort) {
+      if (filters.sort_field && filters.sort_direction) {
+        filteredProducts.sort((a, b) => {
+          let aValue: any;
+          let bValue: any;
+
+          switch (filters.sort_field) {
+            case 'id':
+              aValue = a.id;
+              bValue = b.id;
+              break;
+            case 'name':
+              aValue = a.name.toLowerCase();
+              bValue = b.name.toLowerCase();
+              break;
+            case 'price':
+              aValue = typeof a.price === 'string' ? parseFloat(a.price) : a.price;
+              bValue = typeof b.price === 'string' ? parseFloat(b.price) : b.price;
+              break;
+            case 'stock':
+              aValue = a.stock;
+              bValue = b.stock;
+              break;
+            case 'category_name':
+              aValue = a.category.name.toLowerCase();
+              bValue = b.category.name.toLowerCase();
+              break;
+            case 'brand_name':
+              aValue = a.brand.name.toLowerCase();
+              bValue = b.brand.name.toLowerCase();
+              break;
+            default:
+              return 0;
+          }
+
+          if (filters.sort_direction === 'asc') {
+            return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+          } else {
+            return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+          }
+        });
+      } else if (filters.sort) {
+        // Mantener compatibilidad con el ordenamiento anterior (solo por precio)
         filteredProducts.sort((a, b) => {
           const aPrice =
             typeof a.price === 'string' ? parseFloat(a.price) : a.price;
@@ -347,6 +388,13 @@ export const fetchSearchProductsByFilters = async (
       if (filters.sort) {
         requestBody.sort = filters.sort;
       }
+
+      // Agregar sort_field y sort_direction si existen
+      if (filters.sort_field && filters.sort_direction) {
+        requestBody.filters.sort = filters.sort_field;
+        requestBody.filters.sort_direction = filters.sort_direction;
+      }
+
 
       const response = await fetch(
         `${BACKEND_URL}/products/search?${queryParams}`,
@@ -546,6 +594,73 @@ export const fetchMinMaxPrice = async () => {
     };
   } catch (error) {
     console.log('Error fetching min/max price:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+};
+
+/**
+ * Fetches the product list from the backend with pagination and sorting.
+ * @param params - { page, per_page, sort, sort_direction }
+ * @returns API response with product data
+ */
+export const fetchGetProductsList = async ({
+  page = 1,
+  per_page = 15,
+  sort = 'id',
+  sort_direction = 'asc',
+}: {
+  page?: number;
+  per_page?: number;
+  sort?: 'id' | 'price' | 'category_name' | 'stock';
+  sort_direction?: 'asc' | 'desc';
+}) => {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const cookie = getCookie('token');
+
+    if (!cookie) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token provided',
+      };
+    }
+
+    const url = new URL(`${BACKEND_URL}/products`);
+    url.searchParams.set('page', page.toString());
+    url.searchParams.set('per_page', per_page.toString());
+    url.searchParams.set('sort', sort);
+    url.searchParams.set('sort_direction', sort_direction);
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${cookie}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        data: null,
+        error: data.message || `HTTP error! status: ${response.status}`,
+      };
+    }
+
+    return {
+      ok: true,
+      data,
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error fetching products list:', error);
     return {
       ok: false,
       data: null,

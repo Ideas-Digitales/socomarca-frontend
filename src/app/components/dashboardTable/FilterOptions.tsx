@@ -1,14 +1,13 @@
 import { Category } from '@/interfaces/category.interface';
 import { SortOption, TableColumn } from '@/interfaces/dashboard.interface';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import SortDropdown from '../filters/SortDropdown';
-import { Comuna } from '@/mock/comunasVentas';
 import Dropdown, { DropdownOption } from '../filters/Dropdown';
 import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
 import AmountFilter from '../filters/AmountFilter';
 import SearchableDropdown, {
   SearchableOption,
 } from '../filters/SearchableDropdown';
+import { Customer } from '@/services/actions/clients.actions';
 
 interface AmountRange {
   min: string;
@@ -24,21 +23,21 @@ interface Props {
   selectedCategories?: number[];
   tableColumns?: TableColumn<any>[];
   selectedSortOption?: SortOption | null;
-  onCommuneFilter?: (selectedIds: string[]) => void;
-  selectedCommunes?: string[];
-  communes?: Comuna[];
+  onCommuneFilter?: (selectedIds: (string | number)[]) => void;
+  selectedCommunes?: (string | number)[];
   onAmountFilter?: (amount: AmountRange) => void;
   amountValue?: AmountRange;
   clients?: Client[];
+  customers?: Customer[];
   onClientFilter?: (clientId: number) => void;
   selectedClients?: Client[];
   searchableDropdown?: boolean;
+  communes?: any[];
 }
 
 export default function FilterOptions({
   onFilter,
   onCategoryFilter,
-  onProviderFilter,
   onSortBy,
   categories = [],
   selectedCategories = [],
@@ -46,24 +45,19 @@ export default function FilterOptions({
   selectedSortOption = null,
   onCommuneFilter,
   selectedCommunes = [],
-  communes = [],
   onAmountFilter,
   amountValue = { min: '', max: '' },
   clients = [],
+  customers = [],
   onClientFilter,
   selectedClients = [],
   searchableDropdown = false,
+  communes = [],
 }: Props) {
   // Convertir categorías a DropdownOption
   const categoryOptions: DropdownOption[] = categories.map((category) => ({
     id: category.id,
     name: category.name,
-  }));
-
-  // Convertir comunas a DropdownOption
-  const communeOptions: DropdownOption[] = communes.map((commune) => ({
-    id: commune.comuna,
-    name: commune.comuna,
   }));
 
   // Convertir clientes a DropdownOption (para Dropdown normal)
@@ -72,20 +66,15 @@ export default function FilterOptions({
     name: client.name,
   }));
 
-  // Convertir clientes a SearchableOption (para SearchableDropdown)
-  const searchableClientOptions: SearchableOption[] = clients.map((client) => ({
-    id: client.id,
-    name: client.name,
+  // Convertir customers a SearchableOption (para SearchableDropdown)
+  const searchableCustomerOptions: SearchableOption[] = customers.map((customer) => ({
+    id: customer.id,
+    name: customer.customer,
   }));
 
   const handleCategoryChange = (selectedIds: (string | number)[]) => {
     const numericIds = selectedIds.map((id) => Number(id));
     onCategoryFilter?.(numericIds);
-  };
-
-  const handleCommuneChange = (selectedIds: (string | number)[]) => {
-    const stringIds = selectedIds.map((id) => String(id));
-    onCommuneFilter?.(stringIds);
   };
 
   // Handler para Dropdown normal de clientes
@@ -94,8 +83,8 @@ export default function FilterOptions({
     onClientFilter?.(numericIds[0]); // Solo toma el primero ya que es selección única
   };
 
-  // Handler para SearchableDropdown de clientes
-  const handleSearchableClientChange = (option: SearchableOption | null) => {
+  // Handler para SearchableDropdown de customers
+  const handleSearchableCustomerChange = (option: SearchableOption | null) => {
     if (option) {
       onClientFilter?.(option.id as number);
     } else {
@@ -104,8 +93,8 @@ export default function FilterOptions({
     }
   };
 
-  // Obtener el cliente seleccionado para SearchableDropdown
-  const getSelectedClient = (): SearchableOption | null => {
+  // Obtener el customer seleccionado para SearchableDropdown
+  const getSelectedCustomer = (): SearchableOption | null => {
     if (selectedClients.length > 0) {
       const selected = selectedClients[0];
       return { id: selected.id, name: selected.name };
@@ -125,7 +114,7 @@ export default function FilterOptions({
             />
           )}
 
-          {onClientFilter &&
+          {onClientFilter && (
             (!searchableDropdown ? (
               <Dropdown
                 options={clientOptions}
@@ -137,14 +126,15 @@ export default function FilterOptions({
               />
             ) : (
               <SearchableDropdown
-                options={searchableClientOptions}
-                selectedOption={getSelectedClient()}
-                onSelectionChange={handleSearchableClientChange}
+                options={searchableCustomerOptions}
+                selectedOption={getSelectedCustomer()}
+                onSelectionChange={handleSearchableCustomerChange}
                 placeholder="Buscar cliente"
                 noResultsText="No se encontró el cliente"
                 className="w-full md:max-w-[216px] md:w-full"
               />
-            ))}
+            ))
+          )}
 
           {onCategoryFilter && (
             <Dropdown
@@ -157,7 +147,29 @@ export default function FilterOptions({
             />
           )}
 
-          {onProviderFilter && (
+          {onCommuneFilter && (
+            <Dropdown
+              options={communes}
+              selectedIds={selectedCommunes}
+              onSelectionChange={onCommuneFilter}
+              placeholder="Comuna"
+              className="w-full md:max-w-[120px] md:w-full"
+              multiple={false}
+            />
+          )}
+
+          {onCommuneFilter && (
+            <Dropdown
+              options={communes}
+              selectedIds={selectedCommunes}
+              onSelectionChange={onCommuneFilter}
+              placeholder="Comuna"
+              className="w-full md:max-w-[120px] md:w-full"
+              multiple={false}
+            />
+          )}
+
+          {/* onProviderFilter && (
             <button
               className="w-full md:max-w-[216px] md:w-full bg-gray-100 flex justify-between items-center p-[10px] h-10 text-gray-500 text-md rounded"
               onClick={onProviderFilter}
@@ -165,18 +177,9 @@ export default function FilterOptions({
               Distribuidor/Proveedor
               <MagnifyingGlassIcon width={20} height={20} />
             </button>
-          )}
+          ) */}
 
-          {onCommuneFilter && (
-            <Dropdown
-              options={communeOptions}
-              selectedIds={selectedCommunes}
-              onSelectionChange={handleCommuneChange}
-              placeholder="Comuna"
-              className="w-full md:max-w-[120px] md:w-full"
-              multiple={true} // Múltiples comunas
-            />
-          )}
+
 
           {onSortBy && tableColumns && tableColumns.length > 0 && (
             <SortDropdown
@@ -190,7 +193,7 @@ export default function FilterOptions({
 
         {onFilter && (
           <button
-            className="w-full cursor-pointer md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium"
+            className="w-full cursor-pointer md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium hover:bg-gray-100 transition-all duration-300"
             onClick={onFilter}
           >
             Filtrar

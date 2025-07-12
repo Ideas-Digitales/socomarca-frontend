@@ -18,8 +18,9 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 import { useState, useEffect, useCallback } from 'react';
-import { getUsersAction } from '@/services/actions/user.actions';
-import { transformApiUserToUser, ApiMeta } from '@/interfaces/user.interface';
+import { getUsersAction, searchUsersAction, updateUserAction, deleteUserAction, UpdateUserRequest } from '@/services/actions/user.actions';
+import { getRolesAction, Role } from '@/services/actions/roles.actions';
+import { transformApiUserToUser, ApiMeta, SearchUsersRequest } from '@/interfaces/user.interface';
 
 export interface User {
   id: number;
@@ -36,7 +37,7 @@ interface EditFormData {
   email: string;
   firstName: string;
   lastName: string;
-  userProfile: 'colaborador' | 'editor' | 'administrador' | '';
+  userProfile: string;
   password: string;
   changePassword: boolean;
 }
@@ -48,6 +49,37 @@ interface EditFormErrors {
   userProfile?: string;
   password?: string[];
 }
+
+// Componente Skeleton para la tabla
+const TableSkeleton = () => {
+  return (
+    <div className="animate-pulse">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Header de la tabla */}
+        <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+          <div className="grid grid-cols-6 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-4 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Filas de la tabla */}
+        {[...Array(5)].map((_, rowIndex) => (
+          <div key={rowIndex} className="px-6 py-4 border-b border-gray-100">
+            <div className="grid grid-cols-6 gap-4">
+              {[...Array(6)].map((_, colIndex) => (
+                <div key={colIndex} className="h-4 bg-gray-100 rounded"></div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
 
 // Componente del modal de eliminación
 const DeleteUserModal = ({
@@ -119,18 +151,17 @@ const DeleteUserModal = ({
 const EditUserForm = ({
   user,
   onClose,
+  onSuccess,
 }: {
   user: User;
   onClose: () => void;
+  onSuccess: () => void;
 }) => {
   const [formData, setFormData] = useState<EditFormData>({
     email: user.email,
     firstName: user.name,
     lastName: user.lastname,
-    userProfile: user.profile.toLowerCase() as
-      | 'colaborador'
-      | 'editor'
-      | 'administrador',
+    userProfile: user.profile.toLowerCase(),
     password: '',
     changePassword: false,
   });
@@ -138,6 +169,8 @@ const EditUserForm = ({
   const [errors, setErrors] = useState<EditFormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
 
   // Validar email
   const isValidEmail = (email: string): boolean => {
@@ -235,17 +268,59 @@ const EditUserForm = ({
     setIsSubmitting(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log('Usuario actualizado:', formData);
-      alert('Usuario actualizado exitosamente!');
-      onClose();
+      // Preparar datos para la API
+      const updateData: UpdateUserRequest = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: '', // Campo opcional, se puede agregar al formulario si es necesario
+        rut: '', // Campo opcional, se puede agregar al formulario si es necesario
+        business_name: '', // Campo opcional, se puede agregar al formulario si es necesario
+        is_active: true, // Por defecto activo
+        roles: [formData.userProfile], // Convertir perfil a rol
+      };
+
+      // Agregar contraseña si se está cambiando
+      if (formData.changePassword && formData.password) {
+        updateData.password = formData.password;
+        updateData.password_confirmation = formData.password;
+      }
+
+      const result = await updateUserAction(user.id, updateData);
+
+      if (result.success) {
+        console.log('Usuario actualizado exitosamente:', result.data);
+        onSuccess();
+        onClose();
+      } else {
+        console.error('Error al actualizar usuario:', result.error);
+        // Aquí podrías mostrar un mensaje de error más específico
+      }
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
-      alert('Error al actualizar usuario');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Cargar roles al montar el componente
+  useEffect(() => {
+    const loadRoles = async () => {
+      try {
+        const result = await getRolesAction();
+        if (result.success && result.data) {
+          setRoles(result.data);
+        } else {
+          console.error('Error loading roles:', result.error);
+        }
+      } catch (error) {
+        console.error('Error loading roles:', error);
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    loadRoles();
+  }, []);
 
   // Obtener validación de contraseña para mostrar nivel
   const passwordValidation =
@@ -315,44 +390,24 @@ const EditUserForm = ({
         <div className="flex flex-col gap-3">
           <span className="text-[15px]">Perfil de usuario</span>
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2 items-center">
-              <input
-                type="radio"
-                name="userProfile"
-                id="colaborador-edit"
-                checked={formData.userProfile === 'colaborador'}
-                onChange={() => handleInputChange('userProfile', 'colaborador')}
-              />
-              <label className="text-sm" htmlFor="colaborador-edit">
-                Colaborador
-              </label>
-            </div>
-            <div className="flex gap-2 items-center">
-              <input
-                type="radio"
-                name="userProfile"
-                id="editor-edit"
-                checked={formData.userProfile === 'editor'}
-                onChange={() => handleInputChange('userProfile', 'editor')}
-              />
-              <label className="text-sm" htmlFor="editor-edit">
-                Editor
-              </label>
-            </div>
-            <div className="flex gap-2 items-center">
-              <input
-                type="radio"
-                name="userProfile"
-                id="administrador-edit"
-                checked={formData.userProfile === 'administrador'}
-                onChange={() =>
-                  handleInputChange('userProfile', 'administrador')
-                }
-              />
-              <label className="text-sm" htmlFor="administrador-edit">
-                Administrador
-              </label>
-            </div>
+            {loadingRoles ? (
+              <div className="text-sm text-gray-500">Cargando roles...</div>
+            ) : (
+              roles.map((role) => (
+                <div key={role.id} className="flex gap-2 items-center">
+                  <input
+                    type="radio"
+                    name="userProfile"
+                    id={`${role.name}-edit`}
+                    checked={formData.userProfile === role.name}
+                    onChange={() => handleInputChange('userProfile', role.name)}
+                  />
+                  <label className="text-sm" htmlFor={`${role.name}-edit`}>
+                    {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
+                  </label>
+                </div>
+              ))
+            )}
           </div>
           {errors.userProfile && (
             <span className="text-red-500 text-xs">{errors.userProfile}</span>
@@ -470,44 +525,56 @@ const EditUserForm = ({
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  //const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  //const [modalAction, setModalAction] = useState<'edit' | 'delete' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [meta, setMeta] = useState<ApiMeta | null>(null);
   const [perPage] = useState(10);
+  const [deletingUsers, setDeletingUsers] = useState<Set<number>>(new Set());
 
   const { openModal, closeModal } = useStore();
 
   // Función para cargar usuarios
   const loadUsers = useCallback(async (page: number = 1, search: string = '') => {
-    setLoading(true);
+    if (search.trim()) {
+      setSearchLoading(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
-      const result = await getUsersAction({
-        page,
-        per_page: perPage,
-      });
+      let result;
+      
+      if (search.trim()) {
+        // Usar búsqueda si hay término de búsqueda
+        const searchRequest: SearchUsersRequest = {
+          filters: [
+            {
+              field: 'name',
+              operator: 'ILIKE',
+              value: `%${search}%`
+            }
+          ],
+          roles: [], // Buscar en todos los roles
+          per_page: perPage
+        };
+        
+        result = await searchUsersAction(searchRequest);
+      } else {
+        // Usar listado normal si no hay búsqueda
+        result = await getUsersAction({
+          page,
+          per_page: perPage,
+        });
+      }
 
       if (result.success && result.data) {
         // Transformar los datos de la API al formato del componente
-        const transformedUsers = result.data.data.map(transformApiUserToUser);
-        
-        // Filtrar por término de búsqueda si existe
-        let filteredUsers = transformedUsers;
-        if (search.trim()) {
-          filteredUsers = transformedUsers.filter(
-            (user) =>
-              user.name.toLowerCase().includes(search.toLowerCase()) ||
-              user.lastname.toLowerCase().includes(search.toLowerCase()) ||
-              user.email.toLowerCase().includes(search.toLowerCase()) ||
-              user.username.toLowerCase().includes(search.toLowerCase())
-          );
-        }
-
-        setUsers(filteredUsers);
+        const apiUsers = Array.isArray(result.data.data) ? result.data.data : [];
+        const transformedUsers = apiUsers.map((apiUser: any) => transformApiUserToUser(apiUser));
+        setUsers(transformedUsers);
         setMeta(result.data.meta);
       } else {
         setError(result.error || 'Error al cargar usuarios');
@@ -517,6 +584,7 @@ export default function UsersPage() {
       console.error('Error loading users:', err);
     } finally {
       setLoading(false);
+      setSearchLoading(false);
     }
   }, [perPage]);
 
@@ -544,8 +612,6 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = (user: User) => {
-    //setSelectedUser(user);
-    //setModalAction('delete');
     openModal('delete-user', {
       title: `Confirmar eliminación`,
       size: 'sm',
@@ -560,23 +626,36 @@ export default function UsersPage() {
   };
 
   const confirmDeleteUser = async (user: User) => {
+    // Optimistic update: remover usuario de la lista inmediatamente
+    setUsers(prevUsers => prevUsers.filter(u => u.id !== user.id));
+    setDeletingUsers(prev => new Set(prev).add(user.id));
+    
     try {
-      // Simular llamada al backend
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log('Usuario eliminado:', user);
-      alert(`Usuario ${user.username} eliminado exitosamente`);
-      closeModal();
-      // Recargar la lista después de eliminar
-      loadUsers(currentPage, searchTerm);
+      const result = await deleteUserAction(user.id);
+      
+      if (result.success) {
+        console.log('Usuario eliminado:', user);
+        closeModal();
+        // No necesitamos recargar la lista porque ya hicimos optimistic update
+      } else {
+        // Si falló, revertir el optimistic update
+        setUsers(prevUsers => [...prevUsers, user]);
+        console.error('Error al eliminar usuario:', result.error);
+      }
     } catch (error) {
+      // Si falló, revertir el optimistic update
+      setUsers(prevUsers => [...prevUsers, user]);
       console.error('Error al eliminar usuario:', error);
-      alert('Error al eliminar usuario');
+    } finally {
+      setDeletingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(user.id);
+        return newSet;
+      });
     }
   };
 
   const handleEditUser = (user: User) => {
-    //setSelectedUser(user);
-    //setModalAction('edit');
     openModal('edit-user', {
       title: 'Editar usuario',
       size: 'md',
@@ -585,7 +664,9 @@ export default function UsersPage() {
           user={user}
           onClose={() => {
             closeModal();
-            // Recargar la lista después de editar
+          }}
+          onSuccess={() => {
+            // Recargar la lista después de editar exitosamente
             loadUsers(currentPage, searchTerm);
           }}
         />
@@ -622,6 +703,7 @@ export default function UsersPage() {
           <button
             className="text-lime-500 hover:underline cursor-pointer flex items-center gap-1"
             onClick={() => handleEditUser(user)}
+            disabled={deletingUsers.has(user.id)}
           >
             <PencilSquareIcon width={16} height={16} />
             Editar
@@ -629,9 +711,10 @@ export default function UsersPage() {
           <button
             className="text-lime-500 hover:underline cursor-pointer flex items-center gap-1"
             onClick={() => handleDeleteUser(user)}
+            disabled={deletingUsers.has(user.id)}
           >
             <TrashIcon width={16} height={16} />
-            Eliminar
+            {deletingUsers.has(user.id) ? 'Eliminando...' : 'Eliminar'}
           </button>
         </div>
       ),
@@ -650,11 +733,18 @@ export default function UsersPage() {
     path: meta.path,
   } : null;
 
-  if (loading) {
+  // Mostrar skeleton solo en la carga inicial
+  if (loading && users.length === 0) {
     return (
       <div className="flex flex-col gap-2 max-w-7xl mx-auto w-full">
-        <div className="flex justify-center items-center py-8">
-          <div className="text-gray-500">Cargando usuarios...</div>
+        <Search
+          onClear={onClear}
+          onSearch={onSearch}
+          showLabel={false}
+          placeholder="Buscar por nombre / correo electrónico"
+        />
+        <div className="px-4">
+          <TableSkeleton />
         </div>
       </div>
     );
@@ -663,6 +753,12 @@ export default function UsersPage() {
   if (error) {
     return (
       <div className="flex flex-col gap-2 max-w-7xl mx-auto w-full">
+        <Search
+          onClear={onClear}
+          onSearch={onSearch}
+          showLabel={false}
+          placeholder="Buscar por nombre / correo electrónico"
+        />
         <div className="flex justify-center items-center py-8">
           <div className="text-red-500">Error: {error}</div>
           <button
@@ -684,7 +780,17 @@ export default function UsersPage() {
         showLabel={false}
         placeholder="Buscar por nombre / correo electrónico"
       />
-      <div className="px-4">
+      <div className="px-4 relative">
+        {/* Overlay de loading para búsqueda */}
+        {searchLoading && (
+          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-lime-500"></div>
+              <span className="text-gray-600">Buscando...</span>
+            </div>
+          </div>
+        )}
+        
         <CustomTable data={users} columns={usersColumns} />
       </div>
       {paginationMeta && (

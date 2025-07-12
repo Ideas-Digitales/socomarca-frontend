@@ -18,9 +18,19 @@ import { createModalSlice } from './slices/modalSlice';
 import { createFavoritesSlice } from './slices/favoritesSlice';
 import { createReportsSlice } from './slices/reportsSlice';
 import { createFAQSlice } from './slices/faqSlice';
+import { createClientsSlice } from './slices/clientsSlice';
+import { createTerminosCondicionesSlice } from './slices/terminos-condicionesSlice';
+import { createSiteInformationSlice } from './slices/siteInformationSlice';
+import { createChartSlice } from './slices/chartSlice';
+import { createLocationSlice } from './slices/locationSlice';
+import { createCustomerMessageSlice } from './slices/customerMessageSlice';
 
 // Estado inicial optimizado
 const initialState: StoreState = {
+  // Customers states
+  customersList: [],
+  isLoadingCustomers: false,
+  customersError: null,
   // Auth states
   isLoggedIn: false,
   user: {
@@ -117,6 +127,39 @@ const initialState: StoreState = {
   faqPaginationLinks: null,
   isLoadingFAQ: false,
   faqError: null,
+
+  // Clients states
+  clientsList: [],
+  clientsPagination: null,
+  isLoadingClients: false,
+  clientsError: null,
+  clientsFilters: {},
+  clientsCurrentPage: 1,
+
+  // Terms and conditions states
+  termsAndConditions: null,
+  isLoadingTerms: false,
+  isUpdatingTerms: false,
+  termsError: null,
+  hasUnsavedChanges: false,
+  currentContent: '',
+
+  // Site information states
+  siteInformation: null,
+  isLoadingSiteInfo: false,
+  isUpdatingSiteInfo: false,
+  siteInfoError: null,
+
+  // Location states
+  regions: [],
+  municipalities: [],
+  isLoadingLocation: false,
+  locationError: null,
+
+  // Customer message states
+  customerMessage: null,
+  isLoadingCustomerMessage: false,
+  customerMessageError: null,
 };
 
 // Crear el store combinando todos los slices de manera optimizada
@@ -136,6 +179,12 @@ const useStore = create<Store>()((...a) => ({
   ...createFavoritesSlice(...a),
   ...createReportsSlice(...a),
   ...createFAQSlice(...a),
+  ...createClientsSlice(...a),
+  ...createTerminosCondicionesSlice(...a),
+  ...createSiteInformationSlice(...a),
+  ...createChartSlice(...a), // <-- Agregado para incluir chartSlice
+  ...createLocationSlice(...a), // <-- Agregado para incluir locationSlice
+  ...createCustomerMessageSlice(...a), // <-- Agregado para incluir customerMessageSlice
 }));
 
 // Hook optimizado para manejar la detección de dispositivos móviles

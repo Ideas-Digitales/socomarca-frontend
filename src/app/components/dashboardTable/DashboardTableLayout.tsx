@@ -6,11 +6,17 @@ import FilterOptions from './FilterOptions';
 import DayPickerComponent from '@/app/components/admin/DayPickerComponent';
 import LineChartContent from '@/app/components/admin/LineChartContent';
 import MetricsCard from './MetricsCard';
+import { useRef } from 'react';
 
 const DynamicLineChart = dynamic(() => Promise.resolve(LineChartContent), {
   ssr: false,
   loading: () => <div>Cargando gráfico...</div>,
 });
+
+interface DashboardTableLayoutExtraProps {
+  chartData?: { month: string; value: number }[];
+  isLoadingChart?: boolean;
+}
 
 const DashboardTableLayout = <T extends Record<string, any> = any>({
   config,
@@ -20,7 +26,6 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onPageChange,
   onFilter,
   onCategoryFilter,
-  onProviderFilter,
   onSortBy,
   categories,
   selectedCategories = [],
@@ -30,23 +35,40 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onClearSearch,
   onCommuneFilter,
   communes,
-
-  // Parámetros específicos para gráficos
   chartConfig,
   showDatePicker = false,
   onAmountFilter,
   onClientFilter,
   clients = [],
+  customers = [],
   selectedClients = [],
   amountValue = { min: '', max: '' },
   searchableDropdown,
-}: DashboardTableLayoutProps<T>) => {
+  onDateRangeChange,
+  initialDateRange,
+  isLoadingChart,
+}: DashboardTableLayoutProps<T> & DashboardTableLayoutExtraProps) => {
+  const mainChartRef = useRef<{ updateChartWithFilters: () => void }>(null);
+  const bottomChartRef = useRef<{ updateChartWithFilters: () => void }>(null);
+
   const handleSearch = (searchTermValue: string) => {
     onSearch?.(searchTermValue);
   };
 
   const handleClearSearch = () => {
     onClearSearch?.();
+  };
+
+  const handleFilter = () => {
+    // Actualizar ambos gráficos cuando se presiona filtrar
+    if (mainChartRef.current) {
+      mainChartRef.current.updateChartWithFilters();
+    }
+    if (bottomChartRef.current) {
+      bottomChartRef.current.updateChartWithFilters();
+    }
+    // Llamar al onFilter original
+    onFilter?.();
   };
 
   return (
@@ -59,26 +81,27 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
             className="w-full"
             onSearch={handleSearch}
             onClear={handleClearSearch}
-            placeholder="Busca productos ahora"
+            placeholder="Buscar..."
           />
         )}
 
         <FilterOptions
           onCommuneFilter={onCommuneFilter}
           selectedCommunes={selectedCommunes}
-          onFilter={onFilter}
+          onFilter={handleFilter}
           onCategoryFilter={onCategoryFilter}
-          onProviderFilter={onProviderFilter}
+          //onProviderFilter={onProviderFilter}
           onSortBy={onSortBy}
           categories={categories}
           selectedCategories={selectedCategories}
           tableColumns={tableColumns}
           selectedSortOption={selectedSortOption}
-          communes={communes}
+          communes={communes || []} // Aseguramos que siempre pasemos un array
           onAmountFilter={onAmountFilter}
           amountValue={amountValue}
           onClientFilter={onClientFilter}
           clients={clients}
+          customers={customers}
           selectedClients={selectedClients}
           searchableDropdown={searchableDropdown}
         />
@@ -90,7 +113,10 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           {showDatePicker && (
             <div className="flex flex-col justify-between items-center h-full">
               <div className="flex h-full items-center">
-                <DayPickerComponent />
+                <DayPickerComponent 
+                  onDateRangeChange={onDateRangeChange}
+                  initialDateRange={initialDateRange}
+                />
               </div>
             </div>
           )}
@@ -98,8 +124,8 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           {/* Gráfico principal con métricas */}
           {chartConfig?.showMetricsChart && (
             <div className="flex flex-col items-start gap-4 flex-1-0-0 w-full">
-              <MetricsCard metrics={chartConfig.metrics || []}>
-                <DynamicLineChart />
+              <MetricsCard metrics={chartConfig.metrics || []} isLoading={isLoadingChart}>
+                <DynamicLineChart ref={mainChartRef} loading={isLoadingChart} />
               </MetricsCard>
             </div>
           )}
@@ -118,7 +144,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
                 {chartConfig.bottomChartValue || '20.000.000'}
               </h4>
             </div>
-            <DynamicLineChart />
+            <DynamicLineChart ref={bottomChartRef} loading={isLoadingChart} />
           </div>
         </div>
       )}

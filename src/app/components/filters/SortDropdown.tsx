@@ -85,7 +85,7 @@ export default function SortDropdown({
                   onClick={handleClearSort}
                   className="text-xs text-red-600 hover:text-red-800"
                 >
-                  Limpiar
+                  Restablecer
                 </button>
               )}
             </div>

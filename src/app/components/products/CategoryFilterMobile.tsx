@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
+import { formatNumber } from '@/utils/formatCurrency';
 
 interface CategoryFilterMobileProps {
   isOpen: boolean;
@@ -65,7 +66,7 @@ export default function CategoryFilterMobile({
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [brandSearchTerm, setBrandSearchTerm] = useState('');
   const formatPrice = useCallback((price: number): string => {
-    return price.toLocaleString('es-CL');
+    return formatNumber(price);
   }, []);
 
   // Filtrar categorías por término de búsqueda

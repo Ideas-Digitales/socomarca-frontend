@@ -10,6 +10,13 @@ import { FavoriteList } from '@/interfaces/favorite.inteface';
 import { ReportsSlice, TableDetail, ReportsFilters } from './slices/reportsSlice';
 import { FAQSlice } from './slices/faqSlice';
 import { FAQItem, FAQPaginationMeta, FAQPaginationLinks } from '@/services/actions/faq.actions';
+import { ClientsSlice } from './slices/clientsSlice';
+import { ClientDetail, ClientPaginationMeta, ClientsFilters } from '@/interfaces/client.interface';
+import { TerminosCondicionesSlice } from './slices/terminos-condicionesSlice';
+import { SiteInformationSlice } from './slices/siteInformationSlice';
+import { ChartSlice } from './slices/chartSlice';
+import { LocationSlice } from './slices/locationSlice';
+import { CustomerMessageSlice } from './slices/customerMessageSlice';
 
 // ===== BASE TYPES =====
 export type ViewMode = 'grid' | 'list';
@@ -343,12 +350,64 @@ export interface StoreState extends LoadingStates, AuthState {
   reportsFilters: ReportsFilters;
   lastApiParameters: any;
 
+  // Clients states
+  clientsList: ClientDetail[];
+  clientsPagination: ClientPaginationMeta | null;
+  isLoadingClients: boolean;
+  clientsError: string | null;
+  clientsFilters: ClientsFilters;
+  clientsCurrentPage: number;
+  
+  // Customers states
+  customersList: any[];
+  isLoadingCustomers: boolean;
+  customersError: string | null;
+
   faqs: FAQItem[];
   currentFAQ: FAQItem | null;
   faqPaginationMeta: FAQPaginationMeta | null;
   faqPaginationLinks: FAQPaginationLinks | null;
   isLoadingFAQ: boolean;
   faqError: string | null;
+
+  // Terms and conditions states
+  termsAndConditions: any;
+  isLoadingTerms: boolean;
+  isUpdatingTerms: boolean;
+  termsError: string | null;
+  hasUnsavedChanges: boolean;
+  currentContent: string;
+
+  // Site information states
+  siteInformation: any;
+  isLoadingSiteInfo: boolean;
+  isUpdatingSiteInfo: boolean;
+  siteInfoError: string | null;
+
+  // Location states
+  regions: any[];
+  municipalities: any[];
+  isLoadingLocation: boolean;
+  locationError: string | null;
+
+  // Customer message states
+  customerMessage: {
+    header: {
+      color: string;
+      content: string;
+    };
+    banner: {
+      desktop_image: string;
+      mobile_image: string;
+      enabled: boolean;
+    };
+    modal: {
+      image: string;
+      enabled: boolean;
+    };
+  } | null;
+  isLoadingCustomerMessage: boolean;
+  customerMessageError: string | null;
 
   selectedCategories: number[];
   selectedBrands: number[];
@@ -377,6 +436,17 @@ export interface StoreState extends LoadingStates, AuthState {
   isQaMode: boolean;
 }
 
+export interface TopMunicipalitiesResponse {
+  top_municipalities: {
+    month: string;
+    municipality: string;
+    total_purchases: number;
+    quantity: number;
+  }[];
+  total_purchases: number;
+  quantity: number;
+}
+
 // ===== COMPLETE STORE TYPE =====
 export type Store = StoreState &
   AuthSlice &
@@ -392,4 +462,10 @@ export type Store = StoreState &
   ModalSlice &
   FavoritesSlice &
   ReportsSlice &
-  FAQSlice;
+  FAQSlice &
+  ClientsSlice &
+  TerminosCondicionesSlice &
+  SiteInformationSlice &
+  ChartSlice &
+  LocationSlice &
+  CustomerMessageSlice;

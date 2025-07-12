@@ -2,20 +2,31 @@
 
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { BACKEND_URL } from '@/utils/getEnv';
+import { SearchUsersRequest} from '@/interfaces/user.interface';
+
+export interface ApiAddress {
+  id: number;
+  address_line1: string;
+  address_line2: string;
+  postal_code: string;
+  is_default: boolean;
+  type: string;
+  phone: string;
+  contact_name: string;
+  municipality_name: string;
+  region_name: string;
+  alias: string | null;
+}
 
 export interface ApiUser {
-  id: number;
-  name: string;
-  email: string;
-  email_verified_at: string | null;
-  phone: string;
   rut: string;
+  name: string;
   business_name: string;
+  email: string;
+  phone: string;
   is_active: boolean;
-  last_login: string | null;
-  password_changed_at: string | null;
-  created_at: string;
-  updated_at: string;
+  billing_address: ApiAddress;
+  default_shipping_address: ApiAddress;
 }
 
 export interface ApiMeta {
@@ -40,36 +51,35 @@ export interface UsersApiResponse {
 
 
 export async function getUserData() {
-  const { getCookie } = await cookiesManagement();
+  try {
+    const { getCookie } = await cookiesManagement();
 
-  const userId = getCookie('userId');
-  const token = getCookie('token');
+    const token = getCookie('token');
 
-  if (!userId) {
-    throw new Error('No userId found in cookies');
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
+
+    const res = await fetch(`${BACKEND_URL}/profile`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw new Error('Failed to fetch user data');
   }
-
-  if (!token) {
-    throw new Error('No token found in cookies');
-  }
-
-  const res = await fetch(`${BACKEND_URL}/users/${userId}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch user data: ${res.statusText}`);
-  }
-const data = await res.json();
-return data;
-
 }
-
 
 export async function getUsersAction(params: {
   page?: number;
@@ -86,18 +96,18 @@ export async function getUsersAction(params: {
     const url = new URL(`${baseURL}/users`);
     url.searchParams.set('page', page.toString());
     url.searchParams.set('per_page', per_page.toString());
-     const { getCookie } = await cookiesManagement();
+    const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
 
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-       Accept: 'application/json',
+        Accept: 'application/json',
         'Authorization': `Bearer ${token}`,
       },
       next: {
-        revalidate: 0, // No cache para datos que cambian frecuentemente
+        revalidate: 0,
       }
     });
 
@@ -113,6 +123,204 @@ export async function getUsersAction(params: {
     };
   } catch (error) {
     console.error('Error fetching users:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+}
+
+export async function searchUsersAction(searchRequest: SearchUsersRequest): Promise<{
+  success: boolean;
+  data?: UsersApiResponse;
+  error?: string;
+}> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
+
+    const response = await fetch(`${BACKEND_URL}/users/search`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(searchRequest),
+      next: {
+        revalidate: 0,
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: UsersApiResponse = await response.json();
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error('Error searching users:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+}
+
+export async function deleteUserAction(userId: number): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
+
+    const response = await fetch(`${BACKEND_URL}/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+}
+
+export interface UpdateUserRequest {
+  name: string;
+  email: string;
+  password?: string;
+  password_confirmation?: string;
+  phone?: string;
+  rut?: string;
+  business_name?: string;
+  is_active?: boolean;
+  roles: string[];
+}
+
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  phone: string;
+  rut: string;
+  business_name: string;
+  is_active: boolean;
+  roles: string[];
+}
+
+export async function updateUserAction(
+  userId: number, 
+  userData: UpdateUserRequest
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+}> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
+
+    const response = await fetch(`${BACKEND_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+}
+
+export async function createUserAction(
+  userData: CreateUserRequest
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+}> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
+
+    const response = await fetch(`${BACKEND_URL}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error('Error creating user:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido',

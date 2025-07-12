@@ -12,6 +12,7 @@ import {
 } from '@/interfaces/dashboard.interface';
 import useStore from '@/stores/base';
 import { useState, useEffect } from 'react';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface CategoriaConRanking {
   categoria: string;
@@ -38,16 +39,32 @@ export default function CategoriasMasVentas() {
     isLoadingTopCategories,
     fetchTopCategories,
     clearTopCategories,
+    // Agregar los hooks necesarios para los gráficos
+    fetchChartReports,
+    fetchChartRawData,
+    clearChartReports,
+    isLoadingChart,
+    setReportsFilters,
+    reportsFilters,
+    clearReportsFilters,
   } = useStore();
 
   // Estados para manejar filtros
-  const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  // const [selectedClients, setSelectedClients] = useState<Client[]>([]);
+  // const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [amountFilter, setAmountFilter] = useState<AmountRange>({
-    min: '',
-    max: '',
+    min: reportsFilters.total_min?.toString() || '',
+    max: reportsFilters.total_max?.toString() || '',
   });
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Sincronizar el estado local del filtro de monto con los filtros del store
+  useEffect(() => {
+    setAmountFilter({
+      min: reportsFilters.total_min?.toString() || '',
+      max: reportsFilters.total_max?.toString() || '',
+    });
+  }, [reportsFilters.total_min, reportsFilters.total_max]);
 
   // Procesar datos de top categories para crear ranking
   const categoriasConRanking: CategoriaConRanking[] = (() => {
@@ -80,10 +97,25 @@ export default function CategoriasMasVentas() {
 
   // Cargar datos iniciales
   useEffect(() => {
-    fetchTopCategories('', '').finally(() => {
+    clearReportsFilters();
+    const start = '';
+    const end = '';
+    
+    // Cargar datos iniciales usando Promise.all
+    Promise.all([
+      fetchTopCategories(start, end),
+      fetchChartReports(start, end, 'top-categories'),
+      fetchChartRawData(start, end, null)
+    ]).finally(() => {
       setIsInitialLoad(false);
     });
-  }, [fetchTopCategories]);
+
+    // Cleanup: limpiar datos cuando el componente se desmonta
+    return () => {
+      clearTopCategories();
+      clearChartReports();
+    };
+  }, [fetchTopCategories, clearTopCategories, fetchChartReports, fetchChartRawData, clearChartReports, clearReportsFilters]);
 
   // Debug: Log de datos cuando cambien (solo para desarrollo)
   useEffect(() => {
@@ -113,9 +145,9 @@ export default function CategoriasMasVentas() {
       value: (() => {
         // Usar el promedio del backend si está disponible, sino calcular local
         if (topCategoriesData?.average_sales) {
-          return `$${topCategoriesData.average_sales.toLocaleString()}`;
+          return formatCurrency(topCategoriesData.average_sales);
         }
-        return `$${promedioVentas.toLocaleString()}`;
+        return formatCurrency(promedioVentas);
       })(),
       color: 'gray',
     },
@@ -124,9 +156,9 @@ export default function CategoriasMasVentas() {
       value: (() => {
         // Usar el total del backend si está disponible, sino calcular local
         if (topCategoriesData?.total_sales) {
-          return `$${topCategoriesData.total_sales.toLocaleString()}`;
+          return formatCurrency(topCategoriesData.total_sales);
         }
-        return `$${totalVentas.toLocaleString()}`;
+        return formatCurrency(totalVentas);
       })(),
       color: 'lime',
     },
@@ -159,48 +191,74 @@ export default function CategoriasMasVentas() {
     {
       key: 'venta',
       label: 'Ventas',
-      render: (value: number) => `$${value.toLocaleString()}`,
+      render: (value: number) => formatCurrency(value),
     },
   ];
 
   const handleAmountFilter = (amount: AmountRange) => {
     console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
-
-
+    
+    // Convertir los valores de string a number para el backend
+    const total_min = amount.min ? Number(amount.min) : undefined;
+    const total_max = amount.max ? Number(amount.max) : undefined;
+    
+    // Actualizar filtros en el store
+    setReportsFilters({ total_min, total_max });
   };
 
-  const handleClientFilter = (clientId: number) => {
-    console.log('Filtrar por cliente:', clientId);
+  // TEMPORAL: Actualizar para manejar tanto number como string
+  // const handleClientFilter = (clientId: number | string) => {
+  //   console.log('Filtrar por cliente:', clientId, typeof clientId);
 
-    if (clientId === -1 || clientId === 0) {
-      // Limpiar selección
-      setSelectedClients([]);
-    } else {
-      const client = clients.find((c) => c.id === clientId);
-      if (client) {
-        setSelectedClients([client]);
-      }
-    }
-  };
+  //   if (typeof clientId === 'string') {
+  //     // TEMPORAL: Nuevo comportamiento - usar el string directamente
+  //     if (clientId.trim() === '') {
+  //       // Limpiar selección
+  //       // setSelectedClients([]);
+  //     } else {
+  //       // setSelectedClients([{ id: 0, name: clientId }]); // ID temporal para mantener compatibilidad
+  //     }
+  //   } else {
+  //     // TEMPORAL: Comportamiento original para números (comentado para referencia)
+  //     // if (clientId === -1 || clientId === 0) {
+  //     //   // Limpiar selección
+  //     //   setSelectedClients([]);
+  //     // } else {
+  //     //   const client = clients.find((c) => c.id === clientId);
+  //     //   if (client) {
+  //     //     setSelectedClients([client]);
+  //     //   }
+  //     // }
+  //   }
+  // };
 
-  const handleCategoryFilter = (categoryIds: number[]) => {
-    console.log('Filtrar por categorías:', categoryIds);
-    setSelectedCategories(categoryIds);
-  };
+  // const handleCategoryFilter = (categoryIds: number[]) => {
+  //   console.log('Filtrar por categorías:', categoryIds);
+  //   // setSelectedCategories(categoryIds);
+  // };
 
   const handleFilter = () => {
     console.log('Aplicar filtros generales...');
+
+    // Obtener todos los filtros del store
+    const { start, end, total_min, total_max } = reportsFilters;
+    console.log('Filtros del store:', { start, end, total_min, total_max });
+
+    // Recargar todos los datos con los filtros
+    Promise.all([
+      fetchTopCategories(start, end, total_min, total_max), // Modificar para pasar los filtros
+      fetchChartReports(start, end, 'top-categories'),
+      fetchChartRawData(start, end, null)
+    ]);
 
     // Ejemplo de lógica de filtrado usando el rango de montos
     let filteredCategories = categoriasConRanking;
 
     // Filtrar por rango de montos si se especifica
-    if (amountFilter.min || amountFilter.max) {
-      const minAmount = amountFilter.min ? parseFloat(amountFilter.min) : 0;
-      const maxAmount = amountFilter.max
-        ? parseFloat(amountFilter.max)
-        : Infinity;
+    if (total_min || total_max) {
+      const minAmount = total_min || 0;
+      const maxAmount = total_max || Infinity;
 
       filteredCategories = filteredCategories.filter(
         (categoria) =>
@@ -214,17 +272,44 @@ export default function CategoriasMasVentas() {
   const handleClearSearch = () => {
     console.log('Limpiar búsqueda');
     setAmountFilter({ min: '', max: '' });
-    setSelectedClients([]);
-    setSelectedCategories([]);
+    // setSelectedClients([]);
+    // setSelectedCategories([]);
+    
+    // Limpiar filtros en el store
+    setReportsFilters({
+      start: '',
+      end: '',
+      selectedClient: undefined,
+      selectedCategory: undefined,
+      type: null,
+      total_min: undefined,
+      total_max: undefined,
+    });
+    
+    // Usar fechas por defecto en lugar de fechas vacías
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const start = startOfMonth.toISOString().split('T')[0];
+    const end = endOfMonth.toISOString().split('T')[0];
     
     // Limpiar filtros y recargar datos
     clearTopCategories();
-    fetchTopCategories('', '');
+    Promise.all([
+      fetchTopCategories(start, end),
+      fetchChartReports(start, end, 'top-categories'),
+      fetchChartRawData(start, end, null)
+    ]);
   };
 
   // Manejar cambios en el rango de fechas del DatePicker
   const handleDateRangeChange = (start: string, end: string) => {
-    fetchTopCategories(start, end);
+    Promise.all([
+      fetchTopCategories(start, end),
+      fetchChartReports(start, end, 'top-categories'),
+      fetchChartRawData(start, end, null)
+    ]);
   };
 
   // Mostrar loading spinner completo solo en la carga inicial
@@ -267,51 +352,31 @@ export default function CategoriasMasVentas() {
         showDatePicker={true}
         // Filtros específicos
         onAmountFilter={handleAmountFilter}
-        onClientFilter={handleClientFilter}
-        onCategoryFilter={handleCategoryFilter}
         onFilter={handleFilter}
         // Datos para filtros
         clients={clients}
-        selectedClients={selectedClients}
-        selectedCategories={selectedCategories}
         amountValue={amountFilter}
         // Funciones de búsqueda
         searchableDropdown={true}
         onClearSearch={handleClearSearch}
         // Callback para el DatePicker
         onDateRangeChange={handleDateRangeChange}
+        // Estado de carga del gráfico
+        isLoadingChart={isLoadingChart}
       />
 
       {/* Loading overlay sutil para cambios de filtros */}
-      {isLoadingTopCategories && !isInitialLoad && (
+      {(isLoadingTopCategories || isLoadingChart) && !isInitialLoad && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
-            <span className="text-gray-700 text-sm">Actualizando categorías...</span>
+            <span className="text-gray-700 text-sm">
+              {isLoadingTopCategories && isLoadingChart ? 'Actualizando datos y gráficos...' :
+               isLoadingTopCategories ? 'Actualizando categorías...' : 'Actualizando gráficos...'}
+            </span>
           </div>
         </div>
-             )}
-     </div>
-   );
+      )}
+    </div>
+  );
  }
-
- /*
-   IMPLEMENTACIÓN COMPLETADA - TOP CATEGORIES ENDPOINT
-   
-   Este componente ahora usa el endpoint "top-categories" para:
-   - Obtener datos reales de categorías con más ventas
-   - Mostrar métricas actualizadas (total de categorías, promedio de ventas, total de ventas)
-   - Permitir filtrado por rango de fechas
-   - Mostrar datos agrupados por categoría con ranking
-   
-   Datos disponibles en topCategoriesData:
-   - top_categories: Array con { month, category, total }
-   - total_sales: Total de ventas de todas las categorías
-   - average_sales: Promedio de ventas por categoría
-   
-   La vista procesa los datos para:
-   1. Agrupar por categoría (sumando ventas de todos los meses)
-   2. Ordenar por total de ventas (descendente)
-   3. Asignar ranking
-   4. Mostrar en tabla paginada
- */

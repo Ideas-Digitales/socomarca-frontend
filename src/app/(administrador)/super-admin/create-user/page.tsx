@@ -5,8 +5,10 @@ import {
   getPasswordStrengthLevel,
   validatePasswordStrength,
 } from '@/stores/base/utils/passwordUtilities';
+import { createUserAction, CreateUserRequest } from '@/services/actions/user.actions';
+import { getRolesAction, Role } from '@/services/actions/roles.actions';
 import { EyeSlashIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Interfaces para el formulario
 interface FormData {
@@ -15,8 +17,12 @@ interface FormData {
   firstName: string;
   lastName: string;
   secondLastName: string;
-  userProfile: 'colaborador' | 'editor' | '';
+  userProfile: string;
   password: string;
+  passwordConfirmation: string;
+  phone: string;
+  rut: string;
+  businessName: string;
   sendNotification: boolean;
 }
 
@@ -28,6 +34,10 @@ interface FormErrors {
   secondLastName?: string;
   userProfile?: string;
   password?: string[];
+  passwordConfirmation?: string;
+  phone?: string;
+  rut?: string;
+  businessName?: string;
 }
 
 export default function CreateUser() {
@@ -39,17 +49,55 @@ export default function CreateUser() {
     secondLastName: '',
     userProfile: '',
     password: '',
+    passwordConfirmation: '',
+    phone: '',
+    rut: '',
+    businessName: '',
     sendNotification: false,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
 
   // Validar email
   const isValidEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  // Validar RUT chileno
+  const isValidRut = (rut: string): boolean => {
+    // Remover puntos y guión
+    const cleanRut = rut.replace(/\./g, '').replace(/-/g, '');
+    
+    if (cleanRut.length < 2) return false;
+    
+    const body = cleanRut.slice(0, -1);
+    const dv = cleanRut.slice(-1).toUpperCase();
+    
+    // Validar que el cuerpo sea numérico
+    if (!/^\d+$/.test(body)) return false;
+    
+    // Calcular dígito verificador
+    let sum = 0;
+    let multiplier = 2;
+    
+    for (let i = body.length - 1; i >= 0; i--) {
+      sum += parseInt(body[i]) * multiplier;
+      multiplier = multiplier === 7 ? 2 : multiplier + 1;
+    }
+    
+    const expectedDv = 11 - (sum % 11);
+    let expectedDvStr = '';
+    
+    if (expectedDv === 11) expectedDvStr = '0';
+    else if (expectedDv === 10) expectedDvStr = 'K';
+    else expectedDvStr = expectedDv.toString();
+    
+    return dv === expectedDvStr;
   };
 
   // Validar formulario
@@ -91,6 +139,26 @@ export default function CreateUser() {
       }
     }
 
+    if (!formData.passwordConfirmation.trim()) {
+      newErrors.passwordConfirmation = 'La confirmación de contraseña es requerida';
+    } else if (formData.password !== formData.passwordConfirmation) {
+      newErrors.passwordConfirmation = 'Las contraseñas no coinciden';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'El teléfono es requerido';
+    }
+
+    if (!formData.rut.trim()) {
+      newErrors.rut = 'El RUT es requerido';
+    } else if (!isValidRut(formData.rut)) {
+      newErrors.rut = 'El RUT no es válido';
+    }
+
+    if (!formData.businessName.trim()) {
+      newErrors.businessName = 'El nombre de la empresa es requerido';
+    }
+
     return newErrors;
   };
 
@@ -123,19 +191,24 @@ export default function CreateUser() {
       length: 16,
       excludeSimilar: true,
     });
-    setFormData((prev) => ({ ...prev, password: newPassword }));
+    setFormData((prev) => ({ 
+      ...prev, 
+      password: newPassword,
+      passwordConfirmation: newPassword 
+    }));
 
     // Limpiar errores de contraseña
-    if (errors.password) {
+    if (errors.password || errors.passwordConfirmation) {
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.password;
+        delete newErrors.passwordConfirmation;
         return newErrors;
       });
     }
   };
 
-  // Enviar formulario (mock)
+  // Enviar formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -147,24 +220,44 @@ export default function CreateUser() {
 
     setIsSubmitting(true);
 
-    // Simular llamada al backend
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log('Usuario creado:', formData);
-      alert('Usuario creado exitosamente!');
+      // Preparar datos para la API
+      const userData: CreateUserRequest = {
+        name: `${formData.firstName} ${formData.lastName} ${formData.secondLastName}`.trim(),
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.passwordConfirmation,
+        phone: formData.phone,
+        rut: formData.rut.replace(/\./g, '').replace(/-/g, ''), // Limpiar RUT
+        business_name: formData.businessName,
+        is_active: true,
+        roles: [formData.userProfile],
+      };
 
-      // Limpiar formulario
-      setFormData({
-        username: '',
-        email: '',
-        firstName: '',
-        lastName: '',
-        secondLastName: '',
-        userProfile: '',
-        password: '',
-        sendNotification: false,
-      });
-      setErrors({});
+      const result = await createUserAction(userData);
+
+      if (result.success) {
+        alert('Usuario creado exitosamente!');
+
+        // Limpiar formulario
+        setFormData({
+          username: '',
+          email: '',
+          firstName: '',
+          lastName: '',
+          secondLastName: '',
+          userProfile: '',
+          password: '',
+          passwordConfirmation: '',
+          phone: '',
+          rut: '',
+          businessName: '',
+          sendNotification: false,
+        });
+        setErrors({});
+      } else {
+        alert(`Error al crear usuario: ${result.error}`);
+      }
     } catch (error) {
       console.error('Error al crear usuario:', error);
       alert('Error al crear usuario');
@@ -172,6 +265,26 @@ export default function CreateUser() {
       setIsSubmitting(false);
     }
   };
+
+  // Cargar roles al montar el componente
+  useEffect(() => {
+    const loadRoles = async () => {
+      try {
+        const result = await getRolesAction();
+        if (result.success && result.data) {
+          setRoles(result.data);
+        } else {
+          console.error('Error loading roles:', result.error);
+        }
+      } catch (error) {
+        console.error('Error loading roles:', error);
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    loadRoles();
+  }, []);
 
   // Obtener validación de contraseña para mostrar nivel
   const passwordValidation = formData.password
@@ -273,38 +386,81 @@ export default function CreateUser() {
             </div>
           </div>
 
+          {/* Tercera fila - Teléfono, RUT y Nombre de empresa */}
+          <div className="flex flex-col md:flex-row gap-4 md:gap-[34px]">
+            <div className="flex flex-col gap-[10px] w-full">
+              <label className="text-[15px]" htmlFor="phone-create-user">
+                Teléfono
+              </label>
+              <input
+                id="phone-create-user"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                className="bg-[#EBEFF7] text-[15px] px-2 py-1 h-[40px] w-full"
+                placeholder="123456789"
+              />
+              {errors.phone && (
+                <span className="text-red-500 text-xs">{errors.phone}</span>
+              )}
+            </div>
+            <div className="flex flex-col gap-[10px] w-full">
+              <label className="text-[15px]" htmlFor="rut-create-user">
+                RUT
+              </label>
+              <input
+                id="rut-create-user"
+                type="text"
+                value={formData.rut}
+                onChange={(e) => handleInputChange('rut', e.target.value)}
+                className="bg-[#EBEFF7] text-[15px] px-2 py-1 h-[40px] w-full"
+                placeholder="12312312-3"
+              />
+              {errors.rut && (
+                <span className="text-red-500 text-xs">{errors.rut}</span>
+              )}
+            </div>
+            <div className="flex flex-col gap-[10px] w-full">
+              <label className="text-[15px]" htmlFor="businessname-create-user">
+                Nombre de empresa
+              </label>
+              <input
+                id="businessname-create-user"
+                type="text"
+                value={formData.businessName}
+                onChange={(e) => handleInputChange('businessName', e.target.value)}
+                className="bg-[#EBEFF7] text-[15px] px-2 py-1 h-[40px] w-full"
+                placeholder="Mi Empresa"
+              />
+              {errors.businessName && (
+                <span className="text-red-500 text-xs">{errors.businessName}</span>
+              )}
+            </div>
+          </div>
+
           {/* Perfil de usuario */}
           <div className="flex flex-col md:flex-row md:gap-6 md:items-center gap-3">
             <p className="text-xs">Perfil de usuario</p>
             <div className="flex flex-col md:flex-row gap-4 md:gap-[48px] md:flex-1-0-0">
-              <div className="flex gap-2 items-center">
-                <label className="text-xs" htmlFor="colaborador-create-user">
-                  Colaborador
-                </label>
-                <input
-                  className="text-xs"
-                  type="radio"
-                  name="userProfile"
-                  id="colaborador-create-user"
-                  checked={formData.userProfile === 'colaborador'}
-                  onChange={() =>
-                    handleInputChange('userProfile', 'colaborador')
-                  }
-                />
-              </div>
-              <div className="flex gap-2 items-center">
-                <label className="text-xs" htmlFor="editor-create-user">
-                  Editor
-                </label>
-                <input
-                  className="text-xs"
-                  type="radio"
-                  name="userProfile"
-                  id="editor-create-user"
-                  checked={formData.userProfile === 'editor'}
-                  onChange={() => handleInputChange('userProfile', 'editor')}
-                />
-              </div>
+              {loadingRoles ? (
+                <div className="text-xs text-gray-500">Cargando roles...</div>
+              ) : (
+                roles.map((role) => (
+                  <div key={role.id} className="flex gap-2 items-center">
+                    <label className="text-xs" htmlFor={`${role.name}-create-user`}>
+                      {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
+                    </label>
+                    <input
+                      className="text-xs"
+                      type="radio"
+                      name="userProfile"
+                      id={`${role.name}-create-user`}
+                      checked={formData.userProfile === role.name}
+                      onChange={() => handleInputChange('userProfile', role.name)}
+                    />
+                  </div>
+                ))
+              )}
             </div>
             {errors.userProfile && (
               <span className="text-red-500 text-xs">{errors.userProfile}</span>
@@ -331,6 +487,14 @@ export default function CreateUser() {
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 className="bg-[#EBEFF7] text-[15px] px-2 py-1 w-full md:min-w-[250px] h-[40px]"
+                placeholder="Contraseña"
+              />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={formData.passwordConfirmation}
+                onChange={(e) => handleInputChange('passwordConfirmation', e.target.value)}
+                className="bg-[#EBEFF7] text-[15px] px-2 py-1 w-full md:min-w-[250px] h-[40px]"
+                placeholder="Confirmar contraseña"
               />
               <span
                 className={`${
@@ -351,6 +515,9 @@ export default function CreateUser() {
                     </span>
                   ))}
                 </div>
+              )}
+              {errors.passwordConfirmation && (
+                <span className="text-red-500 text-xs">{errors.passwordConfirmation}</span>
               )}
             </div>
 

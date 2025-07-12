@@ -19,7 +19,7 @@ export default function ProductCard({ product }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOptimisticUpdate, setIsOptimisticUpdate] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   const handleSetFavorite = async () => {
     await toggleFavorite(product.id, product);
@@ -36,7 +36,7 @@ export default function ProductCard({ product }: Props) {
   }, [isOptimisticUpdate, isLoading]);
 
   const decreaseQuantity = () => {
-    if (quantity > 0) {
+    if (quantity > 1) {
       setQuantity(quantity - 1);
     }
   };

@@ -16,10 +16,12 @@ import ComprasSection, {
   Compra,
 } from "@/app/components/mi-cuenta/ComprasSection";
 import DetalleCompra from "@/app/components/mi-cuenta/DetalleCompra";
-/*import {
+import {
   getUserAddresses,
   type Address,
-} from "@/services/actions/addressees.actions";*/
+} from "@/services/actions/addressees.actions";
+import LoadingSpinner from "@/app/components/global/LoadingSpinner";
+import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -36,7 +38,7 @@ export default function MiCuentaPage() {
   const [errorNombreLista, setErrorNombreLista] = useState("");
   const [modalLogoutVisible, setModalLogoutVisible] = useState(false);
 
-  /* Estados para seccion de ordenes del usuario */
+  /* Estados para seccion de ordenes del uFsuario */
   const [compras, setCompras] = useState<Compra[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Compra>(
@@ -45,8 +47,8 @@ export default function MiCuentaPage() {
   const [loadingOrders, setLoadingOrders] = useState(true);
 
   /* Estados para seccion de direcciones del usuario */
-  //const [direcciones, setDirecciones] = useState<Address[]>([]);
-  //const [loadingDirecciones, setLoadinDirecciones] = useState(true);
+  const [direcciones, setDirecciones] = useState<Address[]>([]);
+  const [loadingDirecciones, setLoadinDirecciones] = useState(true);
 
   const router = useRouter();
   const { handleViewListDetail, clearSelectedList } = useFavorites();
@@ -95,16 +97,16 @@ export default function MiCuentaPage() {
     fetchOrders();
   }, []);
 
-  /* Trae las direcciones del usuario 
+  //Trae las direcciones del usuario
   useEffect(() => {
     const fetchDirecciones = async () => {
       const data = await getUserAddresses();
-     // if (data) setDirecciones(data);
-     // setLoadinDirecciones(false);
+      if (data) setDirecciones(data);
+      setLoadinDirecciones(false);
     };
 
     fetchDirecciones();
-  }, []);*/
+  }, []);
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen px-4">
@@ -132,10 +134,10 @@ export default function MiCuentaPage() {
                 onViewListDetail={handleViewList}
               />
             )}
-            {selected === 'detalle-lista' && (
+            {selected === "detalle-lista" && (
               <DetalleListaSection onVolver={handleBackToFavorites} />
             )}
-            {selected === 'datos' && (
+            {selected === "datos" && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <DatosPersonalesForm />
               </div>
@@ -148,7 +150,7 @@ export default function MiCuentaPage() {
                 />
               </div>
             )}
-            {/* selected === "direcciones" && (
+            {selected === "direcciones" && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 {loadingDirecciones ? (
                   <div className="flex justify-center items-center py-10">
@@ -157,19 +159,8 @@ export default function MiCuentaPage() {
                 ) : (
                   <DireccionesSection
                     direcciones={direcciones}
-                    favoritaIndex={favoritaIndex}
-                    setFavoritaIndex={setFavoritaIndex}
-                    setModalAbierto={setModalAbiertoState}
                   />
                 )}
-              </div>
-            ) */}
-            {selected === "direcciones" && (
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="text-center py-12 text-gray-500">
-                  🚧 Sección de direcciones en desarrollo. Pronto estará
-                  disponible.
-                </div>
               </div>
             )}
             {selected === "compras" && (
@@ -186,7 +177,7 @@ export default function MiCuentaPage() {
               </div>
             )}
           </div>
-        </div>{' '}
+        </div>{" "}
         {modalLogoutVisible && (
           <ModalLogout 
             onClose={() => setModalLogoutVisible(false)} 

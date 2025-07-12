@@ -1,3 +1,5 @@
+import { formatCurrency } from '@/utils/formatCurrency';
+
 interface ProductInfoProps {
   brand: {
     name: string;
@@ -34,15 +36,6 @@ export default function ProductInfo({
     return text;
   };
 
-  const formatPrice = (price: number | null | undefined) => {
-    if (price !== null && price !== undefined) {
-      return price.toLocaleString('es-CL', {
-        style: 'currency',
-        currency: 'CLP',
-      });
-    }
-    return '$0';
-  };
 
   const getTextAlignment = () => {
     switch (variant) {
@@ -114,7 +107,7 @@ export default function ProductInfo({
         {nameInfo.text}
       </span>
       <span data-cy="product-price" className={`text-lime-500 font-bold ${textAlignment} text-lg mt-1`}>
-        {formatPrice(price)}
+        {price != null ? formatCurrency(price) : '-'}
       </span>
       
       {(stock !== undefined || sku) && variant === 'grid' && (

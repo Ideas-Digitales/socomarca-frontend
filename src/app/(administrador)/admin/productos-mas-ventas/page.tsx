@@ -11,6 +11,7 @@ import {
 } from '@/interfaces/dashboard.interface';
 import { useState, useEffect } from 'react';
 import useStore from '@/stores/base';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 interface ProductoFormatted {
   id: string;
@@ -39,11 +40,15 @@ export default function ProductosMasVentas() {
     isLoadingTopProducts,
     fetchTopProducts,
     clearTopProducts,
+    reportsFilters,
+    setReportsFilters,
+    clearReportsFilters,
+    // Chart loading
+    isLoadingChart,
   } = useStore();
 
   // Estados para manejar filtros
-  const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  // const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [amountFilter, setAmountFilter] = useState<AmountRange>({
     min: '',
     max: '',
@@ -54,13 +59,21 @@ export default function ProductosMasVentas() {
 
   // Cargar datos iniciales
   useEffect(() => {
+    clearReportsFilters();
     const start = '';
     const end = '';
     
-    fetchTopProducts(start, end).finally(() => {
+    // Cargar datos de productos
+    fetchTopProducts(start, end, undefined, undefined, undefined, undefined).finally(() => {
+      console.log('fetchTopProducts');
       setIsInitialLoad(false);
     });
-  }, [fetchTopProducts]);
+
+    // Cleanup: limpiar datos cuando el componente se desmonta
+    return () => {
+      clearTopProducts();
+    };
+  }, [fetchTopProducts, clearReportsFilters, clearTopProducts]);
 
   // Transformar datos para la tabla
   const productosFormatted: ProductoFormatted[] = topProductsData?.top_products?.map(
@@ -81,7 +94,7 @@ export default function ProductosMasVentas() {
     },
     {
       label: 'Total en ventas',
-      value: `$${(topProductsData?.total_sales || 0).toLocaleString()}`,
+      value: formatCurrency(topProductsData?.total_sales || 0),
       color: 'gray',
     },
   ];
@@ -108,52 +121,41 @@ export default function ProductosMasVentas() {
     {
       key: 'total',
       label: 'Total',
-      render: (value: number) => `$${value.toLocaleString()}`,
+      render: (value: number) => formatCurrency(value),
     },
   ];
 
-  // Handlers para los filtros
-  const handleAmountFilter = (amount: AmountRange) => {
-    setAmountFilter(amount);
-    // Nota: Los filtros específicos podrían implementarse en el backend en el futuro
-  };
-
-  const handleClientFilter = (clientId: number) => {
-    if (clientId === -1 || clientId === 0) {
-      setSelectedClients([]);
-    } else {
-      const client = clients.find((c) => c.id === clientId);
-      if (client) {
-        setSelectedClients([client]);
-      }
-    }
-  };
-
-  const handleCategoryFilter = (categoryIds: number[]) => {
-    setSelectedCategories(categoryIds);
-  };
+  // const handleCategoryFilter = (categoryIds: number[]) => {
+  //   setSelectedCategories(categoryIds);
+  //   setReportsFilters({ selectedCategory: categoryIds.length > 0 ? String(categoryIds[0]) : undefined });
+  // };
 
   const handleFilter = () => {
     // Aplicar filtros cuando estén implementados
+    const { start, end, selectedClient, selectedCategory, total_min, total_max } = reportsFilters;
+    fetchTopProducts(start, end, selectedClient, selectedCategory, total_min, total_max);
   };
 
   const handleClearSearch = () => {
-    setSelectedClients([]);
-    setSelectedCategories([]);
+    // setSelectedClients([]);
+    // setSelectedCategories([]);
     setAmountFilter({ min: '', max: '' });
+    
+    // Limpiar filtros del store
+    clearReportsFilters();
     
     // Recargar datos sin filtros
     clearTopProducts();
-    fetchTopProducts('', '');
+    fetchTopProducts('', '', undefined, undefined, undefined, undefined);
   };
 
   // Manejar cambios en el rango de fechas del DatePicker
   const handleDateRangeChange = (start: string, end: string) => {
-    fetchTopProducts(start, end);
+    setReportsFilters({ start, end });
   };
 
   // Mostrar loading spinner completo solo en la carga inicial
-  if (isLoadingTopProducts && isInitialLoad) {
+  if ((isLoadingTopProducts || isLoadingChart) && isInitialLoad) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
@@ -187,29 +189,33 @@ export default function ProductosMasVentas() {
         onPageChange={() => {}} // Sin paginación por ahora
         chartConfig={chartConfig}
         showDatePicker={true}
-        onAmountFilter={handleAmountFilter}
-        onClientFilter={handleClientFilter}
-        onCategoryFilter={handleCategoryFilter}
+        // NO ESTA FUNCIONANDO
+        // onAmountFilter={handleAmountFilter}
+        // onCategoryFilter={handleCategoryFilter}
+        // NO ESTA FUNCIONANDO
         onFilter={handleFilter}
         clients={clients}
-        selectedClients={selectedClients}
-        selectedCategories={selectedCategories}
+        // selectedCategories={selectedCategories}
         amountValue={amountFilter}
         onClearSearch={handleClearSearch}
         searchableDropdown={true}
         onDateRangeChange={handleDateRangeChange}
         initialDateRange={{
-          start: undefined,
-          end: undefined,
+          start: reportsFilters.start || undefined,
+          end: reportsFilters.end || undefined,
         }}
+        isLoadingChart={isLoadingChart}
       />
 
       {/* Loading overlay sutil para cambios de filtros */}
-      {isLoadingTopProducts && !isInitialLoad && (
+      {(isLoadingTopProducts || isLoadingChart) && !isInitialLoad && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
-            <span className="text-gray-700 text-sm">Actualizando datos...</span>
+            <span className="text-gray-700 text-sm">
+              {isLoadingTopProducts && isLoadingChart ? 'Actualizando datos y gráficos...' :
+               isLoadingTopProducts ? 'Actualizando datos...' : 'Actualizando gráficos...'}
+            </span>
           </div>
         </div>
       )}

@@ -3,6 +3,9 @@ import {
   fetchGetOrdersReportsTransactionsList,
   fetchGetOrdersReportsFailedTransactionsList,
   fetchGetOrdersReportsCharts,
+  fetchGetTransactionDetails,
+  TransactionDetails,
+  fetchGetClientsMostPurchasesList,
 } from '@/services/actions/reports.actions';
 import { ApiResponse, PaginationMeta } from '../types';
 
@@ -12,6 +15,15 @@ export interface TableDetail {
   amount: number;
   date: string;
   status: string;
+}
+
+// Nueva interfaz para la respuesta del backend en español
+export interface BackendTableDetail {
+  id: number;
+  cliente: string;
+  monto: number;
+  fecha: string;
+  estado: string;
 }
 
 export interface FailedTransactionDetail {
@@ -42,6 +54,20 @@ export interface TransactionsApiResponse {
   };
 }
 
+// Nueva interfaz para la respuesta del backend
+export interface BackendTransactionsApiResponse {
+  detalle_tabla: BackendTableDetail[];
+  pagination: Pagination;
+  clients?: string[];
+  parameters?: {
+    start?: string;
+    end?: string;
+    client?: string | null;
+    category?: string | null;
+    type?: 'exitosa' | 'fallida' | null;
+  };
+}
+
 export interface FailedTransactionsApiResponse {
   table_detail: FailedTransactionDetail[];
   pagination: Pagination;
@@ -56,6 +82,8 @@ export interface FailedTransactionsApiResponse {
 }
 
 export type ChartReportType = 'transactions' | 'sales' | 'revenue' | 'top-clients' | 'top-products' | 'top-categories' | 'transactions-failed' | 'top-municipalities';
+
+export type ChartReportsResponseType = ChartReportsResponse | TopMunicipalitiesResponse | TopProductsResponse | TopCategoriesResponse;
 
 export interface ChartReportsResponse {
   months: string[];
@@ -108,7 +136,25 @@ export interface ReportsFilters {
   end: string;
   selectedClient?: string;
   selectedCategory?: string;
+  selectedMunicipality?: string;
   type?: 'exitosa' | 'fallida' | null;
+  total_min?: number;
+  total_max?: number;
+}
+
+export interface ClientsMostPurchasesDetail {
+  id: number;
+  cliente: string;
+  monto: number;
+  fecha: string;
+  acciones?: string;
+}
+
+export interface ClientsMostPurchasesFilters {
+  start?: string;
+  end?: string;
+  total_min?: number;
+  total_max?: number;
 }
 
 export interface ReportsState {
@@ -121,6 +167,10 @@ export interface ReportsState {
   failedTransactionsList: FailedTransactionDetail[];
   selectedFailedTransaction: FailedTransactionDetail | null;
   uniqueFailedClients: string[];
+  
+  // Transaction details state
+  transactionDetails: TransactionDetails | null;
+  isLoadingTransactionDetails: boolean;
   
   // Pagination states - Successful transactions
   reportsCurrentPage: number;
@@ -136,7 +186,7 @@ export interface ReportsState {
   isLoadingChartReports: boolean;
   
   // Chart reports data
-  chartReportsData: ChartReportsResponse | null;
+  chartReportsData: ChartReportsResponseType | null;
   
   // Top municipalities data
   topMunicipalitiesData: TopMunicipalitiesResponse | null;
@@ -157,6 +207,13 @@ export interface ReportsState {
   // API response parameters
   lastApiParameters: TransactionsApiResponse['parameters'] | null;
   lastFailedApiParameters: TransactionsApiResponse['parameters'] | null;
+  
+  // Clientes con más compras
+  clientsMostPurchasesList: ClientsMostPurchasesDetail[];
+  clientsMostPurchasesPagination: PaginationMeta | null;
+  isLoadingClientsMostPurchases: boolean;
+  clientsMostPurchasesFilters: ClientsMostPurchasesFilters;
+  clientsMostPurchasesCurrentPage: number;
 }
 
 export interface ReportsSlice extends ReportsState {
@@ -166,7 +223,9 @@ export interface ReportsSlice extends ReportsState {
     end: string,
     page?: number,
     per_page?: number,
-    client?: string | null
+    client?: string | null,
+    total_min?: number,
+    total_max?: number
   ) => Promise<ApiResponse<TransactionsApiResponse>>;
   
   // Actions - Failed transactions
@@ -175,15 +234,25 @@ export interface ReportsSlice extends ReportsState {
     end: string,
     page?: number,
     per_page?: number,
-    client?: string | null
+    client?: string | null,
+    total_min?: number,
+    total_max?: number
   ) => Promise<ApiResponse<FailedTransactionsApiResponse>>;
+  
+  // Actions - Transaction details
+  fetchTransactionDetails: (
+    transactionId: number
+  ) => Promise<ApiResponse<TransactionDetails>>;
+  clearTransactionDetails: () => void;
   
   // Actions - Chart reports
   fetchChartReports: (
     start: string,
     end: string,
-    type: ChartReportType
-  ) => Promise<ApiResponse<ChartReportsResponse>>;
+    type: ChartReportType,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<ApiResponse<ChartReportsResponseType>>;
   clearChartReports: () => void;
   
   // Actions - Top municipalities
@@ -196,16 +265,35 @@ export interface ReportsSlice extends ReportsState {
   // Actions - Top products
   fetchTopProducts: (
     start: string,
-    end: string
+    end: string,
+    selectedClient: string | null | undefined,
+    selectedCategory: string | null | undefined,
+    total_min: number | undefined,
+    total_max: number | undefined
   ) => Promise<ApiResponse<TopProductsResponse>>;
   clearTopProducts: () => void;
   
   // Actions - Top categories
   fetchTopCategories: (
     start: string,
-    end: string
+    end: string,
+    total_min?: number,
+    total_max?: number
   ) => Promise<ApiResponse<TopCategoriesResponse>>;
   clearTopCategories: () => void;
+  
+  // Clientes con más compras
+  fetchClientsMostPurchasesList: (
+    start: string,
+    end: string,
+    per_page: number,
+    page: number,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<void>;
+  setClientsMostPurchasesFilters: (filters: ClientsMostPurchasesFilters) => void;
+  setClientsMostPurchasesCurrentPage: (page: number) => void;
+  clearClientsMostPurchasesFilters: () => void;
   
   // Client management
   // extractUniqueClients: () => void;
@@ -246,6 +334,10 @@ const initialReportsState: ReportsState = {
   selectedFailedTransaction: null,
   uniqueFailedClients: [],
   
+  // Transaction details state
+  transactionDetails: null,
+  isLoadingTransactionDetails: false,
+  
   // Pagination states - Successful transactions
   reportsCurrentPage: 1,
   reportsPagination: null,
@@ -280,19 +372,32 @@ const initialReportsState: ReportsState = {
     end: '',
     selectedClient: undefined,
     selectedCategory: undefined,
+    selectedMunicipality: undefined,
     type: null,
+    total_min: undefined,
+    total_max: undefined,
   },
   failedReportsFilters: {
     start: '',
     end: '',
     selectedClient: undefined,
     selectedCategory: undefined,
+    selectedMunicipality: undefined,
     type: null,
+    total_min: undefined,
+    total_max: undefined,
   },
   
   // API response
   lastApiParameters: null,
   lastFailedApiParameters: null,
+  
+  // Clientes con más compras
+  clientsMostPurchasesList: [],
+  clientsMostPurchasesPagination: null,
+  isLoadingClientsMostPurchases: false,
+  clientsMostPurchasesFilters: {},
+  clientsMostPurchasesCurrentPage: 1,
 };
 
 // Función helper para convertir paginación del backend al formato esperado por los componentes
@@ -324,19 +429,29 @@ export const createReportsSlice: StateCreator<
   ...initialReportsState,
 
   // Fetch transactions list con paginación y filtros
-  fetchTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null) => {
+  fetchTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null, total_min?: number, total_max?: number) => {
     set({ isLoadingReports: true });
     const endpoint = 'transactions';
     
     try {
-      const result = await fetchGetOrdersReportsTransactionsList(start, end, per_page, page, endpoint, client, 'exitosa');
+      const result = await fetchGetOrdersReportsTransactionsList(start, end, per_page, page, endpoint, client, 'exitosa', total_min, total_max);
       
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
         
+        const mappedTableDetail: TableDetail[] = (result.data.detalle_tabla || result.data.table_detail || []).map((item: any) => ({
+          id: item.id,
+          customer: item.cliente || item.customer,
+          amount: item.monto || item.amount,
+          date: item.fecha || item.date,
+          status: item.estado || item.status,
+        }));
+        
+        const uniqueClients = Array.from(new Set(mappedTableDetail.map(item => item.customer))).sort();
+        
         set({
-          transactionsList: result.data.table_detail,
-          uniqueClients: result.data.clients || [], // Actualizar clientes únicos desde el backend
+          transactionsList: mappedTableDetail,
+          uniqueClients: uniqueClients,
           reportsPagination: convertedPagination,
           reportsCurrentPage: page,
           isLoadingReports: false,
@@ -369,28 +484,30 @@ export const createReportsSlice: StateCreator<
   },
 
   // Fetch failed transactions list con paginación y filtros
-  fetchFailedTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null) => {
+  fetchFailedTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null, total_min?: number, total_max?: number) => {
     set({ isLoadingFailedReports: true });
     const endpoint = 'failedTransactions';
     
     try {
-      const result = await fetchGetOrdersReportsFailedTransactionsList(start, end, per_page, page, endpoint, client, 'fallida');
+      const result = await fetchGetOrdersReportsFailedTransactionsList(start, end, per_page, page, endpoint, client, 'fallida', total_min, total_max);
       
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
         
-        // Mapear los datos del backend que vienen con 'customer' a nuestra interfaz que espera 'client'
-        const mappedTableDetail: FailedTransactionDetail[] = result.data.table_detail.map((item: any) => ({
+        const mappedTableDetail: FailedTransactionDetail[] = (result.data.detalle_tabla || result.data.table_detail || []).map((item: any) => ({
           id: item.id,
-          client: item.client || item.customer, // Usar 'client' si está disponible, sino 'customer'
-          amount: item.amount,
-          date: item.date,
-          status: item.status,
+          client: item.cliente || item.client || item.customer,
+          amount: item.monto || item.amount,
+          date: item.fecha || item.date,
+          status: item.estado || item.status,
         }));
+        
+        // Extraer clientes únicos de los datos mapeados
+        const uniqueFailedClients = Array.from(new Set(mappedTableDetail.map(item => item.client))).sort();
         
         set({
           failedTransactionsList: mappedTableDetail,
-          uniqueFailedClients: result.data.clients || [], // Actualizar clientes únicos desde el backend
+          uniqueFailedClients: uniqueFailedClients,
           failedReportsPagination: convertedPagination,
           failedReportsCurrentPage: page,
           isLoadingFailedReports: false,
@@ -425,12 +542,57 @@ export const createReportsSlice: StateCreator<
     }
   },
 
+  // Fetch transaction details
+  fetchTransactionDetails: async (transactionId: number) => {
+    set({ isLoadingTransactionDetails: true });
+    
+    try {
+      const result = await fetchGetTransactionDetails(transactionId);
+      
+      if (result.ok && result.data) {
+        set({
+          transactionDetails: result.data,
+          isLoadingTransactionDetails: false,
+        });
+        
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        set({ isLoadingTransactionDetails: false });
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al cargar detalles de la transacción',
+          },
+        };
+      }
+    } catch (error) {
+      set({ isLoadingTransactionDetails: false });
+      console.error('Error in fetchTransactionDetails:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  // Clear transaction details
+  clearTransactionDetails: () => {
+    set({ transactionDetails: null });
+  },
+
   // Fetch chart reports
-  fetchChartReports: async (start: string, end: string, type: ChartReportType) => {
+  fetchChartReports: async (start: string, end: string, type: ChartReportType, total_min?: number, total_max?: number) => {
     set({ isLoadingChartReports: true });
     
     try {
-      const result = await fetchGetOrdersReportsCharts(start, end, type);
+      const result = await fetchGetOrdersReportsCharts(start, end, type, total_min, total_max);
+
+      console.log('result', result);
       
       if (result.ok && result.data) {
         set({
@@ -476,14 +638,21 @@ export const createReportsSlice: StateCreator<
       const result = await fetchGetOrdersReportsCharts(start, end, 'top-municipalities');
       
       if (result.ok && result.data) {
+        // Asegurar que los datos coincidan con la interfaz TopMunicipalitiesResponse
+        const topMunicipalitiesData: TopMunicipalitiesResponse = {
+          top_municipalities: result.data.top_municipalities || [],
+          total_purchases: result.data.total_purchases || 0,
+          quantity: result.data.quantity || 0,
+        };
+        
         set({
-          topMunicipalitiesData: result.data as unknown as TopMunicipalitiesResponse,
+          topMunicipalitiesData,
           isLoadingTopMunicipalities: false,
         });
         
         return {
           ok: true,
-          data: result.data as unknown as TopMunicipalitiesResponse,
+          data: topMunicipalitiesData,
         };
       } else {
         set({ isLoadingTopMunicipalities: false });
@@ -512,12 +681,14 @@ export const createReportsSlice: StateCreator<
   },
 
   // Fetch top products
-  fetchTopProducts: async (start: string, end: string) => {
+  fetchTopProducts: async (
+    start: string,
+    end: string,
+  ) => {
     set({ isLoadingTopProducts: true });
-    
     try {
       const result = await fetchGetOrdersReportsCharts(start, end, 'top-products');
-      
+      console.log('result', result);
       if (result.ok && result.data) {
         set({
           topProductsData: result.data as unknown as TopProductsResponse,
@@ -555,11 +726,11 @@ export const createReportsSlice: StateCreator<
   },
 
   // Fetch top categories
-  fetchTopCategories: async (start: string, end: string) => {
+  fetchTopCategories: async (start: string, end: string, total_min?: number, total_max?: number) => {
     set({ isLoadingTopCategories: true });
     
     try {
-      const result = await fetchGetOrdersReportsCharts(start, end, 'top-categories');
+      const result = await fetchGetOrdersReportsCharts(start, end, 'top-categories', total_min, total_max);
       
       if (result.ok && result.data) {
         set({
@@ -597,6 +768,43 @@ export const createReportsSlice: StateCreator<
     set({ topCategoriesData: null });
   },
 
+  // Clientes con más compras
+  fetchClientsMostPurchasesList: async (start, end, per_page, page, total_min, total_max) => {
+    console.log('total_min', total_min);
+    console.log('total_max', total_max);
+    set({ isLoadingClientsMostPurchases: true });
+    try {
+      const result = await fetchGetClientsMostPurchasesList(start, end, per_page, page, total_min, total_max);
+      if (result.ok && result.data) {
+        set({
+          clientsMostPurchasesList: result.data.table_detail || [],
+          clientsMostPurchasesPagination: result.data.pagination || null,
+          clientsMostPurchasesCurrentPage: page,
+          isLoadingClientsMostPurchases: false,
+        });
+      } else {
+        set({
+          isLoadingClientsMostPurchases: false,
+        });
+      }
+    } catch (error) {
+      console.error('Error in fetchClientsMostPurchasesList:', error);
+      set({ isLoadingClientsMostPurchases: false });
+    }
+  },
+  setClientsMostPurchasesFilters: (filters: ClientsMostPurchasesFilters) => {
+    set({ clientsMostPurchasesFilters: filters });
+  },
+  setClientsMostPurchasesCurrentPage: (page: number) => {
+    set({ clientsMostPurchasesCurrentPage: page });
+  },
+  clearClientsMostPurchasesFilters: () => {
+    set({
+      clientsMostPurchasesFilters: {},
+      clientsMostPurchasesCurrentPage: 1,
+    });
+  },
+
   // Filter actions - Successful transactions
   setReportsFilters: (filters: Partial<ReportsFilters>) => {
     set({ 
@@ -613,6 +821,8 @@ export const createReportsSlice: StateCreator<
         selectedClient: undefined,
         selectedCategory: undefined,
         type: null,
+        total_min: undefined,
+        total_max: undefined,
       },
       reportsCurrentPage: 1
     });
@@ -634,6 +844,8 @@ export const createReportsSlice: StateCreator<
         selectedClient: undefined,
         selectedCategory: undefined,
         type: null,
+        total_min: undefined,
+        total_max: undefined,
       },
       failedReportsCurrentPage: 1
     });
@@ -650,7 +862,7 @@ export const createReportsSlice: StateCreator<
       const newPage = reportsCurrentPage + 1;
       const perPage = reportsPagination.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ reportsCurrentPage: newPage });
-      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient);
+      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient, reportsFilters.total_min, reportsFilters.total_max);
     }
   },
 
@@ -660,7 +872,7 @@ export const createReportsSlice: StateCreator<
       const newPage = reportsCurrentPage - 1;
       const perPage = reportsPagination?.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ reportsCurrentPage: newPage });
-      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient);
+      get().fetchTransactionsList(reportsFilters.start, reportsFilters.end, newPage, perPage, reportsFilters.selectedClient, reportsFilters.total_min, reportsFilters.total_max);
     }
   },
 
@@ -675,7 +887,7 @@ export const createReportsSlice: StateCreator<
       const newPage = failedReportsCurrentPage + 1;
       const perPage = failedReportsPagination.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ failedReportsCurrentPage: newPage });
-      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient);
+      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient, failedReportsFilters.total_min, failedReportsFilters.total_max);
     }
   },
 
@@ -685,7 +897,7 @@ export const createReportsSlice: StateCreator<
       const newPage = failedReportsCurrentPage - 1;
       const perPage = failedReportsPagination?.per_page || 20; // Usar el per_page actual o fallback a 20
       set({ failedReportsCurrentPage: newPage });
-      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient);
+      get().fetchFailedTransactionsList(failedReportsFilters.start, failedReportsFilters.end, newPage, perPage, failedReportsFilters.selectedClient, failedReportsFilters.total_min, failedReportsFilters.total_max);
     }
   },
 

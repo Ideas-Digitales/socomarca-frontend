@@ -43,26 +43,37 @@ const CustomTable = <T extends Record<string, any> = any>({
             </tr>
           </thead>
           <tbody>
-            {data.map((row, rowIndex) => (
-              <tr
-                key={rowIndex}
-                className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-100'}
-              >
-                {columns.map((column, colIndex) => {
-                  const value = row[column.key as keyof T];
-                  return (
-                    <td
-                      key={colIndex}
-                      className="text-sm py-3 px-6 text-center"
-                    >
-                      {column.render
-                        ? column.render(value, row)
-                        : String(value || '')}
-                    </td>
-                  );
-                })}
+            {data.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="text-center py-8 text-gray-500 text-sm"
+                >
+                  No se encontraron resultados
+                </td>
               </tr>
-            ))}
+            ) : (
+              data.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-100'}
+                >
+                  {columns.map((column, colIndex) => {
+                    const value = row[column.key as keyof T];
+                    return (
+                      <td
+                        key={colIndex}
+                        className="text-sm py-3 px-6 text-center"
+                      >
+                        {column.render
+                          ? column.render(value, row)
+                          : String(value || '')}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

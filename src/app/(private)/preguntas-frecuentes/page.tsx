@@ -1,28 +1,88 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   PlusIcon,
   MinusIcon,
 } from '@heroicons/react/24/outline'
-
-const faqs = [
-  '¿Cuál es el valor por envío?',
-  '¿Cuánto es el monto mínimo de una compra?',
-  '¿Cuáles son los medios de pagos?',
-  '¿Cómo hago un pedido en socomarca.cl?',
-  '¿Cómo puedo realizar cambios y evoluciones?',
-  '¿Qué opciones de envío están disponibles en socomarca.cl?',
-  '¿Cuánto tiempo tarda en enviarse un pedido?',
-  'Mi producto está presentando fallas, ¿cuál es el procedimiento para acreditarla?',
-  '¿Cuáles son los plazos de entrega?',
-]
+import useStore from '@/stores/base'
 
 export default function PreguntasFrecuentes() {
   const [activeIndex, setActiveIndex] = useState<number | null>(0)
+  
+  const {
+    faqs,
+    isLoadingFAQ,
+    faqError,
+    fetchFAQs
+  } = useStore()
+
+  useEffect(() => {
+    fetchFAQs()
+  }, [fetchFAQs])
+
+  console.log(faqs)
 
   const toggleIndex = (index: number) => {
     setActiveIndex(prev => (prev === index ? null : index))
+  }
+
+  if (isLoadingFAQ) {
+    return (
+      <div className='bg-white max-w-7xl mx-auto mt-8 mb-8'>
+        <div className="w-full flex">
+          <div className="h-2 w-1/3 bg-[#267E00]"></div>
+          <div className="h-2 w-2/3 bg-[#6CB409]"></div>
+        </div>
+        <div className="max-w-7xl mx-auto px-12 py-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Preguntas frecuentes
+          </h2>
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-600 mx-auto"></div>
+            <p className="mt-2 text-slate-600">Cargando preguntas frecuentes...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (faqError) {
+    return (
+      <div className='bg-white max-w-7xl mx-auto mt-8 mb-8'>
+        <div className="w-full flex">
+          <div className="h-2 w-1/3 bg-[#267E00]"></div>
+          <div className="h-2 w-2/3 bg-[#6CB409]"></div>
+        </div>
+        <div className="max-w-7xl mx-auto px-12 py-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Preguntas frecuentes
+          </h2>
+          <div className="text-center py-8">
+            <p className="text-red-600">Error al cargar las preguntas frecuentes: {faqError}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!faqs || faqs.length === 0) {
+    return (
+      <div className='bg-white max-w-7xl mx-auto mt-8 mb-8'>
+        <div className="w-full flex">
+          <div className="h-2 w-1/3 bg-[#267E00]"></div>
+          <div className="h-2 w-2/3 bg-[#6CB409]"></div>
+        </div>
+        <div className="max-w-7xl mx-auto px-12 py-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Preguntas frecuentes
+          </h2>
+          <div className="text-center py-8">
+            <p className="text-slate-600">No hay preguntas frecuentes disponibles.</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -36,10 +96,10 @@ export default function PreguntasFrecuentes() {
           Preguntas frecuentes
         </h2>
         <ul className="divide-y divide-slate-200 rounded-lg overflow-hidden bg-white">
-          {faqs.map((question, i) => {
+          {faqs.map((faq, i) => {
             const isOpen = activeIndex === i
             return (
-              <li key={i}>
+              <li key={faq.id}>
                 <button
                   onClick={() => toggleIndex(i)}
                   className={`w-full flex items-center justify-between text-left px-4 py-5 focus:outline-none transition ${
@@ -51,7 +111,7 @@ export default function PreguntasFrecuentes() {
                       isOpen ? 'text-lime-600' : 'text-slate-900'
                     }`}
                   >
-                    {question}
+                    {faq.question}
                   </span>
                   {isOpen ? (
                     <MinusIcon className="h-5 w-5 text-slate-600" />
@@ -60,13 +120,28 @@ export default function PreguntasFrecuentes() {
                   )}
                 </button>
                 {isOpen && (
-                  <div className="bg-slate-100 px-4 pb-5 text-sm text-slate-700">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Aenean commodo ligula eget dolor. Aenean massa. Cum sociis
-                    natoque penatibus et magnis dis parturient montes, nascetur
-                    ridiculus mus. Donec quam felis, ultricies nec,
-                    pellentesque eu, pretium quis, sem.
-                  </div>
+                  <div 
+                    className="bg-slate-100 px-4 pb-5 text-sm text-slate-700"
+                    dangerouslySetInnerHTML={{ 
+                      __html: faq.answer 
+                        .replace(/&aacute;/g, 'á')
+                        .replace(/&eacute;/g, 'é')
+                        .replace(/&iacute;/g, 'í')
+                        .replace(/&oacute;/g, 'ó')
+                        .replace(/&uacute;/g, 'ú')
+                        .replace(/&ntilde;/g, 'ñ')
+                        .replace(/&Aacute;/g, 'Á')
+                        .replace(/&Eacute;/g, 'É')
+                        .replace(/&Iacute;/g, 'Í')
+                        .replace(/&Oacute;/g, 'Ó')
+                        .replace(/&Uacute;/g, 'Ú')
+                        .replace(/&Ntilde;/g, 'Ñ')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                    }}
+                  />
                 )}
               </li>
             )

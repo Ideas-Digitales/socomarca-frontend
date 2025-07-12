@@ -2,6 +2,7 @@ import { PaginationMeta } from '@/stores/base/types';
 import { CategoryComplexData } from './category.interface';
 import { Comuna } from '@/mock/comunasVentas';
 import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
+import { Customer } from '@/services/actions/clients.actions';
 
 // Interfaz para el rango de montos
 export interface AmountRange {
@@ -65,7 +66,7 @@ export interface DashboardTableLayoutProps<T = any> {
   onCategoryFilter?: (selectedIds: number[]) => void;
   onProviderFilter?: () => void;
   onSortBy?: (option: SortOption | null) => void;
-  onCommuneFilter?: (selectedIds: string[]) => void;
+  onCommuneFilter?: (selectedIds: (string | number)[]) => void;
 
   // Filtros específicos para gráficos
   onAmountFilter?: (amount: AmountRange) => void;
@@ -75,6 +76,7 @@ export interface DashboardTableLayoutProps<T = any> {
   categories?: CategoryComplexData[];
   communes?: Comuna[];
   clients?: Client[];
+  customers?: Customer[];
 
   // Estados de filtros seleccionados
   selectedCategories?: number[];
