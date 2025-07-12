@@ -21,6 +21,7 @@ const defaultImages = [
 export default function PrivatePage() {
   const { 
     isTablet, 
+    searchTerm,
     setSearchTerm, 
     resetSearchRelatedStates,
     customerMessage,
@@ -80,7 +81,6 @@ export default function PrivatePage() {
       onClear={handleClearSearch}
       placeholder="Busca productos ahora"
       label="Encuentra justo lo que necesitas con solo un clic en nuestro buscador"
-      initialValue={searchTerm}
     />
   );
 
@@ -93,7 +93,7 @@ export default function PrivatePage() {
         {customerMessage?.header?.content && customerMessage.header.content.trim() !== "" && (
           <div className="w-full flex justify-center">
             <div 
-              className="max-w-7xl w-full rounded-lg px-4 py-2 text-center text-white font-medium shadow-sm"
+              className="max-w-7xl w-full rounded-lg px-4 py- text-center text-white font-medium shadow-sm"
               style={{ backgroundColor: customerMessage.header.color }}
             >
               {customerMessage.header.content}

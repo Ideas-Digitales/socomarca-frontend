@@ -107,7 +107,7 @@ export default function ProductInfo({
         {nameInfo.text}
       </span>
       <span data-cy="product-price" className={`text-lime-500 font-bold ${textAlignment} text-lg mt-1`}>
-        {formatCurrency(price)}
+        {price != null ? formatCurrency(price) : '-'}
       </span>
       
       {(stock !== undefined || sku) && variant === 'grid' && (
