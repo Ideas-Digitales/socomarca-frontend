@@ -17,6 +17,7 @@ import { SiteInformationSlice } from './slices/siteInformationSlice';
 import { ChartSlice } from './slices/chartSlice';
 import { LocationSlice } from './slices/locationSlice';
 import { CustomerMessageSlice } from './slices/customerMessageSlice';
+import {Region} from "@/interfaces/region.interface";
 
 // ===== BASE TYPES =====
 export type ViewMode = 'grid' | 'list';
@@ -241,6 +242,13 @@ export interface FavoritesSlice {
   >;
 }
 
+// Regions Slice
+export interface RegionsSlice {
+  regionsList: Region[] | [];
+  fetchRegions: () => Promise<void>;
+  updateRegionsList: (municipalityId: number, status: boolean) => Promise<void>;
+}
+
 // Filters Slice
 export interface FiltersSlice {
   selectedCategories: number[];
@@ -357,7 +365,7 @@ export interface StoreState extends LoadingStates, AuthState {
   clientsError: string | null;
   clientsFilters: ClientsFilters;
   clientsCurrentPage: number;
-  
+
   // Customers states
   customersList: any[];
   isLoadingCustomers: boolean;
