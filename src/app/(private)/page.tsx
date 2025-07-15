@@ -89,18 +89,6 @@ export default function PrivatePage() {
       <div className="flex flex-col mb-2 sm:py-2 space-y-2">
         {isTablet && componentSearch}
         
-        {/* Franja del mensaje del cliente */}
-        {customerMessage?.header?.content && customerMessage.header.content.trim() !== "" && (
-          <div className="w-full flex justify-center">
-            <div 
-              className="max-w-7xl w-full rounded-lg px-4 py- text-center text-white font-medium shadow-sm"
-              style={{ backgroundColor: customerMessage.header.color }}
-            >
-              {customerMessage.header.content}
-            </div>
-          </div>
-        )}
-        
         {/* Mostrar skeleton mientras carga, o carrusel si está habilitado */}
         {isLoadingCustomerMessage ? (
           <CarouselSkeleton />
@@ -109,6 +97,19 @@ export default function PrivatePage() {
             <Caroussel images={getCarouselImages()} />
           )
         )}
+        
+        {/* Franja del mensaje del cliente */}
+        {customerMessage?.header?.content && customerMessage.header.content.trim() !== "" && (
+          <div className="w-full max-w-7xl mx-auto px-4">
+            <div 
+              className="w-full rounded-lg px-4 py-1 text-center text-white font-medium shadow-sm"
+              style={{ backgroundColor: customerMessage.header.color }}
+            >
+              {customerMessage.header.content}
+            </div>
+          </div>
+        )}
+        
         {!isTablet && componentSearch}
       </div>
 
