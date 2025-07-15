@@ -91,8 +91,8 @@ export default function ProductsAdmin() {
       setSortOption(defaultSort);
       // Aplicar el ordenamiento por defecto
       const sortParams = {
-        sort_field: 'id' as 'id',
-        sort_direction: 'asc' as 'asc'
+        sort_field: 'id' as const,
+        sort_direction: 'asc' as const
       };
       setLoading(true);
       if (selectedCategories.length > 0) {

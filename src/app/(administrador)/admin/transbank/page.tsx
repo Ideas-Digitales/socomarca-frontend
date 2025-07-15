@@ -33,8 +33,9 @@ export default function CredencialesTransbank() {
             name="commerceCode"
             value={form.commerceCode}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded border-gray-300 bg-white"
+            className="w-full px-4 py-2 border rounded border-gray-300 bg-gray-100 cursor-not-allowed"
             placeholder="Ej: 597055555532"
+            disabled
           />
         </div>
 
@@ -45,8 +46,9 @@ export default function CredencialesTransbank() {
             name="apiKey"
             value={form.apiKey}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded border-gray-300  bg-white"
+            className="w-full px-4 py-2 border rounded border-gray-300 bg-gray-100 cursor-not-allowed"
             placeholder="Llave privada entregada por Transbank"
+            disabled
           />
         </div>
 
@@ -56,7 +58,8 @@ export default function CredencialesTransbank() {
             name="environment"
             value={form.environment}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded border-gray-300  bg-white"
+            className="w-full px-4 py-2 border rounded border-gray-300 bg-gray-100 cursor-not-allowed"
+            disabled
           >
             <option value="integration">Integración</option>
             <option value="production">Producción</option>
@@ -70,8 +73,9 @@ export default function CredencialesTransbank() {
             name="callbackUrl"
             value={form.callbackUrl}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded border-gray-300  bg-white"
+            className="w-full px-4 py-2 border rounded border-gray-300 bg-gray-100 cursor-not-allowed"
             placeholder="https://tuweb.cl/webpay/callback"
+            disabled
           />
         </div>
       </div>
@@ -79,7 +83,8 @@ export default function CredencialesTransbank() {
       <div className="mt-6 flex justify-end">
         <button
           onClick={handleSubmit}
-          className="bg-[#87c814] text-white px-6 py-2 rounded hover:bg-[#76b40e] transition"
+          className="bg-gray-400 text-white px-6 py-2 rounded cursor-not-allowed transition"
+          disabled
         >
           Guardar credenciales
         </button>

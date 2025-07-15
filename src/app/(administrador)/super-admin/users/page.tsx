@@ -19,6 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useState, useEffect, useCallback } from 'react';
 import { getUsersAction, searchUsersAction, updateUserAction, deleteUserAction, UpdateUserRequest } from '@/services/actions/user.actions';
+import { getRolesAction, Role } from '@/services/actions/roles.actions';
 import { transformApiUserToUser, ApiMeta, SearchUsersRequest } from '@/interfaces/user.interface';
 
 export interface User {
@@ -36,7 +37,7 @@ interface EditFormData {
   email: string;
   firstName: string;
   lastName: string;
-  userProfile: 'cliente' | 'admin' | 'superadmin' | '';
+  userProfile: string;
   password: string;
   changePassword: boolean;
 }
@@ -160,10 +161,7 @@ const EditUserForm = ({
     email: user.email,
     firstName: user.name,
     lastName: user.lastname,
-    userProfile: user.profile.toLowerCase() as
-      | 'cliente'
-      | 'admin'
-      | 'superadmin',
+    userProfile: user.profile.toLowerCase(),
     password: '',
     changePassword: false,
   });
@@ -171,6 +169,8 @@ const EditUserForm = ({
   const [errors, setErrors] = useState<EditFormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
 
   // Validar email
   const isValidEmail = (email: string): boolean => {
@@ -302,6 +302,26 @@ const EditUserForm = ({
     }
   };
 
+  // Cargar roles al montar el componente
+  useEffect(() => {
+    const loadRoles = async () => {
+      try {
+        const result = await getRolesAction();
+        if (result.success && result.data) {
+          setRoles(result.data);
+        } else {
+          console.error('Error loading roles:', result.error);
+        }
+      } catch (error) {
+        console.error('Error loading roles:', error);
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    loadRoles();
+  }, []);
+
   // Obtener validación de contraseña para mostrar nivel
   const passwordValidation =
     formData.password && formData.changePassword
@@ -370,44 +390,24 @@ const EditUserForm = ({
         <div className="flex flex-col gap-3">
           <span className="text-[15px]">Perfil de usuario</span>
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2 items-center">
-              <input
-                type="radio"
-                name="userProfile"
-                id="cliente-edit"
-                checked={formData.userProfile === 'cliente'}
-                onChange={() => handleInputChange('userProfile', 'cliente')}
-              />
-              <label className="text-sm" htmlFor="cliente-edit">
-                Cliente
-              </label>
-            </div>
-            <div className="flex gap-2 items-center">
-              <input
-                type="radio"
-                name="userProfile"
-                id="admin-edit"
-                checked={formData.userProfile === 'admin'}
-                onChange={() => handleInputChange('userProfile', 'admin')}
-              />
-              <label className="text-sm" htmlFor="admin-edit">
-                Admin
-              </label>
-            </div>
-            <div className="flex gap-2 items-center">
-              <input
-                type="radio"
-                name="userProfile"
-                id="superadmin-edit"
-                checked={formData.userProfile === 'superadmin'}
-                onChange={() =>
-                  handleInputChange('userProfile', 'superadmin')
-                }
-              />
-              <label className="text-sm" htmlFor="superadmin-edit">
-                Super Admin
-              </label>
-            </div>
+            {loadingRoles ? (
+              <div className="text-sm text-gray-500">Cargando roles...</div>
+            ) : (
+              roles.map((role) => (
+                <div key={role.id} className="flex gap-2 items-center">
+                  <input
+                    type="radio"
+                    name="userProfile"
+                    id={`${role.name}-edit`}
+                    checked={formData.userProfile === role.name}
+                    onChange={() => handleInputChange('userProfile', role.name)}
+                  />
+                  <label className="text-sm" htmlFor={`${role.name}-edit`}>
+                    {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
+                  </label>
+                </div>
+              ))
+            )}
           </div>
           {errors.userProfile && (
             <span className="text-red-500 text-xs">{errors.userProfile}</span>

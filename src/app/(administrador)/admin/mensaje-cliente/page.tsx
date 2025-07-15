@@ -165,10 +165,11 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => modalInputRef.current?.click()}
-              className="flex items-center gap-2 justify-center sm:justify-start border w-full rounded px-4 py-2 text-sm"
+              disabled
+              className="flex items-center gap-2 justify-center sm:justify-start border w-full rounded px-4 py-2 text-sm opacity-50 cursor-not-allowed"
             >
               <ArrowUpTrayIcon className="w-5 h-5" />
-              Subir imagen
+              Subir imagen (En desarrollo)
             </button>
             {modalFileName && (
               <p className="text-xs text-gray-500 mt-1 truncate">
@@ -238,10 +239,11 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => desktopBannerRef.current?.click()}
-              className="flex justify-center sm:justify-start items-center gap-2 border rounded px-4 py-2 text-sm w-full sm:w-auto"
+              disabled
+              className="flex justify-center sm:justify-start items-center gap-2 border rounded px-4 py-2 text-sm w-full sm:w-auto opacity-50 cursor-not-allowed"
             >
               <ArrowUpTrayIcon className="w-5 h-5" />
-              Subir imagen desktop
+              Subir imagen desktop (En desarrollo)
             </button>
             {desktopFileName && (
               <p className="text-xs text-gray-500 mt-1 truncate">
@@ -268,10 +270,11 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => responsiveBannerRef.current?.click()}
-              className="flex justify-center items-center gap-2 w-full sm:w-auto border rounded px-4 py-2 text-sm"
+              disabled
+              className="flex justify-center items-center gap-2 w-full sm:w-auto border rounded px-4 py-2 text-sm opacity-50 cursor-not-allowed"
             >
               <ArrowUpTrayIcon className="w-5 h-5" />
-              Subir imagen responsivo
+              Subir imagen responsivo (En desarrollo)
             </button>
             {responsiveFileName && (
               <p className="text-xs text-gray-500 mt-1 truncate">

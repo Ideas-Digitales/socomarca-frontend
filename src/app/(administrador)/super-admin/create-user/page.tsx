@@ -6,8 +6,9 @@ import {
   validatePasswordStrength,
 } from '@/stores/base/utils/passwordUtilities';
 import { createUserAction, CreateUserRequest } from '@/services/actions/user.actions';
+import { getRolesAction, Role } from '@/services/actions/roles.actions';
 import { EyeSlashIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Interfaces para el formulario
 interface FormData {
@@ -16,7 +17,7 @@ interface FormData {
   firstName: string;
   lastName: string;
   secondLastName: string;
-  userProfile: 'colaborador' | 'editor' | '';
+  userProfile: string;
   password: string;
   passwordConfirmation: string;
   phone: string;
@@ -58,6 +59,8 @@ export default function CreateUser() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
 
   // Validar email
   const isValidEmail = (email: string): boolean => {
@@ -228,7 +231,7 @@ export default function CreateUser() {
         rut: formData.rut.replace(/\./g, '').replace(/-/g, ''), // Limpiar RUT
         business_name: formData.businessName,
         is_active: true,
-        roles: formData.userProfile === 'colaborador' ? ['colaborador'] : ['editor'],
+        roles: [formData.userProfile],
       };
 
       const result = await createUserAction(userData);
@@ -262,6 +265,26 @@ export default function CreateUser() {
       setIsSubmitting(false);
     }
   };
+
+  // Cargar roles al montar el componente
+  useEffect(() => {
+    const loadRoles = async () => {
+      try {
+        const result = await getRolesAction();
+        if (result.success && result.data) {
+          setRoles(result.data);
+        } else {
+          console.error('Error loading roles:', result.error);
+        }
+      } catch (error) {
+        console.error('Error loading roles:', error);
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    loadRoles();
+  }, []);
 
   // Obtener validación de contraseña para mostrar nivel
   const passwordValidation = formData.password
@@ -391,7 +414,7 @@ export default function CreateUser() {
                 value={formData.rut}
                 onChange={(e) => handleInputChange('rut', e.target.value)}
                 className="bg-[#EBEFF7] text-[15px] px-2 py-1 h-[40px] w-full"
-                placeholder="17260847-7"
+                placeholder="12312312-3"
               />
               {errors.rut && (
                 <span className="text-red-500 text-xs">{errors.rut}</span>
@@ -407,7 +430,7 @@ export default function CreateUser() {
                 value={formData.businessName}
                 onChange={(e) => handleInputChange('businessName', e.target.value)}
                 className="bg-[#EBEFF7] text-[15px] px-2 py-1 h-[40px] w-full"
-                placeholder="Juancho"
+                placeholder="Mi Empresa"
               />
               {errors.businessName && (
                 <span className="text-red-500 text-xs">{errors.businessName}</span>
@@ -419,34 +442,25 @@ export default function CreateUser() {
           <div className="flex flex-col md:flex-row md:gap-6 md:items-center gap-3">
             <p className="text-xs">Perfil de usuario</p>
             <div className="flex flex-col md:flex-row gap-4 md:gap-[48px] md:flex-1-0-0">
-              <div className="flex gap-2 items-center">
-                <label className="text-xs" htmlFor="colaborador-create-user">
-                  Colaborador
-                </label>
-                <input
-                  className="text-xs"
-                  type="radio"
-                  name="userProfile"
-                  id="colaborador-create-user"
-                  checked={formData.userProfile === 'colaborador'}
-                  onChange={() =>
-                    handleInputChange('userProfile', 'colaborador')
-                  }
-                />
-              </div>
-              <div className="flex gap-2 items-center">
-                <label className="text-xs" htmlFor="editor-create-user">
-                  Editor
-                </label>
-                <input
-                  className="text-xs"
-                  type="radio"
-                  name="userProfile"
-                  id="editor-create-user"
-                  checked={formData.userProfile === 'editor'}
-                  onChange={() => handleInputChange('userProfile', 'editor')}
-                />
-              </div>
+              {loadingRoles ? (
+                <div className="text-xs text-gray-500">Cargando roles...</div>
+              ) : (
+                roles.map((role) => (
+                  <div key={role.id} className="flex gap-2 items-center">
+                    <label className="text-xs" htmlFor={`${role.name}-create-user`}>
+                      {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
+                    </label>
+                    <input
+                      className="text-xs"
+                      type="radio"
+                      name="userProfile"
+                      id={`${role.name}-create-user`}
+                      checked={formData.userProfile === role.name}
+                      onChange={() => handleInputChange('userProfile', role.name)}
+                    />
+                  </div>
+                ))
+              )}
             </div>
             {errors.userProfile && (
               <span className="text-red-500 text-xs">{errors.userProfile}</span>
