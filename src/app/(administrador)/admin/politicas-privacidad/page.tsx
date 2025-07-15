@@ -116,7 +116,7 @@ export default function RichTextEditor() {
           className={`px-6 py-2 rounded-md font-medium transition-colors ${
             isSaving
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'bg-lime-500 hover:bg-lime-600 text-white'
           }`}
         >
           {isSaving ? 'Guardando...' : 'Guardar cambios'}

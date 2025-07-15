@@ -1,4 +1,5 @@
 import useStore from '../base';
+import { useMemo } from 'react';
 
 // Hook para obtener solo los productos del carrito
 export const useCartProducts = () => useStore((state) => state.cartProducts);
@@ -29,18 +30,31 @@ export const useCartInfo = () =>
   });
 
 // Hook para obtener solo las acciones del carrito
-export const useCartActions = () =>
-  useStore((state) => ({
-    addProductToCart: state.addProductToCart,
-    addProductToCartOptimistic: state.addProductToCartOptimistic,
-    removeProductFromCart: state.removeProductFromCart,
-    removeProductFromCartOptimistic: state.removeProductFromCartOptimistic,
-    incrementProductInCart: state.incrementProductInCart,
-    decrementProductInCart: state.decrementProductInCart,
-    removeAllQuantityByProductId: state.removeAllQuantityByProductId,
-    clearCart: state.clearCart,
-    fetchCartProducts: state.fetchCartProducts,
-  }));
+export const useCartActions = () => {
+  const store = useStore();
+  
+  return useMemo(() => ({
+    addProductToCart: store.addProductToCart,
+    addProductToCartOptimistic: store.addProductToCartOptimistic,
+    removeProductFromCart: store.removeProductFromCart,
+    removeProductFromCartOptimistic: store.removeProductFromCartOptimistic,
+    incrementProductInCart: store.incrementProductInCart,
+    decrementProductInCart: store.decrementProductInCart,
+    removeAllQuantityByProductId: store.removeAllQuantityByProductId,
+    clearCart: store.clearCart,
+    fetchCartProducts: store.fetchCartProducts,
+  }), [
+    store.addProductToCart,
+    store.addProductToCartOptimistic,
+    store.removeProductFromCart,
+    store.removeProductFromCartOptimistic,
+    store.incrementProductInCart,
+    store.decrementProductInCart,
+    store.removeAllQuantityByProductId,
+    store.clearCart,
+    store.fetchCartProducts,
+  ]);
+};
 
 // Hook combinado para componentes que necesitan todo del carrito
 export const useCart = () => {

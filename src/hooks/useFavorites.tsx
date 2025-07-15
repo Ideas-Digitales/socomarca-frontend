@@ -89,13 +89,16 @@ export const useFavorites = () => {
           const result = await handleCreateList(newListName);
 
           if (result.ok) {
+            // Recargar las listas después de crear una nueva
+            await fetchFavorites();
           } else {
+            console.error('Error al crear lista:', result.error);
           }
         } catch (error) {
           console.error('Error creando lista:', error);
         }
 
-        closeModal();
+        // No cerrar el modal, el componente ListsModal manejará el cambio de vista
       };
       const handleSave = () => {
         closeModal();

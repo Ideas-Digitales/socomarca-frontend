@@ -120,8 +120,6 @@ export default function CategoriasMasVentas() {
   // Debug: Log de datos cuando cambien (solo para desarrollo)
   useEffect(() => {
     if (topCategoriesData) {
-      console.log('Datos de top categories recibidos:', topCategoriesData);
-      console.log('Categorías procesadas:', categoriasConRanking);
     }
   }, [topCategoriesData, categoriasConRanking]);
 
@@ -251,22 +249,6 @@ export default function CategoriasMasVentas() {
       fetchChartReports(start, end, 'top-categories'),
       fetchChartRawData(start, end, null)
     ]);
-
-    // Ejemplo de lógica de filtrado usando el rango de montos
-    let filteredCategories = categoriasConRanking;
-
-    // Filtrar por rango de montos si se especifica
-    if (total_min || total_max) {
-      const minAmount = total_min || 0;
-      const maxAmount = total_max || Infinity;
-
-      filteredCategories = filteredCategories.filter(
-        (categoria) =>
-          categoria.venta >= minAmount && categoria.venta <= maxAmount
-      );
-    }
-
-    console.log('Categorías filtradas:', filteredCategories);
   };
 
   const handleClearSearch = () => {
@@ -305,11 +287,7 @@ export default function CategoriasMasVentas() {
 
   // Manejar cambios en el rango de fechas del DatePicker
   const handleDateRangeChange = (start: string, end: string) => {
-    Promise.all([
-      fetchTopCategories(start, end),
-      fetchChartReports(start, end, 'top-categories'),
-      fetchChartRawData(start, end, null)
-    ]);
+    setReportsFilters({ start, end });
   };
 
   // Mostrar loading spinner completo solo en la carga inicial
@@ -318,21 +296,6 @@ export default function CategoriasMasVentas() {
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
         <p className="text-gray-600 text-sm">Cargando categorías con más ventas...</p>
-      </div>
-    );
-  }
-
-  // Mostrar mensaje cuando no hay datos
-  if (!isLoadingTopCategories && !isInitialLoad && categoriasConRanking.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <div className="text-gray-500">
-          <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-gray-900">No hay categorías</h3>
-        <p className="text-gray-600 text-sm">No se encontraron categorías con ventas en el período seleccionado.</p>
       </div>
     );
   }

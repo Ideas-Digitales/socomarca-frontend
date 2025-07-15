@@ -113,6 +113,7 @@ export default function CategoryFilterMobile({
   );
 
   const handleApplyFilters = () => {
+    console.log('Applying filters, showOnlyFavorites:', showOnlyFavorites);
     applyFilters();
     onClose();
   };
@@ -140,6 +141,18 @@ export default function CategoryFilterMobile({
       setBrandSearchTerm('');
     }
   }, [isOpen]);
+
+  // Sincronizar estados cuando el modal se abre
+  useEffect(() => {
+    if (isOpen) {
+      console.log('Modal opened, showOnlyFavorites:', showOnlyFavorites);
+      // Asegurar que los estados de UI estén sincronizados
+      // Los estados de filtros ya están sincronizados por el store
+    }
+  }, [isOpen, showOnlyFavorites]);
+
+  // Debug log para ver el estado actual
+  console.log('CategoryFilterMobile render - showOnlyFavorites:', showOnlyFavorites);
 
   if (!isOpen) return null;
 
@@ -385,7 +398,10 @@ export default function CategoryFilterMobile({
                     id="favorite-checkbox-mobile"
                     type="checkbox"
                     checked={showOnlyFavorites}
-                    onChange={toggleShowOnlyFavorites}
+                    onChange={() => {
+                      console.log('Toggle favorites clicked, current state:', showOnlyFavorites);
+                      toggleShowOnlyFavorites();
+                    }}
                   />
                   <label
                     htmlFor="favorite-checkbox-mobile"

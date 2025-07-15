@@ -23,6 +23,7 @@ export default function CarroDeCompraPage() {
     paginationData,
     subtotal,
     isCartEmpty,
+    isCartLoading,
     
     // Navegación
     backHome,
@@ -96,6 +97,7 @@ export default function CarroDeCompraPage() {
               subtotal={subtotal}
               cartCount={cartProducts.length}
               onContinue={goNext}
+              isLoading={isCartLoading}
             />
 
             {/* Modal de confirmación */}

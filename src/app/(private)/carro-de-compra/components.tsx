@@ -169,9 +169,10 @@ interface OrderSummaryProps {
   subtotal: number;
   cartCount: number;
   onContinue: () => void;
+  isLoading?: boolean;
 }
 
-export const OrderSummary = ({ subtotal, cartCount, onContinue }: OrderSummaryProps) => (
+export const OrderSummary = ({ subtotal, cartCount, onContinue, isLoading = false }: OrderSummaryProps) => (
   <aside className="w-full lg:w-1/4 bg-white rounded-lg shadow p-6 h-fit">
     <div className="border-b-[1px] border-b-slate-100 pb-2 mb-3">
       <h3 className="text-xl font-bold border-b-slate-50">
@@ -180,11 +181,25 @@ export const OrderSummary = ({ subtotal, cartCount, onContinue }: OrderSummaryPr
     </div>
     <div className="flex justify-between mb-2 pb-3 border-b-[1px] border-b-slate-100">
       <span>Subtotal</span>
-      <span>${subtotal.toLocaleString(CART_PAGE_CONFIG.CURRENCY_LOCALE)}</span>
+      {isLoading ? (
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-lime-500"></div>
+          <span className="text-gray-400">Calculando...</span>
+        </div>
+      ) : (
+        <span>${subtotal.toLocaleString(CART_PAGE_CONFIG.CURRENCY_LOCALE)}</span>
+      )}
     </div>
     <div className="flex justify-between font-bold mb-2">
       <span>Total todo medio de pago</span>
-      <span>${subtotal.toLocaleString(CART_PAGE_CONFIG.CURRENCY_LOCALE)}</span>
+      {isLoading ? (
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-lime-500"></div>
+          <span className="text-gray-400">Calculando...</span>
+        </div>
+      ) : (
+        <span>${subtotal.toLocaleString(CART_PAGE_CONFIG.CURRENCY_LOCALE)}</span>
+      )}
     </div>
     <p className="text-xs text-gray-500 mb-4">
       Impuestos y envíos calculados al finalizar la compra
@@ -192,9 +207,9 @@ export const OrderSummary = ({ subtotal, cartCount, onContinue }: OrderSummaryPr
 
     <button
       onClick={onContinue}
-      disabled={cartCount === 0}
+      disabled={cartCount === 0 || isLoading}
       className={`w-full ${
-        cartCount > 0
+        cartCount > 0 && !isLoading
           ? 'bg-lime-500 hover:bg-lime-600'
           : CART_PAGE_STYLES.button.disabled
       } text-white py-2 rounded`}

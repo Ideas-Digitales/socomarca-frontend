@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '../components/admin/Sidebar';
 import SidebarMobile from '../components/admin/SidebarMobile';
-import DescargarDatos from '../components/admin/DescargarDatos';
 import useStore, { useInitMobileDetection } from '@/stores/base';
 import useAuthStore from '@/stores/useAuthStore';
 
@@ -80,8 +79,7 @@ export default function AdminLayout({
             !isTablet ? 'ml-[290px]' : ''
           }`}
         >
-          {/* DescargarDatos solo para admin regular y desktop */}
-          {!isTablet && userRole === 'admin' && <DescargarDatos />}
+          {/* DescargarDatos solo para admin, superadmin y desktop */}
 
           <main
             className={`flex-grow relative w-full ${

@@ -80,7 +80,7 @@ export default function ProductCard({ product }: Props) {
     if (isQaMode) {
       setIsOptimisticUpdate(true);
       setTimeout(() => {
-        setQuantity(0);
+        setQuantity(1);
         setIsLoading(false);
       }, 500);
       return;
@@ -97,7 +97,7 @@ export default function ProductCard({ product }: Props) {
       );
 
       if (response.ok) {
-        setQuantity(0);
+        setQuantity(1);
       } else {
         setIsOptimisticUpdate(false);
       }

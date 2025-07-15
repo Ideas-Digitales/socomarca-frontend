@@ -57,9 +57,9 @@ export default function Footer() {
       {/* Línea verde superior */}
       <div className="h-1 bg-lime-500" />
 
-      <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="w-full max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-12 justify-between">
         {/* Logo y descripción */}
-        <div className="flex flex-col items-start justify-center gap-[10px] text-start">
+        <div className="gap-[10px] text-start">
           <h1 className="text-lime-600 text-xl font-bold w-full flex justify-center md:justify-start">
             <Logo />
           </h1>
@@ -68,18 +68,6 @@ export default function Footer() {
             despacho confiable. Para que tu energía esté donde importa: en tus
             clientes.
           </p>
-        </div>
-        {/* Categoría */}
-        <div className="space-y-1 hidden md:block">
-          <h3 className="text-gray-500 font-bold">Categoría</h3>
-          <ul className="space-y-1">
-            <li>Despensa</li>
-            <li>Hogar y limpieza</li>
-            <li>Lácteos y fiambre</li>
-            <li>Cuidado personal</li>
-            <li>Bebestibles</li>
-            <li>Confites</li>
-          </ul>
         </div>
         {/* Atención al cliente */}
         <div className="space-y-1">

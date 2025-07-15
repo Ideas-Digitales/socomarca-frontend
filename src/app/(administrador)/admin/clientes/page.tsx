@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { searchUsersAction } from '@/services/actions/user.actions';
-import { SearchUsersRequest, SearchFilter, ApiUser, UsersApiResponse } from '@/interfaces/user.interface';
+import { SearchUsersRequest, SearchFilter, ApiUser } from '@/interfaces/user.interface';
 import CustomTable from '@/app/components/admin/CustomTable';
 import SearchableDropdown from '@/app/components/filters/SearchableDropdown';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
@@ -167,16 +167,16 @@ const ClientsPage = () => {
     setCurrentPage(page);
   };
 
-  // Manejar cambio de ordenamiento
-  const handleSortChange = (field: string) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('asc');
-    }
-    setCurrentPage(1); // Resetear a la primera página cuando cambia el ordenamiento
-  };
+  // // Manejar cambio de ordenamiento
+  // const handleSortChange = (field: string) => {
+  //   if (sortField === field) {
+  //     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  //   } else {
+  //     setSortField(field);
+  //     setSortOrder('asc');
+  //   }
+  //   setCurrentPage(1); // Resetear a la primera página cuando cambia el ordenamiento
+  // };
 
   // Columnas de la tabla
   const columns = [

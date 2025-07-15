@@ -79,38 +79,7 @@ export default function RichTextEditor() {
     </div>
   );
 
-  // Modal de visualización
-  const PreviewModal = ({ content, onClose }: { content: string; onClose: () => void }) => (
-    <div className="text-center space-y-4">
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium text-gray-900">Vista previa</h3>
-        <p className="text-gray-600">Así es como se verán los términos y condiciones para los usuarios</p>
-      </div>
-      
-      {/* Contenido de la vista previa con el mismo estilo que la página del usuario */}
-      <div className="bg-[#f1f5f9] p-6 rounded-lg max-h-96 overflow-y-auto">
-        <div className="bg-white shadow rounded">
-          <div className="w-full flex">
-            <div className="h-2 w-1/3 bg-[#267E00]"></div>
-            <div className="h-2 w-2/3 bg-[#6CB409]"></div>
-          </div>
-          <div className="p-8">
-            <div 
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: content || '<p>No hay contenido para mostrar</p>' }}
-            />
-          </div>
-        </div>
-      </div>
-      
-      <button
-        onClick={onClose}
-        className="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors cursor-pointer"
-      >
-        Cerrar
-      </button>
-    </div>
-  );
+
 
   useEffect(() => {
     // Cargar términos y condiciones al montar el componente
@@ -167,11 +136,8 @@ export default function RichTextEditor() {
   };
 
   const handlePreview = () => {
-    openModal('', {
-      title: '',
-      size: 'lg',
-      content: <PreviewModal content={editorContent} onClose={closeModal} />
-    });
+    // Abrir la página de vista previa de términos y condiciones en una nueva ventana
+    window.open('/admin/terminos-condiciones/preview', '_blank');
   };
 
   if (isLoadingTerms && !termsAndConditions) {

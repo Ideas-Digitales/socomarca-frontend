@@ -92,6 +92,10 @@ const ListsModal = ({
       await onCreateNewList(newListName);
       setNewListName('');
       setCurrentView('lists');
+      // Recargar las listas después de crear una nueva
+      await fetchFavorites();
+    } catch (error) {
+      console.error('Error en handleCreateNewList:', error);
     } finally {
       setIsCreatingList(false);
     }

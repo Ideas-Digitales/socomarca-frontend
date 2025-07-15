@@ -14,6 +14,7 @@ export const useCartPage = () => {
     removeAllQuantityByProductId,
     decrementProductInCart,
     incrementProductInCart,
+    isCartLoading,
   } = useStore();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -107,6 +108,7 @@ export const useCartPage = () => {
     paginationData,
     subtotal,
     isCartEmpty,
+    isCartLoading,
     
     // Funciones de navegación
     backHome,

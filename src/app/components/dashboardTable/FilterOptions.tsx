@@ -1,3 +1,5 @@
+'use client';
+
 import { Category } from '@/interfaces/category.interface';
 import { SortOption, TableColumn } from '@/interfaces/dashboard.interface';
 import SortDropdown from '../filters/SortDropdown';
@@ -8,6 +10,9 @@ import SearchableDropdown, {
   SearchableOption,
 } from '../filters/SearchableDropdown';
 import { Customer } from '@/services/actions/clients.actions';
+import useStore from '@/stores/base';
+import DescargarDatos from '../admin/DescargarDatos';
+import useAuthStore from '@/stores/useAuthStore';
 
 interface AmountRange {
   min: string;
@@ -54,6 +59,12 @@ export default function FilterOptions({
   searchableDropdown = false,
   communes = [],
 }: Props) {
+
+  const { getUserRole } = useAuthStore();
+
+  // Obtener el rol del usuario
+  const userRole = (getUserRole() as 'admin' | 'superadmin') || 'admin';
+
   // Convertir categorías a DropdownOption
   const categoryOptions: DropdownOption[] = categories.map((category) => ({
     id: category.id,
@@ -199,6 +210,8 @@ export default function FilterOptions({
             Filtrar
           </button>
         )}
+        
+        {(userRole === 'admin' || userRole === 'superadmin') && <DescargarDatos />}
       </div>
     </div>
   );

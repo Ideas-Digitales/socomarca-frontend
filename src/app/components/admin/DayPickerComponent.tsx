@@ -3,7 +3,7 @@ import { DayPicker, DateRange } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { es } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, parseISO, startOfDay } from 'date-fns';
 
 interface DayPickerComponentProps {
   onDateRangeChange?: (start: string, end: string) => void;
@@ -22,8 +22,8 @@ export default function DayPickerComponent({
   // Inicializar con el rango de fechas proporcionado
   useEffect(() => {
     if (initialDateRange?.start || initialDateRange?.end) {
-      const from = initialDateRange.start ? new Date(initialDateRange.start) : undefined;
-      const to = initialDateRange.end ? new Date(initialDateRange.end) : undefined;
+      const from = initialDateRange.start ? startOfDay(parseISO(initialDateRange.start)) : undefined;
+      const to = initialDateRange.end ? startOfDay(parseISO(initialDateRange.end)) : undefined;
       setSelected({ from, to });
     }
   }, [initialDateRange]);
@@ -33,12 +33,12 @@ export default function DayPickerComponent({
     setSelected(range);
     
     if (range?.from && range?.to && onDateRangeChange) {
-      const startDate = format(range.from, 'yyyy-MM-dd');
-      const endDate = format(range.to, 'yyyy-MM-dd');
+      const startDate = format(startOfDay(range.from), 'yyyy-MM-dd');
+      const endDate = format(startOfDay(range.to), 'yyyy-MM-dd');
       onDateRangeChange(startDate, endDate);
     } else if (range?.from && !range?.to && onDateRangeChange) {
       // Si solo hay fecha de inicio, usar la misma para inicio y fin
-      const startDate = format(range.from, 'yyyy-MM-dd');
+      const startDate = format(startOfDay(range.from), 'yyyy-MM-dd');
       onDateRangeChange(startDate, startDate);
     }
   };
@@ -52,9 +52,9 @@ export default function DayPickerComponent({
     const { from, to } = selected;
 
     if (from && to) {
-      return `${format(from, 'dd/MM/yyyy')} - ${format(to, 'dd/MM/yyyy')}`;
+      return `${format(startOfDay(from), 'dd/MM/yyyy')} - ${format(startOfDay(to), 'dd/MM/yyyy')}`;
     } else if (from) {
-      return `Desde: ${format(from, 'dd/MM/yyyy')}`;
+      return `Desde: ${format(startOfDay(from), 'dd/MM/yyyy')}`;
     }
 
     return 'Selecciona un rango de fechas';

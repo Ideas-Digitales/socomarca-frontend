@@ -82,7 +82,7 @@ export default function ProductCardGrid({ product }: Props) {
       // En modo QA, simular el estado de éxito para los tests
       setIsOptimisticUpdate(true);
       setTimeout(() => {
-        setQuantity(0);
+        setQuantity(1);
         setIsLoading(false);
       }, 500);
       return;
@@ -100,7 +100,7 @@ export default function ProductCardGrid({ product }: Props) {
       );
 
       if (response.ok) {
-        setQuantity(0);
+        setQuantity(1);
         // El estado isOptimisticUpdate se mantendrá true hasta que el useEffect lo resetee
       } else {
         // Si falla, quitar el estado optimista inmediatamente

@@ -7,7 +7,6 @@ import { CategoryComponent } from "@/interfaces/category.interface";
 import { PaginationMeta } from "@/stores/base/types";
 import Search from "@/app/components/global/Search";
 import TableSkeleton from "@/app/components/admin/TableSkeleton";
-import FilterSkeleton from "@/app/components/global/FilterSkeleton";
 import SortDropdown from "@/app/components/filters/SortDropdown";
 import { SortOption } from "@/interfaces/dashboard.interface";
 import { formatDate } from "@/utils/formatCurrency";
@@ -26,7 +25,6 @@ export default function CategoriesAdmin() {
   const [data, setData] = useState<CategoryComponent[]>([]);
   const [originalData, setOriginalData] = useState<CategoryComponent[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | undefined>();
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -145,7 +143,6 @@ export default function CategoriesAdmin() {
   // Manejar búsqueda por nombre
   const handleSearch = async (term: string) => {
     setSearchTerm(term);
-    setPage(1);
     setLoading(true);
     
     // Simular delay para mostrar loading
@@ -174,7 +171,6 @@ export default function CategoriesAdmin() {
   // Limpiar búsqueda
   const handleClearSearch = async () => {
     setSearchTerm("");
-    setPage(1);
     const defaultSort = { key: "id", label: "ID", direction: "asc" as const };
     setSortOption(defaultSort);
     setLoading(true);
@@ -240,7 +236,7 @@ export default function CategoriesAdmin() {
               data={data}
               columns={columns}
               productPaginationMeta={meta}
-              onPageChange={setPage}
+              onPageChange={() => {}}
             />
           </div>
         )}

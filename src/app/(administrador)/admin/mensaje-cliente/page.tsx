@@ -59,6 +59,7 @@ export default function MensajesCliente() {
         setMessage({ type: 'error', text: result.error || 'Error al cargar los datos existentes' });
       }
     } catch (error) {
+      console.log(error);
       setMessage({ type: 'error', text: 'Error inesperado al cargar los datos' });
     } finally {
       setIsLoadingData(false);
@@ -94,6 +95,7 @@ export default function MensajesCliente() {
         setMessage({ type: 'error', text: result.error || 'Error al guardar los mensajes' });
       }
     } catch (error) {
+      console.log(error);
       setMessage({ type: 'error', text: 'Error inesperado al guardar los mensajes' });
     } finally {
       setIsLoading(false);

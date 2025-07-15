@@ -151,6 +151,7 @@ export const createFiltersSlice: StateCreator<
       selectedMaxPrice,
       productPaginationMeta,
       searchTerm,
+      showOnlyFavorites,
     } = get();
 
     try {
@@ -177,6 +178,11 @@ export const createFiltersSlice: StateCreator<
       // Agregar marcas si están seleccionadas
       if (selectedBrands.length > 0) {
         searchParams.brand_id = selectedBrands[0];
+      }
+
+      // Agregar filtro de favoritos si está activado
+      if (showOnlyFavorites) {
+        searchParams.is_favorite = true;
       }
 
       const response = await fetchSearchProductsByFilters(searchParams);

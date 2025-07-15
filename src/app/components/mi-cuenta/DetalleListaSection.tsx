@@ -12,6 +12,7 @@ import ModalConfirmacion from '../global/ModalConfirmacion';
 import ModalBase from '../global/ModalBase';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Favorite } from '@/interfaces/favorite.inteface';
+import { useCartActions } from '@/stores/hooks/useCart';
 
 export default function DetalleListaSection({
   onVolver,
@@ -26,6 +27,8 @@ export default function DetalleListaSection({
     handleChangeListName,
     handleRemoveProductFromFavorites,
   } = useFavorites();
+
+  const { addProductToCart } = useCartActions();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [productoAEliminar, setProductoAEliminar] = useState<number | null>(
@@ -42,12 +45,83 @@ export default function DetalleListaSection({
   const [errorNombre, setErrorNombre] = useState('');
   const [isSavingName, setIsSavingName] = useState(false);
 
+  // Estados para la selección de productos
+  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addingProducts, setAddingProducts] = useState<Set<number>>(new Set());
+
   // Actualizar el nombre editado cuando cambie la lista seleccionada
   useEffect(() => {
     if (selectedFavoriteList) {
       setNombreEditado(selectedFavoriteList.name);
     }
   }, [selectedFavoriteList]);
+
+  // Función para manejar la selección de productos
+  const handleProductSelection = (productId: number, checked: boolean) => {
+    const newSelected = new Set(selectedProducts);
+    if (checked) {
+      newSelected.add(productId);
+    } else {
+      newSelected.delete(productId);
+    }
+    setSelectedProducts(newSelected);
+  };
+
+  // Función para seleccionar/deseleccionar todos los productos
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allProductIds = favorites.map(favorite => favorite.product.id);
+      setSelectedProducts(new Set(allProductIds));
+    } else {
+      setSelectedProducts(new Set());
+    }
+  };
+
+  // Función para agregar productos seleccionados al carrito
+  const handleAddSelectedToCart = async () => {
+    if (selectedProducts.size === 0) {
+      return;
+    }
+
+    setIsAddingToCart(true);
+    const productsToAdd = favorites.filter(favorite => 
+      selectedProducts.has(favorite.product.id)
+    );
+
+    try {
+      for (const favorite of productsToAdd) {
+        setAddingProducts(prev => new Set(prev).add(favorite.product.id));
+        
+        const result = await addProductToCart(
+          favorite.product.id,
+          1, // cantidad por defecto
+          favorite.product.unit
+        );
+
+        if (!result.ok) {
+          console.error(`Error al agregar ${favorite.product.name}:`, result.error);
+        }
+
+        setAddingProducts(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(favorite.product.id);
+          return newSet;
+        });
+      }
+
+      // Limpiar selección después de agregar
+      setSelectedProducts(new Set());
+      
+      // Navegar al carrito
+      router.push('/carro-de-compra');
+    } catch (error) {
+      console.error('Error al agregar productos al carrito:', error);
+    } finally {
+      setIsAddingToCart(false);
+      setAddingProducts(new Set());
+    }
+  };
 
   // Loading state
   if (isLoadingFavorites) {
@@ -151,78 +225,118 @@ export default function DetalleListaSection({
             <p className="text-gray-500">Esta lista no tiene productos</p>
           </div>
         ) : (
-          <div className="space-y-1">
-            {favorites.map((favorite: Favorite) => {
-              const isDeleting = eliminandoProducto === favorite.id;
-              return (
-                <div
-                  key={favorite.id}
-                  className={`flex flex-col gap-3 border-[1px] border-slate-200 bg-white rounded p-4 transition-opacity min-w-0 md:flex-row md:items-center md:justify-between md:gap-4 md:py-3 ${
-                    isDeleting ? 'opacity-50 pointer-events-none' : ''
-                  }`}
-                >
-                  {/* Sección principal con checkbox, imagen y detalles */}
-                  <div className="flex items-center gap-3 flex-1 min-w-0 md:gap-4">
-                    <input
-                      type="checkbox"
-                      disabled={isDeleting}
-                      className="flex-shrink-0"
-                    />
-                    <Image
-                      src="/assets/global/logo_plant.png"
-                      alt={favorite.product.name}
-                      width={56}
-                      height={64}
-                      className="object-contain rounded flex-shrink-0 w-12 h-14 md:w-14 md:h-16"
-                    />
-                    <div className="text-sm min-w-0 flex-1">
-                      <p
-                        className="font-semibold text-gray-900 truncate pr-2 text-sm md:text-base"
-                        title={favorite.product.name}
+          <>
+            {/* Header con checkbox para seleccionar todos */}
+            <div className="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded">
+              <input
+                type="checkbox"
+                checked={selectedProducts.size === favorites.length && favorites.length > 0}
+                onChange={(e) => handleSelectAll(e.target.checked)}
+                className="flex-shrink-0"
+              />
+              <span className="text-sm text-gray-600">
+                {selectedProducts.size > 0 
+                  ? `${selectedProducts.size} de ${favorites.length} productos seleccionados`
+                  : 'Seleccionar todos los productos'
+                }
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              {favorites.map((favorite: Favorite) => {
+                const isDeleting = eliminandoProducto === favorite.id;
+                const isAdding = addingProducts.has(favorite.product.id);
+                const isSelected = selectedProducts.has(favorite.product.id);
+                
+                return (
+                  <div
+                    key={favorite.id}
+                    className={`flex flex-col gap-3 border-[1px] border-slate-200 bg-white rounded p-4 transition-opacity min-w-0 md:flex-row md:items-center md:justify-between md:gap-4 md:py-3 ${
+                      isDeleting ? 'opacity-50 pointer-events-none' : ''
+                    } ${isSelected ? 'border-lime-500 bg-lime-50' : ''}`}
+                  >
+                    {/* Sección principal con checkbox, imagen y detalles */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0 md:gap-4">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => handleProductSelection(favorite.product.id, e.target.checked)}
+                        disabled={isDeleting || isAdding}
+                        className="flex-shrink-0"
+                      />
+                      <Image
+                        src="/assets/global/logo_plant.png"
+                        alt={favorite.product.name}
+                        width={56}
+                        height={64}
+                        className="object-contain rounded flex-shrink-0 w-12 h-14 md:w-14 md:h-16"
+                      />
+                      <div className="text-sm min-w-0 flex-1">
+                        <p
+                          className="font-semibold text-gray-900 truncate pr-2 text-sm md:text-base"
+                          title={favorite.product.name}
+                        >
+                          {favorite.product.name}
+                        </p>
+                        <p
+                          className="text-gray-500 truncate pr-2 text-xs md:text-sm"
+                          title={favorite.product.brand.name || ''}
+                        >
+                          {favorite.product.brand.name || ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Botón de eliminar */}
+                    <div className="flex items-center justify-center md:justify-end flex-shrink-0 pt-2 md:pt-0">
+                      <button
+                        onClick={() => {
+                          setProductoAEliminar(favorite.id);
+                          setModalVisible(true);
+                        }}
+                        disabled={isDeleting || isAdding}
+                        className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed p-2 md:p-1"
                       >
-                        {favorite.product.name}
-                      </p>
-                      <p
-                        className="text-gray-500 truncate pr-2 text-xs md:text-sm"
-                        title={favorite.product.brand.name || ''}
-                      >
-                        {favorite.product.brand.name || ''}
-                      </p>
+                        {isDeleting || isAdding ? (
+                          <div className="w-5 h-5 border-2 border-red-300 border-t-red-500 rounded-full animate-spin"></div>
+                        ) : (
+                          <div className="cursor-pointer">
+                            <TrashIcon className="w-5 h-5" />
+                          </div>
+                        )}
+                      </button>
                     </div>
                   </div>
-
-                  {/* Botón de eliminar */}
-                  <div className="flex items-center justify-center md:justify-end flex-shrink-0 pt-2 md:pt-0">
-                    <button
-                      onClick={() => {
-                        setProductoAEliminar(favorite.id);
-                        setModalVisible(true);
-                      }}
-                      disabled={isDeleting}
-                      className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed p-2 md:p-1"
-                    >
-                      {isDeleting ? (
-                        <div className="w-5 h-5 border-2 border-red-300 border-t-red-500 rounded-full animate-spin"></div>
-                      ) : (
-                        <div className="cursor-pointer">
-                          <TrashIcon className="w-5 h-5" />
-                        </div>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
-        <div className="mt-6 sm:mt-8">
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
           <button
-            onClick={() => router.push('/carro-de-compra')}
-            className="w-full sm:w-auto bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded text-sm sm:text-base"
+            onClick={handleAddSelectedToCart}
+            disabled={selectedProducts.size === 0 || isAddingToCart}
+            className="w-full sm:w-auto bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded text-sm sm:text-base flex items-center justify-center gap-2"
           >
-            Agregar al carro
+            {isAddingToCart ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Agregando...
+              </>
+            ) : (
+              `Agregar ${selectedProducts.size > 0 ? `(${selectedProducts.size})` : ''} al carro`
+            )}
           </button>
+          
+          {selectedProducts.size === 0 && (
+            <button
+              onClick={() => router.push('/carro-de-compra')}
+              className="w-full sm:w-auto border border-gray-300 text-gray-700 px-6 py-2 rounded text-sm sm:text-base"
+            >
+              Ver carro
+            </button>
+          )}
         </div>
       </div>{' '}
       <ModalConfirmacion
