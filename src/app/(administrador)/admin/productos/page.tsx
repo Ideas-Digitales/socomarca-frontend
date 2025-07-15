@@ -250,7 +250,6 @@ export default function ProductsAdmin() {
       }
       setLoading(false);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, selectedCategories, sortOption, searchTerm]);
 
   const handleCategoryChange = async (selectedIds: number[]) => {

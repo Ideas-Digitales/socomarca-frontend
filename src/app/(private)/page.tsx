@@ -26,8 +26,7 @@ export default function PrivatePage() {
     resetSearchRelatedStates,
     customerMessage,
     isLoadingCustomerMessage,
-    fetchCustomerMessage,
-    searchTerm
+    fetchCustomerMessage
   } = useStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
