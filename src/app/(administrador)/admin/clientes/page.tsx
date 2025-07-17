@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { searchUsersAction } from '@/services/actions/user.actions';
-import { SearchUsersRequest, SearchFilter, ApiUser } from '@/interfaces/user.interface';
+import {
+  SearchUsersRequest,
+  SearchFilter,
+  ApiUser,
+} from '@/interfaces/user.interface';
 import CustomTable from '@/app/components/admin/CustomTable';
 import SearchableDropdown from '@/app/components/filters/SearchableDropdown';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
@@ -61,91 +65,98 @@ const ClientsPage = () => {
       rut: apiUser.rut,
       business_name: apiUser.business_name,
       is_active: apiUser.is_active ? 'Activo' : 'Inactivo',
-      last_login: apiUser.last_login ? new Date(apiUser.last_login).toLocaleDateString('es-CL') : 'Nunca',
+      last_login: apiUser.last_login
+        ? new Date(apiUser.last_login).toLocaleDateString('es-CL')
+        : 'Nunca',
       created_at: new Date(apiUser.created_at).toLocaleDateString('es-CL'),
     };
   };
 
-  // Construir filtros para la búsqueda
-  const buildSearchFilters = (): SearchFilter[] => {
-    const filters: SearchFilter[] = [];
+  // Cargar clientes
+  const loadClients = useCallback(
+    async (page: number = 1) => {
+      setLoading(true);
+      setError(null);
 
-    // Filtro por término de búsqueda
-    if (debouncedSearchTerm.trim()) {
-      filters.push({
-        field: 'name',
-        operator: 'ILIKE',
-        value: `%${debouncedSearchTerm.trim()}%`
-      });
-    }
+      try {
+        // Construir filtros para la búsqueda
+        const buildSearchFilters = (): SearchFilter[] => {
+          const filters: SearchFilter[] = [];
 
-    // Filtros adicionales
-    switch (activeFilter) {
-      case 'active':
-        filters.push({
-          field: 'is_active',
-          operator: '=',
-          value: true
-        });
-        break;
-      case 'inactive':
-        filters.push({
-          field: 'is_active',
-          operator: '=',
-          value: false
-        });
-        break;
-      case 'recent':
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        filters.push({
-          field: 'created_at',
-          operator: '>=',
-          value: thirtyDaysAgo.toISOString().split('T')[0] // Solo la fecha sin tiempo
-        });
-        break;
-    }
+          // Filtro por término de búsqueda
+          if (debouncedSearchTerm.trim()) {
+            filters.push({
+              field: 'name',
+              operator: 'ILIKE',
+              value: `%${debouncedSearchTerm.trim()}%`,
+            });
+          }
 
-    return filters;
-  };
+          // Filtros adicionales
+          switch (activeFilter) {
+            case 'active':
+              filters.push({
+                field: 'is_active',
+                operator: '=',
+                value: true,
+              });
+              break;
+            case 'inactive':
+              filters.push({
+                field: 'is_active',
+                operator: '=',
+                value: false,
+              });
+              break;
+            case 'recent':
+              const thirtyDaysAgo = new Date();
+              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+              filters.push({
+                field: 'created_at',
+                operator: '>=',
+                value: thirtyDaysAgo.toISOString().split('T')[0], // Solo la fecha sin tiempo
+              });
+              break;
+          }
 
-    // Cargar clientes
-  const loadClients = useCallback(async (page: number = 1) => {
-    setLoading(true);
-    setError(null);
+          return filters;
+        };
 
-    try {
-      const searchRequest: SearchUsersRequest = {
-        filters: buildSearchFilters(),
-        roles: ['cliente'], // Siempre filtrar solo por rol cliente
-        per_page: 10,
-        sort_by: sortField,
-        sort_order: sortOrder,
-        page: page
-      };
+        const searchRequest: SearchUsersRequest = {
+          filters: buildSearchFilters(),
+          roles: ['cliente'], // Siempre filtrar solo por rol cliente
+          per_page: 10,
+          sort_by: sortField,
+          sort_order: sortOrder,
+          page: page,
+        };
 
-      console.log('Search request:', JSON.stringify(searchRequest, null, 2));
+        console.log('Search request:', JSON.stringify(searchRequest, null, 2));
 
-      const response = await searchUsersAction(searchRequest);
+        const response = await searchUsersAction(searchRequest);
 
-      console.log('Search response:', response);
+        console.log('Search response:', response);
 
-      if (response.success && response.data) {
-        const transformedData = response.data.data.map((apiUser: any) => transformApiUserToTableData(apiUser));
-        
-        setClients(transformedData);
-        setPaginationMeta(response.data.meta);
-        setCurrentPage(page);
-      } else {
-        setError(response.error || 'Error al cargar los clientes');
+        if (response.success && response.data) {
+          const transformedData = response.data.data.map((apiUser: any) =>
+            transformApiUserToTableData(apiUser)
+          );
+
+          setClients(transformedData);
+          setPaginationMeta(response.data.meta);
+          setCurrentPage(page);
+        } else {
+          setError(response.error || 'Error al cargar los clientes');
+        }
+      } catch (err) {
+        setError('Error al cargar los clientes');
+        console.error('Error loading clients:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError('Error al cargar los clientes');
-      console.error('Error loading clients:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearchTerm, activeFilter, sortField, sortOrder]);
+    },
+    [debouncedSearchTerm, activeFilter, sortField, sortOrder]
+  );
 
   // Efecto para debounce de la búsqueda
   useEffect(() => {
@@ -188,7 +199,7 @@ const ClientsPage = () => {
           <div className="font-medium text-gray-900">{value}</div>
           <div className="text-sm text-gray-500">{row.business_name}</div>
         </div>
-      )
+      ),
     },
     {
       key: 'email',
@@ -197,7 +208,7 @@ const ClientsPage = () => {
         <div className="text-left">
           <span className="text-gray-900">{value}</span>
         </div>
-      )
+      ),
     },
     {
       key: 'phone',
@@ -206,7 +217,7 @@ const ClientsPage = () => {
         <div className="text-center">
           <span className="text-gray-900">{value || 'No especificado'}</span>
         </div>
-      )
+      ),
     },
     {
       key: 'rut',
@@ -215,22 +226,24 @@ const ClientsPage = () => {
         <div className="text-center">
           <span className="text-gray-900">{value}</span>
         </div>
-      )
+      ),
     },
     {
       key: 'is_active',
       label: 'Estado',
       render: (value: string) => (
         <div className="text-center">
-          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-            value === 'Activo' 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
+          <span
+            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+              value === 'Activo'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
+            }`}
+          >
             {value}
           </span>
         </div>
-      )
+      ),
     },
     {
       key: 'last_login',
@@ -239,7 +252,7 @@ const ClientsPage = () => {
         <div className="text-center">
           <span className="text-gray-900">{value}</span>
         </div>
-      )
+      ),
     },
     {
       key: 'created_at',
@@ -248,15 +261,19 @@ const ClientsPage = () => {
         <div className="text-center">
           <span className="text-gray-900">{value}</span>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Gestión de Clientes</h1>
-        <p className="text-gray-600">Administra y visualiza todos los clientes registrados en el sistema</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Gestión de Clientes
+        </h1>
+        <p className="text-gray-600">
+          Administra y visualiza todos los clientes registrados en el sistema
+        </p>
       </div>
 
       {/* Filtros y búsqueda */}
@@ -265,58 +282,62 @@ const ClientsPage = () => {
           {/* Búsqueda */}
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                         <input
-               type="text"
-               placeholder="Buscar por nombre..."
-               value={searchTerm}
-               onChange={(e) => setSearchTerm(e.target.value)}
-               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-             />
+            <input
+              type="text"
+              placeholder="Buscar por nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
 
-                     {/* Filtro de estado */}
-           <div>
-             <SearchableDropdown
-               options={filterOptions}
-               selectedOption={filterOptions.find(opt => opt.id === activeFilter) || null}
-               onSelectionChange={(option) => {
-                 setActiveFilter(String(option?.id || 'all'));
-                 setCurrentPage(1); // Resetear a la primera página cuando cambia el filtro
-               }}
-               placeholder="Filtrar por estado"
-               className="w-full"
-             />
-           </div>
+          {/* Filtro de estado */}
+          <div>
+            <SearchableDropdown
+              options={filterOptions}
+              selectedOption={
+                filterOptions.find((opt) => opt.id === activeFilter) || null
+              }
+              onSelectionChange={(option) => {
+                setActiveFilter(String(option?.id || 'all'));
+                setCurrentPage(1); // Resetear a la primera página cuando cambia el filtro
+              }}
+              placeholder="Filtrar por estado"
+              className="w-full"
+            />
+          </div>
 
-                     {/* Ordenamiento */}
-           <div>
-             <SearchableDropdown
-               options={sortOptions}
-               selectedOption={sortOptions.find(opt => opt.id === sortField) || null}
-               onSelectionChange={(option) => {
-                 if (option) {
-                   setSortField(String(option.id));
-                   setCurrentPage(1); // Resetear a la primera página cuando cambia el campo de ordenamiento
-                 }
-               }}
-               placeholder="Ordenar por"
-               className="w-full"
-             />
-           </div>
+          {/* Ordenamiento */}
+          <div>
+            <SearchableDropdown
+              options={sortOptions}
+              selectedOption={
+                sortOptions.find((opt) => opt.id === sortField) || null
+              }
+              onSelectionChange={(option) => {
+                if (option) {
+                  setSortField(String(option.id));
+                  setCurrentPage(1); // Resetear a la primera página cuando cambia el campo de ordenamiento
+                }
+              }}
+              placeholder="Ordenar por"
+              className="w-full"
+            />
+          </div>
 
-                     {/* Botón de orden ascendente/descendente */}
-           <div>
-             <button
-               onClick={() => {
-                 setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                 setCurrentPage(1); // Resetear a la primera página cuando cambia el orden
-               }}
-               className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-             >
-               <FunnelIcon className="h-5 w-5" />
-               <span>{sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}</span>
-             </button>
-           </div>
+          {/* Botón de orden ascendente/descendente */}
+          <div>
+            <button
+              onClick={() => {
+                setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                setCurrentPage(1); // Resetear a la primera página cuando cambia el orden
+              }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              <FunnelIcon className="h-5 w-5" />
+              <span>{sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -357,7 +378,7 @@ const ClientsPage = () => {
           <li>• El último login indica la última actividad del cliente</li>
           <li>• Puedes filtrar y ordenar por cualquier campo disponible</li>
         </ul>
-        
+
         {/* Botón de prueba temporal - Comentado para producción */}
         {/* 
         <div className="mt-4 pt-4 border-t border-blue-200">
