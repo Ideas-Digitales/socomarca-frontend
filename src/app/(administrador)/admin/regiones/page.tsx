@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getRegionsWithMunicipalities, Region, Municipality } from '@/services/actions/location.actions';
+import { getRegionsWithMunicipalities, Region, Municipality, updateMunicipalitiesStatus } from '@/services/actions/location.actions';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export default function PanelRegiones() {
@@ -9,6 +9,8 @@ export default function PanelRegiones() {
   const [regions, setRegions] = useState<Region[]>([]); // Tipado correcto
   const [expanded, setExpanded] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -116,10 +118,39 @@ export default function PanelRegiones() {
         </div>
       )}
 
-      <div className="mt-6 flex justify-end">
-        <button className="bg-[#87c814] text-white px-6 py-2 rounded hover:bg-[#76b40e] transition">
-          Guardar cambios
+      <div className="mt-6 flex flex-col items-end">
+        <button
+          className="bg-[#87c814] text-white px-6 py-2 rounded hover:bg-[#76b40e] transition disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={saving}
+          onClick={async () => {
+            setSaving(true);
+            setSaveMessage(null);
+            const allMunicipalities = regions.flatMap(r => r.municipalities);
+            const activeIds = allMunicipalities.filter(c => c.status).map(c => c.id);
+            const inactiveIds = allMunicipalities.filter(c => !c.status).map(c => c.id);
+            let ok = true;
+            if (activeIds.length > 0) {
+              ok = (await updateMunicipalitiesStatus(activeIds, true)) && ok;
+            }
+            if (inactiveIds.length > 0) {
+              ok = (await updateMunicipalitiesStatus(inactiveIds, false)) && ok;
+            }
+            setSaving(false);
+            if (ok) {
+              setSaveMessage('Cambios guardados correctamente.');
+            } else {
+              setSaveMessage('Error al guardar cambios.');
+            }
+          }}
+        >
+          {saving ? 'Guardando...' : 'Guardar cambios'}
         </button>
+        {saving && (
+          <span className="mt-2 text-gray-500 text-sm">Guardando cambios...</span>
+        )}
+        {saveMessage && !saving && (
+          <span className={`mt-2 text-sm ${saveMessage.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>{saveMessage}</span>
+        )}
       </div>
     </div>
   );

@@ -103,3 +103,31 @@ export async function getMunicipalities(regionId: number): Promise<Municipality[
     return []
   }
 }
+
+export async function updateMunicipalitiesStatus(municipalityIds: number[], status: boolean): Promise<boolean> {
+  const { getCookie } = await cookiesManagement();
+  const token = getCookie('token');
+
+  if (!token) return false;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/municipalities/status`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        municipality_ids: municipalityIds,
+        status,
+      }),
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('Error al actualizar estado de comunas');
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
