@@ -87,7 +87,7 @@ export async function getMunicipalities(regionId: number): Promise<Municipality[
   if (!token) return []
 
   try {
-    const res = await fetch(`${BACKEND_URL}/municipalities/${regionId}`, {
+    const res = await fetch(`${BACKEND_URL}/regions/${regionId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',

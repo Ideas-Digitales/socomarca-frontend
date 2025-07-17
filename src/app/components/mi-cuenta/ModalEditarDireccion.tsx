@@ -7,7 +7,7 @@ import {
   getMunicipalities,
   Region,
   Municipality,
-} from "@/services/actions/location.client";
+} from "@/services/actions/location.actions";
 
 export default function ModalEditarDireccion({
   region,
@@ -45,6 +45,7 @@ export default function ModalEditarDireccion({
   // Cargar comunas al seleccionar región
   useEffect(() => {
     if (regionId !== null) {
+      console.log('regionId', regionId)
       getMunicipalities(regionId).then(setComunas);
     }
   }, [regionId]);
@@ -85,7 +86,7 @@ export default function ModalEditarDireccion({
     }
 
     cargarDatosDesdeDireccion();
-  }, [direccion, setRegion, setComuna, regiones]);
+  }, [direccion, setRegion, setComuna]);
 
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = Number(e.target.value);
@@ -190,8 +191,8 @@ export default function ModalEditarDireccion({
               className={`w-full mt-1 p-2 bg-[#edf2f7] rounded ${errors.region ? 'border-red-500 border' : ''}`}
             >
               <option value="">Selecciona una región</option>
-              {regiones.map((r) => (
-                <option key={r.id} value={r.id}>
+              {regiones.map((r, idx) => (
+                <option key={r.id ?? `region-${idx}`} value={r.id}>
                   {r.name}
                 </option>
               ))}
@@ -213,8 +214,8 @@ export default function ModalEditarDireccion({
               className={`w-full mt-1 p-2 bg-[#edf2f7] rounded ${errors.comuna ? 'border-red-500 border' : ''}`}
             >
               <option value="">Selecciona una comuna</option>
-              {comunas.map((c) => (
-                <option key={c.id} value={c.id}>
+              {comunas.map((c, idx) => (
+                <option key={c.id ?? `comuna-${idx}`} value={c.id}>
                   {c.name}
                 </option>
               ))}
