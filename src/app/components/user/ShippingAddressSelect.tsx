@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getUserData } from '@/services/actions/user.actions'; 
+import { getUserAddresses } from '@/services/actions/addressees.actions';
 
 interface ShippingAddress {
   id: number;
@@ -23,15 +23,21 @@ export default function ShippingAddressSelect({
   useEffect(() => {
     async function loadAddresses() {
       try {
-        const user = await getUserData();
-        setAddresses(user.shipping_addresses || []);
+        const addresses = await getUserAddresses();
+        setAddresses(addresses || []);
+        // Si no hay selectedAddressId, selecciona la dirección por defecto
+        if ((addresses && addresses.length > 0) && selectedAddressId === null) {
+          const defaultAddress = addresses.find(addr => addr.is_default);
+          if (defaultAddress) {
+            onChange(defaultAddress.id);
+          }
+        }
       } catch (err) {
         console.error('Error al cargar direcciones de envío', err);
       } finally {
         setLoading(false);
       }
     }
-
     loadAddresses();
   }, []);
 
