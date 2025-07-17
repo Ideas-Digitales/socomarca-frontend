@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getRegionsWithMunicipalities, Region, Municipality, updateMunicipalitiesStatus } from '@/services/actions/location.actions';
+import { getRegionsWithMunicipalities, Region, Municipality, updateMunicipalitiesStatus, updateRegionStatus } from '@/services/actions/location.actions';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export default function PanelRegiones() {
@@ -22,7 +22,9 @@ export default function PanelRegiones() {
     fetchData();
   }, []);
 
-  const toggleRegion = (regionId: number) => {
+  const toggleRegion = async (regionId: number) => {
+    setSaving(true);
+    setSaveMessage(null);
     setRegions((prev) =>
       prev.map((region) =>
         region.id === regionId
@@ -37,6 +39,15 @@ export default function PanelRegiones() {
           : region
       )
     );
+    const region = regions.find(r => r.id === regionId);
+    const newStatus = region ? !region.status : true;
+    const ok = await updateRegionStatus(regionId, newStatus);
+    setSaving(false);
+    if (ok) {
+      setSaveMessage('Estado de la región actualizado correctamente.');
+    } else {
+      setSaveMessage('Error al actualizar estado de la región.');
+    }
   };
 
   const toggleComuna = (regionId: number, comunaId: number) => {
