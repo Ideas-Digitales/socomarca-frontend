@@ -22,14 +22,9 @@ export default function ConfirmacionPagoPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token_ws = new URLSearchParams(window.location.search).get(
-      'token_ws'
-    );
+    const token_ws = new URLSearchParams(window.location.search).get('token_ws');
     if (!token_ws) {
-      setEstado({
-        status: 'error',
-        message: 'No se pudo completar la operación de pago.',
-      });
+      setEstado({ status: 'error', message: 'No se pudo completar la operación de pago.' });
       return;
     }
 
@@ -55,20 +50,20 @@ export default function ConfirmacionPagoPage() {
     estado.data?.data?.status === 'AUTHORIZED';
 
   const handleCopiar = () => {
-    if (estado.status !== 'success' || !estado.data?.data) return;
+  if (estado.status !== 'success' || !estado.data?.data) return;
 
-    const { message } = estado.data;
-    const {
-      status,
-      authorization_code,
-      payment_type_code,
-      installments_number,
-      card_number,
-      accounting_date,
-      transaction_date,
-    } = estado.data.data;
+  const { message } = estado.data;
+  const {
+    status,
+    authorization_code,
+    payment_type_code,
+    installments_number,
+    card_number,
+    accounting_date,
+    transaction_date,
+  } = estado.data.data;
 
-    const texto = `
+  const texto = `
 Mensaje: ${message}
 Estado: ${status}
 Código de autorización: ${authorization_code}
@@ -79,10 +74,11 @@ Fecha contable: ${accounting_date}
 Fecha transacción: ${new Date(transaction_date).toLocaleString('es-CL')}
 `.trim();
 
-    navigator.clipboard.writeText(texto);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
-  };
+  navigator.clipboard.writeText(texto);
+  setCopiado(true);
+  setTimeout(() => setCopiado(false), 2000);
+};
+
 
   return (
     <div className="flex flex-col items-center justify-center bg-[#f1f5f9] text-center p-6">
@@ -142,9 +138,7 @@ Fecha transacción: ${new Date(transaction_date).toLocaleString('es-CL')}
               <img
                 src="/assets/global/logo_plant.png"
                 alt="Logo"
-                className={`w-24 h-24 mb-6 mx-auto ${
-                  isPagoExitoso ? '' : 'grayscale'
-                }`}
+                className={`w-24 h-24 mb-6 mx-auto ${isPagoExitoso ? '' : 'grayscale'}`}
               />
             </div>
 
@@ -161,10 +155,7 @@ Fecha transacción: ${new Date(transaction_date).toLocaleString('es-CL')}
             )}
 
             {estado.data?.data && (
-              <details
-                open
-                className="mt-6 text-sm text-gray-700 bg-gray-100 rounded p-4"
-              >
+              <details open className="mt-6 text-sm text-gray-700 bg-gray-100 rounded p-4">
                 <summary className="cursor-pointer font-medium text-neutral-800 mb-3">
                   Detalle técnico de la transacción
                 </summary>
@@ -180,8 +171,7 @@ Fecha transacción: ${new Date(transaction_date).toLocaleString('es-CL')}
                     {estado.data.data.authorization_code}
                   </p>
                   <p>
-                    <strong>Tipo de pago:</strong>{' '}
-                    {estado.data.data.payment_type_code}
+                    <strong>Tipo de pago:</strong> {estado.data.data.payment_type_code}
                   </p>
                   <p>
                     <strong>Número de cuotas:</strong>{' '}
@@ -197,18 +187,17 @@ Fecha transacción: ${new Date(transaction_date).toLocaleString('es-CL')}
                   </p>
                   <p>
                     <strong>Fecha transacción:</strong>{' '}
-                    {new Date(estado.data.data.transaction_date).toLocaleString(
-                      'es-CL'
-                    )}
+                    {new Date(estado.data.data.transaction_date).toLocaleString('es-CL')}
                   </p>
 
-                  <button
-                    onClick={handleCopiar}
-                    className="flex items-center gap-2 mt-4 text-sm text-lime-600 hover:underline"
-                  >
-                    <ClipboardIcon className="w-4 h-4" />
-                    {copiado ? 'Copiado ✔' : 'Copiar detalle'}
-                  </button>
+                 <button
+  onClick={handleCopiar}
+  className="flex items-center gap-2 mt-4 text-sm text-lime-600 hover:underline"
+>
+  <ClipboardIcon className="w-4 h-4" />
+  {copiado ? 'Copiado ✔' : 'Copiar detalle'}
+</button>
+
                 </div>
               </details>
             )}

@@ -11,7 +11,8 @@ import {
   updateUserAddress,
   createUserAddress,
   replaceUserAddress,
-  deleteUserAddress, // <-- importar la nueva función
+  deleteUserAddress,
+  getUserAddresses, 
 } from "@/services/actions/addressees.actions";
 
 export default function DireccionesSection({
@@ -64,9 +65,9 @@ export default function DireccionesSection({
       <h2 className="text-xl font-bold mb-4">Direcciones</h2>
 
       <div className="space-y-2 mb-4">
-        {direccionesState.map((direccion) => (
+        {direccionesState.map((direccion, idx) => (
           <div
-            key={direccion.id}
+            key={direccion.id ?? `direccion-${idx}`}
             className="flex items-center justify-between bg-[#edf2f7] px-4 py-2 rounded"
           >
             <div className="space-y-1 w-full">
@@ -172,35 +173,30 @@ export default function DireccionesSection({
           comuna={comuna}
           setComuna={setComuna}
           onClose={() => setDireccionAEditar(null)}
-onSave={async (data) => {
-  const payload = {
-    address_line1: data.address_line1 ?? "",
-    address_line2: data.address_line2 ?? "",
-    postal_code: "1234567",
-    is_default: false,
-    type: "shipping" as const,
-    phone: data.phone ?? "",
-    contact_name: data.contact_name ?? "",
-    municipality_id: data.municipality_id ?? 0,
-    alias: data.alias ?? "",
-  };
+          onSave={async (data) => {
+            const payload = {
+              address_line1: data.address_line1 ?? "",
+              address_line2: data.address_line2 ?? "",
+              postal_code: "1234567",
+              is_default: false,
+              type: "shipping" as const,
+              phone: data.phone ?? "",
+              contact_name: data.contact_name ?? "",
+              municipality_id: data.municipality_id ?? 0,
+              alias: data.alias ?? "",
+              region_name: data.region_name ?? region,
+              municipality_name: data.municipality_name ?? "",
+            };
 
-  if (direccionAEditar) {
-    const actualizada = await replaceUserAddress(direccionAEditar.id, payload);
-    if (actualizada) {
-      setDireccionesState((prev) =>
-        prev.map((d) => (d.id === direccionAEditar.id ? actualizada : d))
-      );
-    }
-    setDireccionAEditar(null);
-  } else {
-    const nueva = await createUserAddress(payload);
-    if (nueva) {
-      setDireccionesState((prev) => [...prev, nueva]);
-      setMostrarModalAgregar(false);
-    }
-  }
-}}
+            if (direccionAEditar) {
+              await replaceUserAddress(direccionAEditar.id, payload);
+              const updated = await getUserAddresses();
+              if (updated) setDireccionesState(updated);
+              setDireccionAEditar(null);
+            }
+            setRegion("");
+            setComuna("");
+          }}
         />
       )}
 
@@ -213,7 +209,6 @@ onSave={async (data) => {
           setComuna={setComuna}
           onClose={() => setMostrarModalAgregar(false)}
           onSave={async (data) => {
-            // Ensure all required fields are present and not undefined
             const payload = {
               address_line1: data.address_line1 ?? "",
               address_line2: data.address_line2 ?? "",
@@ -224,19 +219,18 @@ onSave={async (data) => {
               contact_name: data.contact_name ?? "",
               municipality_id: data.municipality_id ?? 0,
               alias: data.alias ?? "",
-              //region_name: data.region_name ?? "",
+              region_name: data.region_name ?? region,
+              municipality_name: data.municipality_name ?? "",
             };
 
-            if (direccionAEditar) {
-              await replaceUserAddress(direccionAEditar.id, payload); // 👈 ahora PUT
-              setDireccionAEditar(null);
-            } else {
-              const nueva = await createUserAddress(payload);
-              if (nueva) {
-                setDireccionesState((prev) => [...prev, nueva]);
-              }
-              setMostrarModalAgregar(false);
-            }
+            await createUserAddress(payload);
+            // Refrescar lista desde backend
+            const updated = await getUserAddresses();
+            if (updated) setDireccionesState(updated);
+            setMostrarModalAgregar(false);
+            // Limpiar estados
+            setRegion("");
+            setComuna("");
           }}
         />
       )}
