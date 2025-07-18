@@ -2,6 +2,7 @@
 
 import { cookiesManagement } from "@/stores/base/utils/cookiesManagement";
 import { BACKEND_URL } from "@/utils/getEnv";
+import { Region, Municipality } from "./location.actions";
 
 export interface Address {
   id: number;
@@ -55,7 +56,51 @@ export async function getUserAddresses(): Promise<Address[] | null> {
     }
 
     const json: AddressResponse = await res.json();
-    return json.data;
+    const addresses = json.data;
+
+    // Obtener regiones y municipios con su status para filtrar direcciones válidas
+    const regionsRes = await fetch(`${BACKEND_URL}/regions`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!regionsRes.ok) {
+      console.error("Error al obtener regiones para filtrado:", regionsRes.statusText);
+      return addresses; // Retornar todas las direcciones si no se pueden obtener las regiones
+    }
+
+    const regions = await regionsRes.json();
+    
+    // Crear un mapa de regiones válidas (status = true)
+    const validRegions = new Set<string>();
+    const validMunicipalities = new Set<string>();
+    
+    regions.forEach((region: Region) => {
+      if (region.status === true) {
+        validRegions.add(region.name);
+        // Agregar municipios válidos de esta región
+        if (region.municipalities) {
+          region.municipalities.forEach((municipality: Municipality) => {
+            if (municipality.status === true) {
+              validMunicipalities.add(municipality.name);
+            }
+          });
+        }
+      }
+    });
+
+    // Filtrar direcciones que tengan región y comuna válidas
+    const validAddresses = addresses.filter((address: Address) => {
+      const hasValidRegion = validRegions.has(address.region_name);
+      const hasValidMunicipality = validMunicipalities.has(address.municipality_name);
+      return hasValidRegion && hasValidMunicipality;
+    });
+
+    return validAddresses;
   } catch (error) {
     console.error("Error de red al obtener direcciones:", error);
     return null;

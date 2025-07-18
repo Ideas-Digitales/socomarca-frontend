@@ -1,14 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getUserAddresses } from '@/services/actions/addressees.actions';
-
-interface ShippingAddress {
-  id: number;
-  address_line1: string;
-  address_line2: string;
-  contact_name: string;
-}
+import { getUserAddresses, Address } from '@/services/actions/addressees.actions';
+import Link from 'next/link';
 
 export default function ShippingAddressSelect({
   selectedAddressId,
@@ -17,7 +11,7 @@ export default function ShippingAddressSelect({
   selectedAddressId: number | null;
   onChange: (id: number) => void;
 }) {
-  const [addresses, setAddresses] = useState<ShippingAddress[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,7 +37,15 @@ export default function ShippingAddressSelect({
 
   return (
     <div>
-      <label className="block font-medium">Seleccionar dirección de envío</label>
+      <div className="flex justify-between items-center mb-2">
+        <label className="block font-medium">Seleccionar dirección de envío</label>
+        <Link 
+          href="/mi-cuenta?section=direcciones" 
+          className="text-lime-500 hover:text-lime-600 text-sm underline"
+        >
+          Editar direcciones
+        </Link>
+      </div>
       <select
         name="shipping_address"
         value={selectedAddressId ?? ''}
@@ -56,10 +58,21 @@ export default function ShippingAddressSelect({
         </option>
         {addresses.map((address) => (
           <option key={address.id} value={address.id}>
-            {address.address_line1}, {address.address_line2} ({address.contact_name})
+            {address.alias || 'Sin alias'} - {address.address_line1}, {address.address_line2}
           </option>
         ))}
       </select>
+      {addresses.length === 0 && !loading && (
+        <div className="mt-2 text-sm text-gray-600">
+          No tienes direcciones guardadas.{' '}
+          <Link 
+            href="/mi-cuenta?section=direcciones" 
+            className="text-lime-500 hover:text-lime-600 underline"
+          >
+            Crear nueva dirección
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
