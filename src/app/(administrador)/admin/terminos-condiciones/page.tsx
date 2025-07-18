@@ -205,17 +205,12 @@ export default function RichTextEditor() {
 
       {/* Botones de acción */}
       <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={handlePreview}
-          disabled={!editorContent.trim()}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-300 flex items-center gap-2 ${
-            !editorContent.trim()
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-lime-500 hover:bg-lime-600 text-white cursor-pointer'
-          }`}
+      <button
+          onClick={() => window.location.href = '/terminos-y-condiciones'}
+          className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
         >
-          <EyeIcon className="w-4 h-4" />
-          Visualizar
+          <EyeIcon className="w-5 h-5" />
+          Ver en el sitio
         </button>
         
         <button

@@ -6,6 +6,7 @@ import { CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon } from '@heroicon
 import QuestionItem from './QuestionItem';
 import Modal from '@/app/components/global/Modal';
 import useStore from '@/stores/base';
+import { EyeIcon } from '@heroicons/react/24/outline';
 
 interface Question {
   id: number;
@@ -272,6 +273,14 @@ export default function FaqEditor() {
           {/*<button className="px-4 py-2 border rounded text-sm w-full">
             Desactivar página
           </button>*/}
+            <button
+          onClick={() => window.location.href = '/preguntas-frecuentes'}
+          className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
+        >
+          <EyeIcon className="w-5 h-5" />
+          Ver en el sitio
+        </button>
+        
           <button
             onClick={handleSave}
             disabled={isLoadingFAQ || unsavedChanges.size === 0}

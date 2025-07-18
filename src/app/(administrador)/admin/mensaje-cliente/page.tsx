@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ArrowUpTrayIcon, PaintBrushIcon } from '@heroicons/react/24/solid';
 import { fetchSendCustomerMessage, fetchGetCustomerMessage } from '@/services/actions/system.actions';
+import { EyeIcon } from '@heroicons/react/24/outline';
 
 export default function MensajesCliente() {
   const [modalActivo, setModalActivo] = useState(true);
@@ -123,6 +124,14 @@ export default function MensajesCliente() {
         <h1 className="text-2xl font-bold text-slate-800">
           Mensajes para el cliente
         </h1>
+        <div className='flex gap-4'>
+        <button
+          onClick={() => window.location.href = '/'}
+          className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
+        >
+          <EyeIcon className="w-5 h-5" />
+          Ver en el sitio
+        </button>
         <button 
           onClick={handleSave}
           disabled={isLoading}
@@ -130,6 +139,7 @@ export default function MensajesCliente() {
         >
           {isLoading ? 'Guardando...' : 'Guardar cambios'}
         </button>
+        </div>
       </div>
 
       {/* Mensaje de estado */}

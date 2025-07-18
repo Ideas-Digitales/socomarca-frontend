@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   CheckCircleIcon,
+  EyeIcon,
   PlusIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
@@ -333,8 +334,16 @@ export default function ContactForm() {
             {errors.submit}
           </div>
         )}
-
+        <div className='flex gap-4 justify-between'>
+ <button
+          onClick={() => window.location.href = '/'}
+          className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
+        >
+          <EyeIcon className="w-5 h-5" />
+          Ver en el sitio
+        </button>
         <div className="flex justify-end gap-4">
+       
           <button 
             type="reset" 
             className="border px-4 py-2 rounded hover:bg-slate-50"
@@ -375,6 +384,7 @@ export default function ContactForm() {
           >
             {isUpdatingSiteInfo ? 'Guardando...' : 'Guardar cambios'}
           </button>
+        </div>
         </div>
       </form>
     </div>

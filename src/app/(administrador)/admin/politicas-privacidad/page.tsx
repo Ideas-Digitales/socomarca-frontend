@@ -3,6 +3,7 @@
 import { Editor } from '@tinymce/tinymce-react';
 import { useState, useEffect } from 'react';
 import { savePrivacyPolicy, getPrivacyPolicy } from '../../../../services/actions/privacy-policy.actions';
+import { EyeIcon } from '@heroicons/react/24/outline';
 
 export default function RichTextEditor() {
   const [content, setContent] = useState('');
@@ -109,7 +110,16 @@ export default function RichTextEditor() {
       />
 
       {/* Save Button */}
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex justify-end gap-4">
+        {/* Botón Ver en el sitio */}
+        <button
+          onClick={() => window.location.href = '/politica-de-privacidad'}
+          className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
+        >
+          <EyeIcon className="w-5 h-5" />
+          Ver en el sitio
+        </button>
+        {/* Botón Guardar cambios */}
         <button
           onClick={handleSave}
           disabled={isSaving}
