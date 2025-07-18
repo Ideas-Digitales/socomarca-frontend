@@ -91,16 +91,7 @@ export default function PrivatePage() {
   return (
     <div className="bg-slate-100 sm:py-7">
    
-      {(userRole === 'admin' || userRole === 'superadmin') && (
-        <a
-          href={userRole === 'admin' ? '/admin/total-de-ventas' : '/super-admin/users'}
-          className="fixed z-50 bottom-6 right-6 flex items-center gap-2 bg-[#007f00] hover:bg-[#003200] text-white px-6 py-3 rounded-full shadow-lg font-semibold text-lg transition-colors duration-200"
-          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
-        >
-          <ArrowUturnLeftIcon className="w-6 h-6" />
-          Volver al panel de administración
-        </a>
-      )}
+    
       <div className="flex flex-col mb-2 sm:py-2 space-y-2">
         {isTablet && componentSearch}
         

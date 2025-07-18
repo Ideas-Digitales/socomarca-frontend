@@ -6,13 +6,9 @@ import {
   MinusIcon,
 } from '@heroicons/react/24/outline'
 import useStore from '@/stores/base'
-import useAuthStore from '@/stores/useAuthStore';
-import { ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
 
 export default function PreguntasFrecuentes() {
   const [activeIndex, setActiveIndex] = useState<number | null>(0)
-  const { getUserRole } = useAuthStore();
-  const userRole = getUserRole();
   
   const {
     faqs,
@@ -91,16 +87,6 @@ export default function PreguntasFrecuentes() {
 
   return (
     <div className='bg-white max-w-7xl mx-auto mt-8 mb-8'>
-      {(userRole === 'admin' || userRole === 'superadmin') && (
-        <a
-          href={userRole === 'admin' ? '/admin/total-de-ventas' : '/super-admin/users'}
-          className="fixed z-50 bottom-6 right-6 flex items-center gap-2 bg-[#007f00] hover:bg-[#003200] text-white px-6 py-3 rounded-full shadow-lg font-semibold text-lg transition-colors duration-200"
-          style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
-        >
-          <ArrowUturnLeftIcon className="w-6 h-6" />
-          Volver al panel de administración
-        </a>
-      )}
       <div className="w-full flex">
         <div className="h-2 w-1/3 bg-[#267E00]"></div>
         <div className="h-2 w-2/3 bg-[#6CB409]"></div>

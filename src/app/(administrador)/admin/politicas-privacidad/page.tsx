@@ -114,10 +114,10 @@ export default function RichTextEditor() {
         {/* Botón Ver en el sitio */}
         <button
           onClick={() => window.location.href = '/politica-de-privacidad'}
-          className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
+          className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-blue-600 text-white flex items-center gap-2"
         >
           <EyeIcon className="w-5 h-5" />
-          Ver en el sitio
+          Ver en ellimeio
         </button>
         {/* Botón Guardar cambios */}
         <button
