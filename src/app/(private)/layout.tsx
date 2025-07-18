@@ -54,7 +54,7 @@ export default function PrivateLayout({
                   </div>
                 </div>
               )}
-              <div className={isAdminUser ? 'pointer-events-none' : ''}>
+              <div className={isAdminUser ? 'admin-readonly-mode' : ''}>
                 {children}
               </div>
             </>

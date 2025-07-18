@@ -63,3 +63,36 @@ body {
   color: #3b82f6;
   text-decoration: underline;
 }
+
+/* Estilos para modo de solo lectura para admin/superadmin */
+.admin-readonly-mode {
+  /* Permitir navegación y scroll */
+  pointer-events: auto;
+}
+
+/* Deshabilitar solo elementos de compra y favoritos */
+.admin-readonly-mode button[data-action="add-to-cart"],
+.admin-readonly-mode button[data-action="buy"],
+.admin-readonly-mode button[data-action="purchase"],
+.admin-readonly-mode .add-to-cart-button,
+.admin-readonly-mode .buy-button,
+.admin-readonly-mode .purchase-button,
+.admin-readonly-mode [data-testid="add-to-cart"],
+.admin-readonly-mode [data-testid="buy"],
+.admin-readonly-mode [data-testid="purchase"],
+.admin-readonly-mode [data-cy="add-to-cart-btn"],
+.admin-readonly-mode .favorite-button,
+.admin-readonly-mode svg[onClick] {
+  pointer-events: none !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Deshabilitar enlaces de compra */
+.admin-readonly-mode a[href*="carro-de-compra"],
+.admin-readonly-mode a[href*="finalizar-compra"],
+.admin-readonly-mode a[href*="medios-de-pago"] {
+  pointer-events: none !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
