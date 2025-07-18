@@ -117,7 +117,7 @@ export default function RichTextEditor() {
           className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-blue-600 text-white flex items-center gap-2"
         >
           <EyeIcon className="w-5 h-5" />
-          Ver en ellimeio
+          Ver en el sitio
         </button>
         {/* Botón Guardar cambios */}
         <button

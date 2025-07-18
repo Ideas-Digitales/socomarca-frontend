@@ -5,6 +5,7 @@ import Sidebar from '../components/admin/Sidebar';
 import SidebarMobile from '../components/admin/SidebarMobile';
 import useStore, { useInitMobileDetection } from '@/stores/base';
 import useAuthStore from '@/stores/useAuthStore';
+import { usePathname } from 'next/navigation';
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
@@ -26,6 +27,7 @@ export default function AdminLayout({
   useInitMobileDetection();
   const { isTablet, fetchCategories, fetchProducts } = useStore();
   const { getUserRole } = useAuthStore();
+  const pathname = usePathname();
 
   // Obtener el rol del usuario
   const userRole = (getUserRole() as 'admin' | 'superadmin') || 'admin';
@@ -48,6 +50,12 @@ export default function AdminLayout({
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (userRole === 'admin' || userRole === 'superadmin') {
+      localStorage.setItem('lastAdminPanelUrl', pathname);
+    }
+  }, [pathname, userRole]);
 
   if (!isMounted || isLoading) {
     return <LoadingSpinner />;
