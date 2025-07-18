@@ -1,47 +1,74 @@
 'use client';
 
-import { useState } from 'react';
-import { regionesYComunas } from '@/app/components/regionesYComunas';
+import { useState, useEffect } from 'react';
+import { getRegionsWithMunicipalities, Region, Municipality, updateMunicipalitiesStatus, updateRegionStatus } from '@/services/actions/location.actions';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export default function PanelRegiones() {
   const [filter, setFilter] = useState('');
-  const [regionesActivas, setRegionesActivas] = useState<Record<string, boolean>>(
-    Object.fromEntries(Object.keys(regionesYComunas).map((r) => [r, true]))
-  );
-  const [comunasActivas, setComunasActivas] = useState<Record<string, Record<string, boolean>>>(
-    Object.fromEntries(
-      Object.entries(regionesYComunas).map(([region, comunas]) => [
-        region,
-        Object.fromEntries(comunas.map((comuna) => [comuna, true])),
-      ])
-    )
-  );
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [regions, setRegions] = useState<Region[]>([]); // Tipado correcto
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  const toggleRegion = (region: string) => {
-    const newState = !regionesActivas[region];
-    setRegionesActivas((prev) => ({ ...prev, [region]: newState }));
-    setComunasActivas((prev) => ({
-      ...prev,
-      [region]: Object.fromEntries(
-        Object.keys(prev[region]).map((c) => [c, newState])
-      ),
-    }));
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      const data = await getRegionsWithMunicipalities();
+      setRegions(data);
+      setLoading(false);
+    }
+    fetchData();
+  }, []);
+
+  const toggleRegion = async (regionId: number) => {
+    setSaving(true);
+    setSaveMessage(null);
+    setRegions((prev) =>
+      prev.map((region) =>
+        region.id === regionId
+          ? {
+              ...region,
+              status: !region.status,
+              municipalities: region.municipalities.map((comuna) => ({
+                ...comuna,
+                status: !region.status,
+              })),
+            }
+          : region
+      )
+    );
+    const region = regions.find(r => r.id === regionId);
+    const newStatus = region ? !region.status : true;
+    const ok = await updateRegionStatus(regionId, newStatus);
+    setSaving(false);
+    if (ok) {
+      setSaveMessage('Estado de la región actualizado correctamente.');
+    } else {
+      setSaveMessage('Error al actualizar estado de la región.');
+    }
   };
 
-  const toggleComuna = (region: string, comuna: string) => {
-    setComunasActivas((prev) => ({
-      ...prev,
-      [region]: {
-        ...prev[region],
-        [comuna]: !prev[region][comuna],
-      },
-    }));
+  const toggleComuna = (regionId: number, comunaId: number) => {
+    setRegions((prev) =>
+      prev.map((region) =>
+        region.id === regionId
+          ? {
+              ...region,
+              municipalities: region.municipalities.map((comuna) =>
+                comuna.id === comunaId
+                  ? { ...comuna, status: !comuna.status }
+                  : comuna
+              ),
+            }
+          : region
+      )
+    );
   };
 
-  const filteredRegiones = Object.keys(regionesYComunas).filter((region) =>
-    region.toLowerCase().includes(filter.toLowerCase())
+  const filteredRegions = regions.filter((region) =>
+    region.name.toLowerCase().includes(filter.toLowerCase())
   );
 
   return (
@@ -56,54 +83,85 @@ export default function PanelRegiones() {
         className="mb-6 w-full px-4 py-2 rounded border border-gray-300"
       />
 
-      <div className="space-y-3">
-        {filteredRegiones.map((region) => (
-          <div key={region} className="rounded bg-white">
-            <button
-              onClick={() => setExpanded(expanded === region ? null : region)}
-              className="w-full flex justify-between items-center px-4 py-2 hover:bg-gray-100"
-            >
-              <span>{region}</span>
-              <div className="flex items-center gap-4">
-                <input
-                  type="checkbox"
-                  checked={regionesActivas[region]}
-                  onChange={() => toggleRegion(region)}
-                  className="w-5 h-5"
-                />
-                <ChevronDownIcon
-                  className={`w-5 h-5 transition-transform ${
-                    expanded === region ? 'rotate-180' : ''
-                  }`}
-                />
-              </div>
-            </button>
+      {loading ? (
+        <div className="text-center py-8">Cargando...</div>
+      ) : (
+        <div className="space-y-3">
+          {filteredRegions.map((region) => (
+            <div key={region.id} className="rounded bg-white">
+              <button
+                onClick={() => setExpanded(expanded === region.id ? null : region.id)}
+                className="w-full flex justify-between items-center px-4 py-2 hover:bg-gray-100"
+              >
+                <span>{region.name}</span>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="checkbox"
+                    checked={region.status}
+                    onChange={() => toggleRegion(region.id)}
+                    className="w-5 h-5"
+                  />
+                  <ChevronDownIcon
+                    className={`w-5 h-5 transition-transform ${expanded === region.id ? 'rotate-180' : ''}`}
+                  />
+                </div>
+              </button>
 
-            {expanded === region && (
-              <div className="px-6 pb-4">
-                <ul className="space-y-2 mt-2">
-                  {regionesYComunas[region].map((comuna) => (
-                    <li key={comuna} className="flex justify-between items-center">
-                      <span>{comuna}</span>
-                      <input
-                        type="checkbox"
-                        checked={comunasActivas[region][comuna]}
-                        onChange={() => toggleComuna(region, comuna)}
-                        className="w-5 h-5"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+              {expanded === region.id && (
+                <div className="px-6 pb-4">
+                  <ul className="space-y-2 mt-2">
+                    {region.municipalities.map((comuna) => (
+                      <li key={comuna.id} className="flex justify-between items-center">
+                        <span>{comuna.name}</span>
+                        <input
+                          type="checkbox"
+                          checked={comuna.status}
+                          onChange={() => toggleComuna(region.id, comuna.id)}
+                          className="w-5 h-5"
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
-      <div className="mt-6 flex justify-end">
-        <button className="bg-[#87c814] text-white px-6 py-2 rounded hover:bg-[#76b40e] transition">
-          Guardar cambios
+      <div className="mt-6 flex flex-col items-end">
+        <button
+          className="bg-[#87c814] text-white px-6 py-2 rounded hover:bg-[#76b40e] transition disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={saving}
+          onClick={async () => {
+            setSaving(true);
+            setSaveMessage(null);
+            const allMunicipalities = regions.flatMap(r => r.municipalities);
+            const activeIds = allMunicipalities.filter(c => c.status).map(c => c.id);
+            const inactiveIds = allMunicipalities.filter(c => !c.status).map(c => c.id);
+            let ok = true;
+            if (activeIds.length > 0) {
+              ok = (await updateMunicipalitiesStatus(activeIds, true)) && ok;
+            }
+            if (inactiveIds.length > 0) {
+              ok = (await updateMunicipalitiesStatus(inactiveIds, false)) && ok;
+            }
+            setSaving(false);
+            if (ok) {
+              setSaveMessage('Cambios guardados correctamente.');
+            } else {
+              setSaveMessage('Error al guardar cambios.');
+            }
+          }}
+        >
+          {saving ? 'Guardando...' : 'Guardar cambios'}
         </button>
+        {saving && (
+          <span className="mt-2 text-gray-500 text-sm">Guardando cambios...</span>
+        )}
+        {saveMessage && !saving && (
+          <span className={`mt-2 text-sm ${saveMessage.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>{saveMessage}</span>
+        )}
       </div>
     </div>
   );

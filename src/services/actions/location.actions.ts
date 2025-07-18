@@ -48,6 +48,7 @@ export async function getRegionsWithMunicipalities(): Promise<Region[]> {
 export interface Region {
   id: number
   name: string
+  status: boolean
 }
 
 export interface Municipality {
@@ -73,7 +74,9 @@ export async function getRegions(): Promise<Region[]> {
     })
 
     if (!res.ok) throw new Error('Error al obtener regiones')
-    return await res.json()
+    const regions = await res.json()
+    // Filtrar solo las regiones con status: true
+    return regions.filter((region: Region) => region.status === true)
   } catch (e) {
     console.error(e)
     return []
@@ -97,9 +100,64 @@ export async function getMunicipalities(regionId: number): Promise<Municipality[
     })
 
     if (!res.ok) throw new Error('Error al obtener comunas')
-    return await res.json()
+    const municipalities = await res.json()
+    // Filtrar solo las comunas con status: true
+    return municipalities.filter((municipality: Municipality) => municipality.status === true)
   } catch (e) {
     console.error(e)
     return []
+  }
+}
+
+export async function updateMunicipalitiesStatus(municipalityIds: number[], status: boolean): Promise<boolean> {
+  const { getCookie } = await cookiesManagement();
+  const token = getCookie('token');
+
+  if (!token) return false;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/municipalities/status`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        municipality_ids: municipalityIds,
+        status,
+      }),
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('Error al actualizar estado de comunas');
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
+export async function updateRegionStatus(regionId: number, status: boolean): Promise<boolean> {
+  const { getCookie } = await cookiesManagement();
+  const token = getCookie('token');
+
+  if (!token) return false;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/regions/${regionId}/municipalities/status`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status }),
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('Error al actualizar estado de la región');
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
   }
 }
