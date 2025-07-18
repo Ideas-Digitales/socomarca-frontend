@@ -65,7 +65,6 @@ export default function ProductosMasVentas() {
     
     // Cargar datos de productos
     fetchTopProducts(start, end, undefined, undefined, undefined, undefined).finally(() => {
-      console.log('fetchTopProducts');
       setIsInitialLoad(false);
     });
 

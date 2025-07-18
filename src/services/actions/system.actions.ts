@@ -6,6 +6,7 @@ import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 interface CustomerMessageData {
   header_color: string;
   header_content: string;
+  message_enabled: boolean;
   banner_desktop_image?: File;
   banner_mobile_image?: File;
   banner_enabled: boolean;
@@ -165,6 +166,7 @@ export const fetchSendCustomerMessage = async (
     // Agregar campos de texto
     formData.append('header_color', messageData.header_color);
     formData.append('header_content', messageData.header_content);
+    formData.append('message_enabled', messageData.message_enabled ? '1' : '0');
     formData.append('banner_enabled', messageData.banner_enabled ? '1' : '0');
     formData.append('modal_enabled', messageData.modal_enabled ? '1' : '0');
     
@@ -180,7 +182,7 @@ export const fetchSendCustomerMessage = async (
     if (messageData.modal_image) {
       formData.append('modal_image', messageData.modal_image);
     }
-
+    
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: {

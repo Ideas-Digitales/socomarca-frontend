@@ -51,7 +51,6 @@ export default function ProductsAdmin() {
     setLoadingCategories(true);
     fetchGetCategories().then((res) => {
       if (res.ok && res.data) {
-        console.log('Categories response:', res.data);
         // Asegurar que sea un array
         const categoriesData = Array.isArray(res.data) ? res.data : res.data.data || [];
         setCategories(categoriesData as CategoryComponent[]);

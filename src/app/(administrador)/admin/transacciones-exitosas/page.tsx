@@ -242,21 +242,17 @@ export default function TransaccionesExitosas() {
   };
 
   const handleClientFilter = (clientId: number) => {
-    console.log('handleClientFilter - clientId recibido:', clientId);
     
     if (clientId === -1 || clientId === 0) {
       // Limpiar filtro de cliente
       setSelectedClients([]);
       setReportsFilters({ selectedClient: undefined });
-      console.log('handleClientFilter - limpiando cliente');
     } else {
       const customer = customersList.find((c) => c.id === clientId);
-      console.log('handleClientFilter - customer encontrado:', customer);
       if (customer) {
         setSelectedClients([{ id: customer.id, name: customer.customer }]);
         // Establecer filtro por cliente en el store
         setReportsFilters({ selectedClient: customer.customer });
-        console.log('handleClientFilter - cliente establecido:', customer.customer);
       }
     }
   };
@@ -264,8 +260,6 @@ export default function TransaccionesExitosas() {
   const handleFilter = () => {
     // Aplicar filtros ya configurados
     const { start, end, selectedClient, total_min, total_max } = reportsFilters;
-    console.log('handleFilter - filtros actuales:', { start, end, selectedClient, total_min, total_max });
-    console.log('handleFilter - selectedClients state:', selectedClients);
     setReportsCurrentPage(1);
     // Hacer la petición con todos los filtros configurados
     Promise.all([

@@ -2,7 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ArrowUpTrayIcon, PaintBrushIcon } from '@heroicons/react/24/solid';
-import { fetchSendCustomerMessage, fetchGetCustomerMessage } from '@/services/actions/system.actions';
+import {
+  fetchSendCustomerMessage,
+  fetchGetCustomerMessage,
+} from '@/services/actions/system.actions';
 import { EyeIcon } from '@heroicons/react/24/outline';
 
 export default function MensajesCliente() {
@@ -12,7 +15,10 @@ export default function MensajesCliente() {
   const [headerColor, setHeaderColor] = useState('#ffffff');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   // refs de inputs file
   const modalInputRef = useRef<HTMLInputElement>(null);
@@ -34,18 +40,18 @@ export default function MensajesCliente() {
     setIsLoadingData(true);
     try {
       const result = await fetchGetCustomerMessage();
-      
+
       if (result.ok && result.data) {
         const data = result.data;
-        
+
         // Cargar datos del header
         setHeaderColor(data.header.color);
         setHeaderMensaje(data.header.content);
-        
+
         // Cargar estados de banner y modal
         setBannerActivo(data.banner.enabled);
         setModalActivo(data.modal.enabled);
-        
+
         // Cargar nombres de archivos existentes (si los hay)
         if (data.banner.desktop_image) {
           setDesktopFileName('Imagen desktop cargada');
@@ -57,11 +63,17 @@ export default function MensajesCliente() {
           setModalFileName('Imagen modal cargada');
         }
       } else {
-        setMessage({ type: 'error', text: result.error || 'Error al cargar los datos existentes' });
+        setMessage({
+          type: 'error',
+          text: result.error || 'Error al cargar los datos existentes',
+        });
       }
     } catch (error) {
       console.log(error);
-      setMessage({ type: 'error', text: 'Error inesperado al cargar los datos' });
+      setMessage({
+        type: 'error',
+        text: 'Error inesperado al cargar los datos',
+      });
     } finally {
       setIsLoadingData(false);
     }
@@ -81,6 +93,7 @@ export default function MensajesCliente() {
       const messageData = {
         header_color: headerColor,
         header_content: headerMensaje,
+        message_enabled: headerMensaje.trim().length > 0, // Habilitar si hay mensaje
         banner_desktop_image: desktopFile || undefined,
         banner_mobile_image: responsiveFile || undefined,
         banner_enabled: bannerActivo,
@@ -91,13 +104,22 @@ export default function MensajesCliente() {
       const result = await fetchSendCustomerMessage(messageData);
 
       if (result.ok) {
-        setMessage({ type: 'success', text: 'Mensajes guardados exitosamente' });
+        setMessage({
+          type: 'success',
+          text: 'Mensajes guardados exitosamente',
+        });
       } else {
-        setMessage({ type: 'error', text: result.error || 'Error al guardar los mensajes' });
+        setMessage({
+          type: 'error',
+          text: result.error || 'Error al guardar los mensajes',
+        });
       }
     } catch (error) {
       console.log(error);
-      setMessage({ type: 'error', text: 'Error inesperado al guardar los mensajes' });
+      setMessage({
+        type: 'error',
+        text: 'Error inesperado al guardar los mensajes',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +132,9 @@ export default function MensajesCliente() {
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-500 mx-auto mb-4"></div>
-            <p className="text-slate-600">Cargando configuración de mensajes...</p>
+            <p className="text-slate-600">
+              Cargando configuración de mensajes...
+            </p>
           </div>
         </div>
       </div>
@@ -124,31 +148,33 @@ export default function MensajesCliente() {
         <h1 className="text-2xl font-bold text-slate-800">
           Mensajes para el cliente
         </h1>
-        <div className='flex gap-4'>
-        <button
-          onClick={() => window.location.href = '/'}
-          className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
-        >
-          <EyeIcon className="w-5 h-5" />
-          Ver en el sitio
-        </button>
-        <button 
-          onClick={handleSave}
-          disabled={isLoading}
-          className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'Guardando...' : 'Guardar cambios'}
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={() => (window.location.href = '/')}
+            className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
+          >
+            <EyeIcon className="w-5 h-5" />
+            Ver en el sitio
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isLoading}
+            className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Guardando...' : 'Guardar cambios'}
+          </button>
         </div>
       </div>
 
       {/* Mensaje de estado */}
       {message && (
-        <div className={`p-4 rounded text-sm ${
-          message.type === 'success' 
-            ? 'bg-green-100 text-green-800 border border-green-200' 
-            : 'bg-red-100 text-red-800 border border-red-200'
-        }`}>
+        <div
+          className={`p-4 rounded text-sm ${
+            message.type === 'success'
+              ? 'bg-green-100 text-green-800 border border-green-200'
+              : 'bg-red-100 text-red-800 border border-red-200'
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -232,7 +258,7 @@ export default function MensajesCliente() {
         </h2>
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full">
           {/* Botón desktop */}
-          <div className='w-full sm:w-auto'>
+          <div className="w-full sm:w-auto">
             <input
               type="file"
               accept="image/*"
@@ -263,7 +289,7 @@ export default function MensajesCliente() {
           </div>
 
           {/* Botón responsivo */}
-          <div className='w-full sm:w-auto'>
+          <div className="w-full sm:w-auto">
             <input
               type="file"
               accept="image/*"

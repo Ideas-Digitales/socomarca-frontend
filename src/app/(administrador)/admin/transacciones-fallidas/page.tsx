@@ -67,7 +67,7 @@ export default function TransaccionesFallidas() {
     min: failedReportsFilters.total_min?.toString() || '',
     max: failedReportsFilters.total_max?.toString() || '',
   });
-  
+
   // Estado para controlar si es la primera carga
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -88,20 +88,34 @@ export default function TransaccionesFallidas() {
   // Cargar datos iniciales
   useEffect(() => {
     clearFailedReportsFilters();
-    
+
     const start = '';
     const end = '';
     const total_min = undefined;
     const total_max = undefined;
-    
+
     Promise.all([
-      fetchFailedTransactionsList(start, end, 1, PER_PAGE, undefined, total_min, total_max),
+      fetchFailedTransactionsList(
+        start,
+        end,
+        1,
+        PER_PAGE,
+        undefined,
+        total_min,
+        total_max
+      ),
       fetchCustomers(),
-      fetchChartRawData(start, end, null)
+      fetchChartRawData(start, end, null),
     ]).finally(() => {
       setIsInitialLoad(false);
     });
-  }, [fetchFailedTransactionsList, fetchCustomers, fetchChartRawData, PER_PAGE, clearFailedReportsFilters]);
+  }, [
+    fetchFailedTransactionsList,
+    fetchCustomers,
+    fetchChartRawData,
+    PER_PAGE,
+    clearFailedReportsFilters,
+  ]);
 
   // Cleanup: limpiar datos cuando el componente se desmonta
   useEffect(() => {
@@ -112,8 +126,8 @@ export default function TransaccionesFallidas() {
   }, []);
 
   // Transformar datos para la tabla directamente desde failedTransactionsList
-  const transaccionesFixed: TransaccionFormateada[] = failedTransactionsList.map(
-    (transaction: FailedTransactionDetail) => ({
+  const transaccionesFixed: TransaccionFormateada[] =
+    failedTransactionsList.map((transaction: FailedTransactionDetail) => ({
       id: String(transaction.id),
       cliente: transaction.client,
       monto1: transaction.amount,
@@ -122,8 +136,7 @@ export default function TransaccionesFallidas() {
       fecha: transaction.date,
       acciones: 'Ver detalles',
       originalData: transaction,
-    })
-  );
+    }));
 
   // Definir las métricas basadas en datos del backend
   const metrics: MetricCard[] = [
@@ -134,7 +147,9 @@ export default function TransaccionesFallidas() {
     },
     {
       label: 'Valor total procesado',
-      value: formatCurrency(transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0)),
+      value: formatCurrency(
+        transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0)
+      ),
       color: 'gray',
     },
   ];
@@ -176,9 +191,18 @@ export default function TransaccionesFallidas() {
 
   // Función para manejar cambio de página - simplificada
   const handlePageChange = (page: number) => {
-    const { start, end, selectedClient, total_min, total_max } = failedReportsFilters;
+    const { start, end, selectedClient, total_min, total_max } =
+      failedReportsFilters;
     setFailedReportsCurrentPage(page);
-    fetchFailedTransactionsList(start, end, page, PER_PAGE, selectedClient, total_min, total_max);
+    fetchFailedTransactionsList(
+      start,
+      end,
+      page,
+      PER_PAGE,
+      selectedClient,
+      total_min,
+      total_max
+    );
   };
 
   // Definir columnas para transacciones fallidas
@@ -214,42 +238,44 @@ export default function TransaccionesFallidas() {
     // Convertir los valores de string a number para el backend
     const total_min = amount.min ? Number(amount.min) : undefined;
     const total_max = amount.max ? Number(amount.max) : undefined;
-    
+
     // Solo actualizar filtros en el store, no hacer petición automáticamente
     setFailedReportsFilters({ total_min, total_max });
   };
 
   const handleClientFilter = (clientId: number) => {
-    console.log('handleClientFilter - clientId recibido:', clientId);
-    
     if (clientId === -1 || clientId === 0) {
       // Limpiar filtro de cliente
       setSelectedClients([]);
       setFailedReportsFilters({ selectedClient: undefined });
-      console.log('handleClientFilter - limpiando cliente');
     } else {
       const customer = customersList.find((c) => c.id === clientId);
-      console.log('handleClientFilter - customer encontrado:', customer);
       if (customer) {
         setSelectedClients([{ id: customer.id, name: customer.customer }]);
         // Establecer filtro por cliente en el store
         setFailedReportsFilters({ selectedClient: customer.customer });
-        console.log('handleClientFilter - cliente establecido:', customer.customer);
       }
     }
   };
 
   const handleFilter = () => {
     // Aplicar filtros ya configurados
-    const { start, end, selectedClient, total_min, total_max } = failedReportsFilters;
-    console.log('handleFilter - filtros actuales:', { start, end, selectedClient, total_min, total_max });
-    console.log('handleFilter - selectedClients state:', selectedClients);
+    const { start, end, selectedClient, total_min, total_max } =
+      failedReportsFilters;
     setFailedReportsCurrentPage(1);
-    
+
     // Hacer la petición con todos los filtros configurados
     Promise.all([
-      fetchFailedTransactionsList(start, end, 1, PER_PAGE, selectedClient, total_min, total_max),
-      fetchChartRawData(start, end, selectedClient || null)
+      fetchFailedTransactionsList(
+        start,
+        end,
+        1,
+        PER_PAGE,
+        selectedClient,
+        total_min,
+        total_max
+      ),
+      fetchChartRawData(start, end, selectedClient || null),
     ]);
   };
 
@@ -257,24 +283,32 @@ export default function TransaccionesFallidas() {
     setSelectedClients([]);
     setAmountFilter({ min: '', max: '' });
     setFailedReportsCurrentPage(1);
-    
+
     const start = '';
     const end = '';
-    
-    setFailedReportsFilters({ 
-      start, 
-      end, 
-      selectedClient: undefined, 
-      selectedCategory: undefined, 
-      type: null, 
-      total_min: undefined, 
-      total_max: undefined 
+
+    setFailedReportsFilters({
+      start,
+      end,
+      selectedClient: undefined,
+      selectedCategory: undefined,
+      type: null,
+      total_min: undefined,
+      total_max: undefined,
     });
-    
+
     // Limpiar datos y recargar
     Promise.all([
-      fetchFailedTransactionsList(start, end, 1, PER_PAGE, null, undefined, undefined),
-      fetchChartRawData(start, end, null)
+      fetchFailedTransactionsList(
+        start,
+        end,
+        1,
+        PER_PAGE,
+        null,
+        undefined,
+        undefined
+      ),
+      fetchChartRawData(start, end, null),
     ]);
   };
 
@@ -289,12 +323,12 @@ export default function TransaccionesFallidas() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
-        <p className="text-gray-600 text-sm">Cargando transacciones fallidas...</p>
+        <p className="text-gray-600 text-sm">
+          Cargando transacciones fallidas...
+        </p>
       </div>
     );
   }
-
-
 
   return (
     <div className="relative">
@@ -329,8 +363,11 @@ export default function TransaccionesFallidas() {
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
             <span className="text-gray-700 text-sm">
-              {isLoadingFailedReports && isLoadingChart ? 'Actualizando datos y gráficos...' :
-               isLoadingFailedReports ? 'Actualizando datos...' : 'Actualizando gráficos...'}
+              {isLoadingFailedReports && isLoadingChart
+                ? 'Actualizando datos y gráficos...'
+                : isLoadingFailedReports
+                ? 'Actualizando datos...'
+                : 'Actualizando gráficos...'}
             </span>
           </div>
         </div>

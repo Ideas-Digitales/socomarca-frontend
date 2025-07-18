@@ -65,7 +65,6 @@ export default function ComunasMasVentas() {
       fetchChartReports(start, end, 'top-municipalities', total_min, total_max),
       fetchChartRawData(start, end, null)
     ]).finally(() => {
-      console.log('fetchChartReports');
       setIsInitialLoad(false);
     });
 

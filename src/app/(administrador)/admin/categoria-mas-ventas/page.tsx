@@ -194,7 +194,6 @@ export default function CategoriasMasVentas() {
   ];
 
   const handleAmountFilter = (amount: AmountRange) => {
-    console.log('Filtrar por rango de montos:', amount);
     setAmountFilter(amount);
     
     // Convertir los valores de string a number para el backend
@@ -237,11 +236,9 @@ export default function CategoriasMasVentas() {
   // };
 
   const handleFilter = () => {
-    console.log('Aplicar filtros generales...');
 
     // Obtener todos los filtros del store
     const { start, end, total_min, total_max } = reportsFilters;
-    console.log('Filtros del store:', { start, end, total_min, total_max });
 
     // Recargar todos los datos con los filtros
     Promise.all([
@@ -252,7 +249,6 @@ export default function CategoriasMasVentas() {
   };
 
   const handleClearSearch = () => {
-    console.log('Limpiar búsqueda');
     setAmountFilter({ min: '', max: '' });
     // setSelectedClients([]);
     // setSelectedCategories([]);
