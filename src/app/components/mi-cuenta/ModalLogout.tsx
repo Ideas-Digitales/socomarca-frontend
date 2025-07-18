@@ -4,6 +4,7 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import { useState } from 'react';
+import useAuthStore from '@/stores/useAuthStore';
 
 export default function ModalLogout({
   onClose,
@@ -26,6 +27,7 @@ export default function ModalLogout({
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { logout } = useAuthStore();
 
   const handleLogout = async () => {
     setIsLoading(true);
@@ -33,7 +35,7 @@ export default function ModalLogout({
       if (onLogout) {
         await onLogout();
       } else {
-        await logoutAction();
+        await logout();
         router.push('/auth/login');
       }
       onClose();

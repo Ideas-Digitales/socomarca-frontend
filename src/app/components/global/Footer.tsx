@@ -10,6 +10,7 @@ import PinterestIcon from '../icons/PinterestIcon';
 import { EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import Logo from './Logo';
 import useStore from '@/stores/base';
+import useAuthStore from '@/stores/useAuthStore';
 
 const masterCardImageUrl = '/assets/footer/mastercard.png';
 const americanExpressImageUrl = '/assets/footer/american-express.png';
@@ -24,10 +25,18 @@ export default function Footer() {
     fetchSiteInformation
   } = useStore();
 
+  const { user } = useAuthStore();
+
   // Cargar información del sitio al montar el componente
   useEffect(() => {
     fetchSiteInformation();
   }, [fetchSiteInformation]);
+
+  // Función para verificar si el usuario es admin o superadmin
+  const isAdminUser = () => {
+    const userRoles = user?.roles || [];
+    return userRoles.includes('admin') || userRoles.includes('superadmin');
+  };
 
   // Función para renderizar el icono de red social según el label
   const renderSocialIcon = (label: string) => {
@@ -74,19 +83,37 @@ export default function Footer() {
           <h3 className="text-gray-500 font-bold">Atención al cliente</h3>
           <ul className="space-y-1">
             <li>
-              <Link href="/preguntas-frecuentes" className="">
-                Preguntas frecuentes
-              </Link>
+              {isAdminUser() ? (
+                <span className="text-gray-400 cursor-not-allowed">
+                  Preguntas frecuentes
+                </span>
+              ) : (
+                <Link href="/preguntas-frecuentes" className="">
+                  Preguntas frecuentes
+                </Link>
+              )}
             </li>
             <li>
-              <Link href="/terminos-y-condiciones" className="">
-                Términos y condiciones
-              </Link>
+              {isAdminUser() ? (
+                <span className="text-gray-400 cursor-not-allowed">
+                  Términos y condiciones
+                </span>
+              ) : (
+                <Link href="/terminos-y-condiciones" className="">
+                  Términos y condiciones
+                </Link>
+              )}
             </li>
             <li>
-              <Link href="/politica-de-privacidad" className="">
-                Política de privacidad
-              </Link>
+              {isAdminUser() ? (
+                <span className="text-gray-400 cursor-not-allowed">
+                  Política de privacidad
+                </span>
+              ) : (
+                <Link href="/politica-de-privacidad" className="">
+                  Política de privacidad
+                </Link>
+              )}
             </li>
           </ul>
         </div>

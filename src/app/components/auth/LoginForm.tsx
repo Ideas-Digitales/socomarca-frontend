@@ -25,6 +25,7 @@ export default function LoginForm({
   onSuccessRedirect = '/',
   useWindowLocation = false,
 }: LoginFormProps) {
+  console.log('LoginForm - role recibido:', role);
   const [rut, setRut] = useState('');
   const [password, setPassword] = useState('');
   const [isValid, setIsValid] = useState(false);
@@ -66,18 +67,30 @@ export default function LoginForm({
     try {
       const loginData = role ? { rut, password, role } : { rut, password };
       const result = await login(loginData);
-
+      console.log('role en handleSubmit:', role);
       if (result.success) {
-        console.log('Login exitoso, redirigiendo...');
+        // Determinar la redirección basada en el rol
+        let redirectPath = onSuccessRedirect;
+        
+        // Si es admin o está en la página de login-admin, redirigir a la página de administración
+        if (role === 'admin' || recoveryLink.includes('recuperar-admin')) {
+          redirectPath = '/admin/total-de-ventas';
+        } else if (result.user && result.user.roles) {
+          // Verificar el rol del usuario desde la respuesta del login
+          const userRoles = result.user.roles;
+          
+          if (userRoles.includes('admin') || userRoles.includes('superadmin')) {
+            redirectPath = '/admin/total-de-ventas';
+          }
+        }
 
         // Mantener el loading activo durante la redirección
         if (useWindowLocation) {
           // Usar window.location para forzar recarga (útil para middleware)
-          window.location.href = onSuccessRedirect;
+          window.location.href = redirectPath;
         } else {
-          router.push(onSuccessRedirect);
+          router.push(redirectPath);
         }
-        // No desactivamos el loading aquí, se mantiene hasta la redirección
       } else {
         const errorMessage = result.error || 'Error al iniciar sesión';
         setError(errorMessage);

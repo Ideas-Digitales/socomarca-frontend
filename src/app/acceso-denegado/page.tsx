@@ -2,22 +2,34 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import useAuthStore from '@/stores/useAuthStore';
 
 export default function AccesoDenegado() {
+  const { user, isLoggedIn } = useAuthStore();
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    // Obtener el rol del usuario desde las cookies
-    const cookies = document.cookie.split(';');
-    const roleCookie = cookies.find((cookie) =>
-      cookie.trim().startsWith('role=')
-    );
-    if (roleCookie) {
-      setUserRole(roleCookie.split('=')[1]);
+    // Obtener el rol del usuario desde el store o cookies como fallback
+    if (user && user.roles && user.roles.length > 0) {
+      setUserRole(user.roles[0]);
+    } else {
+      // Fallback: obtener desde cookies si el store no está disponible
+      const cookies = document.cookie.split(';');
+      const roleCookie = cookies.find((cookie) =>
+        cookie.trim().startsWith('role=')
+      );
+      if (roleCookie) {
+        setUserRole(roleCookie.split('=')[1]);
+      }
     }
-  }, []);
+  }, [user]);
 
   const getRedirectPath = () => {
+    // Si no está logueado, ir al login
+    if (!isLoggedIn) {
+      return '/auth/login';
+    }
+
     switch (userRole) {
       case 'cliente':
         return '/';
@@ -26,11 +38,16 @@ export default function AccesoDenegado() {
       case 'superadmin':
         return '/super-admin/users';
       default:
-        return '/login';
+        return '/auth/login';
     }
   };
 
   const getAreaName = () => {
+    // Si no está logueado, mostrar "inicio de sesión"
+    if (!isLoggedIn) {
+      return 'inicio de sesión';
+    }
+
     switch (userRole) {
       case 'cliente':
         return 'área privada';
@@ -39,7 +56,7 @@ export default function AccesoDenegado() {
       case 'superadmin':
         return 'super administración';
       default:
-        return 'inicio';
+        return 'inicio de sesión';
     }
   };
 

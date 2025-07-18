@@ -8,6 +8,7 @@ import HR from '../global/HR';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import { getSidebarConfig } from '@/configs/sidebarConfigs';
+import useAuthStore from '@/stores/useAuthStore';
 
 const avatar = '/assets/global/avatar.png';
 
@@ -23,6 +24,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useAuthStore();
 
   const {
     isMenuActive,
@@ -45,7 +47,8 @@ export default function Sidebar({
           configType,
           openModal,
           closeModal,
-          router
+          router,
+          logout
         );
         setSidebarConfig(config);
       } catch (error) {

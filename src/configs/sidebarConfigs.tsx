@@ -1,7 +1,6 @@
 'use client';
 
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
-import { logoutAction } from '@/services/actions/auth.actions';
 import ModalLogout from '@/app/components/mi-cuenta/ModalLogout';
 
 export const createLogoutModal = (
@@ -20,10 +19,11 @@ export const getSidebarConfig = (
   userRole: 'admin' | 'superadmin',
   openModal: (id: string, config: any) => void,
   closeModal: () => void,
-  router: { push: (url: string) => void }
+  router: { push: (url: string) => void },
+  logoutFunction: () => Promise<void>
 ): SidebarConfig => {
   const handleLogout = async (): Promise<void> => {
-    await logoutAction();
+    await logoutFunction();
     closeModal();
     router.push('/auth/login');
   };
@@ -99,11 +99,6 @@ export const getSidebarConfig = (
       label: 'Regiones y comunas',
       url: '/admin/regiones',
     },
-    {
-      id: 'Transbank',
-      label: 'Transbank',
-      url: '/admin/transbank',
-    },
   ];
 
   // Items exclusivos para superadmin
@@ -117,6 +112,11 @@ export const getSidebarConfig = (
       id: 'create-user',
       label: 'Crear nuevo usuario',
       url: '/super-admin/create-user',
+    },
+    {
+      id: 'Transbank',
+      label: 'Transbank',
+      url: '/super-admin/transbank',
     },
   ];
 

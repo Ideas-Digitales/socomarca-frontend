@@ -9,6 +9,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Logo from '../global/Logo';
 import useStore from '@/stores/base';
 import { getSidebarConfig } from '@/configs/sidebarConfigs';
+import useAuthStore from '@/stores/useAuthStore';
 
 interface SidebarMobileProps {
   configType: 'admin' | 'superadmin';
@@ -18,6 +19,7 @@ interface SidebarMobileProps {
 export default function SidebarMobile({ configType }: SidebarMobileProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { logout } = useAuthStore();
 
   // Estados del store
   const {
@@ -45,7 +47,8 @@ export default function SidebarMobile({ configType }: SidebarMobileProps) {
           configType,
           openModal,
           closeModal,
-          router
+          router,
+          logout
         );
         setSidebarConfig(config);
       } catch (error) {

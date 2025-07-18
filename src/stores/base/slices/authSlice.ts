@@ -132,9 +132,17 @@ export const createAuthSlice: StateCreator<
       // Esperar un momento para que las cookies se establezcan
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      console.log(response);
-
-      return { success: true };
+      return { 
+        success: true,
+        user: {
+          id: response.user.id,
+          name: response.user.name,
+          email: response.user.email,
+          rut: response.user.rut,
+          roles: response.user.roles || [],
+          permissions: response.user.permissions || [],
+        }
+      };
     } catch (error: any) {
       console.error('Error en login:', error);
 
@@ -171,6 +179,7 @@ export const createAuthSlice: StateCreator<
     // Limpiar estado local
     set({
       isLoggedIn: false,
+      isInitialized: true,
       user: { id: 0, name: '', email: '', rut: '', roles: [], permissions: [] },
       token: '',
       isLoading: false,

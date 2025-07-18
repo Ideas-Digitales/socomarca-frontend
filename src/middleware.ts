@@ -180,11 +180,22 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(loginUrl, request.url));
   }
 
-  const userRole = authData.user?.role as UserRole;
+  // Obtener el rol del usuario - puede ser una cadena con múltiples roles separados por comas
+  const userRoleString = authData.user?.role || '';
+  const userRoles = userRoleString.split(',').map(role => role.trim());
+  
+  // Determinar el rol principal para permisos
+  let userRole: UserRole = 'cliente';
+  if (userRoles.includes('superadmin')) {
+    userRole = 'superadmin';
+  } else if (userRoles.includes('admin')) {
+    userRole = 'admin';
+  }
 
-  // ========== MANEJAR RUTA RAÍZ ==========
+    // ========== MANEJAR RUTA RAÍZ ==========
   if (pathname === '/') {
     // Permitir acceso a la ruta raíz para todos los usuarios autenticados
+    // Los admin/superadmin pueden ver la vista pero no interactuar (manejado en el layout)
     return NextResponse.next();
   }
 

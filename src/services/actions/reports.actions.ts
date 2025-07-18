@@ -161,7 +161,6 @@ export const fetchGetOrdersReportsTransactionsList = async (
     if (total_max !== undefined && total_max !== null && total_max > 0) {
       requestBody.total_max = total_max;
     }
-    console.log('requestBody', requestBody);
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: {
@@ -265,8 +264,6 @@ export const fetchGetOrdersReportsFailedTransactionsList = async (
     if (total_max !== undefined && total_max !== null && total_max > 0) {
       requestBody.total_max = total_max;
     }
-
-    console.log('fetchGetOrdersReportsFailedTransactionsList requestBody:', requestBody);
 
     const response = await fetch(endpointUrl, {
       method: 'POST',
@@ -494,8 +491,6 @@ export const fetchGetOrdersReportsCharts = async (
     }
 
     const data = await response.json();
-
-    console.log('fetchGetOrdersReportsCharts data:', data);
 
     if (!response.ok) {
       return {

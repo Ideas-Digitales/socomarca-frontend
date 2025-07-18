@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { createLogoutModal } from '@/configs/sidebarConfigs';
 import { CartItem } from '@/interfaces/product.interface';
 import { logoutAction } from '@/services/actions/auth.actions';
+import useAuthStore from '@/stores/useAuthStore';
 
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 const logoUrl = '/assets/global/logo-header.png';
@@ -46,10 +47,18 @@ export default function Header({ carro }: Props) {
     fetchSiteInformation();
   }, [fetchSiteInformation]);
 
+  const { logout, user } = useAuthStore();
+  
   const handleLogout = async () => {
-    await logoutAction();
+    await logout();
     closeModal();
     router.push('/auth/login');
+  };
+
+  // Función para verificar si el usuario es admin o superadmin
+  const isAdminUser = () => {
+    const userRoles = user?.roles || [];
+    return userRoles.includes('admin') || userRoles.includes('superadmin');
   };
 
   useEffect(() => {
@@ -94,12 +103,12 @@ export default function Header({ carro }: Props) {
   const router = useRouter();
 
   const menuItems = [
-    { name: 'Inicio', href: '/' },
-    { name: 'Datos personales', href: '/mi-cuenta?section=datos' },
-    { name: 'Favoritos', href: '/mi-cuenta?section=favoritos' },
-    { name: 'Direcciones', href: '/mi-cuenta?section=direcciones' },
-    { name: 'Mis Compras', href: '/mi-cuenta?section=compras' },
-    { name: 'Carrito', href: '/carro-de-compra' },
+    { name: 'Inicio', href: '/', disabled: false },
+    { name: 'Datos personales', href: '/mi-cuenta?section=datos', disabled: isAdminUser() },
+    { name: 'Favoritos', href: '/mi-cuenta?section=favoritos', disabled: isAdminUser() },
+    { name: 'Direcciones', href: '/mi-cuenta?section=direcciones', disabled: isAdminUser() },
+    { name: 'Mis Compras', href: '/mi-cuenta?section=compras', disabled: isAdminUser() },
+    { name: 'Carrito', href: '/carro-de-compra', disabled: isAdminUser() },
   ];
 
   return (
@@ -176,26 +185,47 @@ export default function Header({ carro }: Props) {
           )}
           <div className="flex items-end gap-4">
             <div className="flex flex-row gap-2 sm:gap-4">
-              <Link
-                href="/mi-cuenta?section=compras"
-                className="items-center gap-2 hidden sm:flex"
-              >
-                <ListBulletIcon width={24} height={24} />
-                <span className="font-bold hidden sm:block">
-                  Historial de compra
-                </span>
-              </Link>
-              <Link
-                className="hidden sm:flex"
-                href="/mi-cuenta?section=favoritos"
-              >
-                <HeartIcon width={24} height={24} />
-              </Link>
-              <Link className="hidden sm:flex" href="/mi-cuenta">
-                <UserIcon width={24} height={24} />
-              </Link>
-              <Link href="/carro-de-compra">
-                <div data-cy="cart-link" className="relative">
+              {isAdminUser() ? (
+                <div className="items-center gap-2 hidden sm:flex cursor-not-allowed opacity-50">
+                  <ListBulletIcon width={24} height={24} />
+                  <span className="font-bold hidden sm:block">
+                    Historial de compra
+                  </span>
+                </div>
+              ) : (
+                <Link
+                  href="/mi-cuenta?section=compras"
+                  className="items-center gap-2 hidden sm:flex"
+                >
+                  <ListBulletIcon width={24} height={24} />
+                  <span className="font-bold hidden sm:block">
+                    Historial de compra
+                  </span>
+                </Link>
+              )}
+              {isAdminUser() ? (
+                <div className="hidden sm:flex cursor-not-allowed opacity-50">
+                  <HeartIcon width={24} height={24} />
+                </div>
+              ) : (
+                <Link
+                  className="hidden sm:flex"
+                  href="/mi-cuenta?section=favoritos"
+                >
+                  <HeartIcon width={24} height={24} />
+                </Link>
+              )}
+              {isAdminUser() ? (
+                <div className="hidden sm:flex cursor-not-allowed opacity-50">
+                  <UserIcon width={24} height={24} />
+                </div>
+              ) : (
+                <Link className="hidden sm:flex" href="/mi-cuenta">
+                  <UserIcon width={24} height={24} />
+                </Link>
+              )}
+              {isAdminUser() ? (
+                <div data-cy="cart-link" className="relative cursor-not-allowed opacity-50">
                   <ShoppingCartIcon width={24} height={24} />
                   {carro?.length > 0 && (
                     <span
@@ -206,7 +236,21 @@ export default function Header({ carro }: Props) {
                     </span>
                   )}
                 </div>
-              </Link>
+              ) : (
+                <Link href="/carro-de-compra">
+                  <div data-cy="cart-link" className="relative">
+                    <ShoppingCartIcon width={24} height={24} />
+                    {carro?.length > 0 && (
+                      <span
+                        data-cy="cart-counter"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full"
+                      >
+                        {carro.length}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -251,13 +295,21 @@ export default function Header({ carro }: Props) {
           <ul>
             {menuItems.map((item, index) => (
               <li key={index}>
-                <Link
-                  href={item.href}
-                  className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b border-gray-100"
-                  onClick={() => setMenuMobileOpen(false)}
-                >
-                  {item.name}
-                </Link>
+                {item.disabled ? (
+                  <div
+                    className="block px-4 py-3 text-gray-400 cursor-not-allowed border-b border-gray-100"
+                  >
+                    {item.name}
+                  </div>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b border-gray-100"
+                    onClick={() => setMenuMobileOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                )}
               </li>
             ))}
             <li
