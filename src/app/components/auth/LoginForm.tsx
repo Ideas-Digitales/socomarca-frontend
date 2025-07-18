@@ -18,12 +18,12 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({
-  title = "Iniciar sesión",
-  subtitle = "Ingresa tus datos a continuación",
+  title = 'Iniciar sesión',
+  subtitle = 'Ingresa tus datos a continuación',
   role,
   recoveryLink,
   onSuccessRedirect = '/',
-  useWindowLocation = false
+  useWindowLocation = false,
 }: LoginFormProps) {
   const [rut, setRut] = useState('');
   const [password, setPassword] = useState('');
@@ -81,7 +81,7 @@ export default function LoginForm({
       } else {
         const errorMessage = result.error || 'Error al iniciar sesión';
         setError(errorMessage);
-        
+
         if (role === 'admin') {
           setLocalLoading(false);
         } else {
@@ -104,7 +104,7 @@ export default function LoginForm({
       } else {
         setError(error.message || 'Las credenciales ingresadas no son válidas');
       }
-      
+
       if (role === 'admin') {
         setLocalLoading(false);
       } else {
@@ -122,7 +122,9 @@ export default function LoginForm({
             <div className="flex flex-col items-center gap-3">
               <LoadingSpinner />
               <span className="text-sm text-gray-600">
-                {role === 'admin' ? 'Validando credenciales...' : 'Iniciando sesión...'}
+                {role === 'admin'
+                  ? 'Validando credenciales...'
+                  : 'Iniciando sesión...'}
               </span>
             </div>
           </div>
@@ -176,7 +178,11 @@ export default function LoginForm({
             {finalIsLoading && (
               <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
             )}
-            {finalIsLoading ? (role === 'admin' ? 'Cargando...' : 'Iniciando sesión...') : 'Ingresar'}
+            {finalIsLoading
+              ? role === 'admin'
+                ? 'Cargando...'
+                : 'Iniciando sesión...'
+              : 'Ingresar'}
           </button>
           {!finalIsLoading && (
             <Link

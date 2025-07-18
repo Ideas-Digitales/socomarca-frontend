@@ -53,17 +53,20 @@ export const fetchLogin = async (
 
     const data = await response.json();
 
-
-      // Almacenar el token y datos del usuario en cookies
+    // Almacenar el token y datos del usuario en cookies
     const { token, user } = data;
     const roles = user?.roles || [];
+    const permissions = user?.permissions || [];
     const userId = String(user?.id || null);
 
     if (token && user) {
       setCookie(token, 'token');
       setCookie(roles.join(','), 'role');
+      const permissionsValue =
+        permissions.length > 0 ? permissions.join(',') : 'none';
+      setCookie(permissionsValue, 'permissions');
       setCookie(userId, 'userId');
-      
+
       // Guardar datos completos del usuario como JSON
       const userData = {
         id: user.id,
@@ -71,6 +74,7 @@ export const fetchLogin = async (
         email: user.email,
         rut: user.rut,
         roles: user.roles || [],
+        permissions: user.permissions || [],
       };
       setCookie(JSON.stringify(userData), 'userData');
     }
@@ -92,6 +96,7 @@ export const fetchLogin = async (
         email: data.user.email,
         rut: data.user.rut,
         roles: data.user.roles || [],
+        permissions: data.user.permissions || [],
       },
     };
   } catch (error) {
@@ -137,11 +142,9 @@ export const sendRecoveryEmail = async (
   }
 };
 
-
-
 export async function logoutAction() {
-   const { getCookie, deleteCookie } = await cookiesManagement();
-      const cookie = getCookie('token');
+  const { getCookie, deleteCookie } = await cookiesManagement();
+  const cookie = getCookie('token');
 
   if (!cookie) {
     console.warn('No token found in cookies');
@@ -158,9 +161,10 @@ export async function logoutAction() {
 
     if (!response.ok) {
       console.error('Failed to revoke token', await response.text());
-    }    // Opcional: eliminar la cookie si la setea el frontend
+    } // Opcional: eliminar la cookie si la setea el frontend
     deleteCookie('token');
     deleteCookie('role');
+    deleteCookie('permissions');
     deleteCookie('userId');
     deleteCookie('userData');
   } catch (error) {

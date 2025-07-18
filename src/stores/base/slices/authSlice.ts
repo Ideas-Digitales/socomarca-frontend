@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { AuthSlice, StoreState } from '../types';
-import { fetchLogin } from '@/services/actions/auth.actions';
+import { fetchLogin, logoutAction } from '@/services/actions/auth.actions';
 
 // Función para obtener datos de autenticación desde la API interna
 const getAuthData = async (): Promise<any | null> => {
@@ -30,6 +30,7 @@ export const createAuthSlice: StateCreator<
     email: '',
     rut: '',
     roles: [],
+    permissions: [],
   },
   token: '',
   isInitialized: false,
@@ -57,13 +58,21 @@ export const createAuthSlice: StateCreator<
             email: user.email || '',
             rut: user.rut || '',
             roles: user.roles || [user.role] || [],
+            permissions: user.permissions || [],
           },
         });
       } else {
         set({
           isLoggedIn: false,
           isInitialized: true,
-          user: { id: 0, name: '', email: '', rut: '', roles: [] },
+          user: {
+            id: 0,
+            name: '',
+            email: '',
+            rut: '',
+            roles: [],
+            permissions: [],
+          },
           token: '',
         });
       }
@@ -72,7 +81,14 @@ export const createAuthSlice: StateCreator<
       set({
         isLoggedIn: false,
         isInitialized: true,
-        user: { id: 0, name: '', email: '', rut: '', roles: [] },
+        user: {
+          id: 0,
+          name: '',
+          email: '',
+          rut: '',
+          roles: [],
+          permissions: [],
+        },
         token: '',
       });
     }
@@ -109,11 +125,14 @@ export const createAuthSlice: StateCreator<
           email: response.user.email,
           rut: response.user.rut,
           roles: response.user.roles || [], // Manejar posible null
+          permissions: response.user.permissions || [], // Manejar posible null
         },
       });
 
       // Esperar un momento para que las cookies se establezcan
       await new Promise((resolve) => setTimeout(resolve, 100));
+
+      console.log(response);
 
       return { success: true };
     } catch (error: any) {
@@ -122,7 +141,14 @@ export const createAuthSlice: StateCreator<
       set({
         isLoggedIn: false,
         isLoading: false,
-        user: { id: 0, name: '', email: '', rut: '', roles: [] },
+        user: {
+          id: 0,
+          name: '',
+          email: '',
+          rut: '',
+          roles: [],
+          permissions: [],
+        },
         token: '',
       });
 
@@ -138,10 +164,14 @@ export const createAuthSlice: StateCreator<
   },
 
   // Función para cerrar sesión
-  logout: () => {
+  logout: async () => {
+    // Limpiar cookies del servidor
+    await logoutAction();
+
+    // Limpiar estado local
     set({
       isLoggedIn: false,
-      user: { id: 0, name: '', email: '', rut: '', roles: [] },
+      user: { id: 0, name: '', email: '', rut: '', roles: [], permissions: [] },
       token: '',
       isLoading: false,
     });
@@ -151,5 +181,17 @@ export const createAuthSlice: StateCreator<
   getUserRole: () => {
     const { user } = get();
     return user.roles && user.roles.length > 0 ? user.roles[0] : null;
+  },
+
+  // Función para obtener los permisos del usuario
+  getUserPermissions: () => {
+    const { user } = get();
+    return user.permissions || [];
+  },
+
+  // Función para verificar si el usuario tiene un permiso específico
+  hasPermission: (permission: string) => {
+    const { user } = get();
+    return user.permissions && user.permissions.includes(permission);
   },
 });

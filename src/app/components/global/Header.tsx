@@ -32,13 +32,13 @@ export default function Header({ carro }: Props) {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   useInitMobileDetection();
 
-  const { 
-    isTablet, 
-    closeModal, 
+  const {
+    isTablet,
+    closeModal,
     openModal,
     siteInformation,
     fetchSiteInformation,
-    isLoadingSiteInfo
+    isLoadingSiteInfo,
   } = useStore();
 
   // Cargar información del sitio al montar el componente
@@ -133,8 +133,15 @@ export default function Header({ carro }: Props) {
                       <div className="animate-pulse">
                         <div className="h-4 bg-gray-200 rounded w-24"></div>
                       </div>
-                    ) : siteInformation?.header?.contact_phone && siteInformation.header.contact_phone.trim() !== '' ? (
-                      <a href={`tel:${siteInformation.header.contact_phone.replace(/\s+/g, '')}`} className="">
+                    ) : siteInformation?.header?.contact_phone &&
+                      siteInformation.header.contact_phone.trim() !== '' ? (
+                      <a
+                        href={`tel:${siteInformation.header.contact_phone.replace(
+                          /\s+/g,
+                          ''
+                        )}`}
+                        className=""
+                      >
                         {siteInformation.header.contact_phone}
                       </a>
                     ) : (
@@ -191,7 +198,10 @@ export default function Header({ carro }: Props) {
                 <div data-cy="cart-link" className="relative">
                   <ShoppingCartIcon width={24} height={24} />
                   {carro?.length > 0 && (
-                    <span data-cy="cart-counter" className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    <span
+                      data-cy="cart-counter"
+                      className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full"
+                    >
                       {carro.length}
                     </span>
                   )}

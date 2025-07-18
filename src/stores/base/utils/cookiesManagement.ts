@@ -4,13 +4,22 @@ import { cookies } from 'next/headers';
 export const cookiesManagement = async () => {
   const cookieStore = await cookies();
   const setCookie = (cookie: string, cookieName: string): boolean => {
-    if (!cookie || typeof cookie !== 'string') {
+    if (cookie === undefined || cookie === null) {
+      return false;
+    }
+
+    const cookieValue = String(cookie);
+    if (cookieValue === '') {
       return false;
     }
 
     cookieStore.set({
       name: cookieName,
-      value: cookie,
+      value: cookieValue,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
     });
 
     return true;

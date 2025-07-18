@@ -4,6 +4,7 @@ export interface User {
   email: string;
   rut: string;
   roles: string[] | null;
+  permissions: string[] | null;
 }
 
 export interface LoginResponse {

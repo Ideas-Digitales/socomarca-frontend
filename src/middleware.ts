@@ -184,21 +184,8 @@ export default async function middleware(request: NextRequest) {
 
   // ========== MANEJAR RUTA RAÍZ ==========
   if (pathname === '/') {
-    // Redirigir según el rol
-    switch (userRole) {
-      case 'cliente':
-        return NextResponse.next();
-      case 'admin':
-        return NextResponse.redirect(
-          new URL('/admin/total-de-ventas', request.url)
-        );
-      case 'superadmin':
-        return NextResponse.redirect(
-          new URL('/super-admin/users', request.url)
-        );
-      default:
-        return NextResponse.redirect(new URL('/auth/login', request.url));
-    }
+    // Permitir acceso a la ruta raíz para todos los usuarios autenticados
+    return NextResponse.next();
   }
 
   // ========== VERIFICAR PERMISOS DE ROLES ==========
@@ -218,11 +205,8 @@ export default async function middleware(request: NextRequest) {
       '/medios-de-pago',
       '/mi-cuenta',
       '/mis-compras',
-      '/politica-de-privacidad',
-      '/preguntas-frecuentes',
       '/repetir-compra',
       '/revisar-pedido',
-      '/terminos-y-condiciones',
     ].some((path) => pathname.startsWith(path)),
   };
 
@@ -233,7 +217,7 @@ export default async function middleware(request: NextRequest) {
   } else if (routePermissions.superadmin) {
     hasPermission = userRole === 'superadmin';
   }
-  // Rutas para CLIENTE únicamente - todas las rutas de la carpeta (private)
+  // Rutas para CLIENTE únicamente - funcionalidades de compra
   else if (
     pathname.startsWith('/carro-de-compra') ||
     pathname.startsWith('/compra-exitosa') ||
@@ -248,11 +232,8 @@ export default async function middleware(request: NextRequest) {
     pathname.startsWith('/medios-de-pago') ||
     pathname.startsWith('/mi-cuenta') ||
     pathname.startsWith('/mis-compras') ||
-    pathname.startsWith('/politica-de-privacidad') ||
-    pathname.startsWith('/preguntas-frecuentes') ||
     pathname.startsWith('/repetir-compra') ||
-    pathname.startsWith('/revisar-pedido') ||
-    pathname.startsWith('/terminos-y-condiciones')
+    pathname.startsWith('/revisar-pedido')
   ) {
     hasPermission = userRole === 'cliente';
   } else {

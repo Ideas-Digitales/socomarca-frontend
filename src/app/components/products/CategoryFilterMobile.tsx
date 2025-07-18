@@ -145,14 +145,10 @@ export default function CategoryFilterMobile({
   // Sincronizar estados cuando el modal se abre
   useEffect(() => {
     if (isOpen) {
-      console.log('Modal opened, showOnlyFavorites:', showOnlyFavorites);
       // Asegurar que los estados de UI estén sincronizados
       // Los estados de filtros ya están sincronizados por el store
     }
   }, [isOpen, showOnlyFavorites]);
-
-  // Debug log para ver el estado actual
-  console.log('CategoryFilterMobile render - showOnlyFavorites:', showOnlyFavorites);
 
   if (!isOpen) return null;
 

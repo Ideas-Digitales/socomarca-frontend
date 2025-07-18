@@ -39,6 +39,7 @@ const initialState: StoreState = {
     email: '',
     rut: '',
     roles: [],
+    permissions: [],
   },
   token: '',
   isInitialized: false,

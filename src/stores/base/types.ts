@@ -30,6 +30,7 @@ export interface User {
   email: string;
   rut: string;
   roles: string[];
+  permissions: string[];
 }
 
 export interface AuthState {
@@ -99,10 +100,12 @@ export interface AuthSlice extends AuthState {
     password: string;
     role?: string;
   }) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   initializeFromAuth: () => Promise<void>;
   setLoading: (loading: boolean) => void;
   getUserRole: () => string | null;
+  getUserPermissions: () => string[];
+  hasPermission: (permission: string) => boolean;
 }
 
 // Modal Slice

@@ -5,6 +5,7 @@ import Header from '../components/global/Header';
 import { useEffect } from 'react';
 import LoadingSpinner from '../components/global/LoadingSpinner';
 import useStore, { useInitMobileDetection } from '@/stores/base';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function PrivateLayout({
   children,
@@ -19,6 +20,7 @@ export default function PrivateLayout({
     fetchBrands,
     fetchCartProducts,
   } = useStore();
+  const { user } = useAuthStore();
   useInitMobileDetection();
 
   useEffect(() => {
@@ -27,6 +29,10 @@ export default function PrivateLayout({
     fetchBrands();
     fetchCartProducts();
   }, [fetchProducts, fetchCategories, fetchBrands, fetchCartProducts]);
+
+  // Verificar si el usuario es admin o superadmin para deshabilitar funcionalidades de compra
+  const isAdminUser =
+    user?.roles?.includes('admin') || user?.roles?.includes('superadmin');
 
   return (
     <>
@@ -40,7 +46,18 @@ export default function PrivateLayout({
               <LoadingSpinner />
             </div>
           ) : (
-            children
+            <>
+              {isAdminUser && (
+                <div className="w-full max-w-7xl mx-auto px-4 mb-4">
+                  <div className="w-full rounded-lg px-4 py-2 text-center text-white font-medium shadow-sm bg-orange-500">
+                    Modo de solo lectura - No puedes realizar compras
+                  </div>
+                </div>
+              )}
+              <div className={isAdminUser ? 'pointer-events-none' : ''}>
+                {children}
+              </div>
+            </>
           )}
         </main>
 

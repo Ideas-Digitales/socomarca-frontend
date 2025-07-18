@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     const role = cookieStore.get('role')?.value;
+    const permissions = cookieStore.get('permissions')?.value;
     const userId = cookieStore.get('userId')?.value;
     const userData = cookieStore.get('userData')?.value;
 
@@ -35,6 +36,8 @@ export async function GET(request: NextRequest) {
           }
         );
 
+        const getResponse = await response.json();
+        console.log(getResponse);
         if (!response.ok) {
           return NextResponse.json(
             {
@@ -54,9 +57,9 @@ export async function GET(request: NextRequest) {
           { status: 500 }
         );
       }
-    }    // Retornar datos de autenticación
+    } // Retornar datos de autenticación
     let userDetails = null;
-    
+
     // Intentar parsear los datos del usuario desde la cookie
     if (userData) {
       try {
@@ -66,10 +69,25 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Usar permisos de userData si están disponibles, sino usar la cookie individual
+    let finalPermissions = [];
+    if (userDetails && userDetails.permissions) {
+      finalPermissions = userDetails.permissions;
+      console.log(':', finalPermissions);
+    } else if (permissions && permissions !== 'none') {
+      finalPermissions = permissions.split(',');
+      console.log(
+        'Using permissions from individual cookie:',
+        finalPermissions
+      );
+    } else {
+    }
+
     return NextResponse.json({
       authenticated: true,
       user: {
         role,
+        permissions: finalPermissions,
         userId,
         ...userDetails,
       },
@@ -94,6 +112,7 @@ export async function POST(request: NextRequest) {
       const response = NextResponse.json({ success: true });
       response.cookies.delete('token');
       response.cookies.delete('role');
+      response.cookies.delete('permissions');
       response.cookies.delete('userId');
       response.cookies.delete('userData');
 
