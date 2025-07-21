@@ -21,7 +21,6 @@ export default function PreguntasFrecuentes() {
     fetchFAQs()
   }, [fetchFAQs])
 
-  console.log(faqs)
 
   const toggleIndex = (index: number) => {
     setActiveIndex(prev => (prev === index ? null : index))

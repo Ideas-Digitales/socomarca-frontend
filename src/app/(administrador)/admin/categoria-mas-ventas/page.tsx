@@ -2,292 +2,50 @@
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
-import { usePagination } from '@/hooks/usePagination';
-import {
-  ExtendedDashboardTableConfig,
-  ChartConfig,
-  MetricCard,
-  TableColumn,
-  AmountRange,
-} from '@/interfaces/dashboard.interface';
-import useStore from '@/stores/base';
-import { useState, useEffect } from 'react';
-import { formatCurrency } from '@/utils/formatCurrency';
-
-interface CategoriaConRanking {
-  categoria: string;
-  venta: number;
-  ranking: number;
-}
-
-export interface Client {
-  id: number;
-  name: string;
-}
-
-const clients: Client[] = [
-  { id: 1, name: 'Cliente 1' },
-  { id: 2, name: 'Cliente 2' },
-  { id: 3, name: 'Cliente 3' },
-  { id: 4, name: 'Cliente 4' },
-];
+import { useCategoriesDashboard } from '@/hooks/useDashboardMaster';
 
 export default function CategoriasMasVentas() {
-  // Store hooks
+  // Hook maestro para dashboard de categorías con más ventas
   const {
-    topCategoriesData,
-    isLoadingTopCategories,
-    fetchTopCategories,
-    clearTopCategories,
-    // Agregar los hooks necesarios para los gráficos
-    fetchChartReports,
-    fetchChartRawData,
-    clearChartReports,
-    isLoadingChart,
-    setReportsFilters,
+    // Estados de filtros
+    selectedClients,
+    amountFilter,
+    clients,
+    customers,
     reportsFilters,
-    clearReportsFilters,
-  } = useStore();
 
-  // Estados para manejar filtros
-  // const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  // const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [amountFilter, setAmountFilter] = useState<AmountRange>({
-    min: reportsFilters.total_min?.toString() || '',
-    max: reportsFilters.total_max?.toString() || '',
+    // Estados de datos
+    reportsPagination,
+
+    // Estados de tabla
+    config,
+    chartConfig,
+    tableData: categoriasFixed,
+    tableColumns: categoriasColumns,
+
+    // Estados de loading
+    showInitialLoading,
+    showOverlayLoading,
+    loadingMessage,
+
+    // Funciones de filtros
+    handleAmountFilter,
+    handleClientFilter,
+    handleDateRangeChange,
+
+    // Funciones de datos
+    handleFilter,
+    handlePageChange,
+
+    // Función combinada
+    handleClearAll,
+  } = useCategoriesDashboard('Categorías con más ventas', 'Categorías con más ventas', {
+    initialMessage: 'Cargando categorías con más ventas...',
+    overlayMessage: 'Actualizando categorías...',
   });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // Sincronizar el estado local del filtro de monto con los filtros del store
-  useEffect(() => {
-    setAmountFilter({
-      min: reportsFilters.total_min?.toString() || '',
-      max: reportsFilters.total_max?.toString() || '',
-    });
-  }, [reportsFilters.total_min, reportsFilters.total_max]);
-
-  // Procesar datos de top categories para crear ranking
-  const categoriasConRanking: CategoriaConRanking[] = (() => {
-    if (!topCategoriesData?.top_categories) return [];
-    
-    // Agrupar por categoría y sumar totales
-    const categorySummary = topCategoriesData.top_categories.reduce((acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = 0;
-      }
-      acc[item.category] += item.total;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    // Convertir a array y ordenar por total
-    const sortedCategories = Object.entries(categorySummary)
-      .map(([categoria, venta]) => ({ categoria, venta }))
-      .sort((a, b) => b.venta - a.venta);
-    
-    // Agregar ranking
-    return sortedCategories.map((cat, idx) => ({
-      categoria: cat.categoria,
-      venta: cat.venta,
-      ranking: idx + 1,
-    }));
-  })();
-
-  const { paginatedItems, productPaginationMeta, changePage } =
-    usePagination(categoriasConRanking);
-
-  // Cargar datos iniciales
-  useEffect(() => {
-    clearReportsFilters();
-    const start = '';
-    const end = '';
-    
-    // Cargar datos iniciales usando Promise.all
-    Promise.all([
-      fetchTopCategories(start, end),
-      fetchChartReports(start, end, 'top-categories'),
-      fetchChartRawData(start, end, null)
-    ]).finally(() => {
-      setIsInitialLoad(false);
-    });
-
-    // Cleanup: limpiar datos cuando el componente se desmonta
-    return () => {
-      clearTopCategories();
-      clearChartReports();
-    };
-  }, [fetchTopCategories, clearTopCategories, fetchChartReports, fetchChartRawData, clearChartReports, clearReportsFilters]);
-
-  // Debug: Log de datos cuando cambien (solo para desarrollo)
-  useEffect(() => {
-    if (topCategoriesData) {
-    }
-  }, [topCategoriesData, categoriasConRanking]);
-
-  // Calcular totales para métricas
-  const totalVentas = categoriasConRanking.reduce(
-    (sum, categoria) => sum + categoria.venta,
-    0
-  );
-
-  const promedioVentas = categoriasConRanking.length > 0 ? totalVentas / categoriasConRanking.length : 0;
-
-  // Definir las métricas
-  const metrics: MetricCard[] = [
-    {
-      label: 'Categorías con más ventas',
-      value: categoriasConRanking.length,
-      color: 'lime',
-    },
-    {
-      label: 'Promedio de ventas',
-      value: (() => {
-        // Usar el promedio del backend si está disponible, sino calcular local
-        if (topCategoriesData?.average_sales) {
-          return formatCurrency(topCategoriesData.average_sales);
-        }
-        return formatCurrency(promedioVentas);
-      })(),
-      color: 'gray',
-    },
-    {
-      label: 'Total de ventas',
-      value: (() => {
-        // Usar el total del backend si está disponible, sino calcular local
-        if (topCategoriesData?.total_sales) {
-          return formatCurrency(topCategoriesData.total_sales);
-        }
-        return formatCurrency(totalVentas);
-      })(),
-      color: 'lime',
-    },
-  ];
-
-  // Configuración de gráficos
-  const chartConfig: ChartConfig = {
-    showMetricsChart: true,
-    showBottomChart: false,
-    metrics: metrics,
-  };
-
-  const config: ExtendedDashboardTableConfig = {
-    title: 'Categorías con más ventas',
-    showTable: true,
-    tableTitle: 'Categorías con más ventas',
-    showDatePicker: true,
-  };
-
-  const categoriasVentasColumns: TableColumn<CategoriaConRanking>[] = [
-    {
-      key: 'ranking',
-      label: 'Ranking',
-      render: (value: number) => `${value}`,
-    },
-    {
-      key: 'categoria',
-      label: 'Categoría',
-    },
-    {
-      key: 'venta',
-      label: 'Ventas',
-      render: (value: number) => formatCurrency(value),
-    },
-  ];
-
-  const handleAmountFilter = (amount: AmountRange) => {
-    setAmountFilter(amount);
-    
-    // Convertir los valores de string a number para el backend
-    const total_min = amount.min ? Number(amount.min) : undefined;
-    const total_max = amount.max ? Number(amount.max) : undefined;
-    
-    // Actualizar filtros en el store
-    setReportsFilters({ total_min, total_max });
-  };
-
-  // TEMPORAL: Actualizar para manejar tanto number como string
-  // const handleClientFilter = (clientId: number | string) => {
-  //   console.log('Filtrar por cliente:', clientId, typeof clientId);
-
-  //   if (typeof clientId === 'string') {
-  //     // TEMPORAL: Nuevo comportamiento - usar el string directamente
-  //     if (clientId.trim() === '') {
-  //       // Limpiar selección
-  //       // setSelectedClients([]);
-  //     } else {
-  //       // setSelectedClients([{ id: 0, name: clientId }]); // ID temporal para mantener compatibilidad
-  //     }
-  //   } else {
-  //     // TEMPORAL: Comportamiento original para números (comentado para referencia)
-  //     // if (clientId === -1 || clientId === 0) {
-  //     //   // Limpiar selección
-  //     //   setSelectedClients([]);
-  //     // } else {
-  //     //   const client = clients.find((c) => c.id === clientId);
-  //     //   if (client) {
-  //     //     setSelectedClients([client]);
-  //     //   }
-  //     // }
-  //   }
-  // };
-
-  // const handleCategoryFilter = (categoryIds: number[]) => {
-  //   console.log('Filtrar por categorías:', categoryIds);
-  //   // setSelectedCategories(categoryIds);
-  // };
-
-  const handleFilter = () => {
-
-    // Obtener todos los filtros del store
-    const { start, end, total_min, total_max } = reportsFilters;
-
-    // Recargar todos los datos con los filtros
-    Promise.all([
-      fetchTopCategories(start, end, total_min, total_max), // Modificar para pasar los filtros
-      fetchChartReports(start, end, 'top-categories'),
-      fetchChartRawData(start, end, null)
-    ]);
-  };
-
-  const handleClearSearch = () => {
-    setAmountFilter({ min: '', max: '' });
-    // setSelectedClients([]);
-    // setSelectedCategories([]);
-    
-    // Limpiar filtros en el store
-    setReportsFilters({
-      start: '',
-      end: '',
-      selectedClient: undefined,
-      selectedCategory: undefined,
-      type: null,
-      total_min: undefined,
-      total_max: undefined,
-    });
-    
-    // Usar fechas por defecto en lugar de fechas vacías
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
-    const start = startOfMonth.toISOString().split('T')[0];
-    const end = endOfMonth.toISOString().split('T')[0];
-    
-    // Limpiar filtros y recargar datos
-    clearTopCategories();
-    Promise.all([
-      fetchTopCategories(start, end),
-      fetchChartReports(start, end, 'top-categories'),
-      fetchChartRawData(start, end, null)
-    ]);
-  };
-
-  // Manejar cambios en el rango de fechas del DatePicker
-  const handleDateRangeChange = (start: string, end: string) => {
-    setReportsFilters({ start, end });
-  };
 
   // Mostrar loading spinner completo solo en la carga inicial
-  if (isLoadingTopCategories && isInitialLoad) {
+  if (showInitialLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
@@ -298,44 +56,41 @@ export default function CategoriasMasVentas() {
 
   return (
     <div className="relative">
-      {/* Vista principal */}
+      {/* Vista principal - siempre visible */}
       <DashboardTableLayout
         config={config}
-        // Datos de la tabla
-        tableData={paginatedItems}
-        tableColumns={categoriasVentasColumns}
-        productPaginationMeta={productPaginationMeta}
-        onPageChange={changePage}
-        // Props para gráficos (se pasan directamente)
+        tableData={categoriasFixed}
+        tableColumns={categoriasColumns}
+        productPaginationMeta={reportsPagination || undefined}
+        onPageChange={handlePageChange}
         chartConfig={chartConfig}
         showDatePicker={true}
-        // Filtros específicos
         onAmountFilter={handleAmountFilter}
+        onClientFilter={handleClientFilter}
         onFilter={handleFilter}
-        // Datos para filtros
         clients={clients}
+        customers={customers}
+        selectedClients={selectedClients}
         amountValue={amountFilter}
-        // Funciones de búsqueda
+        onClearSearch={handleClearAll}
         searchableDropdown={true}
-        onClearSearch={handleClearSearch}
-        // Callback para el DatePicker
         onDateRangeChange={handleDateRangeChange}
-        // Estado de carga del gráfico
-        isLoadingChart={isLoadingChart}
+        initialDateRange={{
+          start: reportsFilters.start || undefined,
+          end: reportsFilters.end || undefined,
+        }}
+        onResetFilters={handleClearAll}
       />
 
-      {/* Loading overlay sutil para cambios de filtros */}
-      {(isLoadingTopCategories || isLoadingChart) && !isInitialLoad && (
+      {/* Loading overlay sutil para cambios de página/filtros */}
+      {showOverlayLoading && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
-            <span className="text-gray-700 text-sm">
-              {isLoadingTopCategories && isLoadingChart ? 'Actualizando datos y gráficos...' :
-               isLoadingTopCategories ? 'Actualizando categorías...' : 'Actualizando gráficos...'}
-            </span>
+            <span className="text-gray-700 text-sm">{loadingMessage}</span>
           </div>
         </div>
       )}
     </div>
   );
- }
+}

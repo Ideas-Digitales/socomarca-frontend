@@ -201,7 +201,8 @@ export const fetchGetCustomersList = async (): Promise<ActionResult<Customer[]>>
 
     const data = await response.json();
 
-    console.log('Response de /users/customers:', data);
+    
+    //console.log('Response de /users/customers:', data);
     if (!response.ok) {
       return {
         ok: false,

@@ -4,19 +4,22 @@ import { Category } from '@/interfaces/category.interface';
 import { SortOption, TableColumn } from '@/interfaces/dashboard.interface';
 import SortDropdown from '../filters/SortDropdown';
 import Dropdown, { DropdownOption } from '../filters/Dropdown';
-import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
 import AmountFilter from '../filters/AmountFilter';
 import SearchableDropdown, {
   SearchableOption,
 } from '../filters/SearchableDropdown';
 import { Customer } from '@/services/actions/clients.actions';
-import useStore from '@/stores/base';
 import DescargarDatos from '../admin/DescargarDatos';
 import useAuthStore from '@/stores/useAuthStore';
 
 interface AmountRange {
   min: string;
   max: string;
+}
+
+interface Client {
+  id: number;
+  name: string;
 }
 
 interface Props {
@@ -38,6 +41,7 @@ interface Props {
   selectedClients?: Client[];
   searchableDropdown?: boolean;
   communes?: any[];
+  onResetFilters?: () => void;
 }
 
 export default function FilterOptions({
@@ -58,6 +62,7 @@ export default function FilterOptions({
   selectedClients = [],
   searchableDropdown = false,
   communes = [],
+  onResetFilters,
 }: Props) {
 
   const { getUserRole } = useAuthStore();
@@ -210,8 +215,18 @@ export default function FilterOptions({
             Filtrar
           </button>
         )}
+
+        {/* Botón para resetear filtros */}
+        <button
+          className="w-full cursor-pointer md:max-w-[120px] md:w-full py-3 px-8 border-slate-400 rounded-[6px] h-10 border flex items-center justify-center text-gray-500 text-xs font-medium hover:bg-gray-100 transition-all duration-300"
+          onClick={onResetFilters}
+        >
+          Resetear
+        </button>
         
-        {(userRole === 'admin' || userRole === 'superadmin') && <DescargarDatos />}
+        {(userRole === 'admin' || userRole === 'superadmin') && (
+          <DescargarDatos />
+        )}
       </div>
     </div>
   );

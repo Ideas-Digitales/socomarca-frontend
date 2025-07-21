@@ -1,188 +1,51 @@
 'use client';
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
-import { formatCurrency } from '@/utils/formatCurrency';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
-import {
-  ExtendedDashboardTableConfig,
-  ChartConfig,
-  MetricCard,
-  AmountRange,
-  TableColumn,
-} from '@/interfaces/dashboard.interface';
-import { useState, useEffect } from 'react';
-import useStore from '@/stores/base';
-import { TableDetail } from '@/stores/base/slices/reportsSlice';
-
-export interface Client {
-  id: number;
-  name: string;
-}
+import { useTransactionsDashboard } from '@/hooks/useDashboardMaster';
 
 export default function TotalDeVentas() {
-  // Configuración de paginación
-  const PER_PAGE = 10;
-
-  // Store hooks
+  // Hook maestro para dashboard de transacciones
   const {
-    transactionsList,
-    reportsPagination,
+    // Estados de filtros
+    selectedClients,
+    amountFilter,
+    clients,
+    customers,
     reportsFilters,
-    uniqueClients,
-    fetchTransactionsList,
-    setReportsCurrentPage,
-    setReportsFilters,
-    clearReportsFilters,
-    isLoadingReports,
-    // Customers
-    customersList,
-    fetchCustomers,
-    // Chart
-    fetchChartRawData,
-    isLoadingChart,
-  } = useStore();
 
-  // Estados para manejar filtros
-  const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  const [amountFilter, setAmountFilter] = useState<AmountRange>({
-    min: reportsFilters.total_min?.toString() || '',
-    max: reportsFilters.total_max?.toString() || '',
+    // Estados de datos
+    reportsPagination,
+
+    // Estados de tabla
+    config,
+    chartConfig,
+    tableData: ventasFixed,
+    tableColumns: ventasColumns,
+
+    // Estados de loading
+    showInitialLoading,
+    showOverlayLoading,
+    loadingMessage,
+
+    // Funciones de filtros
+    handleAmountFilter,
+    handleClientFilter,
+    handleDateRangeChange,
+
+    // Funciones de datos
+    handleFilter,
+    handlePageChange,
+
+    // Función combinada
+    handleClearAll,
+  } = useTransactionsDashboard('Total de ventas', 'Total de ventas', {
+    initialMessage: 'Cargando ventas y gráficos...',
+    overlayMessage: 'Actualizando ventas...',
   });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // Sincronizar el estado local del filtro de monto con los filtros del store
-  useEffect(() => {
-    setAmountFilter({
-      min: reportsFilters.total_min?.toString() || '',
-      max: reportsFilters.total_max?.toString() || '',
-    });
-  }, [reportsFilters.total_min, reportsFilters.total_max]);
-
-  // Convertir clientes únicos del store al formato Client[] (para compatibilidad)
-  const clients: Client[] = uniqueClients.map((clientName, index) => ({
-    id: index + 1,
-    name: clientName,
-  }));
-
-  // Cargar datos iniciales y customers
-  useEffect(() => {
-    clearReportsFilters();
-    const start = '';
-    const end = '';
-    const total_min = undefined;
-    const total_max = undefined;
-    
-    Promise.all([
-      fetchTransactionsList(start, end, 1, PER_PAGE, undefined, total_min, total_max),
-      fetchCustomers(),
-      fetchChartRawData(start, end, null)
-    ]).finally(() => {
-      setIsInitialLoad(false);
-    });
-
-    // Cleanup al desmontar el componente
-    return () => {
-      clearReportsFilters();
-    };
-  }, [fetchTransactionsList, fetchCustomers, fetchChartRawData, PER_PAGE, clearReportsFilters]);
-
-  // Transformar datos para la tabla
-  let ventasFixed = transactionsList.map((venta: TableDetail) => ({
-    id: String(venta.id),
-    cliente: venta.customer,
-    monto: venta.amount,
-    fecha: venta.date,
-    estado: (venta.status === 'completed') ? 'Completado' : 'Fallido',
-    originalData: venta,
-  }));
-
-  // Ordenar de mayor a menor por monto
-  ventasFixed = ventasFixed.sort((a, b) => b.monto - a.monto);
-
-  // Definir columnas para la tabla
-  const ventasColumns: TableColumn<any>[] = [
-    { key: 'id', label: 'ID' },
-    { key: 'cliente', label: 'Cliente' },
-    { key: 'monto', label: 'Monto', render: (value: number) => formatCurrency(value) },
-    { key: 'fecha', label: 'Fecha' },
-    { key: 'estado', label: 'Estado' },
-  ];
-
-  // Definir métricas reales
-  const metrics: MetricCard[] = [
-    {
-      label: 'Total de ventas',
-      value: reportsPagination?.total || ventasFixed.length,
-      color: 'lime',
-    },
-    {
-      label: 'Monto total',
-      value: formatCurrency(ventasFixed.reduce((sum, v) => sum + v.monto, 0)),
-      color: 'gray',
-    },
-  ];
-
-  // Configuración de gráficos
-  const chartConfig: ChartConfig = {
-    showMetricsChart: true,
-    showBottomChart: false,
-    metrics: metrics,
-  };
-
-  // Configuración del dashboard
-  const config: ExtendedDashboardTableConfig = {
-    title: 'Total de ventas',
-    showTable: true,
-    tableTitle: 'Total de ventas',
-    showDatePicker: true,
-  };
-
-  const handleAmountFilter = (amount: AmountRange) => {
-    setAmountFilter(amount);
-    const total_min = amount.min ? Number(amount.min) : undefined;
-    const total_max = amount.max ? Number(amount.max) : undefined;
-    setReportsFilters({ total_min, total_max });
-  };
-
-  const handleClientFilter = (clientId: number) => {
-    if (clientId === -1 || clientId === 0) {
-      setSelectedClients([]);
-      setReportsFilters({ selectedClient: undefined });
-    } else {
-      const customer = customersList.find((c) => c.id === clientId);
-      if (customer) {
-        setSelectedClients([{ id: customer.id, name: customer.customer }]);
-        setReportsFilters({ selectedClient: customer.customer });
-      }
-    }
-  };
-
-  const handleFilter = () => {
-    const { start, end, selectedClient, total_min, total_max } = reportsFilters;
-    setReportsCurrentPage(1);
-    Promise.all([
-      fetchTransactionsList(start, end, 1, PER_PAGE, selectedClient, total_min, total_max),
-      fetchChartRawData(start, end, selectedClient || null)
-    ]);
-  };
-
-  const handleClearSearch = () => {
-    setSelectedClients([]);
-    setAmountFilter({ min: '', max: '' });
-    setReportsCurrentPage(1);
-    setReportsFilters({ start: '', end: '', selectedClient: undefined, selectedCategory: undefined, type: null, total_min: undefined, total_max: undefined });
-    Promise.all([
-      fetchTransactionsList('', '', 1, PER_PAGE, null, undefined, undefined),
-      fetchChartRawData('', '', null)
-    ]);
-  };
-
-  const handleDateRangeChange = (start: string, end: string) => {
-    setReportsFilters({ start, end });
-  };
 
   // Mostrar loading spinner completo solo en la carga inicial
-  if ((isLoadingReports || isLoadingChart) && isInitialLoad) {
+  if (showInitialLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
@@ -199,33 +62,32 @@ export default function TotalDeVentas() {
         tableData={ventasFixed}
         tableColumns={ventasColumns}
         productPaginationMeta={reportsPagination || undefined}
+        onPageChange={handlePageChange}
         chartConfig={chartConfig}
         showDatePicker={true}
         onAmountFilter={handleAmountFilter}
         onClientFilter={handleClientFilter}
         onFilter={handleFilter}
         clients={clients}
-        customers={customersList}
+        customers={customers}
         selectedClients={selectedClients}
         amountValue={amountFilter}
-        onClearSearch={handleClearSearch}
+        onClearSearch={handleClearAll}
         searchableDropdown={true}
         onDateRangeChange={handleDateRangeChange}
         initialDateRange={{
           start: reportsFilters.start || undefined,
           end: reportsFilters.end || undefined,
         }}
+        onResetFilters={handleClearAll}
       />
 
       {/* Loading overlay sutil para cambios de página/filtros */}
-      {(isLoadingReports || isLoadingChart) && !isInitialLoad && (
+      {showOverlayLoading && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
-            <span className="text-gray-700 text-sm">
-              {isLoadingReports && isLoadingChart ? 'Actualizando datos y gráficos...' :
-               isLoadingReports ? 'Actualizando datos...' : 'Actualizando gráficos...'}
-            </span>
+            <span className="text-gray-700 text-sm">{loadingMessage}</span>
           </div>
         </div>
       )}

@@ -47,6 +47,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
   onDateRangeChange,
   initialDateRange,
   isLoadingChart,
+  onResetFilters,
 }: DashboardTableLayoutProps<T> & DashboardTableLayoutExtraProps) => {
   const mainChartRef = useRef<{ updateChartWithFilters: () => void }>(null);
   const bottomChartRef = useRef<{ updateChartWithFilters: () => void }>(null);
@@ -104,6 +105,7 @@ const DashboardTableLayout = <T extends Record<string, any> = any>({
           customers={customers}
           selectedClients={selectedClients}
           searchableDropdown={searchableDropdown}
+          onResetFilters={onResetFilters}
         />
       </div>
 

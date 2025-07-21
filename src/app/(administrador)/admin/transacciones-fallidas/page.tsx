@@ -3,17 +3,9 @@
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import VerPedidoOverlay from '@/app/components/dashboardTable/VerPedidoOverlay';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
-import {
-  ExtendedDashboardTableConfig,
-  ChartConfig,
-  MetricCard,
-  TableColumn,
-  AmountRange,
-} from '@/interfaces/dashboard.interface';
-import { FailedTransactionDetail } from '@/stores/base/slices/reportsSlice';
-import { useState, useEffect } from 'react';
+import { useFailedTransactionsDashboard } from '@/hooks/useDashboardMaster';
+import { useState } from 'react';
 import useStore from '@/stores/base';
-import { formatCurrency } from '@/utils/formatCurrency';
 
 interface TransaccionFormateada {
   id: string;
@@ -23,151 +15,60 @@ interface TransaccionFormateada {
   monto3: number;
   fecha: string;
   acciones: string;
-  originalData?: FailedTransactionDetail;
-}
-
-export interface Client {
-  id: number;
-  name: string;
+  originalData?: any;
 }
 
 export default function TransaccionesFallidas() {
-  // Configuración de paginación
-  const PER_PAGE = 10;
-
-  // Store hooks
+  // Estados para el overlay deslizante
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const {
-    failedTransactionsList,
-    failedReportsPagination,
-    failedReportsFilters,
-    isLoadingFailedReports,
-    uniqueFailedClients, // Obtener clientes únicos del store (ahora viene del backend)
-    fetchFailedTransactionsList,
-    setFailedReportsCurrentPage,
-    setFailedReportsFilters,
-    clearFailedReportsFilters,
-    // Transaction details
     transactionDetails,
     fetchTransactionDetails,
     clearTransactionDetails,
-    // Customers
-    customersList,
-    fetchCustomers,
-    // Chart data
-    fetchChartRawData,
-    isLoadingChart,
   } = useStore();
 
-  // Estados para el overlay deslizante
-  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  // Hook maestro para dashboard de transacciones fallidas
+  const {
+    // Estados de filtros
+    selectedClients,
+    amountFilter,
+    clients,
+    customers,
+    reportsFilters,
 
-  // Estados para manejar filtros
-  const [selectedClients, setSelectedClients] = useState<Client[]>([]);
-  const [amountFilter, setAmountFilter] = useState<AmountRange>({
-    min: failedReportsFilters.total_min?.toString() || '',
-    max: failedReportsFilters.total_max?.toString() || '',
-  });
+    // Estados de datos
+    reportsPagination,
 
-  // Estado para controlar si es la primera carga
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+    // Estados de tabla
+    config,
+    chartConfig,
+    tableData: transaccionesFixed,
+    tableColumns: transaccionesColumns,
 
-  // Sincronizar el estado local del filtro de monto con los filtros del store
-  useEffect(() => {
-    setAmountFilter({
-      min: failedReportsFilters.total_min?.toString() || '',
-      max: failedReportsFilters.total_max?.toString() || '',
-    });
-  }, [failedReportsFilters.total_min, failedReportsFilters.total_max]);
+    // Estados de loading
+    showInitialLoading,
+    showOverlayLoading,
+    loadingMessage,
 
-  // Convertir clientes únicos del store al formato Client[]
-  const clients: Client[] = uniqueFailedClients.map((clientName, index) => ({
-    id: index + 1, // Usar índice como ID temporal
-    name: clientName,
-  }));
+    // Funciones de filtros
+    handleAmountFilter,
+    handleClientFilter,
+    handleDateRangeChange,
 
-  // Cargar datos iniciales
-  useEffect(() => {
-    clearFailedReportsFilters();
+    // Funciones de datos
+    handleFilter,
+    handlePageChange,
 
-    const start = '';
-    const end = '';
-    const total_min = undefined;
-    const total_max = undefined;
-
-    Promise.all([
-      fetchFailedTransactionsList(
-        start,
-        end,
-        1,
-        PER_PAGE,
-        undefined,
-        total_min,
-        total_max
-      ),
-      fetchCustomers(),
-      fetchChartRawData(start, end, null),
-    ]).finally(() => {
-      setIsInitialLoad(false);
-    });
-  }, [
-    fetchFailedTransactionsList,
-    fetchCustomers,
-    fetchChartRawData,
-    PER_PAGE,
-    clearFailedReportsFilters,
-  ]);
-
-  // Cleanup: limpiar datos cuando el componente se desmonta
-  useEffect(() => {
-    return () => {
-      // No hay datos específicos que limpiar para transacciones fallidas
-      // Los datos se manejan de forma independiente
-    };
-  }, []);
-
-  // Transformar datos para la tabla directamente desde failedTransactionsList
-  const transaccionesFixed: TransaccionFormateada[] =
-    failedTransactionsList.map((transaction: FailedTransactionDetail) => ({
-      id: String(transaction.id),
-      cliente: transaction.client,
-      monto1: transaction.amount,
-      monto2: transaction.amount,
-      monto3: transaction.amount,
-      fecha: transaction.date,
-      acciones: 'Ver detalles',
-      originalData: transaction,
-    }));
-
-  // Definir las métricas basadas en datos del backend
-  const metrics: MetricCard[] = [
+    // Función combinada
+    handleClearAll,
+  } = useFailedTransactionsDashboard(
+    'Transacciones Fallidas',
+    'Lista de Transacciones Fallidas',
     {
-      label: 'Transacciones fallidas',
-      value: failedReportsPagination?.total || transaccionesFixed.length,
-      color: 'lime',
-    },
-    {
-      label: 'Valor total procesado',
-      value: formatCurrency(
-        transaccionesFixed.reduce((sum, t) => sum + t.monto1, 0)
-      ),
-      color: 'gray',
-    },
-  ];
-
-  // Configuración de gráficos
-  const chartConfig: ChartConfig = {
-    showMetricsChart: true,
-    showBottomChart: false,
-    metrics: metrics,
-  };
-
-  // Configuración del dashboard (usando ExtendedDashboardTableConfig)
-  const config: ExtendedDashboardTableConfig = {
-    title: 'Transacciones Fallidas',
-    showTable: true,
-    tableTitle: 'Lista de Transacciones Fallidas',
-    showDatePicker: true,
-  };
+      initialMessage: 'Cargando transacciones fallidas...',
+      overlayMessage: 'Actualizando transacciones fallidas...',
+    }
+  );
 
   // Función para abrir el overlay con detalles
   const handleViewDetails = async (transaccion: TransaccionFormateada) => {
@@ -189,137 +90,26 @@ export default function TransaccionesFallidas() {
     }, 300);
   };
 
-  // Función para manejar cambio de página - simplificada
-  const handlePageChange = (page: number) => {
-    const { start, end, selectedClient, total_min, total_max } =
-      failedReportsFilters;
-    setFailedReportsCurrentPage(page);
-    fetchFailedTransactionsList(
-      start,
-      end,
-      page,
-      PER_PAGE,
-      selectedClient,
-      total_min,
-      total_max
-    );
-  };
-
-  // Definir columnas para transacciones fallidas
-  const transaccionesColumns: TableColumn<TransaccionFormateada>[] = [
-    { key: 'id', label: 'ID' },
-    { key: 'cliente', label: 'Cliente' },
-    {
-      key: 'monto1',
-      label: 'Monto',
-      render: (value: number) => formatCurrency(value),
-    },
-    {
-      key: 'fecha',
-      label: 'Fecha',
-      render: (value: string) => value,
-    },
-    {
-      key: 'acciones',
-      label: 'Acciones',
-      render: (value: string, row: TransaccionFormateada) => (
-        <div
-          onClick={() => handleViewDetails(row)}
-          className="text-lime-500 cursor-pointer hover:text-lime-600 transition-colors"
-        >
-          {value}
-        </div>
-      ),
-    },
-  ];
-
-  const handleAmountFilter = (amount: AmountRange) => {
-    setAmountFilter(amount);
-    // Convertir los valores de string a number para el backend
-    const total_min = amount.min ? Number(amount.min) : undefined;
-    const total_max = amount.max ? Number(amount.max) : undefined;
-
-    // Solo actualizar filtros en el store, no hacer petición automáticamente
-    setFailedReportsFilters({ total_min, total_max });
-  };
-
-  const handleClientFilter = (clientId: number) => {
-    if (clientId === -1 || clientId === 0) {
-      // Limpiar filtro de cliente
-      setSelectedClients([]);
-      setFailedReportsFilters({ selectedClient: undefined });
-    } else {
-      const customer = customersList.find((c) => c.id === clientId);
-      if (customer) {
-        setSelectedClients([{ id: customer.id, name: customer.customer }]);
-        // Establecer filtro por cliente en el store
-        setFailedReportsFilters({ selectedClient: customer.customer });
-      }
+  // Actualizar las columnas para incluir la función handleViewDetails
+  const transaccionesColumnsWithActions = transaccionesColumns.map((column) => {
+    if (column.key === 'acciones') {
+      return {
+        ...column,
+        render: (value: string, row: any) => (
+          <div
+            onClick={() => handleViewDetails(row)}
+            className="text-lime-500 cursor-pointer hover:text-lime-600 transition-colors"
+          >
+            {value}
+          </div>
+        ),
+      };
     }
-  };
-
-  const handleFilter = () => {
-    // Aplicar filtros ya configurados
-    const { start, end, selectedClient, total_min, total_max } =
-      failedReportsFilters;
-    setFailedReportsCurrentPage(1);
-
-    // Hacer la petición con todos los filtros configurados
-    Promise.all([
-      fetchFailedTransactionsList(
-        start,
-        end,
-        1,
-        PER_PAGE,
-        selectedClient,
-        total_min,
-        total_max
-      ),
-      fetchChartRawData(start, end, selectedClient || null),
-    ]);
-  };
-
-  const handleClearSearch = () => {
-    setSelectedClients([]);
-    setAmountFilter({ min: '', max: '' });
-    setFailedReportsCurrentPage(1);
-
-    const start = '';
-    const end = '';
-
-    setFailedReportsFilters({
-      start,
-      end,
-      selectedClient: undefined,
-      selectedCategory: undefined,
-      type: null,
-      total_min: undefined,
-      total_max: undefined,
-    });
-
-    // Limpiar datos y recargar
-    Promise.all([
-      fetchFailedTransactionsList(
-        start,
-        end,
-        1,
-        PER_PAGE,
-        null,
-        undefined,
-        undefined
-      ),
-      fetchChartRawData(start, end, null),
-    ]);
-  };
-
-  // Manejar cambios en el rango de fechas del DatePicker
-  const handleDateRangeChange = (start: string, end: string) => {
-    // Solo actualizar filtros en el store, no hacer petición automáticamente
-    setFailedReportsFilters({ start, end });
-  };
+    return column;
+  });
 
   // Mostrar loading spinner completo solo en la carga inicial
-  if ((isLoadingFailedReports || isLoadingChart) && isInitialLoad) {
+  if (showInitialLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <LoadingSpinner />
@@ -336,8 +126,8 @@ export default function TransaccionesFallidas() {
       <DashboardTableLayout
         config={config}
         tableData={transaccionesFixed}
-        tableColumns={transaccionesColumns}
-        productPaginationMeta={failedReportsPagination || undefined}
+        tableColumns={transaccionesColumnsWithActions}
+        productPaginationMeta={reportsPagination || undefined}
         onPageChange={handlePageChange}
         chartConfig={chartConfig}
         showDatePicker={true}
@@ -345,30 +135,25 @@ export default function TransaccionesFallidas() {
         onClientFilter={handleClientFilter}
         onFilter={handleFilter}
         clients={clients}
-        customers={customersList}
+        customers={customers}
         selectedClients={selectedClients}
         amountValue={amountFilter}
-        onClearSearch={handleClearSearch}
+        onClearSearch={handleClearAll}
         searchableDropdown={true}
         onDateRangeChange={handleDateRangeChange}
         initialDateRange={{
-          start: failedReportsFilters.start || undefined,
-          end: failedReportsFilters.end || undefined,
+          start: reportsFilters.start || undefined,
+          end: reportsFilters.end || undefined,
         }}
+        onResetFilters={handleClearAll}
       />
 
       {/* Loading overlay sutil para cambios de página/filtros */}
-      {(isLoadingFailedReports || isLoadingChart) && !isInitialLoad && (
+      {showOverlayLoading && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
             <LoadingSpinner />
-            <span className="text-gray-700 text-sm">
-              {isLoadingFailedReports && isLoadingChart
-                ? 'Actualizando datos y gráficos...'
-                : isLoadingFailedReports
-                ? 'Actualizando datos...'
-                : 'Actualizando gráficos...'}
-            </span>
+            <span className="text-gray-700 text-sm">{loadingMessage}</span>
           </div>
         </div>
       )}

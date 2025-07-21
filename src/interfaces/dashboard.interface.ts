@@ -1,7 +1,7 @@
 import { PaginationMeta } from '@/stores/base/types';
 import { CategoryComplexData } from './category.interface';
 import { Comuna } from '@/mock/comunasVentas';
-import { Client } from '@/app/(administrador)/admin/total-de-ventas/page';
+import { Client } from '@/hooks/useDashboardFilters';
 import { Customer } from '@/services/actions/clients.actions';
 
 // Interfaz para el rango de montos
@@ -97,4 +97,7 @@ export interface DashboardTableLayoutProps<T = any> {
     start?: string;
     end?: string;
   };
+
+  // Función para resetear filtros
+  onResetFilters?: () => void;
 }

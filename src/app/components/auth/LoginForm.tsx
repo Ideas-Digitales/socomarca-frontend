@@ -25,7 +25,6 @@ export default function LoginForm({
   onSuccessRedirect = '/',
   useWindowLocation = false,
 }: LoginFormProps) {
-  console.log('LoginForm - role recibido:', role);
   const [rut, setRut] = useState('');
   const [password, setPassword] = useState('');
   const [isValid, setIsValid] = useState(false);
@@ -67,7 +66,7 @@ export default function LoginForm({
     try {
       const loginData = role ? { rut, password, role } : { rut, password };
       const result = await login(loginData);
-      console.log('role en handleSubmit:', role);
+
       if (result.success) {
         // Determinar la redirección basada en el rol
         let redirectPath = onSuccessRedirect;

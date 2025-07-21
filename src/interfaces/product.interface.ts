@@ -57,7 +57,7 @@ export interface CartResponse {
 }
 
 type Operator = 'fulltext' | '=';
-type Field =
+export type Field =
   | 'name'
   | 'category_id'
   | 'subcategory_id'

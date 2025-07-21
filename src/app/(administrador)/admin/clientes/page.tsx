@@ -131,11 +131,7 @@ const ClientsPage = () => {
           page: page,
         };
 
-        console.log('Search request:', JSON.stringify(searchRequest, null, 2));
-
         const response = await searchUsersAction(searchRequest);
-
-        console.log('Search response:', response);
 
         if (response.success && response.data) {
           const transformedData = response.data.data.map((apiUser: any) =>

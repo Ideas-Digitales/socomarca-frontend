@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
         );
 
         const getResponse = await response.json();
-        console.log(getResponse);
         if (!response.ok) {
           return NextResponse.json(
             {
@@ -73,13 +72,8 @@ export async function GET(request: NextRequest) {
     let finalPermissions = [];
     if (userDetails && userDetails.permissions) {
       finalPermissions = userDetails.permissions;
-      console.log(':', finalPermissions);
     } else if (permissions && permissions !== 'none') {
       finalPermissions = permissions.split(',');
-      console.log(
-        'Using permissions from individual cookie:',
-        finalPermissions
-      );
     } else {
     }
 
