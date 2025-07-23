@@ -9,10 +9,10 @@ import { createUserAction, CreateUserRequest } from '@/services/actions/user.act
 import { getRolesAction, Role } from '@/services/actions/roles.actions';
 import { EyeSlashIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 // Interfaces para el formulario
 interface FormData {
-  username: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -23,11 +23,9 @@ interface FormData {
   phone: string;
   rut: string;
   businessName: string;
-  sendNotification: boolean;
 }
 
 interface FormErrors {
-  username?: string;
   email?: string;
   firstName?: string;
   lastName?: string;
@@ -41,8 +39,8 @@ interface FormErrors {
 }
 
 export default function CreateUser() {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
-    username: '',
     email: '',
     firstName: '',
     lastName: '',
@@ -53,7 +51,6 @@ export default function CreateUser() {
     phone: '',
     rut: '',
     businessName: '',
-    sendNotification: false,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -61,6 +58,7 @@ export default function CreateUser() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Validar email
   const isValidEmail = (email: string): boolean => {
@@ -103,10 +101,6 @@ export default function CreateUser() {
   // Validar formulario
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
-
-    if (!formData.username.trim()) {
-      newErrors.username = 'El nombre de usuario es requerido';
-    }
 
     if (!formData.email.trim()) {
       newErrors.email = 'El correo electrónico es requerido';
@@ -212,6 +206,7 @@ export default function CreateUser() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setFormError(null);
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
@@ -228,7 +223,7 @@ export default function CreateUser() {
         password: formData.password,
         password_confirmation: formData.passwordConfirmation,
         phone: formData.phone,
-        rut: formData.rut.replace(/\./g, '').replace(/-/g, ''), // Limpiar RUT
+        rut: formData.rut.replace(/\./g, ''), // Limpiar solo puntos, conservar guion
         business_name: formData.businessName,
         is_active: true,
         roles: [formData.userProfile],
@@ -237,30 +232,15 @@ export default function CreateUser() {
       const result = await createUserAction(userData);
 
       if (result.success) {
-        alert('Usuario creado exitosamente!');
-
-        // Limpiar formulario
-        setFormData({
-          username: '',
-          email: '',
-          firstName: '',
-          lastName: '',
-          secondLastName: '',
-          userProfile: '',
-          password: '',
-          passwordConfirmation: '',
-          phone: '',
-          rut: '',
-          businessName: '',
-          sendNotification: false,
-        });
-        setErrors({});
+        // Redirigir a /users
+        router.push('/super-admin/users');
+        return;
       } else {
-        alert(`Error al crear usuario: ${result.error}`);
+        setFormError(result.error || 'Error al crear usuario');
       }
     } catch (error) {
       console.error('Error al crear usuario:', error);
-      alert('Error al crear usuario');
+      setFormError('Error al crear usuario');
     } finally {
       setIsSubmitting(false);
     }
@@ -296,23 +276,8 @@ export default function CreateUser() {
       <div className="flex flex-col p-2 md:p-4 gap-4 md:gap-6">
         <p className="text-sm">Agregar los datos para crear un nuevo usuario</p>
         <div className="gap-4 md:gap-[27px] flex flex-col">
-          {/* Primera fila - Username y Email */}
+          {/* Primera fila - Email */}
           <div className="flex flex-col md:flex-row gap-4 md:gap-[34px]">
-            <div className="flex flex-col gap-[10px] w-full">
-              <label className="text-[15px]" htmlFor="username-create-user">
-                Nombre de usuario
-              </label>
-              <input
-                id="username-create-user"
-                type="text"
-                value={formData.username}
-                onChange={(e) => handleInputChange('username', e.target.value)}
-                className="bg-[#EBEFF7] text-[15px] px-2 py-1 h-[40px] w-full"
-              />
-              {errors.username && (
-                <span className="text-red-500 text-xs">{errors.username}</span>
-              )}
-            </div>
             <div className="flex flex-col gap-[10px] w-full">
               <label className="text-[15px]" htmlFor="email-create-user">
                 Correo electrónico
@@ -540,26 +505,6 @@ export default function CreateUser() {
             </button>
           </div>
 
-          {/* Enviar notificación */}
-          <div className="flex flex-col md:flex-row md:gap-6 md:items-center gap-3">
-            <p className="text-xs">Enviar aviso al usuario</p>
-            <div className="flex gap-2 items-start md:items-center">
-              <input
-                className="text-xs mt-1 md:mt-0"
-                type="checkbox"
-                id="enviar-aviso-user"
-                checked={formData.sendNotification}
-                onChange={(e) =>
-                  handleInputChange('sendNotification', e.target.checked)
-                }
-              />
-              <label htmlFor="enviar-aviso-user" className="text-xs">
-                Envía al nuevo usuario un correo electrónico con información
-                sobre su cuenta.
-              </label>
-            </div>
-          </div>
-
           {/* Botones de acción */}
           <div className="flex flex-col md:flex-row gap-4 md:gap-6 md:items-center">
             <button
@@ -581,6 +526,11 @@ export default function CreateUser() {
             </button>
           </div>
         </div>
+        {formError && (
+          <div className="mt-4 text-center text-red-600 text-sm font-semibold">
+            {formError}
+          </div>
+        )}
       </div>
     </form>
   );

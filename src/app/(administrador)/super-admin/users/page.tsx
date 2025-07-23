@@ -29,6 +29,9 @@ export interface User {
   lastname: string;
   email: string;
   profile: string;
+  rut: string;
+  business_name?: string;
+  phone?: string;
   actions?: string[];
 }
 
@@ -37,6 +40,9 @@ interface EditFormData {
   email: string;
   firstName: string;
   lastName: string;
+  rut: string;
+  businessName: string;
+  phone: string;
   userProfile: string;
   password: string;
   changePassword: boolean;
@@ -48,6 +54,9 @@ interface EditFormErrors {
   lastName?: string;
   userProfile?: string;
   password?: string[];
+  rut?: string;
+  businessName?: string;
+  phone?: string;
 }
 
 // Componente Skeleton para la tabla
@@ -161,6 +170,9 @@ const EditUserForm = ({
     email: user.email,
     firstName: user.name,
     lastName: user.lastname,
+    rut: user.rut,
+    businessName: user.business_name || '',
+    phone: user.phone || '',
     userProfile: user.profile.toLowerCase(),
     password: '',
     changePassword: false,
@@ -194,6 +206,18 @@ const EditUserForm = ({
 
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'El apellido es requerido';
+    }
+
+    if (!formData.rut.trim()) {
+      newErrors.rut = 'El RUT es requerido';
+    }
+
+    if (!formData.businessName.trim()) {
+      newErrors.businessName = 'La empresa es requerida';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'El teléfono es requerido';
     }
 
     if (!formData.userProfile) {
@@ -270,11 +294,11 @@ const EditUserForm = ({
     try {
       // Preparar datos para la API
       const updateData: UpdateUserRequest = {
-        name: `${formData.firstName} ${formData.lastName}`,
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
-        phone: '', // Campo opcional, se puede agregar al formulario si es necesario
-        rut: '', // Campo opcional, se puede agregar al formulario si es necesario
-        business_name: '', // Campo opcional, se puede agregar al formulario si es necesario
+        phone: formData.phone,
+        rut: formData.rut,
+        business_name: formData.businessName,
         is_active: true, // Por defecto activo
         roles: [formData.userProfile], // Convertir perfil a rol
       };
@@ -284,6 +308,9 @@ const EditUserForm = ({
         updateData.password = formData.password;
         updateData.password_confirmation = formData.password;
       }
+
+      // Log de los datos y claves que van al backend
+      console.log('Datos enviados al backend para actualización de usuario:', updateData);
 
       const result = await updateUserAction(user.id, updateData);
 
@@ -383,6 +410,54 @@ const EditUserForm = ({
           />
           {errors.lastName && (
             <span className="text-red-500 text-xs">{errors.lastName}</span>
+          )}
+        </div>
+        {/* RUT */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[15px]" htmlFor="rut-edit">
+            RUT
+          </label>
+          <input
+            id="rut-edit"
+            type="text"
+            value={formData.rut}
+            onChange={(e) => handleInputChange('rut', e.target.value)}
+            className="rounded bg-[#EBEFF7] px-2 py-1 h-[40px]"
+          />
+          {errors.rut && (
+            <span className="text-red-500 text-xs">{errors.rut}</span>
+          )}
+        </div>
+        {/* Empresa */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[15px]" htmlFor="businessname-edit">
+            Empresa
+          </label>
+          <input
+            id="businessname-edit"
+            type="text"
+            value={formData.businessName}
+            onChange={(e) => handleInputChange('businessName', e.target.value)}
+            className="rounded bg-[#EBEFF7] px-2 py-1 h-[40px]"
+          />
+          {errors.businessName && (
+            <span className="text-red-500 text-xs">{errors.businessName}</span>
+          )}
+        </div>
+        {/* Teléfono */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[15px]" htmlFor="phone-edit">
+            Teléfono
+          </label>
+          <input
+            id="phone-edit"
+            type="text"
+            value={formData.phone}
+            onChange={(e) => handleInputChange('phone', e.target.value)}
+            className="rounded bg-[#EBEFF7] px-2 py-1 h-[40px]"
+          />
+          {errors.phone && (
+            <span className="text-red-500 text-xs">{errors.phone}</span>
           )}
         </div>
 
@@ -680,12 +755,8 @@ export default function UsersPage() {
       key: 'id',
     },
     {
-      label: 'Nombre de usuario',
-      key: 'username',
-    },
-    {
-      label: 'Nombre',
-      key: 'name',
+      label: 'RUT',
+      key: 'rut',
     },
     {
       label: 'Correo electrónico',
