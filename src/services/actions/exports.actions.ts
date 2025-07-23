@@ -46,9 +46,6 @@ export const fetchExportTotalDeVentas = async (filters: Filters) => {
     }
   }
 
-  console.log('URL:', url);
-  console.log('Body:', body);
-
   try {
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
@@ -70,8 +67,6 @@ export const fetchExportTotalDeVentas = async (filters: Filters) => {
     // Obtener el contenido como ArrayBuffer para archivos binarios
     const responseBuffer = await response.arrayBuffer();
 
-    console.log('Archivo Excel recibido, tamaño:', responseBuffer.byteLength);
-
     return {
       success: true,
       data: responseBuffer as any,
@@ -90,7 +85,7 @@ export const fetchExportTransacciones = async (filters: Filters) => {
 
   // URL específica para transacciones
   const url = `${BACKEND_URL}/orders/reports/transactions/export`;
-  
+
   const body: any = {};
 
   if (start) {
@@ -116,9 +111,6 @@ export const fetchExportTransacciones = async (filters: Filters) => {
     body.status = 'completed'; // Transacciones exitosas
   }
 
-  console.log('URL:', url);
-  console.log('Body:', body);
-
   try {
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
@@ -139,8 +131,6 @@ export const fetchExportTransacciones = async (filters: Filters) => {
 
     // Obtener el contenido como ArrayBuffer para archivos binarios
     const responseBuffer = await response.arrayBuffer();
-
-    console.log('Archivo Excel recibido, tamaño:', responseBuffer.byteLength);
 
     return {
       success: true,
@@ -164,12 +154,14 @@ interface ClientesFilters {
   region?: number;
 }
 
-export const fetchExportClientesMasCompra = async (filters: ClientesFilters) => {
+export const fetchExportClientesMasCompra = async (
+  filters: ClientesFilters
+) => {
   const { start, end, total_min, total_max, region } = filters;
 
   // URL específica para clientes con más compras
   const url = `${BACKEND_URL}/orders/reports/clients/export`;
-  
+
   const body: any = {};
 
   if (start) {
@@ -188,11 +180,6 @@ export const fetchExportClientesMasCompra = async (filters: ClientesFilters) => 
     body.region = region;
   }
 
-  console.log('URL:', url);
-  console.log('Body:', body);
-
-
-  
   try {
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
@@ -207,15 +194,12 @@ export const fetchExportClientesMasCompra = async (filters: ClientesFilters) => 
       body: JSON.stringify(body),
     });
 
-
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     // Obtener el contenido como ArrayBuffer para archivos binarios
     const responseBuffer = await response.arrayBuffer();
-
-    console.log('Archivo Excel recibido, tamaño:', responseBuffer.byteLength);
 
     return {
       success: true,
@@ -236,12 +220,14 @@ interface ProductosFilters {
   end?: string;
 }
 
-export const fetchExportProductosMasVentas = async (filters: ProductosFilters) => {
+export const fetchExportProductosMasVentas = async (
+  filters: ProductosFilters
+) => {
   const { start, end } = filters;
 
   // URL específica para productos con más ventas
   const url = `${BACKEND_URL}/orders/reports/products/export`;
-  
+
   const body: any = {};
 
   if (start) {
@@ -250,9 +236,6 @@ export const fetchExportProductosMasVentas = async (filters: ProductosFilters) =
   if (end) {
     body.end = end;
   }
-
-  console.log('URL:', url);
-  console.log('Body:', body);
 
   try {
     const { getCookie } = await cookiesManagement();
@@ -275,8 +258,6 @@ export const fetchExportProductosMasVentas = async (filters: ProductosFilters) =
     // Obtener el contenido como ArrayBuffer para archivos binarios
     const responseBuffer = await response.arrayBuffer();
 
-    console.log('Archivo Excel recibido, tamaño:', responseBuffer.byteLength);
-
     return {
       success: true,
       data: responseBuffer as any,
@@ -296,20 +277,20 @@ interface MunicipalidadesFilters {
   end?: string;
 }
 
-export const fetchExportMunicipalidadesMasVentas = async (filters: MunicipalidadesFilters) => {
+export const fetchExportMunicipalidadesMasVentas = async (
+  filters: MunicipalidadesFilters
+) => {
   const { start, end } = filters;
 
   // Construir URL con query parameters
   const url = new URL(`${BACKEND_URL}/orders/reports/municipalities/export`);
-  
+
   if (start) {
     url.searchParams.append('start', start);
   }
   if (end) {
     url.searchParams.append('end', end);
   }
-
-  console.log('URL:', url.toString());
 
   try {
     const { getCookie } = await cookiesManagement();
@@ -329,8 +310,6 @@ export const fetchExportMunicipalidadesMasVentas = async (filters: Municipalidad
 
     // Obtener el contenido como ArrayBuffer para archivos binarios
     const responseBuffer = await response.arrayBuffer();
-
-    console.log('Archivo Excel recibido, tamaño:', responseBuffer.byteLength);
 
     return {
       success: true,
