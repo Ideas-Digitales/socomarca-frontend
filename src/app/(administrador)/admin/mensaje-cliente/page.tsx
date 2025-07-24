@@ -13,6 +13,7 @@ export default function MensajesCliente() {
   const [bannerActivo, setBannerActivo] = useState(true);
   const [headerMensaje, setHeaderMensaje] = useState('');
   const [headerColor, setHeaderColor] = useState('#ffffff');
+  const [headerActivo, setHeaderActivo] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [message, setMessage] = useState<{
@@ -47,6 +48,7 @@ export default function MensajesCliente() {
         // Cargar datos del header
         setHeaderColor(data.header.color);
         setHeaderMensaje(data.header.content);
+        setHeaderActivo((data as any)?.message_enabled !== false); // por defecto true si no viene
 
         // Cargar estados de banner y modal
         setBannerActivo(data.banner.enabled);
@@ -93,7 +95,7 @@ export default function MensajesCliente() {
       const messageData = {
         header_color: headerColor,
         header_content: headerMensaje,
-        message_enabled: headerMensaje.trim().length > 0, // Habilitar si hay mensaje
+        message_enabled: headerActivo,
         banner_desktop_image: desktopFile || undefined,
         banner_mobile_image: responsiveFile || undefined,
         banner_enabled: bannerActivo,
@@ -371,7 +373,7 @@ export default function MensajesCliente() {
           />
           <div className="space-y-2">
             <label className="block text-sm">Seleccionar color de fondo</label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2">
               <input
                 type="color"
                 value={headerColor}
@@ -379,6 +381,26 @@ export default function MensajesCliente() {
                 className="w-10 h-10 rounded border cursor-pointer"
               />
               <PaintBrushIcon className="w-5 h-5 text-slate-600" />
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="radio"
+                  name="header"
+                  checked={headerActivo}
+                  onChange={() => setHeaderActivo(true)}
+                />
+                Activar
+              </label>
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="radio"
+                  name="header"
+                  checked={!headerActivo}
+                  onChange={() => setHeaderActivo(false)}
+                />
+                Desactivar
+              </label>
             </div>
           </div>
         </div>
