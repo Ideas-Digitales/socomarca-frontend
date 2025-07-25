@@ -111,7 +111,7 @@ Cypress.Commands.add('loginAsSuperAdmin', (rut, password) => {
   cy.get('[data-cy=btn-login]').click();
 
   // Esperar a que redirija a super-admin
-  cy.url().should('include', '/super-admin');
+  cy.url().should('include', '/total-de-ventas');
 
   // Verificar cookies
   cy.getCookie('token').should('exist');
@@ -135,11 +135,11 @@ Cypress.Commands.add('logout', () => {
   });
 
   // Esperar a que aparezca el modal de confirmación
-  cy.get('[data-cy=confirm-logout]', { timeout: 10000 }).should('be.visible');
-  cy.get('[data-cy=confirm-logout]').click();
+  cy.get('[data-cy=confirm-logout-btn]', { timeout: 10000 }).should('be.visible');
+  cy.get('[data-cy=confirm-logout-btn]').click();
 
   // Verificar que se redirigió al login
-  cy.url().should('include', '/auth/login');
+  cy.url().should('include', '/login');
 
   // Verificar que las cookies fueron eliminadas
   cy.getCookie('token').should('not.exist');

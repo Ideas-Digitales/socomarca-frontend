@@ -1,28 +1,9 @@
 /// <reference types="cypress" />
 
-// Credenciales de prueba por rol
-const TEST_CREDENTIALS = {
-  cliente: {
-    rut: '202858384',
-    password: 'password',
-    formattedRut: '20.285.838-4',
-  },
-  admin: {
-    rut: '192855179',
-    password: 'password',
-    formattedRut: '19.285.517-9',
-  },
-  superadmin: {
-    rut: '238439256',
-    password: 'password',
-    formattedRut: '23.843.925-6',
-  },
-};
+import { TEST_CREDENTIALS } from '../shared/test-credentials';
 
 describe('Autenticación - Login y Logout', () => {
-  // Configuración antes de cada test
   beforeEach(() => {
-    // Limpiar cookies y localStorage
     cy.clearCookies();
     cy.clearLocalStorage();
   });
@@ -130,7 +111,7 @@ describe('Autenticación - Login y Logout', () => {
       );
 
       // Verificar que llegó al dashboard
-      cy.url().should('include', '/super-admin');
+      cy.url().should('include', '/admin');
 
       // Verificar cookies
       cy.getCookie('token').should('exist');
@@ -143,7 +124,7 @@ describe('Autenticación - Login y Logout', () => {
       );
 
       // Verificar que está en el dashboard correcto
-      cy.url().should('include', '/super-admin');
+      cy.url().should('include', '/admin');
 
       // Verificar cookies básicas
       cy.getCookie('token').should('exist');
@@ -238,7 +219,7 @@ describe('Autenticación - Login y Logout', () => {
         TEST_CREDENTIALS.superadmin.rut,
         TEST_CREDENTIALS.superadmin.password
       );
-      cy.url().should('include', '/super-admin');
+      cy.url().should('include', '/admin');
     });
   });
   describe('Persistencia de datos', () => {

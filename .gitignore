@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+CLAUDE.md
+cypress/downloads/
+cypress/screenshots/
+cypress/videos/
 
 # next.js
 /.next/
