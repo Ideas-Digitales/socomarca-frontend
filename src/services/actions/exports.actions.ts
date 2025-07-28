@@ -116,7 +116,7 @@ export const fetchExportTransacciones = async (filters: Filters) => {
     const token = getCookie('token');
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -277,6 +277,63 @@ interface MunicipalidadesFilters {
   end?: string;
 }
 
+// Interface específica para filtros de categorías
+interface CategoriasFilters {
+  start?: string;
+  end?: string;
+}
+
+export const fetchExportCategoriasMasVentas = async (
+  filters: CategoriasFilters
+) => {
+  const { start, end } = filters;
+
+  // URL específica para categorías con más ventas
+  const url = `${BACKEND_URL}/orders/reports/categories/export`;
+
+  const body: any = {};
+
+  if (start) {
+    body.start = start;
+  }
+  if (end) {
+    body.end = end;
+  }
+
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Obtener el contenido como ArrayBuffer para archivos binarios
+    const responseBuffer = await response.arrayBuffer();
+
+    return {
+      success: true,
+      data: responseBuffer as any,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: 'Error al exportar el reporte de categorías',
+    };
+  }
+};
+
 export const fetchExportMunicipalidadesMasVentas = async (
   filters: MunicipalidadesFilters
 ) => {
@@ -297,7 +354,7 @@ export const fetchExportMunicipalidadesMasVentas = async (
     const token = getCookie('token');
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',

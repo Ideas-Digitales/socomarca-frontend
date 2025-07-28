@@ -4,7 +4,7 @@ import { TEST_CREDENTIALS } from '../../shared/test-credentials';
 
 // Pasos: Iniciar sesión como superadmin, verificar que se encuentre en la ruta de ".../admin/total-de-ventas", verificar que se encuentre el botón de exportar con el texto "Descargar datos". Se selecciona el botón y se descarga el archivo. Se verifica que el archivo se haya descargado correctamente.
 
-describe('Admin - Clientes con más compras - Exportar Excel', () => {
+describe('Admin - Categoría con más ventas - Exportar Excel', () => {
   beforeEach(() => {
     cy.clearCookies();
     cy.clearLocalStorage();
@@ -29,13 +29,13 @@ describe('Admin - Clientes con más compras - Exportar Excel', () => {
     cy.get('span').contains('Reporte de ventas').click();
 
     // Hacer click en el botón de transacciones exitosas
-    cy.get('span').contains('Clientes con más compras').click();
+    cy.get('span').contains('Categoría con más ventas').click();
 
     // Esperar a que se cargue la página
     cy.wait(5000);
 
     // Verificar que estamos en la ruta correcta
-    cy.url().should('include', '/admin/clientes-mas-compra');
+    cy.url().should('include', '/admin/categoria-mas-ventas');
 
     // Paso 3: Verificar que existe el botón de exportar
     cy.get('[data-cy=download-btn]')
@@ -63,14 +63,14 @@ describe('Admin - Clientes con más compras - Exportar Excel', () => {
       // Buscar archivos que coincidan con el patrón de clientes más compras
       const clientesFiles = fileList.filter(
         (file) =>
-          file.includes('reporte-clients') &&
+          file.includes('reporte-categories') &&
           (file.endsWith('.xlsx') || file.endsWith('.csv'))
       );
 
       // Si no hay archivos, mostrar cuáles archivos se encontraron para debug
       if (clientesFiles.length === 0) {
         cy.log('Archivos encontrados:', JSON.stringify(fileList));
-        throw new Error(`No se encontraron archivos con patrón 'reporte-clients'. Archivos encontrados: ${fileList.join(', ')}`);
+        throw new Error(`No se encontraron archivos con patrón 'reporte-categories'. Archivos encontrados: ${fileList.join(', ')}`);
       }
 
       expect(clientesFiles.length).to.be.greaterThan(0);

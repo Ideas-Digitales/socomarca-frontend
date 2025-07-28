@@ -8,6 +8,8 @@ describe('Admin - Total de Ventas - Exportar Excel', () => {
   beforeEach(() => {
     cy.clearCookies();
     cy.clearLocalStorage();
+    // Limpiar archivos descargados previos
+    cy.task('clearDownloads');
   });
 
   it('Debe permitir exportar archivo Excel desde la página de total de ventas', () => {
@@ -53,30 +55,36 @@ describe('Admin - Total de Ventas - Exportar Excel', () => {
           (file.endsWith('.xlsx') || file.endsWith('.csv'))
       );
 
+      // Si no hay archivos, mostrar cuáles archivos se encontraron para debug
+      if (totalVentasFiles.length === 0) {
+        cy.log('Archivos encontrados:', JSON.stringify(fileList));
+        throw new Error(`No se encontraron archivos con patrón 'reporte-total-ventas'. Archivos encontrados: ${fileList.join(', ')}`);
+      }
+
       expect(totalVentasFiles.length).to.be.greaterThan(0);
-
+      return totalVentasFiles[0];
+    }).then((fileName) => {
       // Verificar que el archivo no esté vacío
-      const fileName = totalVentasFiles[0];
       cy.task('getFileSize', fileName).should('be.greaterThan', 0);
-
-      // Verificar que aparece el modal de éxito y presionar el botón de aceptar
-      cy.get('button').contains('Aceptar').click();
-
-      // Verificar que el botón de exportar se habilita nuevamente
-      cy.get('[data-cy=download-btn]')
-        .should('contain.text', 'Descargar datos')
-        .and('not.be.disabled');
-
-      // Cerrar sesión
-      cy.get('span').contains('Cerrar sesión').click();
-
-      cy.get('button').contains('Continuar').click();
-
-      // Verificar que se cerró sesión después de 5 segundos
-      cy.wait(5000);
-
-      // Verificar que se redirigió a la página de login
-      cy.url().should('include', '/login');
     });
+
+    // Verificar que aparece el modal de éxito y presionar el botón de aceptar
+    cy.get('button').contains('Aceptar').click();
+
+    // Verificar que el botón de exportar se habilita nuevamente
+    cy.get('[data-cy=download-btn]')
+      .should('contain.text', 'Descargar datos')
+      .and('not.be.disabled');
+
+    // Cerrar sesión
+    cy.get('span').contains('Cerrar sesión').click();
+
+    cy.get('button').contains('Continuar').click();
+
+    // Verificar que se cerró sesión después de 5 segundos
+    cy.wait(5000);
+
+    // Verificar que se redirigió a la página de login
+    cy.url().should('include', '/login');
   });
 });

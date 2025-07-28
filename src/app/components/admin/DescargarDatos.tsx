@@ -5,6 +5,7 @@ import {
   fetchExportTransacciones,
   fetchExportClientesMasCompra,
   fetchExportProductosMasVentas,
+  fetchExportCategoriasMasVentas,
   fetchExportMunicipalidadesMasVentas,
 } from '@/services/actions/exports.actions';
 import { useState } from 'react';
@@ -37,6 +38,9 @@ export default function DescargarDatos({
     }
     if (pathname.includes('productos-mas-ventas')) {
       return 'products';
+    }
+    if (pathname.includes('categoria-mas-ventas')) {
+      return 'categories';
     }
     if (pathname.includes('comunas-mas-ventas')) {
       return 'municipalities';
@@ -87,8 +91,13 @@ export default function DescargarDatos({
     </div>
   );
 
-  const downloadFile = (data: ArrayBuffer | Blob, filename: string, mimeType: string) => {
-    const blob = data instanceof ArrayBuffer ? new Blob([data], { type: mimeType }) : data;
+  const downloadFile = (
+    data: ArrayBuffer | Blob,
+    filename: string,
+    mimeType: string
+  ) => {
+    const blob =
+      data instanceof ArrayBuffer ? new Blob([data], { type: mimeType }) : data;
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -147,6 +156,12 @@ export default function DescargarDatos({
           start: currentFilters.start,
           end: currentFilters.end,
         };
+      } else if (currentType === 'categories') {
+        exportFunction = fetchExportCategoriasMasVentas;
+        exportParams = {
+          start: currentFilters.start,
+          end: currentFilters.end,
+        };
       } else if (currentType === 'municipalities') {
         exportFunction = fetchExportMunicipalidadesMasVentas;
         exportParams = {
@@ -184,7 +199,11 @@ export default function DescargarDatos({
           const blob = new Blob([result.data], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           });
-          downloadFile(blob, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+          downloadFile(
+            blob,
+            filename,
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          );
         }
 
         // Mostrar modal de éxito

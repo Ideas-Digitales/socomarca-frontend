@@ -4,7 +4,7 @@ import { TEST_CREDENTIALS } from '../../shared/test-credentials';
 
 // Pasos: Iniciar sesión como superadmin, verificar que se encuentre en la ruta de ".../admin/total-de-ventas", verificar que se encuentre el botón de exportar con el texto "Descargar datos". Se selecciona el botón y se descarga el archivo. Se verifica que el archivo se haya descargado correctamente.
 
-describe('Admin - Clientes con más compras - Exportar Excel', () => {
+describe('Admin - Transacciones Fallidas - Exportar Excel', () => {
   beforeEach(() => {
     cy.clearCookies();
     cy.clearLocalStorage();
@@ -12,7 +12,7 @@ describe('Admin - Clientes con más compras - Exportar Excel', () => {
     cy.task('clearDownloads');
   });
 
-  it('Debe permitir exportar archivo Excel desde la página de clientes con más compras', () => {
+  it('Debe permitir exportar archivo Excel desde la página de transacciones fallidas', () => {
     // Paso 1: Iniciar sesión como superadmin usando comando personalizado
     cy.loginAsSuperAdmin(
       TEST_CREDENTIALS.superadmin.rut,
@@ -25,17 +25,18 @@ describe('Admin - Clientes con más compras - Exportar Excel', () => {
     // Verificar que estamos en la ruta correcta
     cy.url().should('include', '/admin/total-de-ventas');
 
+
     // Desplegar menú de Reporte de ventas
     cy.get('span').contains('Reporte de ventas').click();
 
-    // Hacer click en el botón de transacciones exitosas
-    cy.get('span').contains('Clientes con más compras').click();
+    // Hacer click en el botón de transacciones fallidas
+    cy.get('span').contains('Transacciones fallidas').click();
 
     // Esperar a que se cargue la página
     cy.wait(5000);
 
     // Verificar que estamos en la ruta correcta
-    cy.url().should('include', '/admin/clientes-mas-compra');
+    cy.url().should('include', '/admin/transacciones-fallidas');
 
     // Paso 3: Verificar que existe el botón de exportar
     cy.get('[data-cy=download-btn]')
@@ -60,21 +61,21 @@ describe('Admin - Clientes con más compras - Exportar Excel', () => {
     // Verificar que se descargó un archivo con el patrón esperado
     cy.task('getDownloadedFiles').then((files) => {
       const fileList = files as string[];
-      // Buscar archivos que coincidan con el patrón de clientes más compras
-      const clientesFiles = fileList.filter(
+      // Buscar archivos que coincidan con el patrón de transacciones fallidas
+      const transaccionesFiles = fileList.filter(
         (file) =>
-          file.includes('reporte-clients') &&
+          file.includes('reporte-failed') &&
           (file.endsWith('.xlsx') || file.endsWith('.csv'))
       );
 
       // Si no hay archivos, mostrar cuáles archivos se encontraron para debug
-      if (clientesFiles.length === 0) {
+      if (transaccionesFiles.length === 0) {
         cy.log('Archivos encontrados:', JSON.stringify(fileList));
-        throw new Error(`No se encontraron archivos con patrón 'reporte-clients'. Archivos encontrados: ${fileList.join(', ')}`);
+        throw new Error(`No se encontraron archivos con patrón 'reporte-failed'. Archivos encontrados: ${fileList.join(', ')}`);
       }
 
-      expect(clientesFiles.length).to.be.greaterThan(0);
-      return clientesFiles[0];
+      expect(transaccionesFiles.length).to.be.greaterThan(0);
+      return transaccionesFiles[0];
     }).then((fileName) => {
       // Verificar que el archivo no esté vacío
       cy.task('getFileSize', fileName).should('be.greaterThan', 0);
