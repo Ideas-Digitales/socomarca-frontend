@@ -73,6 +73,9 @@ export function transformApiUserToUser(apiUser: ApiUser): {
   lastname: string;
   email: string;
   profile: string;
+  rut: string;
+  business_name: string;
+  phone: string;
 } {
   // Separar el nombre completo en nombre y apellido
   const nameParts = apiUser.name.split(' ');
@@ -91,5 +94,8 @@ export function transformApiUserToUser(apiUser: ApiUser): {
     lastname: lastName,
     email: apiUser.email,
     profile: profile,
+    rut: apiUser.rut,
+    business_name: apiUser.business_name,
+    phone: apiUser.phone,
   };
 }
