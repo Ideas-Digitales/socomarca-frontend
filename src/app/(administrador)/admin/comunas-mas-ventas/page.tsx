@@ -2,6 +2,7 @@
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
+import { ComunasMasVentasSkeleton } from '@/app/components/admin/DashboardSkeletonConfigs';
 import { useMunicipalitiesDashboard } from '@/hooks/useDashboardMaster';
 
 export default function ComunasMasVentas() {
@@ -39,14 +40,9 @@ export default function ComunasMasVentas() {
     overlayMessage: 'Actualizando municipalidades...',
   });
 
-  // Mostrar loading spinner completo solo en la carga inicial
+  // Mostrar skeleton completo solo en la carga inicial
   if (showInitialLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <LoadingSpinner />
-        <p className="text-gray-600 text-sm">Cargando datos de municipalidades...</p>
-      </div>
-    );
+    return <ComunasMasVentasSkeleton />;
   }
 
   return (

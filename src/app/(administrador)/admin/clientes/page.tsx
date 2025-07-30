@@ -10,6 +10,7 @@ import {
 import CustomTable from '@/app/components/admin/CustomTable';
 import SearchableDropdown from '@/app/components/filters/SearchableDropdown';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import ClientsPageSkeleton from '@/app/components/admin/ClientsPageSkeleton';
 
 interface ClientTableData {
   id: number;
@@ -261,6 +262,11 @@ const ClientsPage = () => {
     },
   ];
 
+  // Mostrar skeleton completo en la primera carga
+  if (loading && currentPage === 1 && clients.length === 0) {
+    return <ClientsPageSkeleton />;
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -339,12 +345,7 @@ const ClientsPage = () => {
 
       {/* Tabla de clientes */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
-        {loading ? (
-          <div className="p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Cargando clientes...</p>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="p-8 text-center">
             <p className="text-red-600">{error}</p>
             <button

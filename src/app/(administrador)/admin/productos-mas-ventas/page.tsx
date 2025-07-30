@@ -2,6 +2,7 @@
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
+import { ProductosMasVentasSkeleton } from '@/app/components/admin/DashboardSkeletonConfigs';
 import { useProductsDashboard } from '@/hooks/useDashboardMaster';
 
 
@@ -42,14 +43,9 @@ export default function ProductosMasVentas() {
     overlayMessage: 'Actualizando productos...',
   });
 
-  // Mostrar loading spinner completo solo en la carga inicial
+  // Mostrar skeleton completo solo en la carga inicial
   if (showInitialLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <LoadingSpinner />
-        <p className="text-gray-600 text-sm">Cargando datos de productos...</p>
-      </div>
-    );
+    return <ProductosMasVentasSkeleton />;
   }
 
   return (

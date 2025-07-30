@@ -2,6 +2,7 @@
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
+import { ClientesMasComprasSkeleton } from '@/app/components/admin/DashboardSkeletonConfigs';
 import { useTransactionsDashboard } from '@/hooks/useDashboardMaster';
 
 export default function ClientesMasCompra() {
@@ -40,14 +41,9 @@ export default function ClientesMasCompra() {
     overlayMessage: 'Actualizando clientes...',
   });
 
-  // Mostrar loading spinner completo solo en la carga inicial
+  // Mostrar skeleton completo solo en la carga inicial
   if (showInitialLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <LoadingSpinner />
-        <p className="text-gray-600 text-sm">Cargando clientes con más compras y gráficos...</p>
-      </div>
-    );
+    return <ClientesMasComprasSkeleton />;
   }
 
   return (

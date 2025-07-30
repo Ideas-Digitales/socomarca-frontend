@@ -14,6 +14,7 @@ import { SortOption } from "@/interfaces/dashboard.interface";
 import Search from "@/app/components/global/Search";
 import TableSkeleton from "@/app/components/admin/TableSkeleton";
 import FilterSkeleton from "@/app/components/global/FilterSkeleton";
+import ProductsPageSkeleton from "@/app/components/admin/ProductsPageSkeleton";
 
 const PAGE_SIZE = 20;
 
@@ -283,6 +284,10 @@ export default function ProductsAdmin() {
     setLoading(false);
   };
 
+  if (initialLoading) {
+    return <ProductsPageSkeleton />;
+  }
+
   return (
     <div className="flex justify-center flex-row w-full">
       <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full max-w-7xl">
@@ -323,10 +328,10 @@ export default function ProductsAdmin() {
           </div>
         </div>
         
-        {initialLoading ? (
-          <TableSkeleton columns={columns.length} rows={10} title="Productos" />
-        ) : loading ? (
-          <TableSkeleton columns={columns.length} rows={10} title="Productos" />
+        {loading ? (
+          <div className="relative w-full">
+            <TableSkeleton columns={columns.length} rows={10} title="Productos" />
+          </div>
         ) : (
           <div className="relative w-full">
             <CustomTable

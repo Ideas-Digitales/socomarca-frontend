@@ -2,6 +2,7 @@
 
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
+import { CategoriasMasVentasSkeleton } from '@/app/components/admin/DashboardSkeletonConfigs';
 import { useCategoriesDashboard } from '@/hooks/useDashboardMaster';
 
 export default function CategoriasMasVentas() {
@@ -44,14 +45,9 @@ export default function CategoriasMasVentas() {
     overlayMessage: 'Actualizando categorías...',
   });
 
-  // Mostrar loading spinner completo solo en la carga inicial
+  // Mostrar skeleton completo solo en la carga inicial
   if (showInitialLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <LoadingSpinner />
-        <p className="text-gray-600 text-sm">Cargando categorías con más ventas...</p>
-      </div>
-    );
+    return <CategoriasMasVentasSkeleton />;
   }
 
   return (

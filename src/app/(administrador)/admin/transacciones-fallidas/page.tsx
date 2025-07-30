@@ -3,6 +3,7 @@
 import DashboardTableLayout from '@/app/components/dashboardTable/DashboardTableLayout';
 import VerPedidoOverlay from '@/app/components/dashboardTable/VerPedidoOverlay';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
+import { TransaccionesFallidasSkeleton } from '@/app/components/admin/DashboardSkeletonConfigs';
 import { useFailedTransactionsDashboard } from '@/hooks/useDashboardMaster';
 import { useState } from 'react';
 import useStore from '@/stores/base';
@@ -108,16 +109,9 @@ export default function TransaccionesFallidas() {
     return column;
   });
 
-  // Mostrar loading spinner completo solo en la carga inicial
+  // Mostrar skeleton completo solo en la carga inicial
   if (showInitialLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <LoadingSpinner />
-        <p className="text-gray-600 text-sm">
-          Cargando transacciones fallidas...
-        </p>
-      </div>
-    );
+    return <TransaccionesFallidasSkeleton />;
   }
 
   return (

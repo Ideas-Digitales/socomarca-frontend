@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getRegionsWithMunicipalities, Region, Municipality, updateMunicipalitiesStatus, updateRegionStatus } from '@/services/actions/location.actions';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import RegionsPageSkeleton from '@/app/components/admin/RegionsPageSkeleton';
 
 export default function PanelRegiones() {
   const [filter, setFilter] = useState('');
@@ -71,6 +72,10 @@ export default function PanelRegiones() {
     region.name.toLowerCase().includes(filter.toLowerCase())
   );
 
+  if (loading) {
+    return <RegionsPageSkeleton />;
+  }
+
   return (
     <div className="bg-[#f5f9fc] p-6 rounded-md max-w-3xl mx-auto">
       <h2 className="text-2xl mb-4">Regiones y comunas activas</h2>
@@ -83,51 +88,47 @@ export default function PanelRegiones() {
         className="mb-6 w-full px-4 py-2 rounded border border-gray-300"
       />
 
-      {loading ? (
-        <div className="text-center py-8">Cargando...</div>
-      ) : (
-        <div className="space-y-3">
-          {filteredRegions.map((region) => (
-            <div key={region.id} className="rounded bg-white">
-              <button
-                onClick={() => setExpanded(expanded === region.id ? null : region.id)}
-                className="w-full flex justify-between items-center px-4 py-2 hover:bg-gray-100"
-              >
-                <span>{region.name}</span>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="checkbox"
-                    checked={region.status}
-                    onChange={() => toggleRegion(region.id)}
-                    className="w-5 h-5"
-                  />
-                  <ChevronDownIcon
-                    className={`w-5 h-5 transition-transform ${expanded === region.id ? 'rotate-180' : ''}`}
-                  />
-                </div>
-              </button>
+      <div className="space-y-3">
+        {filteredRegions.map((region) => (
+          <div key={region.id} className="rounded bg-white">
+            <button
+              onClick={() => setExpanded(expanded === region.id ? null : region.id)}
+              className="w-full flex justify-between items-center px-4 py-2 hover:bg-gray-100"
+            >
+              <span>{region.name}</span>
+              <div className="flex items-center gap-4">
+                <input
+                  type="checkbox"
+                  checked={region.status}
+                  onChange={() => toggleRegion(region.id)}
+                  className="w-5 h-5"
+                />
+                <ChevronDownIcon
+                  className={`w-5 h-5 transition-transform ${expanded === region.id ? 'rotate-180' : ''}`}
+                />
+              </div>
+            </button>
 
-              {expanded === region.id && (
-                <div className="px-6 pb-4">
-                  <ul className="space-y-2 mt-2">
-                    {region.municipalities.map((comuna) => (
-                      <li key={comuna.id} className="flex justify-between items-center">
-                        <span>{comuna.name}</span>
-                        <input
-                          type="checkbox"
-                          checked={comuna.status}
-                          onChange={() => toggleComuna(region.id, comuna.id)}
-                          className="w-5 h-5"
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+            {expanded === region.id && (
+              <div className="px-6 pb-4">
+                <ul className="space-y-2 mt-2">
+                  {region.municipalities.map((comuna) => (
+                    <li key={comuna.id} className="flex justify-between items-center">
+                      <span>{comuna.name}</span>
+                      <input
+                        type="checkbox"
+                        checked={comuna.status}
+                        onChange={() => toggleComuna(region.id, comuna.id)}
+                        className="w-5 h-5"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
       <div className="mt-6 flex flex-col items-end">
         <button
