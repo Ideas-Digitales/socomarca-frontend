@@ -10,7 +10,33 @@ import useStore from '@/stores/base';
 import { getSidebarConfig } from '@/configs/sidebarConfigs';
 import useAuthStore from '@/stores/useAuthStore';
 
-const avatar = '/assets/global/avatar.png';
+// Componente para mostrar las iniciales del usuario
+const UserInitialsAvatar = ({ userName }: { userName: string }) => {
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const initials = getInitials(userName);
+
+  return (
+    <div 
+      className="w-[50px] h-[50px] rounded-full flex items-center justify-center text-white font-semibold text-lg overflow-hidden"
+      style={{
+        width: '50px',
+        height: '50px',
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, #267e00 0%, #6cb409 100%)',
+      }}
+    >
+      {initials}
+    </div>
+  );
+};
 
 interface SidebarProps {
   configType: 'admin' | 'superadmin';
@@ -114,19 +140,11 @@ export default function Sidebar({
       <HR />
 
       {/* Perfil - Fixed below logo */}
-      <div className="flex py-[14px] px-6 gap-5 items-center w-full flex-shrink-0">
-        <Image
-          src={avatar}
-          alt="Avatar image"
-          width={50}
-          height={50}
-          style={{
-            width: '50px',
-            height: '50px',
-          }}
-          unoptimized
-        />
-        <span className="text-xs w-full">
+      <div className="flex py-[14px] px-6 gap-5 items-center w-full flex-shrink-0 min-w-0">
+        <div className="flex-shrink-0">
+          <UserInitialsAvatar userName={userName} />
+        </div>
+        <span className="text-xs flex-1 min-w-0 truncate">
           Hola <br />
           {userName}
         </span>
