@@ -4,7 +4,7 @@ import { LoginResponse } from '@/interfaces/user.interface';
 import { mockResponse } from '@/mock/login';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { removeDots } from '@/stores/base/utils/removeDots';
-import { IS_QA_MODE } from '@/utils/getEnv';
+import { IS_QA_MODE, BACKEND_URL } from '@/utils/getEnv';
 
 export const fetchLogin = async (
   rut: string,
@@ -110,8 +110,13 @@ export const fetchLogin = async (
 export const sendRecoveryEmail = async (
   rut: string
 ): Promise<{ success: boolean; message: string }> => {
+  console.log('BACKEND_URL:', BACKEND_URL);
+  
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/auth/restore`, {
+    const url = `${BACKEND_URL}/auth/restore`;
+    console.log('URL de la petición:', url);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +125,9 @@ export const sendRecoveryEmail = async (
       body: JSON.stringify({ rut: removeDots(rut) }),
     });
 
+    console.log('Status de la respuesta:', response.status);
     const data = await response.json();
+    console.log('Datos de la respuesta:', data);
 
     if (!response.ok) {
       return {
