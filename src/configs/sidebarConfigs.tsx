@@ -95,6 +95,11 @@ export const getSidebarConfig = (
       url: '/admin/mensaje-cliente',
     },
     {
+      id: 'notificaciones',
+      label: 'Notificaciones',
+      url: '/admin/notificaciones',
+    },
+    {
       id: 'Regiones y comunas',
       label: 'Regiones y comunas',
       url: '/admin/regiones',
