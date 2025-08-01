@@ -226,10 +226,15 @@ export interface UpdateUserRequest {
 }
 
 export interface PatchUserRequest {
+  name?: string;
+  email?: string;
   password?: string;
   password_confirmation?: string;
-  roles?: string[];
+  phone?: string;
+  rut?: string;
+  business_name?: string;
   is_active?: boolean;
+  roles?: string[];
 }
 
 export interface CreateUserRequest {

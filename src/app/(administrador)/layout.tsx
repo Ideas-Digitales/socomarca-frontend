@@ -69,7 +69,6 @@ export default function AdminLayout({
           <Sidebar
             configType={userRole} // Usar el rol real como configType
             userRole={userRole}
-            userName="Alex Mandarino"
           />
         )}
 

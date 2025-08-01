@@ -46,11 +46,15 @@ interface SidebarProps {
 
 export default function Sidebar({
   configType,
-  userName = 'Alex Mandarino',
+  userRole,
+  userName,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
+
+  // Usar el nombre del usuario del store si no se proporciona uno
+  const displayName = userName || user?.name || 'Usuario';
 
   const {
     isMenuActive,
@@ -142,11 +146,11 @@ export default function Sidebar({
       {/* Perfil - Fixed below logo */}
       <div className="flex py-[14px] px-6 gap-5 items-center w-full flex-shrink-0 min-w-0">
         <div className="flex-shrink-0">
-          <UserInitialsAvatar userName={userName} />
+          <UserInitialsAvatar userName={displayName} />
         </div>
         <span className="text-xs flex-1 min-w-0 truncate">
           Hola <br />
-          {userName}
+          {displayName}
         </span>
       </div>
       <HR />

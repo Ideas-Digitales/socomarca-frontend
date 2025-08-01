@@ -190,6 +190,68 @@ const EditUserForm = ({
     return emailRegex.test(email);
   };
 
+  // Formatear RUT mientras se escribe
+  const formatRut = (value: string): string => {
+    // Remover todos los caracteres no válidos excepto números y K
+    let cleanValue = value.replace(/[^0-9Kk]/g, '');
+    
+    // Convertir a mayúsculas
+    cleanValue = cleanValue.toUpperCase();
+    
+    // Si no hay valor, retornar vacío
+    if (!cleanValue) return '';
+    
+    // Si solo hay un carácter y es K, no es válido
+    if (cleanValue.length === 1 && cleanValue === 'K') return '';
+    
+    // Si hay más de 9 caracteres, truncar
+    if (cleanValue.length > 9) {
+      cleanValue = cleanValue.substring(0, 9);
+    }
+    
+    // Separar cuerpo y dígito verificador
+    const body = cleanValue.slice(0, -1);
+    const dv = cleanValue.slice(-1);
+    
+    // Si el cuerpo está vacío, retornar solo el dígito verificador
+    if (!body) return dv;
+    
+    // Formatear con guión
+    return `${body}-${dv}`;
+  };
+
+  // Validar RUT chileno
+  const isValidRut = (rut: string): boolean => {
+    // Remover puntos y guión
+    const cleanRut = rut.replace(/\./g, '').replace(/-/g, '');
+    
+    if (cleanRut.length < 2) return false;
+    
+    const body = cleanRut.slice(0, -1);
+    const dv = cleanRut.slice(-1).toUpperCase();
+    
+    // Validar que el cuerpo sea numérico
+    if (!/^\d+$/.test(body)) return false;
+    
+    // Calcular dígito verificador
+    let sum = 0;
+    let multiplier = 2;
+    
+    for (let i = body.length - 1; i >= 0; i--) {
+      sum += parseInt(body[i]) * multiplier;
+      multiplier = multiplier === 7 ? 2 : multiplier + 1;
+    }
+    
+    const expectedDv = 11 - (sum % 11);
+    let expectedDvStr = '';
+    
+    if (expectedDv === 11) expectedDvStr = '0';
+    else if (expectedDv === 10) expectedDvStr = 'K';
+    else expectedDvStr = expectedDv.toString();
+    
+    return dv === expectedDvStr;
+  };
+
   // Validar formulario
   const validateForm = (): EditFormErrors => {
     const newErrors: EditFormErrors = {};
@@ -210,6 +272,8 @@ const EditUserForm = ({
 
     if (!formData.rut.trim()) {
       newErrors.rut = 'El RUT es requerido';
+    } else if (!isValidRut(formData.rut)) {
+      newErrors.rut = 'El RUT no es válido';
     }
 
     if (!formData.businessName.trim()) {
@@ -421,8 +485,10 @@ const EditUserForm = ({
             id="rut-edit"
             type="text"
             value={formData.rut}
-            onChange={(e) => handleInputChange('rut', e.target.value)}
+            onChange={(e) => handleInputChange('rut', formatRut(e.target.value))}
             className="rounded bg-[#EBEFF7] px-2 py-1 h-[40px]"
+            placeholder="12345678-9"
+            maxLength={10}
           />
           {errors.rut && (
             <span className="text-red-500 text-xs">{errors.rut}</span>

@@ -66,6 +66,36 @@ export default function CreateUser() {
     return emailRegex.test(email);
   };
 
+  // Formatear RUT mientras se escribe
+  const formatRut = (value: string): string => {
+    // Remover todos los caracteres no válidos excepto números y K
+    let cleanValue = value.replace(/[^0-9Kk]/g, '');
+    
+    // Convertir a mayúsculas
+    cleanValue = cleanValue.toUpperCase();
+    
+    // Si no hay valor, retornar vacío
+    if (!cleanValue) return '';
+    
+    // Si solo hay un carácter y es K, no es válido
+    if (cleanValue.length === 1 && cleanValue === 'K') return '';
+    
+    // Si hay más de 9 caracteres, truncar
+    if (cleanValue.length > 9) {
+      cleanValue = cleanValue.substring(0, 9);
+    }
+    
+    // Separar cuerpo y dígito verificador
+    const body = cleanValue.slice(0, -1);
+    const dv = cleanValue.slice(-1);
+    
+    // Si el cuerpo está vacío, retornar solo el dígito verificador
+    if (!body) return dv;
+    
+    // Formatear con guión
+    return `${body}-${dv}`;
+  };
+
   // Validar RUT chileno
   const isValidRut = (rut: string): boolean => {
     // Remover puntos y guión
@@ -167,7 +197,14 @@ export default function CreateUser() {
     field: keyof FormData,
     value: string | boolean
   ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let processedValue = value;
+    
+    // Aplicar formato especial para RUT
+    if (field === 'rut' && typeof value === 'string') {
+      processedValue = formatRut(value);
+    }
+    
+    setFormData((prev) => ({ ...prev, [field]: processedValue }));
 
     // Limpiar errores del campo cuando el usuario empiece a escribir
     if (errors[field as keyof FormErrors]) {
