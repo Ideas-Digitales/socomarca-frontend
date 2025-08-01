@@ -99,6 +99,11 @@ export const getSidebarConfig = (
       label: 'Regiones y comunas',
       url: '/admin/regiones',
     },
+    {
+      id: 'cambio-clave',
+      label: 'Cambio de clave',
+      url: '/admin/cambio-clave',
+    },
   ];
 
   // Items exclusivos para superadmin

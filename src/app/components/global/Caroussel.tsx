@@ -1,14 +1,43 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface CarouselProps {
   images: string[];
+  modalData?: {
+    image: string;
+    enabled: boolean;
+  };
 }
 
-export default function Carousel({ images }: CarouselProps) {
+export default function Carousel({ images, modalData }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const prevImagesRef = useRef<string[] | undefined>(undefined);
+
+  // Console log para ver qué datos llegan al componente (solo cuando cambian las imágenes)
+  useEffect(() => {
+    // Comparar si las imágenes realmente cambiaron
+    const prevImages = prevImagesRef.current;
+    const imagesChanged = !prevImages || 
+      prevImages.length !== images?.length || 
+      JSON.stringify(prevImages) !== JSON.stringify(images);
+    
+    if (imagesChanged) {
+      console.log('Carousel - Datos recibidos:', {
+        images,
+        imagesLength: images?.length,
+        imagesType: typeof images,
+        isArray: Array.isArray(images),
+        firstImage: images?.[0],
+        allImages: images,
+        modalData,
+        modalEnabled: modalData?.enabled,
+        modalImage: modalData?.image
+      });
+      prevImagesRef.current = images;
+    }
+  }, [images, modalData]);
 
   // Auto-play functionality
   useEffect(() => {

@@ -22,6 +22,7 @@ import {
 } from "@/services/actions/addressees.actions";
 import LoadingSpinner from "@/app/components/global/LoadingSpinner";
 import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
+import CambiarContraseñaSection from "@/app/components/mi-cuenta/CambiarContraseñaSection";
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -30,6 +31,7 @@ const SECCIONES_VALIDAS = [
   "detalle-lista",
   "compras",
   "detalle-compra",
+  "cambiar-contraseña",
 ];
 export default function MiCuentaPage() {
   const [selected, setSelected] = useState("datos");
@@ -174,6 +176,11 @@ export default function MiCuentaPage() {
                   router={router}
                   loading={loadingOrders}
                 />
+              </div>
+            )}
+            {selected === "cambiar-contraseña" && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <CambiarContraseñaSection />
               </div>
             )}
           </div>

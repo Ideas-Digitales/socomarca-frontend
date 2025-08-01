@@ -13,7 +13,7 @@ export default function MensajesCliente() {
   const [bannerActivo, setBannerActivo] = useState(true);
   const [headerMensaje, setHeaderMensaje] = useState('');
   const [headerColor, setHeaderColor] = useState('#ffffff');
-  const [headerActivo, setHeaderActivo] = useState(true);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [message, setMessage] = useState<{
@@ -31,10 +31,38 @@ export default function MensajesCliente() {
   const [desktopFile, setDesktopFile] = useState<File | null>(null);
   const [responsiveFile, setResponsiveFile] = useState<File | null>(null);
 
+  // Función para validar tamaño de archivo (máximo 1MB)
+  const validateFileSize = (file: File): boolean => {
+    const maxSize = 1 * 1024 * 1024; // 1MB en bytes
+    if (file.size > maxSize) {
+      setMessage({
+        type: 'error',
+        text: `El archivo "${file.name}" excede el tamaño máximo de 1MB. Tamaño actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
+      });
+      return false;
+    }
+    return true;
+  };
+
   // nombres de archivos
   const [modalFileName, setModalFileName] = useState('');
   const [desktopFileName, setDesktopFileName] = useState('');
   const [responsiveFileName, setResponsiveFileName] = useState('');
+
+  // Estados para URLs de previsualización de imágenes
+  const [desktopImageUrl, setDesktopImageUrl] = useState<string | null>(null);
+  const [responsiveImageUrl, setResponsiveImageUrl] = useState<string | null>(null);
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
+
+  // Función para crear URL de previsualización
+  const createPreviewUrl = (file: File): string => {
+    return URL.createObjectURL(file);
+  };
+
+  // Función para limpiar URL de previsualización
+  const cleanupPreviewUrl = (url: string) => {
+    URL.revokeObjectURL(url);
+  };
 
   // Función para cargar datos existentes
   const loadExistingData = async () => {
@@ -48,7 +76,6 @@ export default function MensajesCliente() {
         // Cargar datos del header
         setHeaderColor(data.header.color);
         setHeaderMensaje(data.header.content);
-        setHeaderActivo((data as any)?.message_enabled !== false); // por defecto true si no viene
 
         // Cargar estados de banner y modal
         setBannerActivo(data.banner.enabled);
@@ -57,21 +84,26 @@ export default function MensajesCliente() {
         // Cargar nombres de archivos existentes (si los hay)
         if (data.banner.desktop_image) {
           setDesktopFileName('Imagen desktop cargada');
+          setDesktopFile(null);
+          setDesktopImageUrl(data.banner.desktop_image);
         }
         if (data.banner.mobile_image) {
           setResponsiveFileName('Imagen móvil cargada');
+          setResponsiveFile(null);
+          setResponsiveImageUrl(data.banner.mobile_image);
         }
         if (data.modal.image) {
           setModalFileName('Imagen modal cargada');
+          setModalFile(null);
+          setModalImageUrl(data.modal.image);
         }
-      } else {
-        setMessage({
+              } else {
+          setMessage({
           type: 'error',
           text: result.error || 'Error al cargar los datos existentes',
         });
       }
     } catch (error) {
-      console.log(error);
       setMessage({
         type: 'error',
         text: 'Error inesperado al cargar los datos',
@@ -86,6 +118,23 @@ export default function MensajesCliente() {
     loadExistingData();
   }, []);
 
+  // Cleanup de URLs de previsualización al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (desktopImageUrl && desktopImageUrl.startsWith('blob:')) {
+        cleanupPreviewUrl(desktopImageUrl);
+      }
+      if (responsiveImageUrl && responsiveImageUrl.startsWith('blob:')) {
+        cleanupPreviewUrl(responsiveImageUrl);
+      }
+      if (modalImageUrl && modalImageUrl.startsWith('blob:')) {
+        cleanupPreviewUrl(modalImageUrl);
+      }
+    };
+  }, [desktopImageUrl, responsiveImageUrl, modalImageUrl]);
+
+
+
   // Función para manejar el guardado
   const handleSave = async () => {
     setIsLoading(true);
@@ -95,13 +144,15 @@ export default function MensajesCliente() {
       const messageData = {
         header_color: headerColor,
         header_content: headerMensaje,
-        message_enabled: headerActivo,
+        message_enabled: true, // Always enabled since we removed the toggle
         banner_desktop_image: desktopFile || undefined,
         banner_mobile_image: responsiveFile || undefined,
         banner_enabled: bannerActivo,
         modal_image: modalFile || undefined,
         modal_enabled: modalActivo,
       };
+
+      console.log('Datos enviados al backend para actualización:', messageData);
 
       const result = await fetchSendCustomerMessage(messageData);
 
@@ -117,7 +168,6 @@ export default function MensajesCliente() {
         });
       }
     } catch (error) {
-      console.log(error);
       setMessage({
         type: 'error',
         text: 'Error inesperado al guardar los mensajes',
@@ -142,6 +192,8 @@ export default function MensajesCliente() {
       </div>
     );
   }
+
+
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-10">
@@ -194,8 +246,19 @@ export default function MensajesCliente() {
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  setModalFile(file);
-                  setModalFileName(file.name);
+                  if (validateFileSize(file)) {
+                    // Limpiar URL anterior si existe
+                    if (modalImageUrl && modalImageUrl.startsWith('blob:')) {
+                      cleanupPreviewUrl(modalImageUrl);
+                    }
+                    setModalFile(file);
+                    setModalFileName(file.name);
+                    setModalImageUrl(createPreviewUrl(file));
+                    setMessage(null); // Limpiar mensajes anteriores
+                  } else {
+                    // Limpiar el input si la validación falla
+                    e.target.value = '';
+                  }
                 }
               }}
               className="hidden"
@@ -203,16 +266,18 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => modalInputRef.current?.click()}
-              disabled
-              className="flex items-center gap-2 justify-center sm:justify-start border w-full rounded px-4 py-2 text-sm opacity-50 cursor-not-allowed"
+              className="flex items-center gap-2 justify-center sm:justify-start border w-full rounded px-4 py-2 text-sm"
             >
               <ArrowUpTrayIcon className="w-5 h-5" />
-              Subir imagen (En desarrollo)
+              Subir imagen
             </button>
             {modalFileName && (
               <p className="text-xs text-gray-500 mt-1 truncate">
                 {modalFileName}
               </p>
+            )}
+            {modalImageUrl && (
+              <img src={modalImageUrl} alt="Imagen modal actual" className="mt-2 max-h-24 rounded border" />
             )}
           </div>
 
@@ -245,7 +310,7 @@ export default function MensajesCliente() {
           <p className="text-sm text-gray-600">
             Resolución recomendada: <strong>620x400 px</strong>
             <br />
-            Peso ideal por imagen: <strong>205 KB</strong>
+            Peso máximo por imagen: <strong>1 MB</strong>
             <br />
             JPEG: Comprimido al 70–80% para mantener calidad con un tamaño
             pequeño.
@@ -268,8 +333,19 @@ export default function MensajesCliente() {
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  setDesktopFile(file);
-                  setDesktopFileName(file.name);
+                  if (validateFileSize(file)) {
+                    // Limpiar URL anterior si existe
+                    if (desktopImageUrl && desktopImageUrl.startsWith('blob:')) {
+                      cleanupPreviewUrl(desktopImageUrl);
+                    }
+                    setDesktopFile(file);
+                    setDesktopFileName(file.name);
+                    setDesktopImageUrl(createPreviewUrl(file));
+                    setMessage(null); // Limpiar mensajes anteriores
+                  } else {
+                    // Limpiar el input si la validación falla
+                    e.target.value = '';
+                  }
                 }
               }}
               className="hidden"
@@ -277,16 +353,18 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => desktopBannerRef.current?.click()}
-              disabled
-              className="flex justify-center sm:justify-start items-center gap-2 border rounded px-4 py-2 text-sm w-full sm:w-auto opacity-50 cursor-not-allowed"
+              className="flex justify-center sm:justify-start items-center gap-2 border rounded px-4 py-2 text-sm w-full sm:w-auto"
             >
               <ArrowUpTrayIcon className="w-5 h-5" />
-              Subir imagen desktop (En desarrollo)
+              Subir imagen desktop
             </button>
             {desktopFileName && (
               <p className="text-xs text-gray-500 mt-1 truncate">
                 {desktopFileName}
               </p>
+            )}
+            {desktopImageUrl && (
+              <img src={desktopImageUrl} alt="Imagen desktop actual" className="mt-2 max-h-24 rounded border" />
             )}
           </div>
 
@@ -299,8 +377,19 @@ export default function MensajesCliente() {
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  setResponsiveFile(file);
-                  setResponsiveFileName(file.name);
+                  if (validateFileSize(file)) {
+                    // Limpiar URL anterior si existe
+                    if (responsiveImageUrl && responsiveImageUrl.startsWith('blob:')) {
+                      cleanupPreviewUrl(responsiveImageUrl);
+                    }
+                    setResponsiveFile(file);
+                    setResponsiveFileName(file.name);
+                    setResponsiveImageUrl(createPreviewUrl(file));
+                    setMessage(null); // Limpiar mensajes anteriores
+                  } else {
+                    // Limpiar el input si la validación falla
+                    e.target.value = '';
+                  }
                 }
               }}
               className="hidden"
@@ -308,16 +397,18 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => responsiveBannerRef.current?.click()}
-              disabled
-              className="flex justify-center items-center gap-2 w-full sm:w-auto border rounded px-4 py-2 text-sm opacity-50 cursor-not-allowed"
+              className="flex justify-center items-center gap-2 w-full sm:w-auto border rounded px-4 py-2 text-sm"
             >
               <ArrowUpTrayIcon className="w-5 h-5" />
-              Subir imagen responsivo (En desarrollo)
+              Subir imagen responsivo
             </button>
             {responsiveFileName && (
               <p className="text-xs text-gray-500 mt-1 truncate">
                 {responsiveFileName}
               </p>
+            )}
+            {responsiveImageUrl && (
+              <img src={responsiveImageUrl} alt="Imagen móvil actual" className="mt-2 max-h-24 rounded border" />
             )}
           </div>
 
@@ -351,7 +442,7 @@ export default function MensajesCliente() {
             Resolución recomendada: <strong>1500 x 400 px</strong> para desktop
             y <strong>600 x 400 px</strong> para responsivo
             <br />
-            Peso ideal por imagen: <strong>300 KB</strong>
+            Peso máximo por imagen: <strong>1 MB</strong>
             <br />
             JPEG: Comprimido al 70–80% para mantener calidad con un tamaño
             pequeño.
@@ -373,7 +464,7 @@ export default function MensajesCliente() {
           />
           <div className="space-y-2">
             <label className="block text-sm">Seleccionar color de fondo</label>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={headerColor}
@@ -382,26 +473,7 @@ export default function MensajesCliente() {
               />
               <PaintBrushIcon className="w-5 h-5 text-slate-600" />
             </div>
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-1 text-sm">
-                <input
-                  type="radio"
-                  name="header"
-                  checked={headerActivo}
-                  onChange={() => setHeaderActivo(true)}
-                />
-                Activar
-              </label>
-              <label className="flex items-center gap-1 text-sm">
-                <input
-                  type="radio"
-                  name="header"
-                  checked={!headerActivo}
-                  onChange={() => setHeaderActivo(false)}
-                />
-                Desactivar
-              </label>
-            </div>
+
           </div>
         </div>
       </section>

@@ -4,6 +4,7 @@ import {
   ArrowRightOnRectangleIcon,
   ChevronRightIcon,
   HeartIcon,
+  KeyIcon,
   MapPinIcon,
   ShoppingBagIcon,
   UserIcon,
@@ -14,6 +15,7 @@ const items = [
   { key: 'direcciones', label: 'Direcciones', icon: MapPinIcon },
   { key: 'favoritos', label: 'Mis favoritos', icon: HeartIcon },
   { key: 'compras', label: 'Mis compras', icon: ShoppingBagIcon },
+  { key: 'cambiar-contraseña', label: 'Cambiar contraseña', icon: KeyIcon },
   { key: 'logout', label: 'Cerrar sesión', icon: ArrowRightOnRectangleIcon },
 ];
 

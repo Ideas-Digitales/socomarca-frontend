@@ -225,6 +225,13 @@ export interface UpdateUserRequest {
   roles: string[];
 }
 
+export interface PatchUserRequest {
+  password?: string;
+  password_confirmation?: string;
+  roles?: string[];
+  is_active?: boolean;
+}
+
 export interface CreateUserRequest {
   name: string;
   email: string;
@@ -276,6 +283,103 @@ export async function updateUserAction(
     };
   } catch (error) {
     console.error('Error updating user:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+}
+
+export async function patchUserAction(
+  userId: number, 
+  userData: PatchUserRequest
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+}> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
+
+    const response = await fetch(`${BACKEND_URL}/users/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error('Error patching user:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export async function changePasswordAction(
+  passwordData: ChangePasswordRequest
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+}> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
+
+    const response = await fetch(`${BACKEND_URL}/profile/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(passwordData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error('Error changing password:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido',

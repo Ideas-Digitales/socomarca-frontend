@@ -11,7 +11,7 @@ import CarouselSkeleton from '../components/global/CarouselSkeleton';
 import { useState, useEffect } from 'react';
 import { SearchWithPaginationProps } from '@/interfaces/product.interface';
 import useAuthStore from '@/stores/useAuthStore';
-import { ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowUturnLeftIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 // Imágenes por defecto para el carrusel
 const defaultImages = [
@@ -28,7 +28,8 @@ export default function PrivatePage() {
     resetSearchRelatedStates,
     customerMessage,
     isLoadingCustomerMessage,
-    fetchCustomerMessage
+    fetchCustomerMessage,
+    openModal
   } = useStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { getUserRole } = useAuthStore();
@@ -38,6 +39,50 @@ export default function PrivatePage() {
   useEffect(() => {
     fetchCustomerMessage();
   }, [fetchCustomerMessage]);
+
+  // Efecto para mostrar el modal una única vez si está habilitado
+  useEffect(() => {
+    if (customerMessage?.modal?.enabled && customerMessage.modal.image) {
+      // Verificar si ya se mostró el modal en esta sesión
+      const modalShown = sessionStorage.getItem('welcomeModalShown');
+      
+      // Los administradores siempre deben ver el modal
+      const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+      const shouldShowModal = isAdmin || !modalShown;
+      
+      if (shouldShowModal) {
+        // Mostrar el modal con la imagen del backend
+        openModal('', {
+          content: (
+            <div className="relative">
+              <button
+                onClick={() => {
+                  const { closeModal } = useStore.getState();
+                  closeModal();
+                }}
+                className="absolute top-2 right-2 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors duration-200"
+                aria-label="Cerrar modal"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+              <img 
+                src={customerMessage.modal.image} 
+                alt="Mensaje de bienvenida" 
+                className="max-w-full h-auto rounded-lg"
+                style={{ maxHeight: '80vh' }}
+              />
+            </div>
+          ),
+          size: 'lg'
+        });
+        
+        // Solo marcar como mostrado si NO es administrador
+        if (!isAdmin) {
+          sessionStorage.setItem('welcomeModalShown', 'true');
+        }
+      }
+    }
+  }, [customerMessage, openModal, userRole]);
 
   // Determinar qué imágenes usar para el carrusel
   const getCarouselImages = () => {
