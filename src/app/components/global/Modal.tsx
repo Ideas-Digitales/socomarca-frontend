@@ -40,39 +40,28 @@ export default function Modal({ children }: ModalProps) {
 
   if (!isModalOpen) return null;
 
+  // Detectar si es un modal de imagen (sin título y con contenido personalizado)
+  const isImageModal = !modalTitle && modalContent;
+
   return (
     <div
       className="fixed inset-0 px-4 sm:px-0 z-50 flex items-center justify-center bg-black/50"
       onClick={closeModal}
     >
       <div
-        className={`relative max-h-[90vh] w-full overflow-auto bg-white p-6 shadow-xl ${sizeClasses[modalSize]}`}
+        className={`relative max-h-[90vh] w-full overflow-auto shadow-xl ${sizeClasses[modalSize]} ${
+          isImageModal ? 'bg-transparent p-0' : 'bg-white p-6'
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header con título y botón cerrar */}
-        <div className="mb-4 flex items-center justify-between">
-          {modalTitle && (
-            <h3 className="text-[18px] font-medium">{modalTitle}</h3>
-          )}
-          {/* <button
-            onClick={closeModal}
-            className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
-          >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button> */}
-        </div>
+        {/* Header con título y botón cerrar - solo mostrar si no es modal de imagen */}
+        {!isImageModal && (
+          <div className="mb-4 flex items-center justify-between">
+            {modalTitle && (
+              <h3 className="text-[18px] font-medium">{modalTitle}</h3>
+            )}
+          </div>
+        )}
 
         {/* Contenido */}
         <div>{modalContent || children}</div>

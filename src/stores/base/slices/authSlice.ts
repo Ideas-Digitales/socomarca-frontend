@@ -61,6 +61,11 @@ export const createAuthSlice: StateCreator<
             permissions: user.permissions || [],
           },
         });
+
+        // Limpiar sessionStorage al inicializar sesión para que el modal se muestre
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('welcomeModalShown');
+        }
       } else {
         set({
           isLoggedIn: false,
@@ -129,6 +134,11 @@ export const createAuthSlice: StateCreator<
         },
       });
 
+      // Limpiar sessionStorage al iniciar sesión para que el modal se muestre
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('welcomeModalShown');
+      }
+
       // Esperar un momento para que las cookies se establezcan
       await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -175,6 +185,17 @@ export const createAuthSlice: StateCreator<
   logout: async () => {
     // Limpiar cookies del servidor
     await logoutAction();
+
+    // Limpiar sessionStorage para resetear el modal de bienvenida (solo para clientes)
+    if (typeof window !== 'undefined') {
+      const currentUser = get().user;
+      const isAdmin = currentUser.roles && (currentUser.roles.includes('admin') || currentUser.roles.includes('superadmin'));
+      
+      // Solo limpiar sessionStorage si NO es administrador
+      if (!isAdmin) {
+        sessionStorage.removeItem('welcomeModalShown');
+      }
+    }
 
     // Limpiar estado local
     set({
