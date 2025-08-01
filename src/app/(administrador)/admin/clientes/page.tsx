@@ -11,6 +11,7 @@ import CustomTable from '@/app/components/admin/CustomTable';
 import SearchableDropdown from '@/app/components/filters/SearchableDropdown';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import ClientsPageSkeleton from '@/app/components/admin/ClientsPageSkeleton';
+import { fetchExportClients } from '@/services/actions/exports.actions';
 
 interface ClientTableData {
   id: number;
@@ -173,6 +174,58 @@ const ClientsPage = () => {
   // Manejar cambio de página
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  // Manejar descarga de clientes
+  const handleDownload = async () => {
+    try {
+      setLoading(true);
+      
+      // Preparar filtros para la exportación
+      const exportFilters: any = {};
+      
+      if (debouncedSearchTerm) {
+        exportFilters.search = debouncedSearchTerm;
+      }
+      
+      if (activeFilter && activeFilter !== 'all') {
+        exportFilters.filter = activeFilter;
+      }
+      
+      if (sortField) {
+        exportFilters.sort_field = sortField;
+      }
+      
+      if (sortOrder) {
+        exportFilters.sort_order = sortOrder;
+      }
+      
+      const response = await fetchExportClients(exportFilters);
+      
+      if (response.success && response.data) {
+        // Crear blob y descargar el archivo
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `clientes_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Error al exportar clientes:', response.message);
+        alert('Error al exportar los datos. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al descargar clientes:', error);
+      alert('Error al descargar los datos. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // // Manejar cambio de ordenamiento
@@ -338,6 +391,32 @@ const ClientsPage = () => {
             >
               <FunnelIcon className="h-5 w-5" />
               <span>{sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}</span>
+            </button>
+          </div>
+        </div>
+        
+        {/* Botones de descarga */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex justify-end items-center gap-4">
+            {/* BOTÓN DE DESCARGA DESKTOP */}
+            <div className="hidden md:block">
+              <button
+                onClick={handleDownload}
+                disabled={loading}
+                className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+              >
+                {loading ? 'Descargando...' : 'Descargar Excel'}
+              </button>
+            </div>
+          </div>
+          {/* BOTÓN DE DESCARGA MÓVIL */}
+          <div className="block md:hidden mt-2">
+            <button
+              onClick={handleDownload}
+              disabled={loading}
+              className="w-full bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+            >
+              {loading ? 'Descargando...' : 'Descargar Excel'}
             </button>
           </div>
         </div>

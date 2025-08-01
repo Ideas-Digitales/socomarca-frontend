@@ -21,6 +21,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getUsersAction, searchUsersAction, updateUserAction, deleteUserAction, UpdateUserRequest } from '@/services/actions/user.actions';
 import { getRolesAction, Role } from '@/services/actions/roles.actions';
 import { transformApiUserToUser, ApiMeta, SearchUsersRequest } from '@/interfaces/user.interface';
+import { fetchExportUsers } from '@/services/actions/exports.actions';
 
 export interface User {
   id: number;
@@ -749,6 +750,46 @@ export default function UsersPage() {
     });
   };
 
+  // Manejar descarga de usuarios
+  const handleDownload = async () => {
+    try {
+      setLoading(true);
+      
+      // Preparar filtros para la exportación
+      const exportFilters: any = {};
+      
+      if (searchTerm) {
+        exportFilters.search = searchTerm;
+      }
+      
+      const response = await fetchExportUsers(exportFilters);
+      
+      if (response.success && response.data) {
+        // Crear blob y descargar el archivo
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `usuarios_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Error al exportar usuarios:', response.message);
+        alert('Error al exportar los datos. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al descargar usuarios:', error);
+      alert('Error al descargar los datos. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const usersColumns: TableColumn<User>[] = [
     {
       label: 'ID',
@@ -814,7 +855,30 @@ export default function UsersPage() {
           showLabel={false}
           placeholder="Buscar por nombre / correo electrónico"
         />
+        {/* BOTONES DE DESCARGA */}
         <div className="px-4">
+          <div className="flex justify-end items-center gap-4 mb-4">
+            {/* BOTÓN DE DESCARGA DESKTOP */}
+            <div className="hidden md:block">
+              <button
+                onClick={handleDownload}
+                disabled={loading || searchLoading}
+                className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+              >
+                {loading ? 'Descargando...' : 'Descargar Excel'}
+              </button>
+            </div>
+          </div>
+          {/* BOTÓN DE DESCARGA MÓVIL */}
+          <div className="block md:hidden mb-4">
+            <button
+              onClick={handleDownload}
+              disabled={loading || searchLoading}
+              className="w-full bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+            >
+              {loading ? 'Descargando...' : 'Descargar Excel'}
+            </button>
+          </div>
           <TableSkeleton />
         </div>
       </div>
@@ -830,14 +894,39 @@ export default function UsersPage() {
           showLabel={false}
           placeholder="Buscar por nombre / correo electrónico"
         />
-        <div className="flex justify-center items-center py-8">
-          <div className="text-red-500">Error: {error}</div>
-          <button
-            onClick={() => loadUsers(currentPage, searchTerm)}
-            className="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Reintentar
-          </button>
+        {/* BOTONES DE DESCARGA */}
+        <div className="px-4">
+          <div className="flex justify-end items-center gap-4 mb-4">
+            {/* BOTÓN DE DESCARGA DESKTOP */}
+            <div className="hidden md:block">
+              <button
+                onClick={handleDownload}
+                disabled={loading || searchLoading}
+                className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+              >
+                {loading ? 'Descargando...' : 'Descargar Excel'}
+              </button>
+            </div>
+          </div>
+          {/* BOTÓN DE DESCARGA MÓVIL */}
+          <div className="block md:hidden mb-4">
+            <button
+              onClick={handleDownload}
+              disabled={loading || searchLoading}
+              className="w-full bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+            >
+              {loading ? 'Descargando...' : 'Descargar Excel'}
+            </button>
+          </div>
+          <div className="flex justify-center items-center py-8">
+            <div className="text-red-500">Error: {error}</div>
+            <button
+              onClick={() => loadUsers(currentPage, searchTerm)}
+              className="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Reintentar
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -851,6 +940,33 @@ export default function UsersPage() {
         showLabel={false}
         placeholder="Buscar por nombre / correo electrónico"
       />
+      
+      {/* BOTONES DE DESCARGA */}
+      <div className="px-4">
+        <div className="flex justify-end items-center gap-4 mb-4">
+          {/* BOTÓN DE DESCARGA DESKTOP */}
+          <div className="hidden md:block">
+            <button
+              onClick={handleDownload}
+              disabled={loading || searchLoading}
+              className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+            >
+              {loading ? 'Descargando...' : 'Descargar Excel'}
+            </button>
+          </div>
+        </div>
+        {/* BOTÓN DE DESCARGA MÓVIL */}
+        <div className="block md:hidden mb-4">
+          <button
+            onClick={handleDownload}
+            disabled={loading || searchLoading}
+            className="w-full bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+          >
+            {loading ? 'Descargando...' : 'Descargar Excel'}
+          </button>
+        </div>
+      </div>
+
       <div className="px-4 relative">
         {/* Overlay de loading para búsqueda */}
         {searchLoading && (

@@ -336,43 +336,39 @@ export const fetchExportCategoriasMasVentas = async (
 
 // Interface específica para filtros de exportación de categorías
 interface CategoriesExportFilters {
-  search?: string;
-  sort_field?: 'id' | 'created_at';
+  sort?: 'id' | 'created_at';
   sort_direction?: 'asc' | 'desc';
 }
 
 export const fetchExportCategories = async (
   filters: CategoriesExportFilters
 ) => {
-  const { search, sort_field, sort_direction } = filters;
+  const { sort, sort_direction } = filters;
+
+  console.log(filters);
 
   // URL específica para exportar categorías
-  const url = `${BACKEND_URL}/categories/export`;
-
-  const body: any = {};
-
-  if (search) {
-    body.search = search;
-  }
-  if (sort_field) {
-    body.sort_field = sort_field;
+  const url = `${BACKEND_URL}/categories/exports?`;
+  const urlParams = new URLSearchParams();
+  if (sort) {
+    urlParams.append('sort', sort);
   }
   if (sort_direction) {
-    body.sort_direction = sort_direction;
+    urlParams.append('sort_direction', sort_direction);
   }
 
   try {
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
 
-    const response = await fetch(url, {
-      method: 'POST',
+    console.log(url + urlParams.toString())
+
+    const response = await fetch(url + urlParams.toString(), {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
       },
-      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -391,6 +387,72 @@ export const fetchExportCategories = async (
     return {
       success: false,
       message: 'Error al exportar las categorías',
+    };
+  }
+};
+
+// Interface específica para filtros de exportación de clientes
+interface ClientsExportFilters {
+  search?: string;
+  filter?: string;
+  sort_field?: string;
+  sort_order?: 'asc' | 'desc';
+}
+
+export const fetchExportClients = async (
+  filters: ClientsExportFilters
+) => {
+  const { search, filter, sort_field, sort_order } = filters;
+
+  console.log(filters);
+
+  // URL específica para exportar clientes
+  const url = `${BACKEND_URL}/clients/exports?`;
+  const urlParams = new URLSearchParams();
+  
+  if (search) {
+    urlParams.append('search', search);
+  }
+  if (filter && filter !== 'all') {
+    urlParams.append('filter', filter);
+  }
+  if (sort_field) {
+    urlParams.append('sort_field', sort_field);
+  }
+  if (sort_order) {
+    urlParams.append('sort_order', sort_order);
+  }
+
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    console.log(url + urlParams.toString())
+
+    const response = await fetch(url + urlParams.toString(), {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Obtener el contenido como ArrayBuffer para archivos binarios
+    const responseBuffer = await response.arrayBuffer();
+
+    return {
+      success: true,
+      data: responseBuffer as any,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: 'Error al exportar los clientes',
     };
   }
 };

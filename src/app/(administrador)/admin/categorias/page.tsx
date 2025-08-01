@@ -211,7 +211,7 @@ export default function CategoriesAdmin() {
       }
       
       if (sortOption) {
-        exportFilters.sort_field = sortOption.key;
+        exportFilters.sort = sortOption.key;
         exportFilters.sort_direction = sortOption.direction;
       }
       
