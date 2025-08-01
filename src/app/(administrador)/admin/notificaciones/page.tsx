@@ -219,11 +219,11 @@ export default function Notificaciones() {
 
              {/* Create Form Modal */}
        {showCreateForm && (
-         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+         <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
                              <h2 className="text-xl font-semibold text-slate-800">
-                 Crear Nueva Oferta
+                 Crear Nueva Notificación
                </h2>
               <button
                 onClick={() => setShowCreateForm(false)}
@@ -323,7 +323,7 @@ export default function Notificaciones() {
                   data-cy="create-notification-button"
                 >
                   <PaperAirplaneIcon className="w-4 h-4" />
-                                     {isCreating ? 'Creando...' : 'Crear oferta'}
+                                     {isCreating ? 'Creando...' : 'Crear notificación'}
                 </button>
               </div>
             </form>
@@ -353,7 +353,7 @@ export default function Notificaciones() {
                className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm flex items-center gap-2 mx-auto"
              >
                <PlusIcon className="w-5 h-5" />
-               Crear oferta
+               Crear notificación
              </button>
           </div>
         ) : (
