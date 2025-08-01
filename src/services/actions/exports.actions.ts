@@ -334,6 +334,67 @@ export const fetchExportCategoriasMasVentas = async (
   }
 };
 
+// Interface específica para filtros de exportación de categorías
+interface CategoriesExportFilters {
+  search?: string;
+  sort_field?: 'id' | 'created_at';
+  sort_direction?: 'asc' | 'desc';
+}
+
+export const fetchExportCategories = async (
+  filters: CategoriesExportFilters
+) => {
+  const { search, sort_field, sort_direction } = filters;
+
+  // URL específica para exportar categorías
+  const url = `${BACKEND_URL}/categories/export`;
+
+  const body: any = {};
+
+  if (search) {
+    body.search = search;
+  }
+  if (sort_field) {
+    body.sort_field = sort_field;
+  }
+  if (sort_direction) {
+    body.sort_direction = sort_direction;
+  }
+
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Obtener el contenido como ArrayBuffer para archivos binarios
+    const responseBuffer = await response.arrayBuffer();
+
+    return {
+      success: true,
+      data: responseBuffer as any,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: 'Error al exportar las categorías',
+    };
+  }
+};
+
 export const fetchExportMunicipalidadesMasVentas = async (
   filters: MunicipalidadesFilters
 ) => {

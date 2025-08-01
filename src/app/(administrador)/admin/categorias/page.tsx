@@ -10,6 +10,7 @@ import TableSkeleton from "@/app/components/admin/TableSkeleton";
 import SortDropdown from "@/app/components/filters/SortDropdown";
 import { SortOption } from "@/interfaces/dashboard.interface";
 import { formatDate } from "@/utils/formatCurrency";
+import { fetchExportCategories } from "@/services/actions/exports.actions";
 
 const PAGE_SIZE = 20;
 
@@ -197,6 +198,51 @@ export default function CategoriesAdmin() {
     }, 300);
   };
 
+  // Manejar descarga de categorías
+  const handleDownload = async () => {
+    try {
+      setLoading(true);
+      
+      // Preparar filtros para la exportación
+      const exportFilters: any = {};
+      
+      if (searchTerm) {
+        exportFilters.search = searchTerm;
+      }
+      
+      if (sortOption) {
+        exportFilters.sort_field = sortOption.key;
+        exportFilters.sort_direction = sortOption.direction;
+      }
+      
+      const response = await fetchExportCategories(exportFilters);
+      
+      if (response.success && response.data) {
+        // Crear blob y descargar el archivo
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `categorias_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Error al exportar categorías:', response.message);
+        alert('Error al exportar los datos. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al descargar categorías:', error);
+      alert('Error al descargar los datos. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex justify-center flex-row w-full">
       <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full max-w-7xl">
@@ -213,14 +259,36 @@ export default function CategoriesAdmin() {
             />
           </div>
           {/* FILTROS EN LÍNEA */}
-          <div className="flex justify-start gap-4 w-full">
-            <div className="w-[300px]">
-              <SortDropdown
-                tableColumns={sortColumns}
-                selectedOption={sortOption}
-                onSelectionChange={handleSortChange}
-              />
+          <div className="flex justify-between items-start gap-4 w-full">
+            <div className="flex justify-start gap-4">
+              <div className="w-[300px]">
+                <SortDropdown
+                  tableColumns={sortColumns}
+                  selectedOption={sortOption}
+                  onSelectionChange={handleSortChange}
+                />
+              </div>
             </div>
+            {/* BOTÓN DE DESCARGA */}
+            <div className="hidden md:block">
+              <button
+                onClick={handleDownload}
+                disabled={loading || initialLoading}
+                className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+              >
+                {loading ? 'Descargando...' : 'Descargar Excel'}
+              </button>
+            </div>
+          </div>
+          {/* BOTÓN DE DESCARGA MÓVIL */}
+          <div className="block md:hidden mt-4">
+            <button
+              onClick={handleDownload}
+              disabled={loading || initialLoading}
+              className="w-full bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+            >
+              {loading ? 'Descargando...' : 'Descargar Excel'}
+            </button>
           </div>
         </div>
         
