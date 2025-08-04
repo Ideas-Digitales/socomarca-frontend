@@ -1,11 +1,11 @@
-import { testCredentials } from '../../shared/test-credentials';
+import { TEST_CREDENTIALS } from '../../shared/test-credentials';
 
 describe('Página de Ofertas del Supermercado', () => {
   beforeEach(() => {
     // Login como administrador
     cy.visit('/auth/login-admin');
-    cy.get('[data-cy="email-input"]').type(testCredentials.admin.email);
-    cy.get('[data-cy="password-input"]').type(testCredentials.admin.password);
+    cy.get('[data-cy="email-input"]').type(TEST_CREDENTIALS.admin.rut);
+    cy.get('[data-cy="password-input"]').type(TEST_CREDENTIALS.admin.password);
     cy.get('[data-cy="login-button"]').click();
     
     // Esperar a que se complete el login
