@@ -6,7 +6,11 @@ const nextConfig = {
   swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV !== 'development',
-  }
+  },
+  images: {
+    domains: ['localhost'],
+    formats: ['image/webp', 'image/avif'],
+  },
 };
 
 export default withPWA({
@@ -14,4 +18,20 @@ export default withPWA({
   disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200,
+        },
+      },
+    },
+  ],
+  buildExcludes: [/middleware-manifest\.json$/],
+  fallbacks: {
+    document: '/offline',
+  },
 })(nextConfig);
