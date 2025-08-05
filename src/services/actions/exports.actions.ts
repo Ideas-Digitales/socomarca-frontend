@@ -391,6 +391,59 @@ export const fetchExportCategories = async (
   }
 };
 
+// Interface específica para filtros de exportación de usuarios
+interface UsersExportFilters {
+  search?: string;
+}
+
+export const fetchExportUsers = async (
+  filters: UsersExportFilters
+) => {
+  const { search } = filters;
+
+  console.log(filters);
+
+  // URL específica para exportar usuarios
+  const url = `${BACKEND_URL}/users/exports?`;
+  const urlParams = new URLSearchParams();
+  if (search) {
+    urlParams.append('search', search);
+  }
+
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    console.log(url + urlParams.toString())
+
+    const response = await fetch(url + urlParams.toString(), {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Obtener el contenido como ArrayBuffer para archivos binarios
+    const responseBuffer = await response.arrayBuffer();
+
+    return {
+      success: true,
+      data: responseBuffer as any,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: 'Error al exportar los usuarios',
+    };
+  }
+};
+
 // Interface específica para filtros de exportación de clientes
 interface ClientsExportFilters {
   search?: string;

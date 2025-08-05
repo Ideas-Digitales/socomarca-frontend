@@ -18,9 +18,19 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 import { useState, useEffect, useCallback } from 'react';
-import { getUsersAction, searchUsersAction, updateUserAction, deleteUserAction, UpdateUserRequest } from '@/services/actions/user.actions';
+import {
+  getUsersAction,
+  searchUsersAction,
+  updateUserAction,
+  deleteUserAction,
+  UpdateUserRequest,
+} from '@/services/actions/user.actions';
 import { getRolesAction, Role } from '@/services/actions/roles.actions';
-import { transformApiUserToUser, ApiMeta, SearchUsersRequest } from '@/interfaces/user.interface';
+import {
+  transformApiUserToUser,
+  ApiMeta,
+  SearchUsersRequest,
+} from '@/interfaces/user.interface';
 import { fetchExportUsers } from '@/services/actions/exports.actions';
 
 export interface User {
@@ -73,7 +83,7 @@ const TableSkeleton = () => {
             ))}
           </div>
         </div>
-        
+
         {/* Filas de la tabla */}
         {[...Array(5)].map((_, rowIndex) => (
           <div key={rowIndex} className="px-6 py-4 border-b border-gray-100">
@@ -88,8 +98,6 @@ const TableSkeleton = () => {
     </div>
   );
 };
-
-
 
 // Componente del modal de eliminación
 const DeleteUserModal = ({
@@ -195,28 +203,28 @@ const EditUserForm = ({
   const formatRut = (value: string): string => {
     // Remover todos los caracteres no válidos excepto números y K
     let cleanValue = value.replace(/[^0-9Kk]/g, '');
-    
+
     // Convertir a mayúsculas
     cleanValue = cleanValue.toUpperCase();
-    
+
     // Si no hay valor, retornar vacío
     if (!cleanValue) return '';
-    
+
     // Si solo hay un carácter y es K, no es válido
     if (cleanValue.length === 1 && cleanValue === 'K') return '';
-    
+
     // Si hay más de 9 caracteres, truncar
     if (cleanValue.length > 9) {
       cleanValue = cleanValue.substring(0, 9);
     }
-    
+
     // Separar cuerpo y dígito verificador
     const body = cleanValue.slice(0, -1);
     const dv = cleanValue.slice(-1);
-    
+
     // Si el cuerpo está vacío, retornar solo el dígito verificador
     if (!body) return dv;
-    
+
     // Formatear con guión
     return `${body}-${dv}`;
   };
@@ -225,31 +233,31 @@ const EditUserForm = ({
   const isValidRut = (rut: string): boolean => {
     // Remover puntos y guión
     const cleanRut = rut.replace(/\./g, '').replace(/-/g, '');
-    
+
     if (cleanRut.length < 2) return false;
-    
+
     const body = cleanRut.slice(0, -1);
     const dv = cleanRut.slice(-1).toUpperCase();
-    
+
     // Validar que el cuerpo sea numérico
     if (!/^\d+$/.test(body)) return false;
-    
+
     // Calcular dígito verificador
     let sum = 0;
     let multiplier = 2;
-    
+
     for (let i = body.length - 1; i >= 0; i--) {
       sum += parseInt(body[i]) * multiplier;
       multiplier = multiplier === 7 ? 2 : multiplier + 1;
     }
-    
+
     const expectedDv = 11 - (sum % 11);
     let expectedDvStr = '';
-    
+
     if (expectedDv === 11) expectedDvStr = '0';
     else if (expectedDv === 10) expectedDvStr = 'K';
     else expectedDvStr = expectedDv.toString();
-    
+
     return dv === expectedDvStr;
   };
 
@@ -375,7 +383,10 @@ const EditUserForm = ({
       }
 
       // Log de los datos y claves que van al backend
-      console.log('Datos enviados al backend para actualización de usuario:', updateData);
+      console.log(
+        'Datos enviados al backend para actualización de usuario:',
+        updateData
+      );
 
       const result = await updateUserAction(user.id, updateData);
 
@@ -486,7 +497,9 @@ const EditUserForm = ({
             id="rut-edit"
             type="text"
             value={formData.rut}
-            onChange={(e) => handleInputChange('rut', formatRut(e.target.value))}
+            onChange={(e) =>
+              handleInputChange('rut', formatRut(e.target.value))
+            }
             className="rounded bg-[#EBEFF7] px-2 py-1 h-[40px]"
             placeholder="12345678-9"
             maxLength={10}
@@ -678,57 +691,64 @@ export default function UsersPage() {
   const { openModal, closeModal } = useStore();
 
   // Función para cargar usuarios
-  const loadUsers = useCallback(async (page: number = 1, search: string = '') => {
-    if (search.trim()) {
-      setSearchLoading(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-
-    try {
-      let result;
-      
+  const loadUsers = useCallback(
+    async (page: number = 1, search: string = '') => {
       if (search.trim()) {
-        // Usar búsqueda si hay término de búsqueda
-        const searchRequest: SearchUsersRequest = {
-          filters: [
-            {
-              field: 'name',
-              operator: 'ILIKE',
-              value: `%${search}%`
-            }
-          ],
-          roles: [], // Buscar en todos los roles
-          per_page: perPage
-        };
-        
-        result = await searchUsersAction(searchRequest);
+        setSearchLoading(true);
       } else {
-        // Usar listado normal si no hay búsqueda
-        result = await getUsersAction({
-          page,
-          per_page: perPage,
-        });
+        setLoading(true);
       }
+      setError(null);
 
-      if (result.success && result.data) {
-        // Transformar los datos de la API al formato del componente
-        const apiUsers = Array.isArray(result.data.data) ? result.data.data : [];
-        const transformedUsers = apiUsers.map((apiUser: any) => transformApiUserToUser(apiUser));
-        setUsers(transformedUsers);
-        setMeta(result.data.meta);
-      } else {
-        setError(result.error || 'Error al cargar usuarios');
+      try {
+        let result;
+
+        if (search.trim()) {
+          // Usar búsqueda si hay término de búsqueda
+          const searchRequest: SearchUsersRequest = {
+            filters: [
+              {
+                field: 'name',
+                operator: 'ILIKE',
+                value: `%${search}%`,
+              },
+            ],
+            roles: [], // Buscar en todos los roles
+            per_page: perPage,
+          };
+
+          result = await searchUsersAction(searchRequest);
+        } else {
+          // Usar listado normal si no hay búsqueda
+          result = await getUsersAction({
+            page,
+            per_page: perPage,
+          });
+        }
+
+        if (result.success && result.data) {
+          // Transformar los datos de la API al formato del componente
+          const apiUsers = Array.isArray(result.data.data)
+            ? result.data.data
+            : [];
+          const transformedUsers = apiUsers.map((apiUser: any) =>
+            transformApiUserToUser(apiUser)
+          );
+          setUsers(transformedUsers);
+          setMeta(result.data.meta);
+        } else {
+          setError(result.error || 'Error al cargar usuarios');
+        }
+      } catch (err) {
+        setError('Error inesperado al cargar usuarios');
+        console.error('Error loading users:', err);
+      } finally {
+        setLoading(false);
+        setSearchLoading(false);
       }
-    } catch (err) {
-      setError('Error inesperado al cargar usuarios');
-      console.error('Error loading users:', err);
-    } finally {
-      setLoading(false);
-      setSearchLoading(false);
-    }
-  }, [perPage]);
+    },
+    [perPage]
+  );
 
   // Cargar usuarios al montar el componente
   useEffect(() => {
@@ -769,27 +789,27 @@ export default function UsersPage() {
 
   const confirmDeleteUser = async (user: User) => {
     // Optimistic update: remover usuario de la lista inmediatamente
-    setUsers(prevUsers => prevUsers.filter(u => u.id !== user.id));
-    setDeletingUsers(prev => new Set(prev).add(user.id));
-    
+    setUsers((prevUsers) => prevUsers.filter((u) => u.id !== user.id));
+    setDeletingUsers((prev) => new Set(prev).add(user.id));
+
     try {
       const result = await deleteUserAction(user.id);
-      
+
       if (result.success) {
         console.log('Usuario eliminado:', user);
         closeModal();
         // No necesitamos recargar la lista porque ya hicimos optimistic update
       } else {
         // Si falló, revertir el optimistic update
-        setUsers(prevUsers => [...prevUsers, user]);
+        setUsers((prevUsers) => [...prevUsers, user]);
         console.error('Error al eliminar usuario:', result.error);
       }
     } catch (error) {
       // Si falló, revertir el optimistic update
-      setUsers(prevUsers => [...prevUsers, user]);
+      setUsers((prevUsers) => [...prevUsers, user]);
       console.error('Error al eliminar usuario:', error);
     } finally {
-      setDeletingUsers(prev => {
+      setDeletingUsers((prev) => {
         const newSet = new Set(prev);
         newSet.delete(user.id);
         return newSet;
@@ -820,26 +840,28 @@ export default function UsersPage() {
   const handleDownload = async () => {
     try {
       setLoading(true);
-      
+
       // Preparar filtros para la exportación
       const exportFilters: any = {};
-      
+
       if (searchTerm) {
         exportFilters.search = searchTerm;
       }
-      
+
       const response = await fetchExportUsers(exportFilters);
-      
+
       if (response.success && response.data) {
         // Crear blob y descargar el archivo
         const blob = new Blob([response.data], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         });
-        
+
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `usuarios_${new Date().toISOString().split('T')[0]}.xlsx`;
+        link.download = `usuarios_${
+          new Date().toISOString().split('T')[0]
+        }.xlsx`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -900,16 +922,18 @@ export default function UsersPage() {
   ];
 
   // Crear metadatos de paginación para el componente Pagination
-  const paginationMeta = meta ? {
-    current_page: meta.current_page,
-    last_page: meta.last_page,
-    per_page: meta.per_page,
-    total: meta.total,
-    from: meta.from,
-    to: meta.to,
-    links: meta.links,
-    path: meta.path,
-  } : null;
+  const paginationMeta = meta
+    ? {
+        current_page: meta.current_page,
+        last_page: meta.last_page,
+        per_page: meta.per_page,
+        total: meta.total,
+        from: meta.from,
+        to: meta.to,
+        links: meta.links,
+        path: meta.path,
+      }
+    : null;
 
   // Mostrar skeleton solo en la carga inicial
   if (loading && users.length === 0) {
@@ -1006,7 +1030,7 @@ export default function UsersPage() {
         showLabel={false}
         placeholder="Buscar por nombre / correo electrónico"
       />
-      
+
       {/* BOTONES DE DESCARGA */}
       <div className="px-4">
         <div className="flex justify-end items-center gap-4 mb-4">
@@ -1043,7 +1067,7 @@ export default function UsersPage() {
             </div>
           </div>
         )}
-        
+
         <CustomTable data={users} columns={usersColumns} />
       </div>
       {paginationMeta && (
