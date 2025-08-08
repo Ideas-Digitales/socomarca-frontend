@@ -2,7 +2,7 @@
 
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { BACKEND_URL } from '@/utils/getEnv';
-import { SearchUsersRequest} from '@/interfaces/user.interface';
+import { SearchUsersRequest } from '@/interfaces/user.interface';
 
 export interface ApiAddress {
   id: number;
@@ -49,7 +49,6 @@ export interface UsersApiResponse {
   meta: ApiMeta;
 }
 
-
 export async function getUserData() {
   try {
     const { getCookie } = await cookiesManagement();
@@ -91,7 +90,7 @@ export async function getUsersAction(params: {
 }> {
   try {
     const { page = 1, per_page = 10 } = params;
-    
+
     const baseURL = process.env.BACKEND_URL;
     const url = new URL(`${baseURL}/users`);
     url.searchParams.set('page', page.toString());
@@ -104,11 +103,11 @@ export async function getUsersAction(params: {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       next: {
         revalidate: 0,
-      }
+      },
     });
 
     if (!response.ok) {
@@ -130,7 +129,9 @@ export async function getUsersAction(params: {
   }
 }
 
-export async function searchUsersAction(searchRequest: SearchUsersRequest): Promise<{
+export async function searchUsersAction(
+  searchRequest: SearchUsersRequest
+): Promise<{
   success: boolean;
   data?: UsersApiResponse;
   error?: string;
@@ -143,17 +144,43 @@ export async function searchUsersAction(searchRequest: SearchUsersRequest): Prom
       throw new Error('No token found in cookies');
     }
 
+    // Construir el body según el formato esperado por el backend
+    const requestBody: any = {
+      filters: searchRequest.filters,
+      per_page: searchRequest.per_page,
+    };
+
+    // Agregar página si está presente
+    if (searchRequest.page) {
+      requestBody.page = searchRequest.page;
+    }
+
+    // Agregar ordenamiento si está presente
+    if (searchRequest.sort_by && searchRequest.sort_order) {
+      // Buscar si ya existe un filtro con sort
+      const existingSortFilter = requestBody.filters.find(
+        (filter: any) => filter.sort
+      );
+
+      if (existingSortFilter) {
+        existingSortFilter.sort = searchRequest.sort_order.toUpperCase();
+      } else {
+        // Agregar el sort al primer filtro existente
+        if (requestBody.filters.length > 0) {
+          requestBody.filters[0].sort = searchRequest.sort_order.toUpperCase();
+        }
+        // Si no hay filtros, no agregamos uno artificial solo para el sort
+      }
+    }
+
     const response = await fetch(`${BACKEND_URL}/users/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(searchRequest),
-      next: {
-        revalidate: 0,
-      }
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -192,13 +219,15 @@ export async function deleteUserAction(userId: number): Promise<{
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
 
     return {
@@ -250,7 +279,7 @@ export interface CreateUserRequest {
 }
 
 export async function updateUserAction(
-  userId: number, 
+  userId: number,
   userData: UpdateUserRequest
 ): Promise<{
   success: boolean;
@@ -270,14 +299,16 @@ export async function updateUserAction(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(userData),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
 
     const data = await response.json();
@@ -296,7 +327,7 @@ export async function updateUserAction(
 }
 
 export async function patchUserAction(
-  userId: number, 
+  userId: number,
   userData: PatchUserRequest
 ): Promise<{
   success: boolean;
@@ -316,14 +347,16 @@ export async function patchUserAction(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(userData),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
 
     const data = await response.json();
@@ -367,14 +400,16 @@ export async function changePasswordAction(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(passwordData),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
 
     const data = await response.json();
@@ -392,9 +427,7 @@ export async function changePasswordAction(
   }
 }
 
-export async function createUserAction(
-  userData: CreateUserRequest
-): Promise<{
+export async function createUserAction(userData: CreateUserRequest): Promise<{
   success: boolean;
   data?: any;
   error?: string;
@@ -412,14 +445,16 @@ export async function createUserAction(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(userData),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
 
     const data = await response.json();

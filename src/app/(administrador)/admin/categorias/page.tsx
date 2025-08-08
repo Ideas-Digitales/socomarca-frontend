@@ -2,6 +2,7 @@
 
 import CustomTable from "@/app/components/admin/CustomTable";
 import { fetchGetCategories } from "@/services/actions/categories.actions";
+import { fetchExportCategories } from "@/services/actions/exports.actions";
 import { useEffect, useState } from "react";
 import { CategoryComponent } from "@/interfaces/category.interface";
 import { PaginationMeta } from "@/stores/base/types";
@@ -27,6 +28,7 @@ export default function CategoriesAdmin() {
   const [meta, setMeta] = useState<PaginationMeta | undefined>();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   // Estado para el ordenamiento
   const [sortOption, setSortOption] = useState<SortOption | null>({ key: "id", label: "ID", direction: "asc" });
@@ -197,6 +199,49 @@ export default function CategoriesAdmin() {
     }, 300);
   };
 
+  // Manejar descarga de categorías
+  const handleDownload = async () => {
+    try {
+      setDownloadLoading(true);
+
+      // Preparar filtros para la exportación
+      const exportFilters: any = {};
+
+      if (sortOption) {
+        exportFilters.sort = sortOption.key;
+        exportFilters.sort_direction = sortOption.direction;
+      }
+
+      const response = await fetchExportCategories(exportFilters);
+
+      if (response.success && response.data) {
+        // Crear blob y descargar el archivo
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `categorias_${
+          new Date().toISOString().split('T')[0]
+        }.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Error al exportar categorías:', response.message);
+        alert('Error al exportar los datos. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al descargar categorías:', error);
+      alert('Error al descargar los datos. Por favor, inténtalo de nuevo.');
+    } finally {
+      setDownloadLoading(false);
+    }
+  };
+
   return (
     <div className="flex justify-center flex-row w-full">
       <div className="flex flex-col py-7 px-4 md:px-12 items-center justify-center w-full max-w-7xl">
@@ -213,14 +258,39 @@ export default function CategoriesAdmin() {
             />
           </div>
           {/* FILTROS EN LÍNEA */}
-          <div className="flex justify-start gap-4 w-full">
-            <div className="w-[300px]">
-              <SortDropdown
-                tableColumns={sortColumns}
-                selectedOption={sortOption}
-                onSelectionChange={handleSortChange}
-              />
+          <div className="flex justify-between items-center w-full">
+            <div className="flex justify-start gap-4">
+              <div className="w-[300px]">
+                <SortDropdown
+                  tableColumns={sortColumns}
+                  selectedOption={sortOption}
+                  onSelectionChange={handleSortChange}
+                />
+              </div>
             </div>
+            {/* Botones de descarga */}
+            <div className="flex justify-end items-center gap-4">
+              {/* BOTÓN DE DESCARGA DESKTOP */}
+              <div className="hidden md:block">
+                <button
+                  onClick={handleDownload}
+                  disabled={downloadLoading}
+                  className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+                >
+                  {downloadLoading ? 'Descargando...' : 'Descargar Excel'}
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* BOTÓN DE DESCARGA MÓVIL */}
+          <div className="block md:hidden mt-4">
+            <button
+              onClick={handleDownload}
+              disabled={downloadLoading}
+              className="w-full bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+            >
+              {downloadLoading ? 'Descargando...' : 'Descargar Excel'}
+            </button>
           </div>
         </div>
         

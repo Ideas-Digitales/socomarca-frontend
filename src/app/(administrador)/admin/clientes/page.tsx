@@ -11,6 +11,7 @@ import CustomTable from '@/app/components/admin/CustomTable';
 import SearchableDropdown from '@/app/components/filters/SearchableDropdown';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import ClientsPageSkeleton from '@/app/components/admin/ClientsPageSkeleton';
+import { fetchExportClients } from '@/services/actions/exports.actions';
 
 interface ClientTableData {
   id: number;
@@ -174,17 +175,59 @@ const ClientsPage = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+  // Manejar descarga de clientes
+  const handleDownload = async () => {
+    try {
+      setLoading(true);
 
-  // // Manejar cambio de ordenamiento
-  // const handleSortChange = (field: string) => {
-  //   if (sortField === field) {
-  //     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-  //   } else {
-  //     setSortField(field);
-  //     setSortOrder('asc');
-  //   }
-  //   setCurrentPage(1); // Resetear a la primera página cuando cambia el ordenamiento
-  // };
+      // Preparar filtros para la exportación
+      const exportFilters: any = {};
+
+      if (debouncedSearchTerm) {
+        exportFilters.search = debouncedSearchTerm;
+      }
+
+      if (activeFilter && activeFilter !== 'all') {
+        exportFilters.filter = activeFilter;
+      }
+
+      if (sortField) {
+        exportFilters.sort_field = sortField;
+      }
+
+      if (sortOrder) {
+        exportFilters.sort_order = sortOrder;
+      }
+
+      const response = await fetchExportClients(exportFilters);
+
+      if (response.success && response.data) {
+        // Crear blob y descargar el archivo
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `clientes_${
+          new Date().toISOString().split('T')[0]
+        }.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Error al exportar clientes:', response.message);
+        alert('Error al exportar los datos. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al descargar clientes:', error);
+      alert('Error al descargar los datos. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Columnas de la tabla
   const columns = [
@@ -289,7 +332,7 @@ const ClientsPage = () => {
               placeholder="Buscar por nombre..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>
 
@@ -341,6 +384,31 @@ const ClientsPage = () => {
             </button>
           </div>
         </div>
+        {/* Botones de descarga */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex justify-end items-center gap-4">
+            {/* BOTÓN DE DESCARGA DESKTOP */}
+            <div className="hidden md:block">
+              <button
+                onClick={handleDownload}
+                disabled={loading}
+                className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+              >
+                {loading ? 'Descargando...' : 'Descargar Excel'}
+              </button>
+            </div>
+          </div>
+          {/* BOTÓN DE DESCARGA MÓVIL */}
+          <div className="block md:hidden mt-2">
+            <button
+              onClick={handleDownload}
+              disabled={loading}
+              className="w-full bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+            >
+              {loading ? 'Descargando...' : 'Descargar Excel'}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Tabla de clientes */}
@@ -350,7 +418,7 @@ const ClientsPage = () => {
             <p className="text-red-600">{error}</p>
             <button
               onClick={() => loadClients(1)}
-              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
             >
               Reintentar
             </button>
@@ -367,36 +435,14 @@ const ClientsPage = () => {
       </div>
 
       {/* Información adicional */}
-      <div className="mt-6 bg-blue-50 p-4 rounded-lg">
-        <h3 className="font-semibold text-blue-900 mb-2">Información</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="mt-6 bg-green-50 p-4 rounded-lg">
+        <h3 className="font-semibold text-green-900 mb-2">Información</h3>
+        <ul className="text-sm text-green-800 space-y-1">
           <li>• Se muestran solo usuarios clientes</li>
           <li>• Los clientes inactivos no pueden realizar compras</li>
           <li>• El último login indica la última actividad del cliente</li>
           <li>• Puedes filtrar y ordenar por cualquier campo disponible</li>
         </ul>
-
-        {/* Botón de prueba temporal - Comentado para producción */}
-        {/* 
-        <div className="mt-4 pt-4 border-t border-blue-200">
-          <button
-            onClick={() => {
-              console.log('Current filters:', buildSearchFilters());
-              console.log('Current search request:', {
-                filters: buildSearchFilters(),
-                roles: ['cliente'],
-                per_page: 10,
-                sort_by: sortField,
-                sort_order: sortOrder,
-                page: currentPage
-              });
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-          >
-            Ver filtros actuales (consola)
-          </button>
-        </div>
-        */}
       </div>
     </div>
   );

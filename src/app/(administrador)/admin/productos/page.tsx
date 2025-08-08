@@ -1,31 +1,40 @@
-'use client'
+'use client';
 
-import CustomTable from "@/app/components/admin/CustomTable";
-import { fetchGetProducts } from "@/services/actions/products.actions";
-import { useEffect, useState } from "react";
-import { Product } from "@/interfaces/product.interface";
-import { PaginationMeta } from "@/stores/base/types";
-import { fetchGetCategories } from "@/services/actions/categories.actions";
-import CategoryDropdown from "@/app/components/filters/CategoryDropdown";
-import { CategoryComponent } from "@/interfaces/category.interface";
-import { fetchSearchProductsByFilters } from "@/services/actions/products.actions";
-import SortDropdown from "@/app/components/filters/SortDropdown";
-import { SortOption } from "@/interfaces/dashboard.interface";
-import Search from "@/app/components/global/Search";
-import TableSkeleton from "@/app/components/admin/TableSkeleton";
-import FilterSkeleton from "@/app/components/global/FilterSkeleton";
-import ProductsPageSkeleton from "@/app/components/admin/ProductsPageSkeleton";
+import CustomTable from '@/app/components/admin/CustomTable';
+import { fetchGetProducts } from '@/services/actions/products.actions';
+import { fetchExportProducts } from '@/services/actions/exports.actions';
+import { useEffect, useState } from 'react';
+import { Product } from '@/interfaces/product.interface';
+import { PaginationMeta } from '@/stores/base/types';
+import { fetchGetCategories } from '@/services/actions/categories.actions';
+import CategoryDropdown from '@/app/components/filters/CategoryDropdown';
+import { CategoryComponent } from '@/interfaces/category.interface';
+import { fetchSearchProductsByFilters } from '@/services/actions/products.actions';
+import SortDropdown from '@/app/components/filters/SortDropdown';
+import { SortOption } from '@/interfaces/dashboard.interface';
+import Search from '@/app/components/global/Search';
+import TableSkeleton from '@/app/components/admin/TableSkeleton';
+import FilterSkeleton from '@/app/components/global/FilterSkeleton';
+import ProductsPageSkeleton from '@/app/components/admin/ProductsPageSkeleton';
 
 const PAGE_SIZE = 20;
 
 const columns = [
-  { key: "id", label: "ID" },
-  { key: "name", label: "Nombre" },
-  { key: "sku", label: "SKU" },
-  { key: "price", label: "Precio" },
-  { key: "stock", label: "Stock" },
-  { key: "category", label: "Categoría", render: (_: any, row: Product) => row.category?.name },
-  { key: "brand", label: "Marca", render: (_: any, row: Product) => row.brand?.name },
+  { key: 'id', label: 'ID' },
+  { key: 'name', label: 'Nombre' },
+  { key: 'sku', label: 'SKU' },
+  { key: 'price', label: 'Precio' },
+  { key: 'stock', label: 'Stock' },
+  {
+    key: 'category',
+    label: 'Categoría',
+    render: (_: any, row: Product) => row.category?.name,
+  },
+  {
+    key: 'brand',
+    label: 'Marca',
+    render: (_: any, row: Product) => row.brand?.name,
+  },
 ];
 
 export default function ProductsAdmin() {
@@ -34,6 +43,7 @@ export default function ProductsAdmin() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   // Categorías
   const [categories, setCategories] = useState<CategoryComponent[]>([]);
@@ -45,7 +55,7 @@ export default function ProductsAdmin() {
   // const [sorting, setSorting] = useState(false);
 
   // Estado para el término de búsqueda
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   // const [searching, setSearching] = useState(false);
 
   useEffect(() => {
@@ -53,7 +63,9 @@ export default function ProductsAdmin() {
     fetchGetCategories().then((res) => {
       if (res.ok && res.data) {
         // Asegurar que sea un array
-        const categoriesData = Array.isArray(res.data) ? res.data : res.data.data || [];
+        const categoriesData = Array.isArray(res.data)
+          ? res.data
+          : res.data.data || [];
         setCategories(categoriesData as CategoryComponent[]);
       }
       setLoadingCategories(false);
@@ -74,12 +86,12 @@ export default function ProductsAdmin() {
 
   // Opciones de columnas para ordenar
   const sortColumns = [
-    { key: "id", label: "ID" },
-    { key: "name", label: "Nombre" },
-    { key: "price", label: "Precio" },
-    { key: "stock", label: "Stock" },
-    { key: "category_name", label: "Categoría" },
-    { key: "brand_name", label: "Marca" },
+    { key: 'id', label: 'ID' },
+    { key: 'name', label: 'Nombre' },
+    { key: 'price', label: 'Precio' },
+    { key: 'stock', label: 'Stock' },
+    { key: 'category_name', label: 'Categoría' },
+    { key: 'brand_name', label: 'Marca' },
   ];
 
   // Manejar cambio de orden
@@ -87,20 +99,24 @@ export default function ProductsAdmin() {
     // setSorting(true);
     if (!option) {
       // Si se limpia el ordenamiento, volver a id asc
-      const defaultSort: SortOption = { key: 'id', label: 'ID', direction: 'asc' };
+      const defaultSort: SortOption = {
+        key: 'id',
+        label: 'ID',
+        direction: 'asc',
+      };
       setSortOption(defaultSort);
       // Aplicar el ordenamiento por defecto
       const sortParams = {
         sort_field: 'id' as const,
-        sort_direction: 'asc' as const
+        sort_direction: 'asc' as const,
       };
       setLoading(true);
       if (selectedCategories.length > 0) {
-        fetchSearchProductsByFilters({ 
-          category_id: selectedCategories[0], 
-          page, 
+        fetchSearchProductsByFilters({
+          category_id: selectedCategories[0],
+          page,
           size: PAGE_SIZE,
-          ...sortParams
+          ...sortParams,
         }).then((res) => {
           if (res.ok && res.data) {
             setData(res.data.data);
@@ -110,10 +126,10 @@ export default function ProductsAdmin() {
           // setSorting(false);
         });
       } else {
-        fetchSearchProductsByFilters({ 
-          page, 
+        fetchSearchProductsByFilters({
+          page,
           size: PAGE_SIZE,
-          ...sortParams
+          ...sortParams,
         }).then((res) => {
           if (res.ok && res.data) {
             setData(res.data.data);
@@ -130,17 +146,23 @@ export default function ProductsAdmin() {
       // alert eliminado
       // Aplicar el ordenamiento a los productos
       const sortParams = {
-        sort_field: option.key as 'id' | 'name' | 'price' | 'stock' | 'category_name' | 'brand_name',
-        sort_direction: option.direction
+        sort_field: option.key as
+          | 'id'
+          | 'name'
+          | 'price'
+          | 'stock'
+          | 'category_name'
+          | 'brand_name',
+        sort_direction: option.direction,
       };
       // Actualizar productos con el nuevo ordenamiento
       setLoading(true);
       if (selectedCategories.length > 0) {
-        fetchSearchProductsByFilters({ 
-          category_id: selectedCategories[0], 
-          page, 
+        fetchSearchProductsByFilters({
+          category_id: selectedCategories[0],
+          page,
           size: PAGE_SIZE,
-          ...sortParams
+          ...sortParams,
         }).then((res) => {
           if (res.ok && res.data) {
             setData(res.data.data);
@@ -150,10 +172,10 @@ export default function ProductsAdmin() {
           // setSorting(false);
         });
       } else {
-        fetchSearchProductsByFilters({ 
-          page, 
+        fetchSearchProductsByFilters({
+          page,
           size: PAGE_SIZE,
-          ...sortParams
+          ...sortParams,
         }).then((res) => {
           if (res.ok && res.data) {
             setData(res.data.data);
@@ -172,14 +194,22 @@ export default function ProductsAdmin() {
     setPage(1); // Reiniciar paginación al buscar
     // setSearching(true);
     setLoading(true);
-    const sortParams = sortOption ? {
-      sort_field: sortOption.key as 'id' | 'name' | 'price' | 'stock' | 'category_name' | 'brand_name',
-      sort_direction: sortOption.direction
-    } : {};
+    const sortParams = sortOption
+      ? {
+          sort_field: sortOption.key as
+            | 'id'
+            | 'name'
+            | 'price'
+            | 'stock'
+            | 'category_name'
+            | 'brand_name',
+          sort_direction: sortOption.direction,
+        }
+      : {};
     const params: any = {
       page: 1,
       size: PAGE_SIZE,
-      ...sortParams
+      ...sortParams,
     };
     if (selectedCategories.length > 0) {
       params.category_id = selectedCategories[0];
@@ -199,18 +229,26 @@ export default function ProductsAdmin() {
 
   // Limpiar búsqueda
   const handleClearSearch = async () => {
-    setSearchTerm("");
+    setSearchTerm('');
     setPage(1);
     // setSearching(true);
     setLoading(true);
-    const sortParams = sortOption ? {
-      sort_field: sortOption.key as 'id' | 'name' | 'price' | 'stock' | 'category_name' | 'brand_name',
-      sort_direction: sortOption.direction
-    } : {};
+    const sortParams = sortOption
+      ? {
+          sort_field: sortOption.key as
+            | 'id'
+            | 'name'
+            | 'price'
+            | 'stock'
+            | 'category_name'
+            | 'brand_name',
+          sort_direction: sortOption.direction,
+        }
+      : {};
     const params: any = {
       page: 1,
       size: PAGE_SIZE,
-      ...sortParams
+      ...sortParams,
     };
     if (selectedCategories.length > 0) {
       params.category_id = selectedCategories[0];
@@ -227,14 +265,22 @@ export default function ProductsAdmin() {
   // Actualizar productos al cambiar de página, manteniendo el filtro si está activo
   useEffect(() => {
     setLoading(true);
-    const sortParams = sortOption ? {
-      sort_field: sortOption.key as 'id' | 'name' | 'price' | 'stock' | 'category_name' | 'brand_name',
-      sort_direction: sortOption.direction
-    } : {};
+    const sortParams = sortOption
+      ? {
+          sort_field: sortOption.key as
+            | 'id'
+            | 'name'
+            | 'price'
+            | 'stock'
+            | 'category_name'
+            | 'brand_name',
+          sort_direction: sortOption.direction,
+        }
+      : {};
     const params: any = {
       page,
       size: PAGE_SIZE,
-      ...sortParams
+      ...sortParams,
     };
     if (selectedCategories.length > 0) {
       params.category_id = selectedCategories[0];
@@ -255,26 +301,34 @@ export default function ProductsAdmin() {
   const handleCategoryChange = async (selectedIds: number[]) => {
     setSelectedCategories(selectedIds);
     setPage(1); // Reiniciar paginación al filtrar
-    const sortParams = sortOption ? {
-      sort_field: sortOption.key as 'id' | 'name' | 'price' | 'stock' | 'category_name' | 'brand_name',
-      sort_direction: sortOption.direction
-    } : {};
-    
+    const sortParams = sortOption
+      ? {
+          sort_field: sortOption.key as
+            | 'id'
+            | 'name'
+            | 'price'
+            | 'stock'
+            | 'category_name'
+            | 'brand_name',
+          sort_direction: sortOption.direction,
+        }
+      : {};
+
     const params: any = {
-      page: 1, 
+      page: 1,
       size: PAGE_SIZE,
-      ...sortParams
+      ...sortParams,
     };
-    
+
     if (selectedIds.length > 0) {
       params.category_id = selectedIds[0];
     }
-    
+
     if (searchTerm) {
       params.field = 'name';
       params.value = searchTerm;
     }
-    
+
     setLoading(true);
     const res = await fetchSearchProductsByFilters(params);
     if (res.ok && res.data) {
@@ -282,6 +336,49 @@ export default function ProductsAdmin() {
       setMeta(res.data.meta);
     }
     setLoading(false);
+  };
+
+  // Manejar descarga de productos
+  const handleDownload = async () => {
+    try {
+      setDownloadLoading(true);
+
+      // Preparar filtros para la exportación
+      const exportFilters: any = {};
+
+      if (sortOption) {
+        exportFilters.sort = sortOption.key;
+        exportFilters.sort_direction = sortOption.direction;
+      }
+
+      const response = await fetchExportProducts(exportFilters);
+
+      if (response.success && response.data) {
+        // Crear blob y descargar el archivo
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `productos_${
+          new Date().toISOString().split('T')[0]
+        }.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Error al exportar productos:', response.message);
+        alert('Error al exportar los datos. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al descargar productos:', error);
+      alert('Error al descargar los datos. Por favor, inténtalo de nuevo.');
+    } finally {
+      setDownloadLoading(false);
+    }
   };
 
   if (initialLoading) {
@@ -304,33 +401,62 @@ export default function ProductsAdmin() {
             />
           </div>
           {/* FILTROS EN LÍNEA */}
-          <div className="flex justify-start gap-4 w-full">
-            {loadingCategories ? (
+          <div className="flex justify-between items-center w-full">
+            <div className="flex justify-start gap-4">
+              {loadingCategories ? (
+                <div className="w-[300px]">
+                  <FilterSkeleton type="dropdown" label="Categoría" />
+                </div>
+              ) : (
+                <div className="w-[300px]">
+                  <CategoryDropdown
+                    categories={categories}
+                    selectedIds={selectedCategories}
+                    onSelectionChange={handleCategoryChange}
+                  />
+                </div>
+              )}
               <div className="w-[300px]">
-                <FilterSkeleton type="dropdown" label="Categoría" />
-              </div>
-            ) : (
-              <div className="w-[300px]">
-                <CategoryDropdown
-                  categories={categories}
-                  selectedIds={selectedCategories}
-                  onSelectionChange={handleCategoryChange}
+                <SortDropdown
+                  tableColumns={sortColumns}
+                  selectedOption={sortOption}
+                  onSelectionChange={handleSortChange}
                 />
               </div>
-            )}
-            <div className="w-[300px]">
-              <SortDropdown
-                tableColumns={sortColumns}
-                selectedOption={sortOption}
-                onSelectionChange={handleSortChange}
-              />
+            </div>
+            {/* Botones de descarga */}
+            <div className="flex justify-end items-center gap-4">
+              {/* BOTÓN DE DESCARGA DESKTOP */}
+              <div className="hidden md:block">
+                <button
+                  onClick={handleDownload}
+                  disabled={downloadLoading}
+                  className="bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+                >
+                  {downloadLoading ? 'Descargando...' : 'Descargar Excel'}
+                </button>
+              </div>
             </div>
           </div>
+          {/* BOTÓN DE DESCARGA MÓVIL */}
+          <div className="block md:hidden mt-4">
+            <button
+              onClick={handleDownload}
+              disabled={downloadLoading}
+              className="w-full bg-lime-500 hover:bg-lime-600 disabled:bg-gray-400 text-white py-2 rounded-[6px] text-sm font-medium transition-colors duration-300 ease-in-out"
+            >
+              {downloadLoading ? 'Descargando...' : 'Descargar Excel'}
+            </button>
+          </div>
         </div>
-        
+
         {loading ? (
           <div className="relative w-full">
-            <TableSkeleton columns={columns.length} rows={10} title="Productos" />
+            <TableSkeleton
+              columns={columns.length}
+              rows={10}
+              title="Productos"
+            />
           </div>
         ) : (
           <div className="relative w-full">
@@ -346,4 +472,4 @@ export default function ProductsAdmin() {
       </div>
     </div>
   );
-}   
+}

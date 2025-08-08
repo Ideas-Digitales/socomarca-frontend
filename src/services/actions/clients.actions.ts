@@ -21,23 +21,25 @@ export const fetchGetClientsList = async (
   try {
     if (IS_QA_MODE) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+
       // Mock data para QA
       const mockData = Array.from({ length: 50 }, (_, i) => ({
         id: 1000 + i + 1,
         cliente: `Cliente ${i + 1}`,
         monto: Math.floor(Math.random() * 1000000) + 50000,
-        fecha: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        estado: 'completed'
+        fecha: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0],
+        estado: 'completed',
       }));
 
       // Aplicar filtros de monto si están presentes
       let filteredData = mockData;
       if (total_min !== undefined) {
-        filteredData = filteredData.filter(item => item.monto >= total_min);
+        filteredData = filteredData.filter((item) => item.monto >= total_min);
       }
       if (total_max !== undefined) {
-        filteredData = filteredData.filter(item => item.monto <= total_max);
+        filteredData = filteredData.filter((item) => item.monto <= total_max);
       }
 
       const startIndex = (page - 1) * per_page;
@@ -51,7 +53,7 @@ export const fetchGetClientsList = async (
           last_page: Math.ceil(filteredData.length / per_page),
           per_page: per_page,
           total: filteredData.length,
-        }
+        },
       };
 
       return {
@@ -79,12 +81,14 @@ export const fetchGetClientsList = async (
       per_page,
       page,
     };
-    
+
     // Agregar filtros opcionales solo si tienen valores válidos
     if (start && start.trim() !== '') requestBody.start = start;
     if (end && end.trim() !== '') requestBody.end = end;
-    if (total_min !== undefined && total_min !== null && total_min >= 0) requestBody.total_min = total_min;
-    if (total_max !== undefined && total_max !== null && total_max > 0) requestBody.total_max = total_max;
+    if (total_min !== undefined && total_min !== null && total_min >= 0)
+      requestBody.total_min = total_min;
+    if (total_max !== undefined && total_max !== null && total_max > 0)
+      requestBody.total_max = total_max;
 
     console.log('Request body para clients-list:', requestBody);
 
@@ -92,15 +96,15 @@ export const fetchGetClientsList = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
       },
       body: JSON.stringify(requestBody),
     });
-    
+
     // Verificar el content-type antes de parsear JSON
     const contentType = response.headers.get('content-type');
-    
+
     if (!contentType || !contentType.includes('application/json')) {
       const textResponse = await response.text();
       return {
@@ -145,18 +149,20 @@ export interface Customer {
   customer: string;
 }
 
-export const fetchGetCustomersList = async (): Promise<ActionResult<Customer[]>> => {
+export const fetchGetCustomersList = async (): Promise<
+  ActionResult<Customer[]>
+> => {
   try {
     if (IS_QA_MODE) {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      
+
       // Mock data para QA
       const mockCustomers: Customer[] = [
-        { id: 1, customer: "Juan Perez" },
-        { id: 2, customer: "Pedro Neza" },
-        { id: 3, customer: "Armando Meza" },
-        { id: 5, customer: "Eduardo Fuentes" },
-        { id: 8, customer: "Miguel Rojas Soto" },
+        { id: 1, customer: 'Juan Perez' },
+        { id: 2, customer: 'Pedro Neza' },
+        { id: 3, customer: 'Armando Meza' },
+        { id: 5, customer: 'Eduardo Fuentes' },
+        { id: 8, customer: 'Miguel Rojas Soto' },
       ];
 
       return {
@@ -182,14 +188,14 @@ export const fetchGetCustomersList = async (): Promise<ActionResult<Customer[]>>
     const response = await fetch(endpointUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
       },
     });
-    
+
     // Verificar el content-type antes de parsear JSON
     const contentType = response.headers.get('content-type');
-    
+
     if (!contentType || !contentType.includes('application/json')) {
       const textResponse = await response.text();
       return {
@@ -201,7 +207,6 @@ export const fetchGetCustomersList = async (): Promise<ActionResult<Customer[]>>
 
     const data = await response.json();
 
-    
     //console.log('Response de /users/customers:', data);
     if (!response.ok) {
       return {
