@@ -46,3 +46,19 @@ next-env.d.ts
 
 # public files
 /public/sw.js
+
+# Bubblewrap / PWA Android
+android/
+android.keystore
+android.keystore.properties
+*.aab
+*.apk
+bubblewrap.log
+bubblewrap.log.*
+android/app/build/
+android/app/release/
+android/app/debug/
+
+/app/build/
+
+/build
