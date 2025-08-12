@@ -10,6 +10,7 @@ import { Suspense } from "react";
 import SectionSync from "@/app/components/mi-cuenta/SectionSync";
 import { useFavorites } from "@/hooks/useFavorites";
 import DatosPersonalesForm from "@/app/components/mi-cuenta/DatosPersonalesForm";
+import useStore from "@/stores/base";
 import { getUserOrders } from "@/services/actions/order.actions";
 import { mapOrderToCompra } from "@/utils/mapOrderToCompra";
 import ComprasSection, {
@@ -67,7 +68,11 @@ export default function MiCuentaPage() {
     const result = await handleViewListDetail(lista.id);
     if (result.ok) {
       setSelected("detalle-lista");
-      handleSectionChange("detalle-lista");
+      // Agregar el ID de la lista a la URL
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.set("section", "detalle-lista");
+      currentParams.set("listaId", lista.id.toString());
+      router.replace(`?${currentParams.toString()}`, { scroll: false });
     } else {
       console.error("Error al cargar detalle de lista:", result.error);
     }
@@ -75,7 +80,22 @@ export default function MiCuentaPage() {
   const handleBackToFavorites = () => {
     clearSelectedList();
     setSelected("favoritos");
-    handleSectionChange("favoritos");
+    // Limpiar el parámetro listaId de la URL
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set("section", "favoritos");
+    currentParams.delete("listaId");
+    router.replace(`?${currentParams.toString()}`, { scroll: false });
+  };
+
+  // Función para manejar cuando se elimina una lista
+  const handleListDeleted = () => {
+    clearSelectedList();
+    setSelected("favoritos");
+    // Limpiar el parámetro listaId de la URL
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set("section", "favoritos");
+    currentParams.delete("listaId");
+    router.replace(`?${currentParams.toString()}`, { scroll: false });
   };
 
   /* Trae las ordenes del usuario  */
@@ -110,6 +130,43 @@ export default function MiCuentaPage() {
     fetchDirecciones();
   }, []);
 
+    // Restaurar lista seleccionada desde la URL al recargar la página
+  useEffect(() => {
+    const currentParams = new URLSearchParams(window.location.search);
+    const section = currentParams.get("section");
+    const listaId = currentParams.get("listaId");
+
+    if (section === "detalle-lista" && listaId) {
+      // Esperar a que las listas se carguen antes de buscar
+      const checkAndRestoreList = () => {
+        const { favoriteLists, setSelectedFavoriteList, isLoadingFavorites } = useStore.getState();
+        
+        if (isLoadingFavorites) {
+          // Si aún está cargando, esperar un poco más
+          setTimeout(checkAndRestoreList, 100);
+          return;
+        }
+
+        const lista = favoriteLists.find((list: any) => list.id.toString() === listaId);
+        
+        if (lista) {
+          setSelectedFavoriteList(lista);
+          setSelected("detalle-lista");
+        } else {
+          // Si la lista no se encuentra (fue eliminada o no existe), redirigir a favoritos
+          clearSelectedList();
+          setSelected("favoritos");
+          const newParams = new URLSearchParams(window.location.search);
+          newParams.set("section", "favoritos");
+          newParams.delete("listaId");
+          router.replace(`?${newParams.toString()}`, { scroll: false });
+        }
+      };
+
+      checkAndRestoreList();
+    }
+  }, [router, clearSelectedList]);
+
   return (
     <div className="bg-[#f1f5f9] min-h-screen px-4">
       <div className="max-w-7xl mx-auto py-6">
@@ -137,7 +194,10 @@ export default function MiCuentaPage() {
               />
             )}
             {selected === "detalle-lista" && (
-              <DetalleListaSection onVolver={handleBackToFavorites} />
+              <DetalleListaSection 
+                onVolver={handleBackToFavorites} 
+                onListDeleted={handleListDeleted}
+              />
             )}
             {selected === "datos" && (
               <div className="bg-white p-6 rounded-lg shadow-md">

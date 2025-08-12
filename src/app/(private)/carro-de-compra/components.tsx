@@ -56,20 +56,22 @@ export const CartHeader = ({ totalProducts, onGoBack }: CartHeaderProps) => {
 
   return (
     <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-3">
-        <ChevronLeftIcon
-          className="w-5 h-5 font-bold lg:hidden cursor-pointer"
-          strokeWidth={3}
-          onClick={onGoBack}
-          aria-label="Volver atrás"
-        />
-        <h2 className="text-2xl font-bold">
-          Carro{' '}
-          <span className="text-lime-500 text-base font-normal">
-            ({totalProducts} productos)
-          </span>
-        </h2>
-      </div>
+             <div className="flex items-center gap-3">
+         <ChevronLeftIcon
+           className="w-5 h-5 font-bold lg:hidden cursor-pointer"
+           strokeWidth={3}
+           onClick={onGoBack}
+           aria-label="Volver atrás"
+         />
+         <div className="flex flex-col">
+           <h2 className="text-2xl font-bold">
+             Carro
+           </h2>
+           <p className="text-lime-500 text-base font-normal">
+             ({totalProducts} productos)
+           </p>
+         </div>
+       </div>
       {totalProducts > 0 && (
         <span
           data-cy="empty-cart-btn"

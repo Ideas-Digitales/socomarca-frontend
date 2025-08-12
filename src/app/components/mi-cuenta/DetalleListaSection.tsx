@@ -16,8 +16,10 @@ import { useCartActions } from '@/stores/hooks/useCart';
 
 export default function DetalleListaSection({
   onVolver,
+  onListDeleted,
 }: {
   onVolver: () => void;
+  onListDeleted?: () => void;
 }) {
   const router = useRouter();
   const {
@@ -361,13 +363,21 @@ export default function DetalleListaSection({
             try {
               const result = await handleDeleteList(selectedFavoriteList.id);
               if (result.ok) {
-                onVolver();
+                // Si la eliminación fue exitosa, usar la función específica para listas eliminadas
+                if (onListDeleted) {
+                  onListDeleted();
+                } else {
+                  onVolver();
+                }
               } else {
                 console.error('Error al eliminar la lista:', result.error);
-                // Aquí podrías mostrar un mensaje de error al usuario
+                // Mostrar mensaje de error al usuario (podrías usar un toast aquí)
+                alert('Error al eliminar la lista. Por favor, inténtalo de nuevo.');
               }
             } catch (error) {
               console.error('Error inesperado al eliminar la lista:', error);
+              // Mostrar mensaje de error al usuario
+              alert('Error inesperado al eliminar la lista. Por favor, inténtalo de nuevo.');
             }
           } else if (productoAEliminar !== null) {
             eliminarProducto(productoAEliminar);

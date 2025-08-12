@@ -216,6 +216,10 @@ export const changeFavoriteListName = async (
       },
       body: JSON.stringify({ name: newName }),
     });
+
+    const responseTest = await response.json();
+    console.log('responseTest', responseTest);
+
     if (!response.ok) {
       throw new Error('Error updating favorite list name');
     }
@@ -259,7 +263,18 @@ export const deleteFavoriteList = async (
       throw new Error('Error deleting favorite list');
     }
 
-    const data = await response.json();
+    // Para respuestas DELETE, el backend puede no devolver contenido
+    let data = null;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        data = await response.json();
+      } catch (error) {
+        // Si no se puede parsear JSON, continuar con data = null
+        console.warn('Response is not valid JSON, continuing with null data');
+      }
+    }
+
     return {
       ok: true,
       data,

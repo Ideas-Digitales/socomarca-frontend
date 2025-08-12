@@ -171,6 +171,12 @@ export const useFavorites = () => {
           // Limpiar la lista seleccionada si es la que se eliminó
           if (selectedFavoriteList?.id === listId) {
             clearSelectedList();
+            // Retornar información adicional para que el componente padre maneje la redirección
+            return {
+              ...result,
+              shouldRedirect: true,
+              redirectTo: 'favoritos'
+            };
           }
         }
         return result;
@@ -178,7 +184,7 @@ export const useFavorites = () => {
         console.error('Error deleting list:', error);
         return {
           ok: false,
-          error: 'Error al eliminar la lista',
+          error: error instanceof Error ? error.message : 'Error al eliminar la lista',
         };
       }
     },
