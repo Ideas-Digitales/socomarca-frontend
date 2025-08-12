@@ -163,12 +163,12 @@ export default function CategoryFilterMobile({
       {/* Modal Container */}
       <div className="fixed inset-0 z-[200] flex items-end justify-center">
         <div
-          className={`bg-white w-full max-h-[90vh] rounded-t-2xl transform transition-transform duration-300 ease-out ${
+          className={`bg-white w-full max-h-[90vh] rounded-t-2xl transform transition-transform duration-300 ease-out flex flex-col ${
             isOpen ? 'translate-y-0' : 'translate-y-full'
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
             <h2 className="text-lg font-semibold text-gray-800">Filtros</h2>
             <button
               onClick={onClose}
@@ -178,8 +178,8 @@ export default function CategoryFilterMobile({
             </button>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto">
+          {/* Content - Scrollable area */}
+          <div className="flex-1 overflow-y-auto min-h-0">
             {/* CATEGORÍA section */}
             <div
               className="flex w-full h-[48px] p-4 items-center justify-between gap-[10px] border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200"
@@ -499,8 +499,8 @@ export default function CategoryFilterMobile({
             </div>
           </div>
 
-          {/* Footer with action buttons */}
-          <div className="p-4 border-t border-gray-200 bg-white">
+          {/* Footer with action buttons - Always visible */}
+          <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
             <div className="flex flex-col gap-3">
               <button
                 className="w-full bg-lime-500 text-white rounded-md py-4 px-6 text-center text-base font-medium hover:bg-lime-600 transition-all duration-300 cursor-pointer"
