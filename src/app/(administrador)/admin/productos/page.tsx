@@ -401,14 +401,14 @@ export default function ProductsAdmin() {
             />
           </div>
           {/* FILTROS EN LÍNEA */}
-          <div className="flex justify-between items-center w-full">
-            <div className="flex justify-start gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
+            <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
               {loadingCategories ? (
-                <div className="w-[300px]">
+                <div className="w-full md:w-[300px]">
                   <FilterSkeleton type="dropdown" label="Categoría" />
                 </div>
               ) : (
-                <div className="w-[300px]">
+                <div className="w-full md:w-[300px]">
                   <CategoryDropdown
                     categories={categories}
                     selectedIds={selectedCategories}
@@ -416,7 +416,7 @@ export default function ProductsAdmin() {
                   />
                 </div>
               )}
-              <div className="w-[300px]">
+              <div className="w-full md:w-[300px]">
                 <SortDropdown
                   tableColumns={sortColumns}
                   selectedOption={sortOption}
@@ -425,7 +425,7 @@ export default function ProductsAdmin() {
               </div>
             </div>
             {/* Botones de descarga */}
-            <div className="flex justify-end items-center gap-4">
+            <div className="flex justify-end items-center gap-4 w-full md:w-auto">
               {/* BOTÓN DE DESCARGA DESKTOP */}
               <div className="hidden md:block">
                 <button
