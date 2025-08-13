@@ -104,7 +104,7 @@ export default function Header({ carro }: Props) {
 
   const menuItems = [
     { name: 'Inicio', href: '/', disabled: false },
-    { name: 'Datos personales', href: '/mi-cuenta?section=datos', disabled: isAdminUser() },
+    { name: 'Datos de Facturación', href: '/mi-cuenta?section=datos', disabled: isAdminUser() },
     { name: 'Favoritos', href: '/mi-cuenta?section=favoritos', disabled: isAdminUser() },
     { name: 'Direcciones', href: '/mi-cuenta?section=direcciones', disabled: isAdminUser() },
     { name: 'Mis Compras', href: '/mi-cuenta?section=compras', disabled: isAdminUser() },
