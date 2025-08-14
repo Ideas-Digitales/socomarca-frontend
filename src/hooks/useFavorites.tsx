@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Product } from '@/interfaces/product.interface';
 import useStore from '@/stores/base';
+import useAuthStore from '@/stores/useAuthStore';
 import ListsModal from '@/app/components/global/ListsModal';
 
 export const useFavorites = () => {
@@ -20,16 +21,27 @@ export const useFavorites = () => {
     closeModal,
     toggleProductFavorite,
   } = useStore();
+  
+  const { user } = useAuthStore();
   const hasInitialized = useRef(false);
   
+  // Verificar si el usuario tiene el rol "customer"
+  console.log(user);
+  const isCustomer = user?.roles?.includes('customer') || false;
+  
   useEffect(() => {
-    // Solo inicializar si no hemos iniciado el proceso y no estamos cargando
-    if (!hasInitialized.current && !isLoadingFavorites && !favoritesInitialized) {
+    // Solo inicializar si el usuario es cliente y no hemos iniciado el proceso y no estamos cargando
+    if (isCustomer && !hasInitialized.current && !isLoadingFavorites && !favoritesInitialized) {
       hasInitialized.current = true;
       fetchFavorites();
     }
-  }, [isLoadingFavorites, favoritesInitialized, fetchFavorites]);
+  }, [isCustomer, isLoadingFavorites, favoritesInitialized, fetchFavorites]);
   const toggleFavorite = async (productId: number, product?: Product) => {
+    // Solo permitir toggle de favoritos si el usuario es cliente
+    if (!isCustomer) {
+      return { ok: false, error: 'Solo los clientes pueden usar favoritos' };
+    }
+    
     const result = await toggleProductFavorite(productId, product);
 
     if (result.requiresListSelection && result.product) {
@@ -41,6 +53,11 @@ export const useFavorites = () => {
   };
   const handleCreateList = useCallback(
     async (name: string) => {
+      // Solo permitir crear listas si el usuario es cliente
+      if (!isCustomer) {
+        return { ok: false, error: 'Solo los clientes pueden crear listas de favoritos' };
+      }
+      
       try {
         const result = await createFavoriteList(name);
         return result;
@@ -49,10 +66,15 @@ export const useFavorites = () => {
         return { ok: false, error: 'Error desconocido' };
       }
     },
-    [createFavoriteList]
+    [createFavoriteList, isCustomer]
   );
   const isFavorite = useCallback(
     (productId: number) => {
+      // Si el usuario no es cliente, no puede tener favoritos
+      if (!isCustomer) {
+        return false;
+      }
+      
       // Si aún está cargando o no se han inicializado los favoritos, retornamos null
       if (isLoadingFavorites || !favoritesInitialized) {
         return null;
@@ -62,10 +84,15 @@ export const useFavorites = () => {
         list.favorites?.some((favorite) => favorite.product.id === productId)
       );
     },
-    [favoriteLists, isLoadingFavorites, favoritesInitialized]
+    [favoriteLists, isLoadingFavorites, favoritesInitialized, isCustomer]
   );
   const openListsModal = useCallback(
     (product: Product) => {
+      // Solo permitir abrir el modal si el usuario es cliente
+      if (!isCustomer) {
+        return;
+      }
+      
       const handleListSelection = async (listId: string) => {
         try {
           const result = await addProductToFavoriteList(
@@ -127,14 +154,24 @@ export const useFavorites = () => {
       handleCreateList,
       addProductToFavoriteList,
       fetchFavorites,
+      isCustomer,
     ]
   );
   const handleAddToList = (product: Product) => {
+    // Solo permitir agregar a lista si el usuario es cliente
+    if (!isCustomer) {
+      return;
+    }
     openListsModal(product);
   };
   // Función para ver el detalle de una lista
   const handleViewListDetail = useCallback(
     (listId: number) => {
+      // Solo permitir ver detalles si el usuario es cliente
+      if (!isCustomer) {
+        return { ok: false, error: 'Solo los clientes pueden ver listas de favoritos' };
+      }
+      
       const list = favoriteLists.find((list) => list.id === listId);
       if (list) {
         setSelectedFavoriteList(list);
@@ -142,7 +179,7 @@ export const useFavorites = () => {
       }
       return { ok: false, error: 'Lista no encontrada' };
     },
-    [favoriteLists, setSelectedFavoriteList]
+    [favoriteLists, setSelectedFavoriteList, isCustomer]
   );
 
   // Función para limpiar la lista seleccionada
@@ -151,6 +188,11 @@ export const useFavorites = () => {
   }, [setSelectedFavoriteList]);
   // Función para obtener todos los IDs de productos favoritos
   const getAllFavoriteProductIds = useCallback(() => {
+    // Si el usuario no es cliente, no puede tener favoritos
+    if (!isCustomer) {
+      return [];
+    }
+    
     const allIds = new Set<number>();
 
     // Agregar IDs de las listas del backend
@@ -160,11 +202,16 @@ export const useFavorites = () => {
       });
     });
     return Array.from(allIds);
-  }, [favoriteLists]);
+  }, [favoriteLists, isCustomer]);
 
   // Función para eliminar una lista de favoritos
   const handleDeleteList = useCallback(
     async (listId: number) => {
+      // Solo permitir eliminar listas si el usuario es cliente
+      if (!isCustomer) {
+        return { ok: false, error: 'Solo los clientes pueden eliminar listas de favoritos' };
+      }
+      
       try {
         const result = await removeFavoriteList(listId);
         if (result.ok) {
@@ -188,12 +235,17 @@ export const useFavorites = () => {
         };
       }
     },
-    [removeFavoriteList, selectedFavoriteList?.id, clearSelectedList]
+    [removeFavoriteList, selectedFavoriteList?.id, clearSelectedList, isCustomer]
   );
 
   // Función para cambiar el nombre de una lista de favoritos
   const handleChangeListName = useCallback(
     async (listId: number, newName: string) => {
+      // Solo permitir cambiar nombres si el usuario es cliente
+      if (!isCustomer) {
+        return { ok: false, error: 'Solo los clientes pueden cambiar nombres de listas de favoritos' };
+      }
+      
       try {
         const result = await changeListName(listId, newName);
         return result;
@@ -205,12 +257,17 @@ export const useFavorites = () => {
         };
       }
     },
-    [changeListName]
+    [changeListName, isCustomer]
   );
 
   // Función para eliminar un producto de favoritos
   const handleRemoveProductFromFavorites = useCallback(
     async (favoriteId: number) => {
+      // Solo permitir eliminar productos si el usuario es cliente
+      if (!isCustomer) {
+        return { ok: false, error: 'Solo los clientes pueden eliminar productos de favoritos' };
+      }
+      
       try {
         const result = await removeProductFromFavorites(favoriteId);
         return result;
@@ -222,7 +279,7 @@ export const useFavorites = () => {
         };
       }
     },
-    [removeProductFromFavorites]
+    [removeProductFromFavorites, isCustomer]
   );
 
   const isRemovingFavorite = () => {

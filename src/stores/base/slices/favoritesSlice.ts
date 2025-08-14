@@ -24,6 +24,21 @@ export const createFavoritesSlice: StateCreator<
 
   // Acciones
   fetchFavorites: async () => {
+    // Obtener el estado actual del store para verificar el rol del usuario
+    const currentState = get();
+    const userRole = currentState.user?.roles?.[0];
+    
+    // Solo permitir fetch de favoritos si el usuario es customer
+    if (userRole !== 'customer') {
+      console.log('Skipping favorites fetch: user is not a customer');
+      set({
+        favoriteLists: [],
+        isLoadingFavorites: false,
+        favoritesInitialized: true,
+      });
+      return;
+    }
+    
     try {
       set({ isLoadingFavorites: true });
       const response = await fetchGetFavoriteLists();
@@ -52,6 +67,21 @@ export const createFavoritesSlice: StateCreator<
     }
   },
   createFavoriteList: async (name: string) => {
+    // Verificar que el usuario sea customer
+    const currentState = get();
+    console.log(currentState.user);
+    const userRole = currentState.user?.roles?.[0];
+    
+    if (userRole !== 'customer') {
+      return {
+        ok: false,
+        error: {
+          message: 'Solo los clientes pueden crear listas de favoritos',
+          status: 403,
+        },
+      };
+    }
+    
     const { favoriteLists } = get();
 
     const tempId = Date.now() * -1;
@@ -140,6 +170,20 @@ export const createFavoritesSlice: StateCreator<
     productId: number,
     unit: string
   ) => {
+    // Verificar que el usuario sea customer
+    const currentState = get();
+    const userRole = currentState.user?.roles?.[0];
+    
+    if (userRole !== 'customer') {
+      return {
+        ok: false,
+        error: {
+          message: 'Solo los clientes pueden agregar productos a favoritos',
+          status: 403,
+        },
+      };
+    }
+    
     try {
       set({ isLoadingFavorites: true });
 
@@ -179,6 +223,20 @@ export const createFavoritesSlice: StateCreator<
     }
   },
   removeProductFromFavorites: async (favoriteId: number) => {
+    // Verificar que el usuario sea customer
+    const currentState = get();
+    const userRole = currentState.user?.roles?.[0];
+    
+    if (userRole !== 'customer') {
+      return {
+        ok: false,
+        error: {
+          message: 'Solo los clientes pueden eliminar productos de favoritos',
+          status: 403,
+        },
+      };
+    }
+    
     const { favoriteLists, selectedFavoriteList } = get();
 
     // Encontrar el productId basado en el favoriteId para el optimistic update
@@ -270,6 +328,20 @@ export const createFavoritesSlice: StateCreator<
   },
 
   removeFavoriteList: async (listId: number) => {
+    // Verificar que el usuario sea customer
+    const currentState = get();
+    const userRole = currentState.user?.roles?.[0];
+    
+    if (userRole !== 'customer') {
+      return {
+        ok: false,
+        error: {
+          message: 'Solo los clientes pueden eliminar listas de favoritos',
+          status: 403,
+        },
+      };
+    }
+    
     try {
       set({ isLoadingFavorites: true });
       const response = await deleteFavoriteList(listId);
@@ -302,6 +374,20 @@ export const createFavoritesSlice: StateCreator<
   },
 
   changeListName: async (listId: number, newName: string) => {
+    // Verificar que el usuario sea customer
+    const currentState = get();
+    const userRole = currentState.user?.roles?.[0];
+    
+    if (userRole !== 'customer') {
+      return {
+        ok: false,
+        error: {
+          message: 'Solo los clientes pueden cambiar nombres de listas de favoritos',
+          status: 403,
+        },
+      };
+    }
+    
     try {
       set({ isLoadingFavorites: true });
       const response = await changeFavoriteListName(listId, newName);
@@ -373,6 +459,18 @@ export const createFavoritesSlice: StateCreator<
 
   // Nueva función unificada para manejar favoritos
   toggleProductFavorite: async (productId: number, product?: any) => {
+    // Verificar que el usuario sea customer
+    const currentState = get();
+    const userRole = currentState.user?.roles?.[0];
+    
+    if (userRole !== 'customer') {
+      return {
+        ok: false,
+        error: { message: 'Solo los clientes pueden usar favoritos', status: 403 },
+        requiresListSelection: false,
+      };
+    }
+    
     const { favoriteLists } = get();
 
     // Verificar si el producto ya está en favoritos y obtener el favoriteId
