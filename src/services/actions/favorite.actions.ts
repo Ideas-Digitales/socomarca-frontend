@@ -227,13 +227,33 @@ export const changeFavoriteListName = async (
       body: JSON.stringify({ name: newName }),
     });
 
-    const responseTest = await response.json();
-    console.log('responseTest', responseTest);
-
     if (!response.ok) {
-      throw new Error('Error updating favorite list name');
+      // Intentar leer el error del servidor si es posible
+      let errorMessage = `HTTP ${response.status}: Error updating favorite list name`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch {
+        console.log('Could not parse error response as JSON');
+      }
+      
+      return {
+        ok: false,
+        error: errorMessage,
+      };
     }
-    const data = await response.json();
+
+    // Para respuestas PUT exitosas, verificar si hay contenido antes de parsear JSON
+    let data = null;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        data = await response.json();
+      } catch (error) {
+        console.log('Could not parse response as JSON, continuing with null data');
+      }
+    }
+
     return {
       ok: true,
       data,
