@@ -52,12 +52,14 @@ export default function PrivateLayout({
                 router.push('/super-admin/users');
               }
             }}
-            className="fixed z-50 bottom-6 right-6 flex items-center gap-2 bg-[#007f00] hover:bg-[#003200] text-white px-6 py-3 rounded-full shadow-lg font-semibold text-lg transition-colors duration-200"
+            className="fixed z-50 bottom-20 md:bottom-16 right-4 md:right-6 flex items-center gap-2 bg-[#007f00] hover:bg-[#003200] text-white px-3 md:px-6 py-3 rounded-full shadow-lg font-semibold text-base md:text-lg transition-colors duration-200"
             style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
           >
             {/* Use a generic icon for now, you can import ArrowUturnLeftIcon if needed */}
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15.75L3.75 10.5m0 0L9 5.25m-5.25 5.25h12A6.75 6.75 0 0121 17.25v.75" /></svg>
-            Volver al panel de administración
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15.75L3.75 10.5m0 0L9 5.25m-5.25 5.25h12A6.75 6.75 0 0121 17.25v.75" /></svg>
+            <span className="hidden lg:inline">Volver al panel de administración</span>
+            <span className="hidden md:inline lg:hidden">Panel admin</span>
+            <span className="md:hidden">Panel admin</span>
           </button>
         )}
         {/* Navbar */}
