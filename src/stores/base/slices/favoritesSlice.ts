@@ -28,8 +28,8 @@ export const createFavoritesSlice: StateCreator<
     const currentState = get();
     const userRole = currentState.user?.roles?.[0];
     
-    // Solo permitir fetch de favoritos si el usuario es cliente
-    if (userRole !== 'cliente') {
+    // Solo permitir fetch de favoritos si el usuario es customer
+    if (userRole !== 'customer') {
       console.log('Skipping favorites fetch: user is not a customer');
       set({
         favoriteLists: [],
@@ -67,11 +67,12 @@ export const createFavoritesSlice: StateCreator<
     }
   },
   createFavoriteList: async (name: string) => {
-    // Verificar que el usuario sea cliente
+    // Verificar que el usuario sea customer
     const currentState = get();
+    console.log(currentState.user);
     const userRole = currentState.user?.roles?.[0];
     
-    if (userRole !== 'cliente') {
+    if (userRole !== 'customer') {
       return {
         ok: false,
         error: {
@@ -169,11 +170,11 @@ export const createFavoritesSlice: StateCreator<
     productId: number,
     unit: string
   ) => {
-    // Verificar que el usuario sea cliente
+    // Verificar que el usuario sea customer
     const currentState = get();
     const userRole = currentState.user?.roles?.[0];
     
-    if (userRole !== 'cliente') {
+    if (userRole !== 'customer') {
       return {
         ok: false,
         error: {
@@ -222,11 +223,11 @@ export const createFavoritesSlice: StateCreator<
     }
   },
   removeProductFromFavorites: async (favoriteId: number) => {
-    // Verificar que el usuario sea cliente
+    // Verificar que el usuario sea customer
     const currentState = get();
     const userRole = currentState.user?.roles?.[0];
     
-    if (userRole !== 'cliente') {
+    if (userRole !== 'customer') {
       return {
         ok: false,
         error: {
@@ -327,11 +328,11 @@ export const createFavoritesSlice: StateCreator<
   },
 
   removeFavoriteList: async (listId: number) => {
-    // Verificar que el usuario sea cliente
+    // Verificar que el usuario sea customer
     const currentState = get();
     const userRole = currentState.user?.roles?.[0];
     
-    if (userRole !== 'cliente') {
+    if (userRole !== 'customer') {
       return {
         ok: false,
         error: {
@@ -373,11 +374,11 @@ export const createFavoritesSlice: StateCreator<
   },
 
   changeListName: async (listId: number, newName: string) => {
-    // Verificar que el usuario sea cliente
+    // Verificar que el usuario sea customer
     const currentState = get();
     const userRole = currentState.user?.roles?.[0];
     
-    if (userRole !== 'cliente') {
+    if (userRole !== 'customer') {
       return {
         ok: false,
         error: {
@@ -458,11 +459,11 @@ export const createFavoritesSlice: StateCreator<
 
   // Nueva función unificada para manejar favoritos
   toggleProductFavorite: async (productId: number, product?: any) => {
-    // Verificar que el usuario sea cliente
+    // Verificar que el usuario sea customer
     const currentState = get();
     const userRole = currentState.user?.roles?.[0];
     
-    if (userRole !== 'cliente') {
+    if (userRole !== 'customer') {
       return {
         ok: false,
         error: { message: 'Solo los clientes pueden usar favoritos', status: 403 },

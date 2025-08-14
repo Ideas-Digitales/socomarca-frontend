@@ -25,8 +25,9 @@ export const useFavorites = () => {
   const { user } = useAuthStore();
   const hasInitialized = useRef(false);
   
-  // Verificar si el usuario tiene el rol "cliente" (customer)
-  const isCustomer = user?.roles?.includes('cliente') || false;
+  // Verificar si el usuario tiene el rol "customer"
+  console.log(user);
+  const isCustomer = user?.roles?.includes('customer') || false;
   
   useEffect(() => {
     // Solo inicializar si el usuario es cliente y no hemos iniciado el proceso y no estamos cargando
