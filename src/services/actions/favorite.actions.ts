@@ -176,7 +176,17 @@ export async function fetchRemoveProductFromFavorites(favoriteId: number) {
       };
     }
 
-    const data = await response.json();
+    // Para respuestas DELETE exitosas, verificar si hay contenido antes de parsear JSON
+    let data = null;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        data = await response.json();
+      } catch (error) {
+        console.log('Could not parse response as JSON, continuing with null data');
+      }
+    }
+
     return {
       ok: true,
       data,
