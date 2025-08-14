@@ -6,7 +6,6 @@ import {
   PaperAirplaneIcon, 
   TrashIcon, 
   PlusIcon,
-  EyeIcon,
   CalendarIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
@@ -68,10 +67,10 @@ export default function Notificaciones() {
     try {
       const result = await fetchCreateNotification(formData);
       if (result.ok) {
-                 setMessage({
-           type: 'success',
-           text: 'Oferta creada exitosamente'
-         });
+        setMessage({
+          type: 'success',
+          text: 'Notificación creada exitosamente'
+        });
         setShowCreateForm(false);
         setFormData({
           title: '',
@@ -82,46 +81,46 @@ export default function Notificaciones() {
         });
         loadNotifications(); // Reload the list
       } else {
-                 setMessage({
-           type: 'error',
-           text: result.error || 'Error al crear la oferta'
-         });
+        setMessage({
+          type: 'error',
+          text: result.error || 'Error al crear la notificación'
+        });
       }
     } catch (error) {
-             setMessage({
-         type: 'error',
-         text: 'Error inesperado al crear la oferta'
-       });
+      setMessage({
+        type: 'error',
+        text: 'Error inesperado al crear la notificación'
+      });
     } finally {
       setIsCreating(false);
     }
   };
 
   // Handle delete notification
-     const handleDeleteNotification = async (id: string) => {
-     if (!confirm('¿Estás seguro de que quieres eliminar esta oferta?')) {
-       return;
-     }
+  const handleDeleteNotification = async (id: string) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
+      return;
+    }
 
     try {
       const result = await fetchDeleteNotification(id);
       if (result.ok) {
-                 setMessage({
-           type: 'success',
-           text: 'Oferta eliminada exitosamente'
-         });
+        setMessage({
+          type: 'success',
+          text: 'Notificación eliminada exitosamente'
+        });
         loadNotifications(); // Reload the list
       } else {
-                 setMessage({
-           type: 'error',
-           text: result.error || 'Error al eliminar la oferta'
-         });
+        setMessage({
+          type: 'error',
+          text: result.error || 'Error al eliminar la notificación'
+        });
       }
     } catch (error) {
-             setMessage({
-         type: 'error',
-         text: 'Error inesperado al eliminar la oferta'
-       });
+      setMessage({
+        type: 'error',
+        text: 'Error inesperado al eliminar la notificación'
+      });
     }
   };
 
@@ -187,20 +186,20 @@ export default function Notificaciones() {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <BellIcon className="w-8 h-8 text-lime-600" />
-                     <h1 className="text-2xl font-bold text-slate-800">
-             Gestión de Ofertas del Supermercado
-           </h1>
+          <h1 className="text-2xl font-bold text-slate-800">
+            Notificaciones
+          </h1>
         </div>
-                 <div className="flex gap-4">
-           <button
-             onClick={() => setShowCreateForm(true)}
-             className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm flex items-center gap-2"
-             data-cy="new-notification-button"
-           >
-             <PlusIcon className="w-5 h-5" />
-             Nueva oferta
-           </button>
-         </div>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm flex items-center gap-2"
+            data-cy="new-notification-button"
+          >
+            <PlusIcon className="w-5 h-5" />
+            Nueva notificación
+          </button>
+        </div>
       </div>
 
       {/* Message */}
@@ -217,14 +216,14 @@ export default function Notificaciones() {
         </div>
       )}
 
-             {/* Create Form Modal */}
-       {showCreateForm && (
-         <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+      {/* Create Form Modal */}
+      {showCreateForm && (
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-                             <h2 className="text-xl font-semibold text-slate-800">
-                 Crear Nueva Notificación
-               </h2>
+              <h2 className="text-xl font-semibold text-slate-800">
+                Crear Notificación
+              </h2>
               <button
                 onClick={() => setShowCreateForm(false)}
                 className="text-slate-400 hover:text-slate-600"
@@ -235,30 +234,30 @@ export default function Notificaciones() {
 
             <form onSubmit={handleCreateNotification} className="space-y-4">
               <div>
-                                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                   Título de la oferta
-                 </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Título
+                </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                                     placeholder="Ej: 🥬 Semana Saludable - 30% OFF"
+                  placeholder="Ej: Mantenimiento, Ofertas limpieza, Nuevos productos"
                   required
                   data-cy="notification-title-input"
                 />
               </div>
 
               <div>
-                                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                   Descripción de la oferta
-                 </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Mensaje
+                </label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
                   rows={4}
-                                     placeholder="Describe los detalles de la oferta, descuentos, productos, fechas límite, etc..."
+                  placeholder="Ej: Ofertas en productos de limpieza. 20% de descuento hasta el viernes."
                   required
                   data-cy="notification-message-input"
                 />
@@ -266,26 +265,26 @@ export default function Notificaciones() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                     Tipo de oferta
-                   </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Tipo
+                  </label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                     className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
                     data-cy="notification-type-select"
                   >
-                                         <option value="info">Información General</option>
-                     <option value="warning">Oferta por Tiempo Limitado</option>
-                     <option value="success">Gran Descuento</option>
-                     <option value="error">Oferta Urgente</option>
+                    <option value="info">Información</option>
+                    <option value="warning">Advertencia</option>
+                    <option value="success">Éxito</option>
+                    <option value="error">Error</option>
                   </select>
                 </div>
 
                 <div>
-                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                     Fecha de inicio (opcional)
-                   </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Fecha de envío (opcional)
+                  </label>
                   <input
                     type="datetime-local"
                     value={formData.scheduledFor}
@@ -293,19 +292,6 @@ export default function Notificaciones() {
                     className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
                   />
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="rounded border-slate-300 text-lime-600 focus:ring-lime-500"
-                />
-                                 <label htmlFor="isActive" className="text-sm text-slate-700">
-                   Activar oferta inmediatamente
-                 </label>
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
@@ -323,7 +309,7 @@ export default function Notificaciones() {
                   data-cy="create-notification-button"
                 >
                   <PaperAirplaneIcon className="w-4 h-4" />
-                                     {isCreating ? 'Creando...' : 'Crear notificación'}
+                  {isCreating ? 'Creando...' : 'Crear notificación'}
                 </button>
               </div>
             </form>
@@ -334,27 +320,27 @@ export default function Notificaciones() {
       {/* Notifications List */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b border-slate-200">
-                     <h2 className="text-lg font-semibold text-slate-800">
-             Ofertas del Supermercado ({notifications.length})
-           </h2>
+          <h2 className="text-lg font-semibold text-slate-800">
+            Lista de Notificaciones ({notifications.length})
+          </h2>
         </div>
 
         {notifications.length === 0 ? (
           <div className="p-12 text-center">
             <BellIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                         <h3 className="text-lg font-medium text-slate-600 mb-2">
-               No hay ofertas activas
-             </h3>
-             <p className="text-slate-500 mb-4">
-               Crea tu primera oferta para atraer más clientes
-             </p>
-             <button
-               onClick={() => setShowCreateForm(true)}
-               className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm flex items-center gap-2 mx-auto"
-             >
-               <PlusIcon className="w-5 h-5" />
-               Crear notificación
-             </button>
+            <h3 className="text-lg font-medium text-slate-600 mb-2">
+              No hay notificaciones
+            </h3>
+            <p className="text-slate-500 mb-4">
+              Crea tu primera notificación para informar a los usuarios
+            </p>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm flex items-center gap-2 mx-auto"
+            >
+              <PlusIcon className="w-5 h-5" />
+              Crear notificación
+            </button>
           </div>
         ) : (
           <div className="divide-y divide-slate-200">
@@ -370,15 +356,6 @@ export default function Notificaciones() {
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeBadgeColor(notification.type)}`}>
                         {notification.type}
                       </span>
-                      {notification.isActive ? (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Activa
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          Inactiva
-                        </span>
-                      )}
                     </div>
                     
                     <p className="text-slate-600 mb-3">{notification.message}</p>
@@ -404,14 +381,14 @@ export default function Notificaciones() {
                   </div>
                   
                   <div className="flex items-center gap-2 ml-4">
-                                         <button
-                       onClick={() => handleDeleteNotification(notification.id)}
-                       className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                       title="Eliminar oferta"
-                       data-cy="delete-notification-button"
-                     >
-                       <TrashIcon className="w-5 h-5" />
-                     </button>
+                    <button
+                      onClick={() => handleDeleteNotification(notification.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                      title="Eliminar notificación"
+                      data-cy="delete-notification-button"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               </div>

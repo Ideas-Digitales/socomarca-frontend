@@ -178,3 +178,79 @@ export async function logoutAction() {
     console.error('Logout failed:', error);
   }
 }
+
+export async function changePasswordAction(
+  currentPassword: string,
+  newPassword: string,
+  passwordConfirmation: string
+): Promise<{ success: boolean; message: string; error?: string }> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        success: false,
+        message: 'No hay sesión activa',
+        error: 'TOKEN_NOT_FOUND'
+      };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/auth/password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+        password: newPassword,
+        password_confirmation: passwordConfirmation
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Manejar diferentes tipos de errores del backend
+      let errorMessage = 'Error al cambiar la contraseña';
+      
+      if (response.status === 401) {
+        errorMessage = 'La contraseña actual es incorrecta';
+      } else if (response.status === 422) {
+        // Errores de validación
+        if (data.errors?.current_password) {
+          errorMessage = data.errors.current_password[0];
+        } else if (data.errors?.password) {
+          errorMessage = data.errors.password[0];
+        } else if (data.errors?.password_confirmation) {
+          errorMessage = data.errors.password_confirmation[0];
+        } else if (data.message) {
+          errorMessage = data.message;
+        }
+      } else if (data.message) {
+        errorMessage = data.message;
+      }
+
+      return {
+        success: false,
+        message: errorMessage,
+        error: 'API_ERROR'
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Contraseña actualizada exitosamente'
+    };
+
+  } catch (error) {
+    console.error('Error al cambiar contraseña:', error);
+    return {
+      success: false,
+      message: 'Ocurrió un error inesperado al cambiar la contraseña',
+      error: 'NETWORK_ERROR'
+    };
+  }
+}

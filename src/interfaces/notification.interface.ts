@@ -13,7 +13,7 @@ export interface NotificationData {
   title: string;
   message: string;
   type: 'info' | 'warning' | 'success' | 'error';
-  isActive: boolean;
+  isActive?: boolean;
   scheduledFor?: string;
 }
 

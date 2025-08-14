@@ -2,17 +2,19 @@
 
 import { useState } from 'react';
 import { EyeIcon, EyeSlashIcon, KeyIcon } from '@heroicons/react/24/outline';
-import { patchUserAction } from '@/services/actions/user.actions';
+import { changePasswordAction } from '@/services/actions/auth.actions';
 import { validatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthLevel } from '@/stores/base/utils/passwordUtilities';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 interface CambiarContraseñaFormData {
+  currentPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
 
 interface FormErrors {
+  currentPassword?: string;
   newPassword?: string;
   confirmPassword?: string;
   general?: string;
@@ -21,12 +23,14 @@ interface FormErrors {
 export default function CambiarContraseñaSection() {
   const { user } = useAuthStore();
   const [formData, setFormData] = useState<CambiarContraseñaFormData>({
+    currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -59,6 +63,10 @@ export default function CambiarContraseñaSection() {
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
 
+    if (!formData.currentPassword.trim()) {
+      newErrors.currentPassword = 'La contraseña actual es requerida';
+    }
+
     if (!formData.newPassword.trim()) {
       newErrors.newPassword = 'La nueva contraseña es requerida';
     } else if (formData.newPassword.length < 8) {
@@ -78,8 +86,8 @@ export default function CambiarContraseñaSection() {
 
   // Verificar si el formulario es válido
   const isFormValid = (): boolean => {
-    // Verificar que ambos campos tengan contenido
-    if (!formData.newPassword.trim() || !formData.confirmPassword.trim()) {
+    // Verificar que todos los campos tengan contenido
+    if (!formData.currentPassword.trim() || !formData.newPassword.trim() || !formData.confirmPassword.trim()) {
       return false;
     }
 
@@ -113,26 +121,29 @@ export default function CambiarContraseñaSection() {
     setErrors({});
 
     try {
-      if (!user?.id) {
-        throw new Error('Usuario no autenticado');
-      }
-
-      const updateData = {
-        password: formData.newPassword,
-        password_confirmation: formData.confirmPassword,
-      };
-
-      const result = await patchUserAction(user.id, updateData);
+      const result = await changePasswordAction(
+        formData.currentPassword,
+        formData.newPassword,
+        formData.confirmPassword
+      );
 
       if (result.success) {
-        setSuccessMessage('Contraseña actualizada exitosamente');
+        setSuccessMessage(result.message);
         setFormData({
+          currentPassword: '',
           newPassword: '',
           confirmPassword: '',
         });
         setPasswordValidation(null);
       } else {
-        setErrors({ general: result.error || 'Error al actualizar la contraseña' });
+        // Manejar errores específicos de la API
+        if (result.error === 'TOKEN_NOT_FOUND') {
+          setErrors({ general: 'Sesión expirada. Por favor, inicia sesión nuevamente.' });
+        } else if (result.error === 'API_ERROR') {
+          setErrors({ general: result.message });
+        } else {
+          setErrors({ general: result.message });
+        }
       }
     } catch (error) {
       console.error('Error al cambiar contraseña:', error);
@@ -163,6 +174,39 @@ export default function CambiarContraseñaSection() {
             <p className="text-red-800 text-sm">{errors.general}</p>
           </div>
         )}
+
+        {/* Contraseña actual */}
+        <div>
+          <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
+            Contraseña actual
+          </label>
+          <div className="relative">
+            <input
+              type={showCurrentPassword ? 'text' : 'password'}
+              id="currentPassword"
+              value={formData.currentPassword}
+              onChange={(e) => handleInputChange('currentPassword', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 ${
+                errors.currentPassword ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Ingresa tu contraseña actual"
+            />
+            <button
+              type="button"
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            >
+              {showCurrentPassword ? (
+                <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+              ) : (
+                <EyeIcon className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          </div>
+          {errors.currentPassword && (
+            <p className="mt-1 text-sm text-red-600">{errors.currentPassword}</p>
+          )}
+        </div>
 
         {/* Nueva contraseña */}
         <div>
