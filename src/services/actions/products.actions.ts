@@ -714,11 +714,11 @@ export const syncProductImages = async (file: InputFile): Promise<ProductImagesS
 
     // Crear FormData para enviar el archivo
     const formData = new FormData();
-    formData.append('sync_file', file);
+    formData.append('sync_file', file as any);
     
          // Log del FormData para debug
      console.log('FormData creado:');
-     for (let [key, value] of formData.entries()) {
+     for (const [key, value] of formData.entries()) {
        // Verificar si es un archivo usando propiedades del objeto
        if (value && typeof value === 'object' && 'name' in value && 'size' in value && 'type' in value) {
          console.log(`  ${key}:`, {
@@ -773,7 +773,7 @@ export const syncProductImages = async (file: InputFile): Promise<ProductImagesS
     if (!response.ok) {
       console.error('Error HTTP:', response.status, response.statusText);
       
-      let errorData = {};
+      let errorData: any = {};
       let errorMessage = '';
       
       // Manejo de errores usando la configuración
@@ -811,7 +811,7 @@ export const syncProductImages = async (file: InputFile): Promise<ProductImagesS
       };
     }
 
-    let data;
+    let data: any;
     try {
       data = await response.json();
       console.log('Respuesta exitosa del servidor:', data);

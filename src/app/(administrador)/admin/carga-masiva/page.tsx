@@ -133,7 +133,7 @@ export default function CargaMasivaPage() {
             Carga Masiva de Imágenes
           </h1>
           <p className="text-gray-600">
-            Sube un archivo ZIP que contenga un archivo Excel con la información de productos y una carpeta "images" con las imágenes correspondientes.
+            Sube un archivo ZIP que contenga un archivo Excel con la información de productos y una carpeta &quot;images&quot; con las imágenes correspondientes.
           </p>
         </div>
 
@@ -240,7 +240,7 @@ export default function CargaMasivaPage() {
              </li>
              <li className="flex items-start">
                <span className="text-blue-600 mr-2">•</span>
-               El ZIP debe contener un archivo Excel (.xlsx) y una carpeta llamada "images"
+               El ZIP debe contener un archivo Excel (.xlsx) y una carpeta llamada &quot;images&quot;
              </li>
                            <li className="flex items-start">
                 <span className="text-blue-600 mr-2">•</span>
@@ -248,7 +248,7 @@ export default function CargaMasivaPage() {
               </li>
              <li className="flex items-start">
                <span className="text-blue-600 mr-2">•</span>
-               Las imágenes deben estar en la carpeta "images" con formatos: JPG y WEBP
+               Las imágenes deben estar en la carpeta &quot;images&quot; con formatos: JPG y WEBP
              </li>
              <li className="flex items-start">
                <span className="text-blue-600 mr-2">•</span>

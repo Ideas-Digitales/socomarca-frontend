@@ -129,6 +129,7 @@ export interface ProductImagesSyncResponse {
     synced_products?: number;
     errors?: string[];
     warnings?: string[];
+    [key: string]: any; // Permitir propiedades adicionales para debug y errores
   } | null;
 }
 
