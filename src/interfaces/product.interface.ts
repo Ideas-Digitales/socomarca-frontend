@@ -117,3 +117,24 @@ export interface ProductSearchResponse {
   };
   filters?: BackendFilters;
 }
+
+/**
+ * Respuesta de la API de sincronización de imágenes de productos
+ */
+export interface ProductImagesSyncResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    processed_files?: number;
+    synced_products?: number;
+    errors?: string[];
+    warnings?: string[];
+  } | null;
+}
+
+/**
+ * Parámetros para la sincronización de imágenes
+ */
+export interface ProductImagesSyncParams {
+  file: File;
+}

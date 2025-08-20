@@ -60,6 +60,11 @@ export const getSidebarConfig = (
       url: '/admin/productos',
     },
     {
+      id: 'carga-masiva',
+      label: 'Carga Masiva',
+      url: '/admin/carga-masiva',
+    },
+    {
       id: 'categorias',
       label: 'Categorías',
       url: '/admin/categorias',
