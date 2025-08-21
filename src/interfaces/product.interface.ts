@@ -77,7 +77,7 @@ export interface FetchSearchProductsByFiltersProps {
   unit?: string;
   category_id?: number;
   subcategory_id?: number;
-  brand_id?: number;
+  brand_id?: number[];
   is_favorite?: boolean;
 }
 

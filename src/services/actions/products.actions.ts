@@ -224,6 +224,31 @@ export const fetchSearchProductsByFilters = async (
         });
       }
 
+      // Aplicar filtros directos (no por campo)
+      if (filters.category_id !== undefined) {
+        filteredProducts = filteredProducts.filter((product) =>
+          product.category.id === filters.category_id
+        );
+      }
+
+      if (filters.subcategory_id !== undefined) {
+        filteredProducts = filteredProducts.filter((product) =>
+          product.subcategory.id === filters.subcategory_id
+        );
+      }
+
+      if (filters.brand_id !== undefined && filters.brand_id.length > 0) {
+        filteredProducts = filteredProducts.filter((product) =>
+          filters.brand_id!.includes(product.brand.id)
+        );
+      }
+
+      if (filters.is_favorite !== undefined) {
+        filteredProducts = filteredProducts.filter((product) =>
+          product.is_favorite === filters.is_favorite
+        );
+      }
+
       // Aplicar filtros de rango de precio si existen
       if (filters.min !== undefined || filters.max !== undefined) {
         filteredProducts = filteredProducts.filter((product) => {
@@ -331,6 +356,7 @@ export const fetchSearchProductsByFilters = async (
         error: null,
       };
     } else {
+      console.log('filters', filters);
       const { getCookie } = await cookiesManagement();
       const cookie = getCookie('token');
 
@@ -375,7 +401,7 @@ export const fetchSearchProductsByFilters = async (
         requestBody.filters.subcategory_id = filters.subcategory_id;
       }
 
-      if (filters.brand_id !== undefined) {
+      if (filters.brand_id !== undefined && filters.brand_id.length > 0) {
         requestBody.filters.brand_id = filters.brand_id;
       }
 
