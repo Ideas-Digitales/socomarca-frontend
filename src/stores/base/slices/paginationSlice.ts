@@ -32,7 +32,7 @@ export const createPaginationSlice: StateCreator<
         min: selectedMinPrice,
         max: selectedMaxPrice,
         category_id: selectedCategories[0],
-        brand_id: selectedBrands[0]
+        brand_id: selectedBrands
       });
     } else {
       // Si no hay búsqueda ni filtros, usar fetchProducts

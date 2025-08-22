@@ -395,7 +395,10 @@ export default function CategoryFilterMobile({
                     type="checkbox"
                     checked={showOnlyFavorites}
                     onChange={() => {
-                      console.log('Toggle favorites clicked, current state:', showOnlyFavorites);
+                      console.log(
+                        'Toggle favorites clicked, current state:',
+                        showOnlyFavorites
+                      );
                       toggleShowOnlyFavorites();
                     }}
                   />

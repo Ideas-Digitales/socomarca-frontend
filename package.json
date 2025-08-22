@@ -3,12 +3,10 @@
   "version": "0.1.0",
   "private": true,  "scripts": {
     "dev": "next dev --turbopack",
+    "dev:large-files": "node server.js",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run",
-    "cy:open": "npx cypress open"
+    "lint": "next lint"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -35,7 +33,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "cypress": "^14.4.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",

@@ -77,7 +77,7 @@ export interface FetchSearchProductsByFiltersProps {
   unit?: string;
   category_id?: number;
   subcategory_id?: number;
-  brand_id?: number;
+  brand_id?: number[];
   is_favorite?: boolean;
 }
 
@@ -116,4 +116,26 @@ export interface ProductSearchResponse {
     }>;
   };
   filters?: BackendFilters;
+}
+
+/**
+ * Respuesta de la API de sincronización de imágenes de productos
+ */
+export interface ProductImagesSyncResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    processed_files?: number;
+    synced_products?: number;
+    errors?: string[];
+    warnings?: string[];
+    [key: string]: any; // Permitir propiedades adicionales para debug y errores
+  } | null;
+}
+
+/**
+ * Parámetros para la sincronización de imágenes
+ */
+export interface ProductImagesSyncParams {
+  file: File;
 }

@@ -25,8 +25,6 @@ export const useFavorites = () => {
   const { user } = useAuthStore();
   const hasInitialized = useRef(false);
   
-  // Verificar si el usuario tiene el rol "customer"
-  console.log(user);
   const isCustomer = user?.roles?.includes('customer') || false;
   
   useEffect(() => {

@@ -16,6 +16,9 @@ const authCache = new Map<string, { data: AuthData; timestamp: number }>();
 const CACHE_DURATION = 5000; // 5 segundos para reducir aún más las llamadas
 const MAX_CACHE_SIZE = 100; // Limitar el tamaño del cache
 
+// Configuración para archivos grandes
+const LARGE_FILE_LIMIT = 150 * 1024 * 1024; // 150MB en bytes
+
 // Función para limpiar cache viejo
 function cleanupCache() {
   const now = Date.now();
@@ -34,6 +37,23 @@ function cleanupCache() {
     const toDelete = entries.slice(0, authCache.size - MAX_CACHE_SIZE);
     toDelete.forEach(([key]) => authCache.delete(key));
   }
+}
+
+// Función para verificar si es una solicitud de archivo grande
+function isLargeFileRequest(request: NextRequest): boolean {
+  const contentLength = request.headers.get('content-length');
+  const contentType = request.headers.get('content-type');
+  
+  if (contentLength && parseInt(contentLength) > LARGE_FILE_LIMIT) {
+    return true;
+  }
+  
+  // Verificar si es multipart/form-data (subida de archivos)
+  if (contentType && contentType.includes('multipart/form-data')) {
+    return true;
+  }
+  
+  return false;
 }
 
 // Función para obtener datos de autenticación desde la API interna
@@ -120,6 +140,21 @@ export default async function middleware(request: NextRequest) {
 
   // Saltar middleware en modo QA
   if (process.env.QA_MODE === 'true') {
+    return NextResponse.next();
+  }
+
+  // ========== MANEJAR ARCHIVOS GRANDES ==========
+  // Para archivos grandes, saltar algunas validaciones del middleware
+  if (isLargeFileRequest(request)) {
+    console.log('Middleware: Detected large file request, applying special handling');
+    
+    // Para archivos grandes, solo verificar autenticación básica
+    const authData = await getAuthData(request, false);
+    if (!authData.authenticated) {
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
+    
+    // Permitir la solicitud para archivos grandes
     return NextResponse.next();
   }
 

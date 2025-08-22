@@ -11,6 +11,7 @@
 import {
   Product,
   SearchWithPaginationProps,
+  ProductImagesSyncResponse,
 } from '@/interfaces/product.interface';
 import {
   PaginatedResult,
@@ -19,6 +20,8 @@ import {
 } from '@/mock/products';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
+import { SYNC_CONFIG, validateFile, getErrorMessage } from './sync-config';
+import { InputFile } from '@/interfaces/server-file.interface';
 
 /**
  * Formats paginated product data into a Laravel-style API response.
@@ -221,6 +224,31 @@ export const fetchSearchProductsByFilters = async (
         });
       }
 
+      // Aplicar filtros directos (no por campo)
+      if (filters.category_id !== undefined) {
+        filteredProducts = filteredProducts.filter((product) =>
+          product.category.id === filters.category_id
+        );
+      }
+
+      if (filters.subcategory_id !== undefined) {
+        filteredProducts = filteredProducts.filter((product) =>
+          product.subcategory.id === filters.subcategory_id
+        );
+      }
+
+      if (filters.brand_id !== undefined && filters.brand_id.length > 0) {
+        filteredProducts = filteredProducts.filter((product) =>
+          filters.brand_id!.includes(product.brand.id)
+        );
+      }
+
+      if (filters.is_favorite !== undefined) {
+        filteredProducts = filteredProducts.filter((product) =>
+          product.is_favorite === filters.is_favorite
+        );
+      }
+
       // Aplicar filtros de rango de precio si existen
       if (filters.min !== undefined || filters.max !== undefined) {
         filteredProducts = filteredProducts.filter((product) => {
@@ -328,6 +356,7 @@ export const fetchSearchProductsByFilters = async (
         error: null,
       };
     } else {
+      console.log('filters', filters);
       const { getCookie } = await cookiesManagement();
       const cookie = getCookie('token');
 
@@ -372,7 +401,7 @@ export const fetchSearchProductsByFilters = async (
         requestBody.filters.subcategory_id = filters.subcategory_id;
       }
 
-      if (filters.brand_id !== undefined) {
+      if (filters.brand_id !== undefined && filters.brand_id.length > 0) {
         requestBody.filters.brand_id = filters.brand_id;
       }
 
@@ -665,6 +694,199 @@ export const fetchGetProductsList = async ({
       ok: false,
       data: null,
       error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+};
+
+/**
+ * Sincroniza imágenes de productos mediante la carga de un archivo ZIP.
+ * @param file - Archivo ZIP con imágenes de productos
+ * @returns Resultado de la sincronización
+ */
+export const syncProductImages = async (file: InputFile): Promise<ProductImagesSyncResponse> => {
+  try {
+    console.log('Iniciando sincronización de imágenes...');
+    console.log('Archivo:', file.name, 'Tamaño:', file.size, 'Tipo:', file.type);
+    
+    // Validación del archivo usando la configuración
+    const fileValidation = validateFile(file);
+    if (!fileValidation.isValid) {
+      return {
+        success: false,
+        message: fileValidation.error || 'Archivo inválido',
+        data: {
+          file_validation: {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            error: fileValidation.error
+          }
+        }
+      };
+    }
+    
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      console.error('No se encontró token de autenticación');
+      return {
+        success: false,
+        message: 'No autorizado: Token no proporcionado',
+      };
+    }
+
+    console.log('Token obtenido, preparando FormData...');
+
+    // Crear FormData para enviar el archivo
+    const formData = new FormData();
+    formData.append('sync_file', file as any);
+    
+         // Log del FormData para debug
+     console.log('FormData creado:');
+     for (const [key, value] of formData.entries()) {
+       // Verificar si es un archivo usando propiedades del objeto
+       if (value && typeof value === 'object' && 'name' in value && 'size' in value && 'type' in value) {
+         console.log(`  ${key}:`, {
+           name: (value as any).name,
+           size: (value as any).size,
+           type: (value as any).type
+         });
+       } else {
+         console.log(`  ${key}:`, value);
+       }
+     }
+
+    console.log('Enviando petición a:', `${BACKEND_URL}/products/images/sync`);
+
+    const startTime = Date.now();
+    
+    // Función para hacer la petición con retry
+    const makeRequest = async (retryCount = 0): Promise<Response> => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/products/images/sync`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            // No incluir Content-Type para FormData, se establece automáticamente
+          },
+          body: formData,
+        });
+        
+        return response;
+      } catch (error) {
+        if (retryCount < 2 && error instanceof TypeError) {
+          console.log(`Intento ${retryCount + 1} falló, reintentando...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+          return makeRequest(retryCount + 1);
+        }
+        throw error;
+      }
+    };
+    
+    const response = await makeRequest();
+
+    const endTime = Date.now();
+    const responseTime = endTime - startTime;
+    
+    console.log(`Respuesta recibida en ${responseTime}ms. Status:`, response.status);
+    console.log('Headers de respuesta:', Object.fromEntries(response.headers.entries()));
+    console.log('URL de la petición:', `${BACKEND_URL}/products/images/sync`);
+    console.log('Método de la petición:', 'POST');
+    console.log('Tamaño del archivo enviado:', file.size, 'bytes');
+
+    if (!response.ok) {
+      console.error('Error HTTP:', response.status, response.statusText);
+      
+      let errorData: any = {};
+      let errorMessage = '';
+      
+      // Manejo de errores usando la configuración
+      errorMessage = getErrorMessage(response.status);
+      
+      try {
+        errorData = await response.json();
+        console.log('Datos de error del servidor:', errorData);
+        // Usar mensaje del servidor si está disponible
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (parseError) {
+        console.error('Error al parsear respuesta de error:', parseError);
+        errorData = { 
+          message: errorMessage,
+          parse_error: parseError instanceof Error ? parseError.message : 'Error desconocido'
+        };
+      }
+      
+      return {
+        success: false,
+        message: errorMessage,
+        data: {
+          http_status: response.status,
+          http_status_text: response.statusText,
+          response_time_ms: responseTime,
+          server_error: errorData,
+          request_headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer [TOKEN]'
+          }
+        }
+      };
+    }
+
+    let data: any;
+    try {
+      data = await response.json();
+      console.log('Respuesta exitosa del servidor:', data);
+    } catch (parseError) {
+      console.error('Error al parsear respuesta exitosa:', parseError);
+      return {
+        success: false,
+        message: 'Error al procesar respuesta del servidor',
+        data: {
+          parse_error: parseError instanceof Error ? parseError.message : 'Error desconocido',
+          response_time_ms: responseTime
+        }
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || 'Imágenes sincronizadas exitosamente',
+      data: {
+        ...data.data,
+        response_time_ms: responseTime,
+        http_status: response.status
+      }
+    };
+  } catch (error) {
+    console.error('Error inesperado en syncProductImages:', error);
+    
+    let errorMessage = 'Error inesperado al sincronizar imágenes';
+    let errorDetails = {};
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      errorDetails = {
+        name: error.name,
+        stack: error.stack
+      };
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else {
+      errorDetails = { error_object: error };
+    }
+    
+    return {
+      success: false,
+      message: errorMessage,
+      data: {
+        error_details: errorDetails,
+        timestamp: new Date().toISOString()
+      }
     };
   }
 };

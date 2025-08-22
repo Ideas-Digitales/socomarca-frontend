@@ -177,7 +177,7 @@ export const createFiltersSlice: StateCreator<
 
       // Agregar marcas si están seleccionadas
       if (selectedBrands.length > 0) {
-        searchParams.brand_id = selectedBrands[0];
+        searchParams.brand_id = selectedBrands;
       }
 
       // Agregar filtro de favoritos si está activado
@@ -207,12 +207,12 @@ export const createFiltersSlice: StateCreator<
   },
 
   clearAllFilters: async () => {
-    const { 
-      // fetchProducts, 
-      // productPaginationMeta, 
-      minPrice, 
+    const {
+      // fetchProducts,
+      // productPaginationMeta,
+      minPrice,
       maxPrice,
-      resetSearchRelatedStates
+      resetSearchRelatedStates,
     } = get();
 
     set({

@@ -18,6 +18,8 @@ export const useAuthStore = () => {
     initializeFromAuth: store.initializeFromAuth,
     setLoading: store.setLoading,
     getUserRole: store.getUserRole,
+    getUserPermissions: store.getUserPermissions,
+    hasPermission: store.hasPermission,
   };
 };
 
@@ -38,6 +40,8 @@ export const useAuthActions = () =>
     initializeFromAuth: state.initializeFromAuth,
     setLoading: state.setLoading,
     getUserRole: state.getUserRole,
+    getUserPermissions: state.getUserPermissions,
+    hasPermission: state.hasPermission,
   }));
 
 export default useAuthStore;
