@@ -31,13 +31,13 @@ export default function MensajesCliente() {
   const [desktopFile, setDesktopFile] = useState<File | null>(null);
   const [responsiveFile, setResponsiveFile] = useState<File | null>(null);
 
-  // Función para validar tamaño de archivo (máximo 1MB)
+  // Función para validar tamaño de archivo (máximo 15MB)
   const validateFileSize = (file: File): boolean => {
-    const maxSize = 1 * 1024 * 1024; // 1MB en bytes
+    const maxSize = 15 * 1024 * 1024; // 15MB en bytes
     if (file.size > maxSize) {
       setMessage({
         type: 'error',
-        text: `El archivo "${file.name}" excede el tamaño máximo de 1MB. Tamaño actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
+        text: `El archivo "${file.name}" excede el tamaño máximo de 15MB. Tamaño actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
       });
       return false;
     }
@@ -196,25 +196,24 @@ export default function MensajesCliente() {
 
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-8 sm:space-y-10">
+    <div className="max-w-5xl mx-auto p-6 space-y-10">
       {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-6">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 leading-tight">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-slate-800">
           Mensajes para el cliente
         </h1>
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+        <div className="flex gap-4">
           <button
             onClick={() => (window.location.href = '/')}
-            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center justify-center gap-2 text-sm sm:text-base"
+            className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
           >
-            <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="hidden sm:inline">Ver en el sitio</span>
-            <span className="sm:hidden">Ver sitio</span>
+            <EyeIcon className="w-5 h-5" />
+            Ver en el sitio
           </button>
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="w-full sm:w-auto bg-lime-500 text-white px-4 sm:px-6 py-2.5 sm:py-2 rounded hover:bg-lime-600 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+            className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Guardando...' : 'Guardar cambios'}
           </button>
@@ -235,11 +234,11 @@ export default function MensajesCliente() {
       )}
 
       {/* Modal */}
-      <section className="space-y-3 sm:space-y-4">
-        <h2 className="text-lg sm:text-xl font-semibold text-slate-700">Modal</h2>
-        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold text-slate-700">Modal</h2>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {/* Botón subir imagen modal */}
-          <div className="w-full lg:w-1/2">
+          <div className="w-full sm:w-1/2">
             <input
               type="file"
               accept="image/*"
@@ -267,53 +266,51 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => modalInputRef.current?.click()}
-              className="flex items-center gap-2 justify-center lg:justify-start border w-full rounded px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 justify-center sm:justify-start border w-full rounded px-4 py-2 text-sm"
             >
-              <ArrowUpTrayIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ArrowUpTrayIcon className="w-5 h-5" />
               Subir imagen
             </button>
             {modalFileName && (
-              <p className="text-xs text-gray-500 mt-2 truncate">
+              <p className="text-xs text-gray-500 mt-1 truncate">
                 {modalFileName}
               </p>
             )}
             {modalImageUrl && (
-              <img src={modalImageUrl} alt="Imagen modal actual" className="mt-3 max-h-24 rounded border" />
+              <img src={modalImageUrl} alt="Imagen modal actual" className="mt-2 max-h-24 rounded border" />
             )}
           </div>
 
           {/* Activar/desactivar */}
-          <div className="flex items-center gap-4 w-full lg:w-auto justify-center lg:justify-start">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-1 text-sm">
               <input
                 type="radio"
                 name="modal"
                 checked={modalActivo}
                 onChange={() => setModalActivo(true)}
-                className="cursor-pointer"
               />
               Activar
             </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label className="flex items-center gap-1 text-sm">
               <input
                 type="radio"
                 name="modal"
                 checked={!modalActivo}
                 onChange={() => setModalActivo(false)}
-                className="cursor-pointer"
               />
               Desactivar
             </label>
           </div>
         </div>
-        <div className="bg-gray-50 p-3 rounded-lg">
-          <p className="text-sm text-lime-600 font-medium mb-2">
+        <div>
+          <p className="text-sm text-lime-600 font-medium">
             Recomendaciones de carga
           </p>
-          <p className="text-sm text-gray-600 leading-relaxed">
+          <p className="text-sm text-gray-600">
             Resolución recomendada: <strong>620x400 px</strong>
             <br />
-            Peso máximo por imagen: <strong>1 MB</strong>
+            Peso máximo por imagen: <strong>15 MB</strong>
             <br />
             JPEG: Comprimido al 70–80% para mantener calidad con un tamaño
             pequeño.
@@ -322,13 +319,13 @@ export default function MensajesCliente() {
       </section>
 
       {/* Banner principal */}
-      <section className="bg-slate-50 p-4 sm:p-6 rounded-lg space-y-4 sm:space-y-6">
-        <h2 className="text-lg sm:text-xl font-semibold text-slate-700">
+      <section className="bg-slate-50 p-4 rounded space-y-4">
+        <h2 className="text-lg font-semibold text-slate-700">
           Banner principal
         </h2>
-        <div className="flex flex-col xl:flex-row items-start xl:items-center gap-4 w-full">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full">
           {/* Botón desktop */}
-          <div className="w-full xl:w-auto">
+          <div className="w-full sm:w-auto">
             <input
               type="file"
               accept="image/*"
@@ -356,24 +353,23 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => desktopBannerRef.current?.click()}
-              className="flex justify-center xl:justify-start items-center gap-2 border rounded px-4 py-3 text-sm w-full xl:w-auto font-medium hover:bg-gray-50 transition-colors"
+              className="flex justify-center sm:justify-start items-center gap-2 border rounded px-4 py-2 text-sm w-full sm:w-auto"
             >
-              <ArrowUpTrayIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Subir imagen desktop</span>
-              <span className="sm:hidden">Imagen desktop</span>
+              <ArrowUpTrayIcon className="w-5 h-5" />
+              Subir imagen desktop
             </button>
             {desktopFileName && (
-              <p className="text-xs text-gray-500 mt-2 truncate">
+              <p className="text-xs text-gray-500 mt-1 truncate">
                 {desktopFileName}
               </p>
             )}
             {desktopImageUrl && (
-              <img src={desktopImageUrl} alt="Imagen desktop actual" className="mt-3 max-h-24 rounded border" />
+              <img src={desktopImageUrl} alt="Imagen desktop actual" className="mt-2 max-h-24 rounded border" />
             )}
           </div>
 
           {/* Botón responsivo */}
-          <div className="w-full xl:w-auto">
+          <div className="w-full sm:w-auto">
             <input
               type="file"
               accept="image/*"
@@ -401,55 +397,52 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => responsiveBannerRef.current?.click()}
-              className="flex justify-center items-center gap-2 w-full xl:w-auto border rounded px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors"
+              className="flex justify-center items-center gap-2 w-full sm:w-auto border rounded px-4 py-2 text-sm"
             >
-              <ArrowUpTrayIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Subir imagen responsivo</span>
-              <span className="sm:hidden">Imagen móvil</span>
+              <ArrowUpTrayIcon className="w-5 h-5" />
+              Subir imagen responsivo
             </button>
             {responsiveFileName && (
-              <p className="text-xs text-gray-500 mt-2 truncate">
+              <p className="text-xs text-gray-500 mt-1 truncate">
                 {responsiveFileName}
               </p>
             )}
             {responsiveImageUrl && (
-              <img src={responsiveImageUrl} alt="Imagen móvil actual" className="mt-3 max-h-24 rounded border" />
+              <img src={responsiveImageUrl} alt="Imagen móvil actual" className="mt-2 max-h-24 rounded border" />
             )}
           </div>
 
           {/* Activar/desactivar */}
-          <div className="flex items-center gap-4 w-full xl:w-auto justify-center xl:justify-start">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-1 text-sm">
               <input
                 type="radio"
                 name="banner"
                 checked={bannerActivo}
                 onChange={() => setBannerActivo(true)}
-                className="cursor-pointer"
               />
               Activar
             </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label className="flex items-center gap-1 text-sm">
               <input
                 type="radio"
                 name="banner"
                 checked={!bannerActivo}
                 onChange={() => setBannerActivo(false)}
-                className="cursor-pointer"
               />
               Desactivar
             </label>
           </div>
         </div>
-        <div className="bg-white p-3 rounded-lg border">
-          <p className="text-sm text-lime-600 font-medium mb-2">
+        <div>
+          <p className="text-sm text-lime-600 font-medium">
             Recomendaciones de carga
           </p>
-          <p className="text-sm text-gray-600 leading-relaxed">
+          <p className="text-sm text-gray-600">
             Resolución recomendada: <strong>1500 x 400 px</strong> para desktop
             y <strong>600 x 400 px</strong> para responsivo
             <br />
-            Peso máximo por imagen: <strong>1 MB</strong>
+            Peso máximo por imagen: <strong>15 MB</strong>
             <br />
             JPEG: Comprimido al 70–80% para mantener calidad con un tamaño
             pequeño.
