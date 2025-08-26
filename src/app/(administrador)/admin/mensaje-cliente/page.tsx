@@ -198,14 +198,14 @@ export default function MensajesCliente() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-10">
       {/* Encabezado */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-800">
           Mensajes para el cliente
         </h1>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
           <button
             onClick={() => (window.location.href = '/')}
-            className="px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center gap-2"
+            className="w-full sm:w-auto px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center justify-center gap-2"
           >
             <EyeIcon className="w-5 h-5" />
             Ver en el sitio
@@ -213,7 +213,7 @@ export default function MensajesCliente() {
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Guardando...' : 'Guardar cambios'}
           </button>
