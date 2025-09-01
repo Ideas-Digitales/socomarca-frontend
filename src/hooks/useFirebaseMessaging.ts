@@ -47,7 +47,7 @@ export const useFirebaseMessaging = () => {
   };
 
   // Escuchar mensajes en primer plano
-  useEffect(() => {
+  /* useEffect(() => {
     const unsubscribe = onMessageListener()
       .then((payload: NotificationPayload) => {
         console.log('Received foreground message:', payload);
@@ -71,7 +71,7 @@ export const useFirebaseMessaging = () => {
         unsubscribe();
       }
     };
-  }, []);
+  }, []);*/
 
   // Limpiar notificación
   const clearNotification = () => {
