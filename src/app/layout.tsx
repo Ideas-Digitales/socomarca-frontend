@@ -3,6 +3,7 @@ import './globals.css';
 import { Poppins } from 'next/font/google';
 import Modal from './components/global/Modal';
 import AuthProvider from './components/providers/AuthProvider';
+import FirebaseMessagingProvider from './components/global/FirebaseMessagingProvider';
 // import NotificationWrapper from './components/global/NotificationWrapper';
 
 const poppins = Poppins({
@@ -32,10 +33,12 @@ export default function RootLayout({
   return (
     <html lang="es" className={poppins.variable}>
       <body className="font-poppins">
-                         <AuthProvider>
-                   {children}
-                   <Modal />
-                 </AuthProvider>
+        <AuthProvider>
+          <FirebaseMessagingProvider>
+            {children}
+            <Modal />
+          </FirebaseMessagingProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -7,6 +7,7 @@ import useAuthStore from '@/stores/useAuthStore';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { auth } from '@/firebase/firebase';
 
 interface LoginFormProps {
   title?: string;
@@ -47,6 +48,23 @@ export default function LoginForm({
       }
     };
   }, [role, setLoading]);
+
+  useEffect(() => {
+    const testFirebaseConnection = () => {
+      try {
+        console.log('🔥 Probando conexión con Firebase...');
+        console.log('🔥 Firebase Auth inicializado:', !!auth);
+        console.log('🔥 Firebase App Name:', auth?.app?.name);
+        console.log('🔥 Firebase Project ID:', auth?.app?.options?.projectId);
+        console.log('🔥 Estado actual del usuario:', auth?.currentUser);
+        console.log('✅ Firebase conectado correctamente');
+      } catch (error) {
+        console.error('❌ Error al conectar con Firebase:', error);
+      }
+    };
+
+    testFirebaseConnection();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
