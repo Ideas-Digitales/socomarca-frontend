@@ -15,15 +15,46 @@ export const useFirebaseMessaging = () => {
   const [notification, setNotification] = useState<NotificationPayload | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Registrar service worker
+  // Registrar service worker de forma controlada
   useEffect(() => {
     const registerServiceWorker = async () => {
       if ('serviceWorker' in navigator) {
         try {
-          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          // Primero verificamos si ya hay un service worker registrado
+          const existingRegistration = await navigator.serviceWorker.getRegistration('/');
+          
+          if (existingRegistration) {
+            console.log('Service Worker already registered:', existingRegistration);
+            return existingRegistration;
+          }
+          
+          // Si no hay uno registrado, lo registramos
+          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+            scope: '/'
+          });
+          
           console.log('Service Worker registered successfully:', registration);
+          
+          // Esperamos a que esté activo
+          await new Promise((resolve) => {
+            if (registration.active) {
+              resolve(registration);
+            } else {
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker?.addEventListener('statechange', () => {
+                  if (newWorker.state === 'activated') {
+                    resolve(registration);
+                  }
+                });
+              });
+            }
+          });
+          
+          return registration;
         } catch (error) {
           console.error('Service Worker registration failed:', error);
+          throw error;
         }
       }
     };

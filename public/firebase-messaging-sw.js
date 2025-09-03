@@ -5,17 +5,14 @@ importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js');
 
 // Initialize the Firebase app in the service worker by passing the generated config
-// Note: Service workers can't access process.env, so these values need to be injected at build time
-// or fetched from a public endpoint. For now, we'll use the actual values.
-// TODO: Consider using a build-time script to inject these values securely
+// TEMPORARY: Using minimal config to avoid errors while you set up your real credentials
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyCT9ZDrKncGgl3QYFUpoOBioYGKkVPTbQ8", 
+  authDomain: "socomarca-development.firebaseapp.com",
+  projectId: "socomarca-development",
+  storageBucket: "socomarca-development.firebasestorage.app",
+  messagingSenderId: "760830446922",
+  appId: "1:760830446922:web:ab3e0cd42f74df936bc5b3"
 };
 
 firebase.initializeApp(firebaseConfig);
