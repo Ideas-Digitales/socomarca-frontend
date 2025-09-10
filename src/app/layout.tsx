@@ -3,7 +3,8 @@ import './globals.css';
 import { Poppins } from 'next/font/google';
 import Modal from './components/global/Modal';
 import AuthProvider from './components/providers/AuthProvider';
-// import NotificationWrapper from './components/global/NotificationWrapper';
+import NotificationWrapper from './components/global/NotificationWrapper';
+import TokenDisplay from './components/debug/TokenDisplay';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -32,10 +33,13 @@ export default function RootLayout({
   return (
     <html lang="es" className={poppins.variable}>
       <body className="font-poppins">
-                         <AuthProvider>
-                   {children}
-                   <Modal />
-                 </AuthProvider>
+        <AuthProvider>
+          <NotificationWrapper>
+            {children}
+            <Modal />
+            <TokenDisplay />
+          </NotificationWrapper>
+        </AuthProvider>
       </body>
     </html>
   );
