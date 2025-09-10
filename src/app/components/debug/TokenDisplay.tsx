@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 
 export default function TokenDisplay() {
-  const { token, notifications, isSupported, requestPermission, addTestNotification } = useNotifications();
+  const { token, notifications, dropdownNotifications, unreadCount, isSupported, requestPermission, addTestNotification } = useNotifications();
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -47,16 +47,32 @@ export default function TokenDisplay() {
             
             <div>
               <h3 className="font-semibold text-gray-800">
-                Notificaciones Recibidas ({notifications.length})
+                Banner ({notifications.length}) | Dropdown ({dropdownNotifications.length}) | No leídas: {unreadCount}
               </h3>
-              {notifications.length === 0 ? (
-                <p className="text-sm text-gray-500">No hay notificaciones</p>
+              <div className="text-xs text-gray-600 mb-2">
+                Banner (auto-limpia) | Dropdown (persiste hasta abrir)
+              </div>
+              
+              {dropdownNotifications.length === 0 ? (
+                <p className="text-sm text-gray-500">No hay notificaciones en dropdown</p>
               ) : (
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {notifications.map((notif, index) => (
-                    <div key={index} className="bg-gray-50 p-2 rounded text-xs">
+                  <div className="text-xs font-medium text-blue-600">Notificaciones Dropdown:</div>
+                  {dropdownNotifications.map((notif, index) => (
+                    <div key={index} className="bg-blue-50 p-2 rounded text-xs border-l-2 border-blue-400">
                       <div className="font-medium">{notif.title}</div>
                       <div className="text-gray-600">{notif.body}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {notifications.length > 0 && (
+                <div className="mt-2 space-y-1 max-h-20 overflow-y-auto">
+                  <div className="text-xs font-medium text-green-600">Notificaciones Banner:</div>
+                  {notifications.map((notif, index) => (
+                    <div key={index} className="bg-green-50 p-1 rounded text-xs border-l-2 border-green-400">
+                      <div className="font-medium">{notif.title}</div>
                     </div>
                   ))}
                 </div>

@@ -13,16 +13,20 @@ interface NotificationPayload {
 
 interface UseNotificationsReturn {
   token: string | null;
-  notifications: NotificationPayload[];
+  notifications: NotificationPayload[]; // Para el banner (se auto-limpian)
+  dropdownNotifications: NotificationPayload[]; // Para el dropdown (persisten hasta que se abra)
+  unreadCount: number; // Contador de notificaciones no leídas
   isSupported: boolean;
   requestPermission: () => Promise<void>;
   clearNotifications: () => void;
+  clearDropdownNotifications: () => void; // Nueva función para limpiar dropdown
   addTestNotification: () => void;
 }
 
 export const useNotifications = (): UseNotificationsReturn => {
   const [token, setToken] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<NotificationPayload[]>([]);
+  const [notifications, setNotifications] = useState<NotificationPayload[]>([]); // Para banner
+  const [dropdownNotifications, setDropdownNotifications] = useState<NotificationPayload[]>([]); // Para dropdown
   const [messaging, setMessaging] = useState<Messaging | null>(null);
   const [isSupported, setIsSupported] = useState(false);
 
@@ -45,8 +49,9 @@ export const useNotifications = (): UseNotificationsReturn => {
             icon: payload.notification?.icon || '/assets/global/logo.png'
           };
 
-          // Solo agregar a la lista desplegable - sin notificaciones nativas
+          // Agregar a ambos estados: banner y dropdown
           setNotifications(prev => [notification, ...prev]);
+          setDropdownNotifications(prev => [notification, ...prev]);
         });
 
         return () => unsubscribe();
@@ -87,6 +92,10 @@ export const useNotifications = (): UseNotificationsReturn => {
     setNotifications([]);
   };
 
+  const clearDropdownNotifications = () => {
+    setDropdownNotifications([]);
+  };
+
   // Función para agregar notificación de prueba
   const addTestNotification = () => {
     const testNotification = {
@@ -97,14 +106,21 @@ export const useNotifications = (): UseNotificationsReturn => {
     
     console.log('🧪 Agregando notificación de prueba:', testNotification);
     setNotifications(prev => [testNotification, ...prev]);
+    setDropdownNotifications(prev => [testNotification, ...prev]);
   };
+
+  // Contador de notificaciones no leídas (solo dropdown)
+  const unreadCount = dropdownNotifications.length;
 
   return {
     token,
     notifications,
+    dropdownNotifications,
+    unreadCount,
     isSupported,
     requestPermission,
     clearNotifications,
+    clearDropdownNotifications,
     addTestNotification,
   };
 };

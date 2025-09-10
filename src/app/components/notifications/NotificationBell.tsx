@@ -9,14 +9,15 @@ interface NotificationBellProps {
 
 export default function NotificationBell({ className = '' }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, clearNotifications } = useNotifications();
+  const { dropdownNotifications, unreadCount, clearDropdownNotifications } = useNotifications();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Debug: Log notifications
   useEffect(() => {
-    console.log('🔔 NotificationBell - notifications:', notifications);
-  }, [notifications]);
+    console.log('🔔 NotificationBell - dropdownNotifications:', dropdownNotifications);
+    console.log('🔔 NotificationBell - unreadCount:', unreadCount);
+  }, [dropdownNotifications, unreadCount]);
 
   // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {
@@ -35,8 +36,16 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const unreadCount = notifications.length;
   const hasNotifications = unreadCount > 0;
+
+  // Limpiar notificaciones al abrir el dropdown
+  const handleToggleDropdown = () => {
+    if (!isOpen && hasNotifications) {
+      // Si está cerrando y se va a abrir, limpiar las notificaciones
+      clearDropdownNotifications();
+    }
+    setIsOpen(!isOpen);
+  };
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('es-ES', { 
@@ -50,7 +59,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
       {/* Botón de campana */}
       <button
         ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleDropdown}
         className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         aria-label={`Notificaciones${hasNotifications ? ` (${unreadCount} nuevas)` : ''}`}
       >
@@ -98,7 +107,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
               {hasNotifications && (
                 <button
                   onClick={() => {
-                    clearNotifications();
+                    clearDropdownNotifications();
                     setIsOpen(false);
                   }}
                   className="text-xs text-blue-600 hover:text-blue-800 font-medium"
@@ -111,7 +120,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
 
           {/* Lista de notificaciones */}
           <div className="max-h-64 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {dropdownNotifications.length === 0 ? (
               <div className="px-4 py-8 text-center text-gray-500">
                 <svg
                   className="mx-auto h-12 w-12 text-gray-400 mb-2"
@@ -129,7 +138,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
                 <p className="text-sm">No tienes notificaciones</p>
               </div>
             ) : (
-              notifications.map((notification, index) => (
+              dropdownNotifications.map((notification, index) => (
                 <div
                   key={index}
                   className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150"
