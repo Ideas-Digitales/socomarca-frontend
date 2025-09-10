@@ -4,9 +4,11 @@ import AuthView from '@/app/components/auth/AuthView';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import useAuthStore from '@/stores/useAuthStore';
+import { useNotifications } from '@/hooks/useNotifications';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+// Removido react-toastify - usaremos notificaciones nativas
 
 interface LoginFormProps {
   title?: string;
@@ -30,6 +32,7 @@ export default function LoginForm({
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState('');
   const { login, isLoading, setLoading } = useAuthStore();
+  const { token, requestPermission, isSupported } = useNotifications();
   const router = useRouter();
 
   // Usar el estado de loading local si no es admin, o el del store si es admin
@@ -47,6 +50,14 @@ export default function LoginForm({
       }
     };
   }, [role, setLoading]);
+
+  // Mostrar token FCM en consola para testing
+  useEffect(() => {
+    if (token) {
+      console.log('🔑 Token FCM obtenido para testing:', token);
+      console.log('📋 Puedes usar este token en Firebase Console para enviar notificaciones de prueba');
+    }
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +91,16 @@ export default function LoginForm({
           
           if (userRoles.includes('admin') || userRoles.includes('superadmin')) {
             redirectPath = '/admin/total-de-ventas';
+          }
+        }
+
+        // Obtener token FCM después del login exitoso (solo para clientes)
+        if (isSupported && role !== 'admin') {
+          try {
+            await requestPermission();
+            console.log('🔔 Token FCM configurado después del login');
+          } catch (error) {
+            console.warn('⚠️ No se pudo obtener el token FCM:', error);
           }
         }
 
@@ -127,7 +148,7 @@ export default function LoginForm({
 
   return (
     <AuthView title={title} text={subtitle}>
-      <form onSubmit={handleSubmit} className="w-full relative">
+        <form onSubmit={handleSubmit} className="w-full relative">
         {/* Loading Overlay */}
         {finalIsLoading && (
           <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
@@ -205,7 +226,7 @@ export default function LoginForm({
             </Link>
           )}
         </div>
-      </form>
+        </form>
     </AuthView>
   );
 }

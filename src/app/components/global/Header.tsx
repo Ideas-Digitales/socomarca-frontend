@@ -17,6 +17,7 @@ import { createLogoutModal } from '@/configs/sidebarConfigs';
 import { CartItem } from '@/interfaces/product.interface';
 import { logoutAction } from '@/services/actions/auth.actions';
 import useAuthStore from '@/stores/useAuthStore';
+import NotificationBell from '@/app/components/notifications/NotificationBell';
 
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 const logoUrl = '/assets/global/logo-header.png';
@@ -224,6 +225,12 @@ export default function Header({ carro }: Props) {
                   <UserIcon width={24} height={24} />
                 </Link>
               )}
+              {/* Icono de notificaciones - Solo para clientes */}
+              {!isAdminUser() && (
+                <div className="hidden sm:flex">
+                  <NotificationBell />
+                </div>
+              )}
               {isAdminUser() ? (
                 <div data-cy="cart-link" className="relative cursor-not-allowed opacity-50">
                   <ShoppingCartIcon width={24} height={24} />
@@ -312,6 +319,15 @@ export default function Header({ carro }: Props) {
                 )}
               </li>
             ))}
+            {/* Notificaciones en menú móvil - Solo para clientes */}
+            {!isAdminUser() && (
+              <li className="border-b border-gray-100">
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="text-gray-800">Notificaciones</span>
+                  <NotificationBell />
+                </div>
+              </li>
+            )}
             <li
               data-cy="logout-btn"
               className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b border-gray-100"
