@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 
 export default function TokenDisplay() {
-  const { token, notifications, isSupported, requestPermission } = useNotifications();
+  const { token, notifications, isSupported, requestPermission, addTestNotification } = useNotifications();
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -63,8 +63,16 @@ export default function TokenDisplay() {
               )}
             </div>
             
-            <div className="text-xs text-gray-400 border-t pt-2">
-              💡 Revisa la consola del navegador para más detalles
+            <div className="border-t pt-2">
+              <button
+                onClick={addTestNotification}
+                className="w-full bg-green-600 text-white text-xs px-3 py-2 rounded hover:bg-green-700 transition-colors mb-2"
+              >
+                🧪 Simular Notificación
+              </button>
+              <div className="text-xs text-gray-400">
+                💡 Revisa la consola del navegador para más detalles
+              </div>
             </div>
           </div>
         </div>

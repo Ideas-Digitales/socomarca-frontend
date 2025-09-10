@@ -17,6 +17,7 @@ interface UseNotificationsReturn {
   isSupported: boolean;
   requestPermission: () => Promise<void>;
   clearNotifications: () => void;
+  addTestNotification: () => void;
 }
 
 export const useNotifications = (): UseNotificationsReturn => {
@@ -86,12 +87,25 @@ export const useNotifications = (): UseNotificationsReturn => {
     setNotifications([]);
   };
 
+  // Función para agregar notificación de prueba
+  const addTestNotification = () => {
+    const testNotification = {
+      title: 'Notificación de prueba',
+      body: 'Esta es una notificación simulada para testing',
+      icon: '/assets/global/logo.png'
+    };
+    
+    console.log('🧪 Agregando notificación de prueba:', testNotification);
+    setNotifications(prev => [testNotification, ...prev]);
+  };
+
   return {
     token,
     notifications,
     isSupported,
     requestPermission,
     clearNotifications,
+    addTestNotification,
   };
 };
 

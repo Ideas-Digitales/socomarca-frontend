@@ -13,6 +13,11 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Debug: Log notifications
+  useEffect(() => {
+    console.log('🔔 NotificationBell - notifications:', notifications);
+  }, [notifications]);
+
   // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

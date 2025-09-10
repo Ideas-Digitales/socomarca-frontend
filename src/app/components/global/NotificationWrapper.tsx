@@ -26,6 +26,11 @@ export default function NotificationWrapper({ children }: NotificationWrapperPro
     }
   }, [token]);
 
+  // Debug: Log notifications
+  React.useEffect(() => {
+    console.log('🎯 NotificationWrapper - notifications:', notifications);
+  }, [notifications]);
+
   // Transform NotificationPayload to Notification format for the banner
   const transformedNotifications: Notification[] = notifications.map((payload, index) => ({
     id: `notification-${Date.now()}-${index}`,
