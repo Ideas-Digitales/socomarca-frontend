@@ -8,16 +8,16 @@ import { getMessaging, Messaging } from "firebase/messaging";
 
 // Configuración de Firebase (obtener desde Firebase Console)
 const firebaseConfig = {
-  apiKey: "AIzaSyCKEdhFG_TjULinmzNq4drvlaGMZd5VO_I",
-  authDomain: "notify-lab-85d06.firebaseapp.com",
-  projectId: "notify-lab-85d06",
-  storageBucket: "notify-lab-85d06.firebasestorage.app",
-  messagingSenderId: "877450078649",
-  appId: "1:877450078649:web:b85e81e2366b73d28bee68",
-  measurementId: "G-GBRX731R7L"
+  apiKey: "AIzaSyCT9ZDrKncGgl3QYFUpoOBioYGKkVPTbQ8",
+  authDomain: "socomarca-development.firebaseapp.com",
+  projectId: "socomarca-development",
+  storageBucket: "socomarca-development.firebasestorage.app",
+  messagingSenderId: "760830446922",
+  appId: "1:760830446922:web:ab3e0cd42f74df936bc5b3",
+  measurementId: "G-H24GZTBBCV"
 };
 
-const vapid = "BLyxLf_VOh-cusugHMC4o-7kY7jXh2yb5EH-zmG0XvGqx7U7gRqQb6e7awNCefcC0FjJ7yrY6UjBKKBYtP22qro"; // socomarca-development token
+const vapid = "BC4MbdgGYKgeDvUwVIZ9WAiHlIYGqvZ0R_AHf2LLYUVSHnlF1siyKe5spPzFZxxQde31Dna-aul8Hgml19B4vFg"; // socomarca-development token
 
 // Instancia principal de Firebase
 const app = initializeApp(firebaseConfig);

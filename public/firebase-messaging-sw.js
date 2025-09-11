@@ -8,13 +8,13 @@ importScripts(
 
 // Aquí debes colocar la configuración de tu proyecto de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyCKEdhFG_TjULinmzNq4drvlaGMZd5VO_I",
-  authDomain: "notify-lab-85d06.firebaseapp.com",
-  projectId: "notify-lab-85d06",
-  storageBucket: "notify-lab-85d06.firebasestorage.app",
-  messagingSenderId: "877450078649",
-  appId: "1:877450078649:web:b85e81e2366b73d28bee68",
-  measurementId: "G-GBRX731R7L"
+  apiKey: "AIzaSyCT9ZDrKncGgl3QYFUpoOBioYGKkVPTbQ8",
+  authDomain: "socomarca-development.firebaseapp.com",
+  projectId: "socomarca-development",
+  storageBucket: "socomarca-development.firebasestorage.app",
+  messagingSenderId: "760830446922",
+  appId: "1:760830446922:web:ab3e0cd42f74df936bc5b3",
+  measurementId: "G-H24GZTBBCV"
 };
 
 // Inicializa Firebase
