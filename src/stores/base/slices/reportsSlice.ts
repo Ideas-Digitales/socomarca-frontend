@@ -6,6 +6,13 @@ import {
   fetchGetTransactionDetails,
   TransactionDetails,
   fetchGetClientsMostPurchasesList,
+  fetchProductsTopSelling,
+  exportTransactions,
+  exportMunicipalities,
+  exportProducts,
+  exportCategories,
+  exportCustomers,
+  exportOrders,
 } from '@/services/actions/reports.actions';
 import { ApiResponse, PaginationMeta } from '../types';
 
@@ -266,12 +273,22 @@ export interface ReportsSlice extends ReportsState {
   fetchTopProducts: (
     start: string,
     end: string,
-    selectedClient: string | null | undefined,
-    selectedCategory: string | null | undefined,
-    total_min: number | undefined,
-    total_max: number | undefined
+    selectedClient?: string | null,
+    selectedCategory?: string | null,
+    total_min?: number,
+    total_max?: number
   ) => Promise<ApiResponse<TopProductsResponse>>;
   clearTopProducts: () => void;
+  
+  // Actions - Top products top-selling
+  fetchProductsTopSelling: (
+    start: string,
+    end: string,
+    per_page: number,
+    page: number,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<ApiResponse<any>>;
   
   // Actions - Top categories
   fetchTopCategories: (
@@ -281,6 +298,49 @@ export interface ReportsSlice extends ReportsState {
     total_max?: number
   ) => Promise<ApiResponse<TopCategoriesResponse>>;
   clearTopCategories: () => void;
+  
+  // Actions - Export functions
+  exportTransactions: (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<ApiResponse<any>>;
+  
+  exportMunicipalities: (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<ApiResponse<any>>;
+  
+  exportProducts: (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<ApiResponse<any>>;
+  
+  exportCategories: (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<ApiResponse<any>>;
+  
+  exportCustomers: (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<ApiResponse<any>>;
+  
+  exportOrders: (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => Promise<ApiResponse<any>>;
   
   // Clientes con más compras
   fetchClientsMostPurchasesList: (
@@ -431,10 +491,9 @@ export const createReportsSlice: StateCreator<
   // Fetch transactions list con paginación y filtros
   fetchTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null, total_min?: number, total_max?: number) => {
     set({ isLoadingReports: true });
-    const endpoint = 'transactions';
     
     try {
-      const result = await fetchGetOrdersReportsTransactionsList(start, end, per_page, page, endpoint, client, 'exitosa', total_min, total_max);
+      const result = await fetchGetOrdersReportsTransactionsList(start, end, per_page, page, client, 'exitosa', total_min, total_max);
       
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
@@ -486,10 +545,9 @@ export const createReportsSlice: StateCreator<
   // Fetch failed transactions list con paginación y filtros
   fetchFailedTransactionsList: async (start: string, end: string, page = 1, per_page = 20, client = null, total_min?: number, total_max?: number) => {
     set({ isLoadingFailedReports: true });
-    const endpoint = 'failedTransactions';
     
     try {
-      const result = await fetchGetOrdersReportsFailedTransactionsList(start, end, per_page, page, endpoint, client, 'fallida', total_min, total_max);
+      const result = await fetchGetOrdersReportsFailedTransactionsList(start, end, per_page, page, client, 'fallida', total_min, total_max);
       
       if (result.ok && result.data) {
         const convertedPagination = convertPagination(result.data.pagination);
@@ -684,10 +742,14 @@ export const createReportsSlice: StateCreator<
   fetchTopProducts: async (
     start: string,
     end: string,
+    selectedClient?: string | null,
+    selectedCategory?: string | null,
+    total_min?: number,
+    total_max?: number
   ) => {
     set({ isLoadingTopProducts: true });
     try {
-      const result = await fetchGetOrdersReportsCharts(start, end, 'top-products');
+      const result = await fetchGetOrdersReportsCharts(start, end, 'top-products', total_min, total_max);
       console.log('result', result);
       if (result.ok && result.data) {
         set({
@@ -803,6 +865,243 @@ export const createReportsSlice: StateCreator<
       clientsMostPurchasesFilters: {},
       clientsMostPurchasesCurrentPage: 1,
     });
+  },
+
+  // ========================== NUEVAS FUNCIONES ==========================
+  
+  // Fetch products top-selling
+  fetchProductsTopSelling: async (
+    start: string,
+    end: string,
+    per_page: number,
+    page: number,
+    total_min?: number,
+    total_max?: number
+  ) => {
+    try {
+      const result = await fetchProductsTopSelling(start, end, per_page, page, total_min, total_max);
+      
+      if (result.ok && result.data) {
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al cargar productos más vendidos',
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error in fetchProductsTopSelling:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  // Export functions
+  exportTransactions: async (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => {
+    try {
+      const result = await exportTransactions(start, end, total_min, total_max);
+      
+      if (result.ok && result.data) {
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al exportar transacciones',
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error in exportTransactions:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  exportMunicipalities: async (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => {
+    try {
+      const result = await exportMunicipalities(start, end, total_min, total_max);
+      
+      if (result.ok && result.data) {
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al exportar municipios',
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error in exportMunicipalities:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  exportProducts: async (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => {
+    try {
+      const result = await exportProducts(start, end, total_min, total_max);
+      
+      if (result.ok && result.data) {
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al exportar productos',
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error in exportProducts:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  exportCategories: async (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => {
+    try {
+      const result = await exportCategories(start, end, total_min, total_max);
+      
+      if (result.ok && result.data) {
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al exportar categorías',
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error in exportCategories:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  exportCustomers: async (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => {
+    try {
+      const result = await exportCustomers(start, end, total_min, total_max);
+      
+      if (result.ok && result.data) {
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al exportar clientes',
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error in exportCustomers:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
+  },
+
+  exportOrders: async (
+    start: string,
+    end: string,
+    total_min?: number,
+    total_max?: number
+  ) => {
+    try {
+      const result = await exportOrders(start, end, total_min, total_max);
+      
+      if (result.ok && result.data) {
+        return {
+          ok: true,
+          data: result.data,
+        };
+      } else {
+        return {
+          ok: false,
+          error: {
+            message: result.error || 'Error al exportar órdenes',
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error in exportOrders:', error);
+      return {
+        ok: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        },
+      };
+    }
   },
 
   // Filter actions - Successful transactions

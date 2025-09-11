@@ -74,7 +74,7 @@ export const fetchGetClientsList = async (
       };
     }
 
-    const endpointUrl = `${BACKEND_URL}/orders/reports/clients-list`;
+    const endpointUrl = `${BACKEND_URL}/reports/clients-list`;
 
     // Crear el body según la documentación del API
     const requestBody: any = {
