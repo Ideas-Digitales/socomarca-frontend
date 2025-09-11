@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 interface NotificationBellProps {
   className?: string;
@@ -13,11 +13,21 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  const hasNotifications = unreadCount > 0;
+
+  // Debug: Log inmediato al renderizar
+  console.log('🔔 NotificationBell RENDER - dropdownNotifications:', dropdownNotifications);
+  console.log('🔔 NotificationBell RENDER - unreadCount:', unreadCount);
+  console.log('🔔 NotificationBell RENDER - hasNotifications:', hasNotifications);
+
   // Debug: Log notifications
   useEffect(() => {
     console.log('🔔 NotificationBell - dropdownNotifications:', dropdownNotifications);
     console.log('🔔 NotificationBell - unreadCount:', unreadCount);
-  }, [dropdownNotifications, unreadCount]);
+    console.log('🔔 NotificationBell - hasNotifications:', hasNotifications);
+    console.log('🔔 NotificationBell - dropdownNotifications.length:', dropdownNotifications.length);
+    console.log('🔔 NotificationBell - ¿Está vacío el array?', dropdownNotifications.length === 0);
+  }, [dropdownNotifications, unreadCount, hasNotifications]);
 
   // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {
@@ -36,14 +46,8 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const hasNotifications = unreadCount > 0;
-
-  // Limpiar notificaciones al abrir el dropdown
+  // Toggle del dropdown sin limpiar automáticamente
   const handleToggleDropdown = () => {
-    if (!isOpen && hasNotifications) {
-      // Si está cerrando y se va a abrir, limpiar las notificaciones
-      clearDropdownNotifications();
-    }
     setIsOpen(!isOpen);
   };
 
@@ -60,7 +64,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
       <button
         ref={buttonRef}
         onClick={handleToggleDropdown}
-        className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="relative text-gray-600 hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         aria-label={`Notificaciones${hasNotifications ? ` (${unreadCount} nuevas)` : ''}`}
       >
         {/* Icono de campana */}
@@ -81,7 +85,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
 
         {/* Badge de contador */}
         {hasNotifications && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-pulse">
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}

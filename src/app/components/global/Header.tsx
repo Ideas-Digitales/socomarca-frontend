@@ -186,6 +186,12 @@ export default function Header({ carro }: Props) {
           )}
           <div className="flex items-end gap-4">
             <div className="flex flex-row gap-2 sm:gap-4">
+              {/* Notificaciones en móvil - Solo para clientes, a la izquierda del carrito */}
+              {!isAdminUser() && (
+                <div className="flex sm:hidden">
+                  <NotificationBell />
+                </div>
+              )}
               {isAdminUser() ? (
                 <div className="items-center gap-2 hidden sm:flex cursor-not-allowed opacity-50">
                   <ListBulletIcon width={24} height={24} />
@@ -319,15 +325,6 @@ export default function Header({ carro }: Props) {
                 )}
               </li>
             ))}
-            {/* Notificaciones en menú móvil - Solo para clientes */}
-            {!isAdminUser() && (
-              <li className="border-b border-gray-100">
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-gray-800">Notificaciones</span>
-                  <NotificationBell />
-                </div>
-              </li>
-            )}
             <li
               data-cy="logout-btn"
               className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b border-gray-100"

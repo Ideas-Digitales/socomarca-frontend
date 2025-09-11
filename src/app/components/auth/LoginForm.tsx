@@ -4,7 +4,7 @@ import AuthView from '@/app/components/auth/AuthView';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import useAuthStore from '@/stores/useAuthStore';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications } from '@/contexts/NotificationContext';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';

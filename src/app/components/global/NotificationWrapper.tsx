@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications } from '@/contexts/NotificationContext';
 import NotificationBanner from './NotificationBanner';
 import { Notification } from '@/interfaces/notification.interface';
 
@@ -31,15 +31,9 @@ export default function NotificationWrapper({ children }: NotificationWrapperPro
     console.log('🎯 NotificationWrapper - notifications:', notifications);
   }, [notifications]);
 
-  // Transform NotificationPayload to Notification format for the banner
-  const transformedNotifications: Notification[] = notifications.map((payload, index) => ({
-    id: `notification-${Date.now()}-${index}`,
-    title: payload.title || 'Nueva notificación',
-    message: payload.body || '',
-    type: 'info' as const,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  }));
+  // Las notificaciones FCM ahora se muestran solo en el dropdown del NotificationBell
+  // No las enviamos al NotificationBanner
+  const transformedNotifications: Notification[] = [];
 
   return (
     <>

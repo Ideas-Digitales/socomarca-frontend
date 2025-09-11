@@ -5,6 +5,7 @@ import Modal from './components/global/Modal';
 import AuthProvider from './components/providers/AuthProvider';
 import NotificationWrapper from './components/global/NotificationWrapper';
 import TokenDisplay from './components/debug/TokenDisplay';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -34,11 +35,13 @@ export default function RootLayout({
     <html lang="es" className={poppins.variable}>
       <body className="font-poppins">
         <AuthProvider>
-          <NotificationWrapper>
-            {children}
-            <Modal />
-            <TokenDisplay />
-          </NotificationWrapper>
+          <NotificationProvider>
+            <NotificationWrapper>
+              {children}
+              <Modal />
+              <TokenDisplay />
+            </NotificationWrapper>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

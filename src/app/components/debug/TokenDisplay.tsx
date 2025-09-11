@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 export default function TokenDisplay() {
   const { token, notifications, dropdownNotifications, unreadCount, isSupported, requestPermission, addTestNotification } = useNotifications();
@@ -85,6 +85,18 @@ export default function TokenDisplay() {
                 className="w-full bg-green-600 text-white text-xs px-3 py-2 rounded hover:bg-green-700 transition-colors mb-2"
               >
                 🧪 Simular Notificación
+              </button>
+              <button
+                onClick={() => {
+                  console.log('🔍 Estado actual del hook:');
+                  console.log('🔍 dropdownNotifications:', dropdownNotifications);
+                  console.log('🔍 unreadCount:', unreadCount);
+                  console.log('🔍 isSupported:', isSupported);
+                  console.log('🔍 token:', token);
+                }}
+                className="w-full bg-blue-600 text-white text-xs px-3 py-2 rounded hover:bg-blue-700 transition-colors mb-2"
+              >
+                🔍 Debug Estado
               </button>
               <div className="text-xs text-gray-400">
                 💡 Revisa la consola del navegador para más detalles

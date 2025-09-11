@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 import { app, vapid } from '../../lib/firebase';
-// Removido react-toastify - usaremos notificaciones nativas
 
 interface NotificationPayload {
   title?: string;
@@ -11,7 +10,7 @@ interface NotificationPayload {
   icon?: string;
 }
 
-interface UseNotificationsReturn {
+interface NotificationContextType {
   token: string | null;
   notifications: NotificationPayload[]; // Para el banner (se auto-limpian)
   dropdownNotifications: NotificationPayload[]; // Para el dropdown (persisten hasta que se abra)
@@ -23,12 +22,20 @@ interface UseNotificationsReturn {
   addTestNotification: () => void;
 }
 
-export const useNotifications = (): UseNotificationsReturn => {
+const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+
+interface NotificationProviderProps {
+  children: ReactNode;
+}
+
+export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<NotificationPayload[]>([]); // Para banner
   const [dropdownNotifications, setDropdownNotifications] = useState<NotificationPayload[]>([]); // Para dropdown
   const [messaging, setMessaging] = useState<Messaging | null>(null);
   const [isSupported, setIsSupported] = useState(false);
+
+  console.log('🚀 NotificationProvider inicializado');
 
   useEffect(() => {
     // Verificar si estamos en el cliente y si Firebase Messaging es soportado
@@ -41,7 +48,7 @@ export const useNotifications = (): UseNotificationsReturn => {
 
         // Configurar listener para mensajes cuando la app está abierta
         const unsubscribe = onMessage(_messaging, (payload) => {
-          console.log('📱 Notificación recibida:', payload);
+          console.log('📱 Notificación FCM recibida:', payload);
           
           const notification = {
             title: payload.notification?.title || 'Nueva notificación',
@@ -49,9 +56,15 @@ export const useNotifications = (): UseNotificationsReturn => {
             icon: payload.notification?.icon || '/assets/global/logo.png'
           };
 
-          // Agregar a ambos estados: banner y dropdown
-          setNotifications(prev => [notification, ...prev]);
-          setDropdownNotifications(prev => [notification, ...prev]);
+          console.log('📱 Notificación procesada para dropdown:', notification);
+
+          // Las notificaciones FCM ahora solo van al dropdown del NotificationBell
+          setDropdownNotifications(prev => {
+            const newNotifications = [notification, ...prev];
+            console.log('📱 Estado anterior de dropdownNotifications:', prev);
+            console.log('📱 Nuevo estado de dropdownNotifications:', newNotifications);
+            return newNotifications;
+          });
         });
 
         return () => unsubscribe();
@@ -81,10 +94,10 @@ export const useNotifications = (): UseNotificationsReturn => {
         // Aquí podrías enviar el token al backend para asociarlo con el usuario
         // await sendTokenToServer(fcmToken);
       } else {
-        console.warn('⚠️ No se pudo obtener el token FCM');
+        console.warn('No se pudo obtener el token FCM');
       }
     } catch (error) {
-      console.error('❌ Error obteniendo token FCM:', error);
+      console.error('Error obteniendo token FCM:', error);
     }
   };
 
@@ -105,14 +118,20 @@ export const useNotifications = (): UseNotificationsReturn => {
     };
     
     console.log('🧪 Agregando notificación de prueba:', testNotification);
-    setNotifications(prev => [testNotification, ...prev]);
+    // Las notificaciones de prueba también van solo al dropdown
     setDropdownNotifications(prev => [testNotification, ...prev]);
   };
+
+  // Debug: Log cuando cambien las dropdownNotifications
+  useEffect(() => {
+    console.log('🔔 NotificationProvider - dropdownNotifications actualizadas:', dropdownNotifications);
+    console.log('🔔 NotificationProvider - unreadCount:', dropdownNotifications.length);
+  }, [dropdownNotifications]);
 
   // Contador de notificaciones no leídas (solo dropdown)
   const unreadCount = dropdownNotifications.length;
 
-  return {
+  const value: NotificationContextType = {
     token,
     notifications,
     dropdownNotifications,
@@ -123,18 +142,18 @@ export const useNotifications = (): UseNotificationsReturn => {
     clearDropdownNotifications,
     addTestNotification,
   };
+
+  return (
+    <NotificationContext.Provider value={value}>
+      {children}
+    </NotificationContext.Provider>
+  );
 };
 
-// Hook para obtener solo el token (útil para enviar al backend)
-export const useNotificationToken = () => {
-  const { token, requestPermission, isSupported } = useNotifications();
-  
-  useEffect(() => {
-    // Auto-obtener token cuando el hook se monta
-    if (isSupported && !token) {
-      requestPermission();
-    }
-  }, [isSupported, token, requestPermission]);
-
-  return token;
+export const useNotifications = (): NotificationContextType => {
+  const context = useContext(NotificationContext);
+  if (context === undefined) {
+    throw new Error('useNotifications must be used within a NotificationProvider');
+  }
+  return context;
 };
