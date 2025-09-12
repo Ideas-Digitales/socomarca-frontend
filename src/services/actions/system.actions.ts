@@ -163,6 +163,9 @@ export const fetchSendCustomerMessage = async (
     // Crear FormData para enviar archivos
     const formData = new FormData();
     
+    
+    formData.append('_method', 'PUT');
+    
     // Agregar campos de texto
     formData.append('header_color', messageData.header_color);
     formData.append('header_content', messageData.header_content);
