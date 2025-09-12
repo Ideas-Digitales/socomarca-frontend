@@ -37,7 +37,7 @@ export const createChartSlice: StateCreator<ChartSlice> = (set) => ({
   chartError: null,
   fetchChartRawData: async (start = '', end = '', client: string | null = null) => {
     set({ isLoadingChart: true, chartError: null });
-    const result = await fetchGetOrdersReportsTransactionsList(start, end, 100, 1, 'transactions', client, 'exitosa', undefined, undefined);
+    const result = await fetchGetOrdersReportsTransactionsList(start, end, 100, 1, client, 'exitosa', undefined, undefined);
     if (result.ok && result.data && result.data.table_detail) {
       const chartRawData = result.data.table_detail.map((item: any) => ({
         date: item.date,

@@ -37,10 +37,10 @@ export const fetchExportTotalDeVentas = async (filters: Filters) => {
 
   // Configurar URL y parámetros según el tipo
   if (type === 'failed') {
-    url = `${BACKEND_URL}/orders/reports/transactions/export`;
+    url = `${BACKEND_URL}/reports/transactions/export`;
     body.status = 'failed'; // Usar status en lugar de type para transacciones fallidas
   } else {
-    url = `${BACKEND_URL}/orders/reports/export`;
+    url = `${BACKEND_URL}/reports/export`;
     if (type) {
       body.type = type;
     }
@@ -84,7 +84,7 @@ export const fetchExportTransacciones = async (filters: Filters) => {
   const { start, end, type, client, total_min, total_max } = filters;
 
   // URL específica para transacciones
-  const url = `${BACKEND_URL}/orders/reports/transactions/export`;
+  const url = `${BACKEND_URL}/reports/transactions/export`;
 
   const body: any = {};
 
@@ -160,7 +160,7 @@ export const fetchExportClientesMasCompra = async (
   const { start, end, total_min, total_max, region } = filters;
 
   // URL específica para clientes con más compras
-  const url = `${BACKEND_URL}/orders/reports/clients/export`;
+  const url = `${BACKEND_URL}/reports/clients/export`;
 
   const body: any = {};
 
@@ -226,7 +226,7 @@ export const fetchExportProductosMasVentas = async (
   const { start, end } = filters;
 
   // URL específica para productos con más ventas
-  const url = `${BACKEND_URL}/orders/reports/products/export`;
+  const url = `${BACKEND_URL}/reports/products/export`;
 
   const body: any = {};
 
@@ -289,7 +289,7 @@ export const fetchExportCategoriasMasVentas = async (
   const { start, end } = filters;
 
   // URL específica para categorías con más ventas
-  const url = `${BACKEND_URL}/orders/reports/categories/export`;
+  const url = `${BACKEND_URL}/reports/categories/export`;
 
   const body: any = {};
 
@@ -348,7 +348,7 @@ export const fetchExportCategories = async (
   console.log(filters);
 
   // URL específica para exportar categorías
-  const url = `${BACKEND_URL}/orders/reports/categories/export`;
+  const url = `${BACKEND_URL}/reports/categories/export`;
 
   const body: any = {};
   if (sort) {
@@ -404,7 +404,7 @@ export const fetchExportClients = async (filters: ClientsExportFilters) => {
   const { sort, sort_direction } = filters;
 
   // URL específica para exportar clientes
-  const url = `${BACKEND_URL}/orders/reports/clients/export`;
+  const url = `${BACKEND_URL}/reports/clients/export`;
 
   const body: any = {};
   if (sort) {
@@ -462,7 +462,7 @@ export const fetchExportProducts = async (filters: ProductsExportFilters) => {
   console.log(filters);
 
   // URL específica para exportar productos
-  const url = `${BACKEND_URL}/orders/reports/products/export`;
+  const url = `${BACKEND_URL}/reports/products/export`;
 
   const body: any = {};
   if (sort) {
@@ -514,7 +514,7 @@ export const fetchExportMunicipalidadesMasVentas = async (
   const { start, end } = filters;
 
   // Construir URL con query parameters
-  const url = new URL(`${BACKEND_URL}/orders/reports/municipalities/export`);
+  const url = new URL(`${BACKEND_URL}/reports/municipalities/export`);
 
   if (start) {
     url.searchParams.append('start', start);
