@@ -9,25 +9,21 @@ interface NotificationBellProps {
 
 export default function NotificationBell({ className = '' }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { dropdownNotifications, unreadCount, clearDropdownNotifications } = useNotifications();
+  const { 
+    dropdownNotifications, 
+    unreadCount, 
+    clearDropdownNotifications, 
+    token, 
+    tokenSentToServer, 
+    tokenError,
+    requestPermission 
+  } = useNotifications();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const hasNotifications = unreadCount > 0;
 
-  // Debug: Log inmediato al renderizar
-  console.log('🔔 NotificationBell RENDER - dropdownNotifications:', dropdownNotifications);
-  console.log('🔔 NotificationBell RENDER - unreadCount:', unreadCount);
-  console.log('🔔 NotificationBell RENDER - hasNotifications:', hasNotifications);
 
-  // Debug: Log notifications
-  useEffect(() => {
-    console.log('🔔 NotificationBell - dropdownNotifications:', dropdownNotifications);
-    console.log('🔔 NotificationBell - unreadCount:', unreadCount);
-    console.log('🔔 NotificationBell - hasNotifications:', hasNotifications);
-    console.log('🔔 NotificationBell - dropdownNotifications.length:', dropdownNotifications.length);
-    console.log('🔔 NotificationBell - ¿Está vacío el array?', dropdownNotifications.length === 0);
-  }, [dropdownNotifications, unreadCount, hasNotifications]);
 
   // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {
@@ -118,6 +114,32 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
                 >
                   Limpiar todo
                 </button>
+              )}
+            </div>
+            
+            {/* Estado del token FCM */}
+            <div className="mt-2 text-xs">
+              {!token ? (
+                <button
+                  onClick={requestPermission}
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  Activar notificaciones push
+                </button>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <span className={`w-2 h-2 rounded-full ${tokenSentToServer ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                    <span className="text-gray-600">
+                      {tokenSentToServer ? 'Push activado' : 'Configurando...'}
+                    </span>
+                  </div>
+                  {tokenError && (
+                    <div className="text-red-500 text-xs">
+                      Error: {tokenError}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>

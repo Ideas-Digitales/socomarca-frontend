@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 import { app, vapid } from '../../lib/firebase';
+import { sendFCMToken } from '@/services/actions/fcm.actions';
 
 interface NotificationPayload {
   title?: string;
@@ -16,7 +17,9 @@ interface NotificationContextType {
   dropdownNotifications: NotificationPayload[]; // Para el dropdown (persisten hasta que se abra)
   unreadCount: number; // Contador de notificaciones no leídas
   isSupported: boolean;
-  requestPermission: () => Promise<void>;
+  tokenSentToServer: boolean; // Estado para saber si el token se envió al servidor
+  tokenError: string | null; // Error al enviar token al servidor
+  requestPermission: () => Promise<string | null>;
   clearNotifications: () => void;
   clearDropdownNotifications: () => void; // Nueva función para limpiar dropdown
   addTestNotification: () => void;
@@ -34,8 +37,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [dropdownNotifications, setDropdownNotifications] = useState<NotificationPayload[]>([]); // Para dropdown
   const [messaging, setMessaging] = useState<Messaging | null>(null);
   const [isSupported, setIsSupported] = useState(false);
+  const [tokenSentToServer, setTokenSentToServer] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
 
-  console.log('🚀 NotificationProvider inicializado');
 
   useEffect(() => {
     // Verificar si estamos en el cliente y si Firebase Messaging es soportado
@@ -48,37 +52,45 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
         // Configurar listener para mensajes cuando la app está abierta
         const unsubscribe = onMessage(_messaging, (payload) => {
-          console.log('📱 Notificación FCM recibida:', payload);
-          
           const notification = {
             title: payload.notification?.title || 'Nueva notificación',
             body: payload.notification?.body || '',
             icon: payload.notification?.icon || '/assets/global/logo.png'
           };
 
-          console.log('📱 Notificación procesada para dropdown:', notification);
-
           // Las notificaciones FCM ahora solo van al dropdown del NotificationBell
-          setDropdownNotifications(prev => {
-            const newNotifications = [notification, ...prev];
-            console.log('📱 Estado anterior de dropdownNotifications:', prev);
-            console.log('📱 Nuevo estado de dropdownNotifications:', newNotifications);
-            return newNotifications;
-          });
+          setDropdownNotifications(prev => [notification, ...prev]);
         });
 
         return () => unsubscribe();
       } catch (error) {
-        console.error('Error inicializando Firebase Messaging:', error);
         setIsSupported(false);
       }
     }
   }, []);
 
-  const requestPermission = async () => {
+  // Función para enviar token al servidor
+  const sendTokenToServer = async (fcmToken: string) => {
+    try {
+      setTokenError(null);
+      const result = await sendFCMToken(fcmToken);
+      
+      if (result.ok) {
+        setTokenSentToServer(true);
+        console.log('Token FCM enviado al servidor exitosamente:', result.data?.message);
+      } else {
+        setTokenError(result.error || 'Error al enviar token al servidor');
+        console.error('Error enviando token FCM:', result.error);
+      }
+    } catch (error) {
+      setTokenError(error instanceof Error ? error.message : 'Error inesperado');
+      console.error('Error inesperado enviando token FCM:', error);
+    }
+  };
+
+  const requestPermission = async (): Promise<string | null> => {
     if (!messaging || !isSupported) {
-      console.warn('Firebase Messaging no está disponible');
-      return;
+      return null;
     }
 
     try {
@@ -88,16 +100,18 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       });
       
       if (fcmToken) {
-        console.log('🔑 Token FCM obtenido:', fcmToken);
         setToken(fcmToken);
         
-        // Aquí podrías enviar el token al backend para asociarlo con el usuario
-        // await sendTokenToServer(fcmToken);
+        // Enviar el token al backend automáticamente
+        await sendTokenToServer(fcmToken);
+        
+        return fcmToken;
       } else {
-        console.warn('No se pudo obtener el token FCM');
+        return null;
       }
     } catch (error) {
-      console.error('Error obteniendo token FCM:', error);
+      setTokenError(error instanceof Error ? error.message : 'Error obteniendo token FCM');
+      return null;
     }
   };
 
@@ -117,16 +131,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       icon: '/assets/global/logo.png'
     };
     
-    console.log('🧪 Agregando notificación de prueba:', testNotification);
     // Las notificaciones de prueba también van solo al dropdown
     setDropdownNotifications(prev => [testNotification, ...prev]);
   };
 
-  // Debug: Log cuando cambien las dropdownNotifications
-  useEffect(() => {
-    console.log('🔔 NotificationProvider - dropdownNotifications actualizadas:', dropdownNotifications);
-    console.log('🔔 NotificationProvider - unreadCount:', dropdownNotifications.length);
-  }, [dropdownNotifications]);
 
   // Contador de notificaciones no leídas (solo dropdown)
   const unreadCount = dropdownNotifications.length;
@@ -137,6 +145,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     dropdownNotifications,
     unreadCount,
     isSupported,
+    tokenSentToServer,
+    tokenError,
     requestPermission,
     clearNotifications,
     clearDropdownNotifications,

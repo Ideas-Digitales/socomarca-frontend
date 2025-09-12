@@ -19,17 +19,7 @@ export default function NotificationWrapper({ children }: NotificationWrapperPro
     }
   }, [isSupported, token, requestPermission]);
 
-  // Log del token para debugging
-  React.useEffect(() => {
-    if (token) {
-      console.log('🔑 FCM Token:', token);
-    }
-  }, [token]);
 
-  // Debug: Log notifications
-  React.useEffect(() => {
-    console.log('🎯 NotificationWrapper - notifications:', notifications);
-  }, [notifications]);
 
   // Las notificaciones FCM ahora se muestran solo en el dropdown del NotificationBell
   // No las enviamos al NotificationBanner

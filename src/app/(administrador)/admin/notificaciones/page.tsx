@@ -1,62 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   BellIcon, 
-  PaperAirplaneIcon, 
-  TrashIcon, 
-  PlusIcon,
-  CalendarIcon,
-  ClockIcon
+  PaperAirplaneIcon
 } from '@heroicons/react/24/outline';
-import { fetchGetNotifications, fetchCreateNotification, fetchDeleteNotification } from '@/services/actions/notifications.actions';
-import { Notification } from '@/interfaces/notification.interface';
+import { fetchCreateNotification } from '@/services/actions/notifications.actions';
 
 export default function Notificaciones() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
+    details?: string;
   } | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
     title: '',
-    message: '',
-    type: 'info' as 'info' | 'warning' | 'success' | 'error',
-    isActive: true,
-    scheduledFor: ''
+    message: ''
   });
-
-  // Load notifications
-  const loadNotifications = async () => {
-    setIsLoading(true);
-    try {
-      const result = await fetchGetNotifications();
-      if (result.ok && result.data) {
-        setNotifications(result.data);
-      } else {
-        setMessage({
-          type: 'error',
-          text: result.error || 'Error al cargar las notificaciones'
-        });
-      }
-    } catch (error) {
-      setMessage({
-        type: 'error',
-        text: 'Error inesperado al cargar las notificaciones'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadNotifications();
-  }, []);
 
   // Handle form submission
   const handleCreateNotification = async (e: React.FormEvent) => {
@@ -65,336 +28,114 @@ export default function Notificaciones() {
     setMessage(null);
 
     try {
-      const result = await fetchCreateNotification(formData);
+      const currentDate = new Date().toISOString().split('T')[0];
+      const result = await fetchCreateNotification({
+        title: formData.title,
+        message: formData.message,
+        created_at: currentDate
+      });
+
       if (result.ok) {
         setMessage({
           type: 'success',
-          text: 'Notificación creada exitosamente'
+          text: 'Notificación enviada exitosamente',
+          details: `Título: "${formData.title}" | Mensaje: "${formData.message}" | Fecha: ${currentDate} | Respuesta: ${JSON.stringify(result.data)}`
         });
-        setShowCreateForm(false);
         setFormData({
           title: '',
-          message: '',
-          type: 'info',
-          isActive: true,
-          scheduledFor: ''
+          message: ''
         });
-        loadNotifications(); // Reload the list
       } else {
         setMessage({
           type: 'error',
-          text: result.error || 'Error al crear la notificación'
+          text: 'Error al enviar la notificación',
+          details: `Error: ${result.error || 'Error desconocido'}`
         });
       }
     } catch (error) {
       setMessage({
         type: 'error',
-        text: 'Error inesperado al crear la notificación'
+        text: 'Error inesperado al enviar la notificación',
+        details: `Error: ${error instanceof Error ? error.message : 'Error inesperado'}`
       });
     } finally {
       setIsCreating(false);
     }
   };
 
-  // Handle delete notification
-  const handleDeleteNotification = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
-      return;
-    }
-
-    try {
-      const result = await fetchDeleteNotification(id);
-      if (result.ok) {
-        setMessage({
-          type: 'success',
-          text: 'Notificación eliminada exitosamente'
-        });
-        loadNotifications(); // Reload the list
-      } else {
-        setMessage({
-          type: 'error',
-          text: result.error || 'Error al eliminar la notificación'
-        });
-      }
-    } catch (error) {
-      setMessage({
-        type: 'error',
-        text: 'Error inesperado al eliminar la notificación'
-      });
-    }
-  };
-
-  // Get type badge color
-  const getTypeBadgeColor = (type: string) => {
-    switch (type) {
-      case 'info':
-        return 'bg-blue-100 text-blue-800';
-      case 'warning':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'success':
-        return 'bg-green-100 text-green-800';
-      case 'error':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Get type icon
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'info':
-        return 'ℹ️';
-      case 'warning':
-        return '⚠️';
-      case 'success':
-        return '✅';
-      case 'error':
-        return '❌';
-      default:
-        return '📢';
-    }
-  };
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-500 mx-auto mb-4" data-cy="loading-spinner"></div>
-            <p className="text-slate-600">Cargando notificaciones...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <BellIcon className="w-8 h-8 text-lime-600" />
-          <h1 className="text-2xl font-bold text-slate-800">
-            Notificaciones
-          </h1>
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm flex items-center gap-2"
-            data-cy="new-notification-button"
-          >
-            <PlusIcon className="w-5 h-5" />
-            Nueva notificación
-          </button>
-        </div>
+      <div className="flex items-center gap-3">
+        <BellIcon className="w-8 h-8 text-lime-600" />
+        <h1 className="text-2xl font-bold text-slate-800">
+          Crear Nueva Notificación
+        </h1>
       </div>
 
       {/* Message */}
       {message && (
         <div
-          className={`p-4 rounded text-sm ${
+          className={`p-4 rounded-lg text-sm border-l-4 ${
             message.type === 'success'
-              ? 'bg-green-100 text-green-800 border border-green-200'
-              : 'bg-red-100 text-red-800 border border-red-200'
+              ? 'bg-green-50 text-green-800 border-green-400'
+              : 'bg-red-50 text-red-800 border-red-400'
           }`}
           data-cy={message.type === 'success' ? 'success-message' : 'error-message'}
         >
-          {message.text}
+          <div className="font-medium mb-1">{message.text}</div>
+          {message.details && (
+            <div className="text-xs opacity-75">{message.details}</div>
+          )}
         </div>
       )}
 
-      {/* Create Form Modal */}
-      {showCreateForm && (
-        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-slate-800">
-                Crear Notificación
-              </h2>
-              <button
-                onClick={() => setShowCreateForm(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateNotification} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Título
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                  placeholder="Ej: Mantenimiento, Ofertas limpieza, Nuevos productos"
-                  required
-                  data-cy="notification-title-input"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Mensaje
-                </label>
-                <textarea
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                  rows={4}
-                  placeholder="Ej: Ofertas en productos de limpieza. 20% de descuento hasta el viernes."
-                  required
-                  data-cy="notification-message-input"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Tipo
-                  </label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                    className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                    data-cy="notification-type-select"
-                  >
-                    <option value="info">Información</option>
-                    <option value="warning">Advertencia</option>
-                    <option value="success">Éxito</option>
-                    <option value="error">Error</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Fecha de envío (opcional)
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={formData.scheduledFor}
-                    onChange={(e) => setFormData({ ...formData, scheduledFor: e.target.value })}
-                    className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 text-slate-600 border border-slate-300 rounded hover:bg-slate-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isCreating}
-                  className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  data-cy="create-notification-button"
-                >
-                  <PaperAirplaneIcon className="w-4 h-4" />
-                  {isCreating ? 'Creando...' : 'Crear notificación'}
-                </button>
-              </div>
-            </form>
+      {/* Create Form */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <form onSubmit={handleCreateNotification} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Título *
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+              placeholder="Ej: Nuevo producto agregado a nuestro almacén"
+              required
+              data-cy="notification-title-input"
+            />
           </div>
-        </div>
-      )}
 
-      {/* Notifications List */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-800">
-            Lista de Notificaciones ({notifications.length})
-          </h2>
-        </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Mensaje *
+            </label>
+            <textarea
+              value={formData.message}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              className="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+              rows={4}
+              placeholder="Ej: Queremos que compres nuestro nuevo producto en Socomarca"
+              required
+              data-cy="notification-message-input"
+            />
+          </div>
 
-        {notifications.length === 0 ? (
-          <div className="p-12 text-center">
-            <BellIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-600 mb-2">
-              No hay notificaciones
-            </h3>
-            <p className="text-slate-500 mb-4">
-              Crea tu primera notificación para informar a los usuarios
-            </p>
+
+          <div className="flex justify-end">
             <button
-              onClick={() => setShowCreateForm(true)}
-              className="bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm flex items-center gap-2 mx-auto"
+              type="submit"
+              disabled={isCreating}
+              className="bg-lime-500 text-white px-6 py-3 rounded-md hover:bg-lime-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
+              data-cy="create-notification-button"
             >
-              <PlusIcon className="w-5 h-5" />
-              Crear notificación
+              <PaperAirplaneIcon className="w-5 h-5" />
+              {isCreating ? 'Enviando...' : 'Enviar Notificación'}
             </button>
           </div>
-        ) : (
-          <div className="divide-y divide-slate-200">
-            {notifications.map((notification) => (
-              <div key={notification.id} className="p-6 hover:bg-slate-50" data-cy="notification-item">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">{getTypeIcon(notification.type)}</span>
-                      <h3 className="text-lg font-medium text-slate-800" data-cy="notification-title">
-                        {notification.title}
-                      </h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeBadgeColor(notification.type)}`}>
-                        {notification.type}
-                      </span>
-                    </div>
-                    
-                    <p className="text-slate-600 mb-3">{notification.message}</p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-slate-500">
-                      <div className="flex items-center gap-1">
-                        <CalendarIcon className="w-4 h-4" />
-                        Creada: {formatDate(notification.createdAt)}
-                      </div>
-                      {notification.scheduledFor && (
-                        <div className="flex items-center gap-1">
-                          <ClockIcon className="w-4 h-4" />
-                          Programada: {formatDate(notification.scheduledFor)}
-                        </div>
-                      )}
-                      {notification.sentAt && (
-                        <div className="flex items-center gap-1">
-                          <PaperAirplaneIcon className="w-4 h-4" />
-                          Enviada: {formatDate(notification.sentAt)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 ml-4">
-                    <button
-                      onClick={() => handleDeleteNotification(notification.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                      title="Eliminar notificación"
-                      data-cy="delete-notification-button"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        </form>
       </div>
     </div>
   );

@@ -1,11 +1,19 @@
 'use server'
 
 import { Notification, NotificationData } from '@/interfaces/notification.interface';
+import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
+import { BACKEND_URL } from '@/utils/getEnv';
 
 interface ActionResult<T> {
   ok: boolean;
   data: T | null;
   error: string | null;
+}
+
+interface CreateNotificationRequest {
+  title: string;
+  message: string;
+  created_at: string;
 }
 
 // Obtener notificaciones
@@ -95,14 +103,59 @@ export const fetchGetNotifications = async (): Promise<ActionResult<Notification
 
 // Crear notificación
 export const fetchCreateNotification = async (
-  notificationData: NotificationData
+  notificationData: CreateNotificationRequest
 ): Promise<ActionResult<any>> => {
-  // Simular creación exitosa para UI
-  return {
-    ok: true,
-    data: { id: Date.now().toString() },
-    error: null,
-  };
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token provided',
+      };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/notifications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title: notificationData.title,
+        message: notificationData.message,
+        created_at: notificationData.created_at
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        ok: false,
+        data: null,
+        error: errorData.message || `Error HTTP: ${response.status} - ${response.statusText}`,
+      };
+    }
+
+    const data = await response.json();
+
+    return {
+      ok: true,
+      data: data,
+      error: null,
+    };
+
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error inesperado al crear la notificación',
+    };
+  }
 };
 
 // Eliminar notificación

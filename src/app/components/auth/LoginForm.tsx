@@ -51,13 +51,7 @@ export default function LoginForm({
     };
   }, [role, setLoading]);
 
-  // Mostrar token FCM en consola para testing
-  useEffect(() => {
-    if (token) {
-      console.log('🔑 Token FCM obtenido para testing:', token);
-      console.log('📋 Puedes usar este token en Firebase Console para enviar notificaciones de prueba');
-    }
-  }, [token]);
+  // El token se obtendrá después del login exitoso
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,10 +91,13 @@ export default function LoginForm({
         // Obtener token FCM después del login exitoso (solo para clientes)
         if (isSupported && role !== 'admin') {
           try {
-            await requestPermission();
-            console.log('🔔 Token FCM configurado después del login');
+            const fcmToken = await requestPermission();
+            if (fcmToken) {
+              console.log('🔑 Token FCM obtenido para testing:', fcmToken);
+              console.log('📋 Puedes usar este token en Firebase Console para enviar notificaciones de prueba');
+            }
           } catch (error) {
-            console.warn('⚠️ No se pudo obtener el token FCM:', error);
+            // Error silencioso para no interferir con el flujo de login
           }
         }
 
@@ -122,7 +119,7 @@ export default function LoginForm({
         }
       }
     } catch (error: any) {
-      console.error('Error en handleSubmit:', error);
+      // Error manejado internamente
 
       // Si el error es una respuesta del servidor
       if (error?.response?.status === 422) {
