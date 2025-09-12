@@ -84,14 +84,24 @@ export default function PrivatePage() {
     }
   }, [customerMessage, openModal, userRole]);
 
-  // Determinar qué imágenes usar para el carrusel
-  const getCarouselImages = () => {
+  // CÓDIGO ANTERIOR COMENTADO PARA REFERENCIA:
+  // const getCarouselImages = () => {
+  //   if (customerMessage?.banner?.desktop_image && customerMessage?.banner?.mobile_image) {
+  //     // Si hay imágenes del banner configuradas, usarlas
+  //     return [customerMessage.banner.desktop_image, customerMessage.banner.mobile_image];
+  //   }
+  //   // Si no hay imágenes configuradas, usar las imágenes por defecto
+  //   return defaultImages;
+  // };
+
+  // NUEVO CÓDIGO: Determinar qué datos usar para el banner
+  const getBannerData = () => {
     if (customerMessage?.banner?.desktop_image && customerMessage?.banner?.mobile_image) {
-      // Si hay imágenes del banner configuradas, usarlas
-      return [customerMessage.banner.desktop_image, customerMessage.banner.mobile_image];
+      // Si hay datos del banner configurados, usar el objeto completo
+      return customerMessage.banner;
     }
-    // Si no hay imágenes configuradas, usar las imágenes por defecto
-    return defaultImages;
+    // Si no hay banner configurado, retornar undefined para usar fallback
+    return undefined;
   };
 
   const handleSearch = (term: string) => {
@@ -140,12 +150,19 @@ export default function PrivatePage() {
       <div className="flex flex-col mb-2 sm:py-2 space-y-2">
         {isTablet && componentSearch}
         
-        {/* Mostrar skeleton mientras carga, o carrusel si está habilitado */}
+        {/* Mostrar skeleton mientras carga, o banner si está habilitado */}
         {isLoadingCustomerMessage ? (
           <CarouselSkeleton />
         ) : (
           customerMessage?.banner?.enabled && (
+            /* CÓDIGO ANTERIOR COMENTADO:
             <Caroussel images={getCarouselImages()} />
+            */
+            // NUEVO CÓDIGO: Pasa el objeto banner completo y fallback
+            <Caroussel 
+              banner={getBannerData()} 
+              images={defaultImages} 
+            />
           )
         )}
         
