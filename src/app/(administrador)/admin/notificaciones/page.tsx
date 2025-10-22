@@ -21,6 +21,44 @@ export default function Notificaciones() {
     message: ''
   });
 
+  const [history] = useState<Array<{
+    id: string;
+    title: string;
+    content: string;
+    date: string;
+    channel: 'push' | 'email' | 'sms';
+    audience: string;
+    status: 'enviada' | 'fallida' | 'programada';
+  }>>([
+    {
+      id: 'NTF-0001',
+      title: 'Lanzamiento de producto',
+      content: 'Nuevo producto disponible en nuestro catálogo.',
+      date: '2025-10-01',
+      channel: 'push',
+      audience: 'Todos los usuarios',
+      status: 'enviada'
+    },
+    {
+      id: 'NTF-0002',
+      title: 'Promoción semanal',
+      content: 'Aprovecha descuentos del 20% hasta el viernes.',
+      date: '2025-10-10',
+      channel: 'email',
+      audience: 'Clientes frecuentes',
+      status: 'enviada'
+    },
+    {
+      id: 'NTF-0003',
+      title: 'Mantenimiento programado',
+      content: 'El servicio no estará disponible el sábado de 2 a 4 AM.',
+      date: '2025-10-15',
+      channel: 'sms',
+      audience: 'Administradores',
+      status: 'programada'
+    }
+  ]);
+
   // Handle form submission
   const handleCreateNotification = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +175,37 @@ export default function Notificaciones() {
           </div>
         </form>
       </div>
+
+      {/* Historial de Notificaciones (Ejemplo) */}
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="p-6 border-b border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+            <BellIcon className="w-5 h-5 text-lime-600" />
+            Historial de notificaciones
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">Tabla de ejemplo con datos ficticios.</p>
+        </div>
+        <div>
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Título</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Contenido</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Fecha</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-200">
+              {history.map((n) => (
+                <tr key={n.id} className="hover:bg-slate-50">
+                  <td className="px-6 py-4 text-sm font-medium text-slate-800">{n.title}</td>
+                  <td className="px-6 py-4 text-sm text-slate-700">{n.content}</td>
+                  <td className="px-6 py-4 text-sm text-slate-700">{n.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
-} 
+}
