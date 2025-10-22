@@ -21,15 +21,15 @@ const defaultImages = [
 ];
 
 export default function PrivatePage() {
-  const { 
-    isTablet, 
+  const {
+    isTablet,
     searchTerm,
-    setSearchTerm, 
+    setSearchTerm,
     resetSearchRelatedStates,
     customerMessage,
     isLoadingCustomerMessage,
     fetchCustomerMessage,
-    openModal
+    openModal,
   } = useStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { getUserRole } = useAuthStore();
@@ -40,48 +40,72 @@ export default function PrivatePage() {
     fetchCustomerMessage();
   }, [fetchCustomerMessage]);
 
+  // Función para validar si una imagen se puede cargar
+  const validateImage = (src: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = src;
+    });
+  };
+
   // Efecto para mostrar el modal una única vez si está habilitado
   useEffect(() => {
-    if (customerMessage?.modal?.enabled && customerMessage.modal.image) {
-      // Verificar si ya se mostró el modal en esta sesión
-      const modalShown = sessionStorage.getItem('welcomeModalShown');
-      
-      // Los administradores siempre deben ver el modal
-      const isAdmin = userRole === 'admin' || userRole === 'superadmin';
-      const shouldShowModal = isAdmin || !modalShown;
-      
-      if (shouldShowModal) {
-        // Mostrar el modal con la imagen del backend
-        openModal('', {
-          content: (
-            <div className="relative">
-              <button
-                onClick={() => {
-                  const { closeModal } = useStore.getState();
-                  closeModal();
-                }}
-                className="absolute top-2 right-2 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors duration-200"
-                aria-label="Cerrar modal"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
-              <img 
-                src={customerMessage.modal.image} 
-                alt="Mensaje de bienvenida" 
-                className="max-w-full h-auto rounded-lg"
-                style={{ maxHeight: '80vh' }}
-              />
-            </div>
-          ),
-          size: 'lg'
-        });
-        
-        // Solo marcar como mostrado si NO es administrador
-        if (!isAdmin) {
-          sessionStorage.setItem('welcomeModalShown', 'true');
+    const showModalIfValid = async () => {
+      // Solo proceder si está habilitado Y hay una imagen válida
+      if (
+        customerMessage?.modal?.enabled &&
+        customerMessage.modal.image &&
+        customerMessage.modal.image.trim() !== ''
+      ) {
+        // Verificar si ya se mostró el modal en esta sesión
+        const modalShown = sessionStorage.getItem('welcomeModalShown');
+
+        // Los administradores siempre deben ver el modal
+        const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+        const shouldShowModal = isAdmin || !modalShown;
+
+        if (shouldShowModal) {
+          // Validar que la imagen se puede cargar antes de mostrar el modal
+          const isImageValid = await validateImage(customerMessage.modal.image);
+          
+          if (isImageValid) {
+            // Mostrar el modal solo si la imagen es válida
+            openModal('', {
+              content: (
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      const { closeModal } = useStore.getState();
+                      closeModal();
+                    }}
+                    className="absolute top-2 right-2 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors duration-200"
+                    aria-label="Cerrar modal"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                  <img
+                    src={customerMessage.modal.image}
+                    alt="Mensaje de bienvenida"
+                    className="max-w-full h-auto rounded-lg"
+                    style={{ maxHeight: '80vh' }}
+                  />
+                </div>
+              ),
+              size: 'lg',
+            });
+
+            // Solo marcar como mostrado si NO es administrador
+            if (!isAdmin) {
+              sessionStorage.setItem('welcomeModalShown', 'true');
+            }
+          }
         }
       }
-    }
+    };
+
+    showModalIfValid();
   }, [customerMessage, openModal, userRole]);
 
   // CÓDIGO ANTERIOR COMENTADO PARA REFERENCIA:
@@ -96,7 +120,10 @@ export default function PrivatePage() {
 
   // NUEVO CÓDIGO: Determinar qué datos usar para el banner
   const getBannerData = () => {
-    if (customerMessage?.banner?.desktop_image && customerMessage?.banner?.mobile_image) {
+    if (
+      customerMessage?.banner?.desktop_image &&
+      customerMessage?.banner?.mobile_image
+    ) {
       // Si hay datos del banner configurados, usar el objeto completo
       return customerMessage.banner;
     }
@@ -145,11 +172,9 @@ export default function PrivatePage() {
 
   return (
     <div className="bg-slate-100 sm:py-7">
-   
-    
       <div className="flex flex-col mb-2 sm:py-2 space-y-2">
         {isTablet && componentSearch}
-        
+
         {/* Mostrar skeleton mientras carga, o banner si está habilitado */}
         {isLoadingCustomerMessage ? (
           <CarouselSkeleton />
@@ -159,25 +184,23 @@ export default function PrivatePage() {
             <Caroussel images={getCarouselImages()} />
             */
             // NUEVO CÓDIGO: Pasa el objeto banner completo y fallback
-            <Caroussel 
-              banner={getBannerData()} 
-              images={defaultImages} 
-            />
+            <Caroussel banner={getBannerData()} images={defaultImages} />
           )
         )}
-        
+
         {/* Franja del mensaje del cliente */}
-        {customerMessage?.header?.content && customerMessage.header.content.trim() !== "" && (
-          <div className="w-full max-w-7xl mx-auto px-4">
-            <div 
-              className="w-full rounded-lg px-4 py-1 text-center text-white font-medium shadow-sm"
-              style={{ backgroundColor: customerMessage.header.color }}
-            >
-              {customerMessage.header.content}
+        {customerMessage?.header?.content &&
+          customerMessage.header.content.trim() !== '' && (
+            <div className="w-full max-w-7xl mx-auto px-4">
+              <div
+                className="w-full rounded-lg px-4 py-1 text-center text-white font-medium shadow-sm"
+                style={{ backgroundColor: customerMessage.header.color }}
+              >
+                {customerMessage.header.content}
+              </div>
             </div>
-          </div>
-        )}
-        
+          )}
+
         {!isTablet && componentSearch}
       </div>
 
