@@ -34,12 +34,14 @@ const ListsModal = ({
   const [isAddingToList, setIsAddingToList] = useState(false);
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
 
   // Cargar listas al montar el componente
   useEffect(() => {
     const loadLists = async () => {
       try {
         setHasError(false);
+        setHasAttemptedLoad(true);
         await fetchFavorites();
       } catch (error) {
         console.error('Error loading favorite lists:', error);
@@ -47,10 +49,10 @@ const ListsModal = ({
       }
     };
 
-    if (favoriteLists.length === 0 && !isLoadingFavorites) {
+    if (!hasAttemptedLoad && !isLoadingFavorites) {
       loadLists();
     }
-  }, [fetchFavorites, favoriteLists.length, isLoadingFavorites]);
+  }, [fetchFavorites, hasAttemptedLoad, isLoadingFavorites]);
 
   // Adaptar las listas para el formato esperado por el componente
   const adaptedLists = favoriteLists.map((list) => ({
@@ -166,7 +168,7 @@ const ListsModal = ({
         </div>
       ) : hasError ? (
         <div className="text-center py-8">
-          <p className="text-red-500">No se encuentran listas</p>
+          <p className="text-red-500">Error al cargar las listas</p>
           <button
             onClick={() => setCurrentView('createList')}
             className="text-lime-500 hover:text-lime-600 mt-2 underline transition-colors duration-300"
@@ -174,36 +176,42 @@ const ListsModal = ({
             + Crear nueva lista
           </button>
         </div>
+      ) : adaptedLists.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500 mb-4">Aún no tienes listas creadas</p>
+          <button
+            onClick={() => setCurrentView('createList')}
+            className="bg-lime-500 text-white hover:bg-lime-600 transition-colors duration-300 px-6 py-2 rounded"
+          >
+            + Crear tu primera lista
+          </button>
+        </div>
       ) : (
         <ul className="flex flex-col space-y-2 max-h-[30dvh] overflow-y-auto">
-          {adaptedLists.length > 0 ? (
-            adaptedLists.map((list) => (
-              <label
-                htmlFor={`product-${list.id}`}
-                className="cursor-pointer hover:bg-slate-100 ease-in-out duration-300 transition-colors"
-                key={list.id}
-              >
-                <li className="flex items-center px-2 py-4 gap-4 ">
-                  {' '}
-                  <input
-                    id={`product-${list.id}`}
-                    type="checkbox"
-                    checked={selectedListIds.has(list.id)}
-                    onChange={() => handleListToggle(list.id)}
-                    disabled={isAddingToList}
-                  />
-                  <span>{list.name}</span>
-                </li>
-                <HR />
-              </label>
-            ))
-          ) : (
-            <li className="text-slate-500">No tienes listas creadas.</li>
-          )}
+          {adaptedLists.map((list) => (
+            <label
+              htmlFor={`product-${list.id}`}
+              className="cursor-pointer hover:bg-slate-100 ease-in-out duration-300 transition-colors"
+              key={list.id}
+            >
+              <li className="flex items-center px-2 py-4 gap-4 ">
+                {' '}
+                <input
+                  id={`product-${list.id}`}
+                  type="checkbox"
+                  checked={selectedListIds.has(list.id)}
+                  onChange={() => handleListToggle(list.id)}
+                  disabled={isAddingToList}
+                />
+                <span>{list.name}</span>
+              </li>
+              <HR />
+            </label>
+          ))}
         </ul>
       )}
 
-      {!isLoadingFavorites && !hasError && !isAddingToList && (
+      {!isLoadingFavorites && !hasError && !isAddingToList && adaptedLists.length > 0 && (
         <div className="flex items-center justify-between">
           <button
             className="text-lime-500 hover:text-lime-600 mt-4 underline transition-colors duration-300"
