@@ -4,9 +4,11 @@ import AuthView from '@/app/components/auth/AuthView';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import useAuthStore from '@/stores/useAuthStore';
+import { useNotifications } from '@/contexts/NotificationContext';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+// Removido react-toastify - usaremos notificaciones nativas
 
 interface LoginFormProps {
   title?: string;
@@ -30,6 +32,7 @@ export default function LoginForm({
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState('');
   const { login, isLoading, setLoading } = useAuthStore();
+  const { token, requestPermission, isSupported } = useNotifications();
   const router = useRouter();
 
   // Usar el estado de loading local si no es admin, o el del store si es admin
@@ -47,6 +50,8 @@ export default function LoginForm({
       }
     };
   }, [role, setLoading]);
+
+  // El token se obtendrá después del login exitoso
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +88,19 @@ export default function LoginForm({
           }
         }
 
+        // Obtener token FCM después del login exitoso (solo para clientes)
+        if (isSupported && role !== 'admin') {
+          try {
+            const fcmToken = await requestPermission();
+            if (fcmToken) {
+              console.log('🔑 Token FCM obtenido para testing:', fcmToken);
+              console.log('📋 Puedes usar este token en Firebase Console para enviar notificaciones de prueba');
+            }
+          } catch (error) {
+            // Error silencioso para no interferir con el flujo de login
+          }
+        }
+
         // Mantener el loading activo durante la redirección
         if (useWindowLocation) {
           // Usar window.location para forzar recarga (útil para middleware)
@@ -101,7 +119,7 @@ export default function LoginForm({
         }
       }
     } catch (error: any) {
-      console.error('Error en handleSubmit:', error);
+      // Error manejado internamente
 
       // Si el error es una respuesta del servidor
       if (error?.response?.status === 422) {
@@ -127,7 +145,7 @@ export default function LoginForm({
 
   return (
     <AuthView title={title} text={subtitle}>
-      <form onSubmit={handleSubmit} className="w-full relative">
+        <form onSubmit={handleSubmit} className="w-full relative">
         {/* Loading Overlay */}
         {finalIsLoading && (
           <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
@@ -205,7 +223,7 @@ export default function LoginForm({
             </Link>
           )}
         </div>
-      </form>
+        </form>
     </AuthView>
   );
 }

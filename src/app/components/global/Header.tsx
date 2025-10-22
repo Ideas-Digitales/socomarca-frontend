@@ -17,6 +17,7 @@ import { createLogoutModal } from '@/configs/sidebarConfigs';
 import { CartItem } from '@/interfaces/product.interface';
 import { logoutAction } from '@/services/actions/auth.actions';
 import useAuthStore from '@/stores/useAuthStore';
+import NotificationBell from '@/app/components/notifications/NotificationBell';
 
 const imagoLogoUrl = '/assets/global/imagotipo.png';
 const logoUrl = '/assets/global/logo-header.png';
@@ -185,6 +186,12 @@ export default function Header({ carro }: Props) {
           )}
           <div className="flex items-end gap-4">
             <div className="flex flex-row gap-2 sm:gap-4">
+              {/* Notificaciones en móvil - Solo para clientes, a la izquierda del carrito */}
+              {!isAdminUser() && (
+                <div className="flex sm:hidden">
+                  <NotificationBell />
+                </div>
+              )}
               {isAdminUser() ? (
                 <div className="items-center gap-2 hidden sm:flex cursor-not-allowed opacity-50">
                   <ListBulletIcon width={24} height={24} />
@@ -223,6 +230,12 @@ export default function Header({ carro }: Props) {
                 <Link className="hidden sm:flex" href="/mi-cuenta">
                   <UserIcon width={24} height={24} />
                 </Link>
+              )}
+              {/* Icono de notificaciones - Solo para clientes */}
+              {!isAdminUser() && (
+                <div className="hidden sm:flex">
+                  <NotificationBell />
+                </div>
               )}
               {isAdminUser() ? (
                 <div data-cy="cart-link" className="relative cursor-not-allowed opacity-50">
