@@ -20,10 +20,7 @@ const visaImageUrl = '/assets/footer/visa.png';
 // Icon RRSS
 
 export default function Footer() {
-  const {
-    siteInformation,
-    fetchSiteInformation
-  } = useStore();
+  const { siteInformation, fetchSiteInformation } = useStore();
 
   const { user } = useAuthStore();
 
@@ -43,9 +40,9 @@ export default function Footer() {
     if (!label || typeof label !== 'string') {
       return <FacebookIcon width={16} height={16} />; // Icono por defecto
     }
-    
+
     const normalizedLabel = label.toLowerCase();
-    
+
     switch (normalizedLabel) {
       case 'facebook':
         return <FacebookIcon width={16} height={16} />;
@@ -58,7 +55,7 @@ export default function Footer() {
       case 'pinterest':
         return <PinterestIcon width={16} height={16} />;
       default:
-        return <FacebookIcon width={16} height={16} />; // Icono por defecto
+        return null;
     }
   };
   return (
@@ -72,11 +69,44 @@ export default function Footer() {
           <h1 className="text-lime-600 text-xl font-bold w-full flex justify-center md:justify-start">
             <Logo />
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-500 mb-4">
             En Socomarca ofrecemos precios mayoristas, productos seleccionados y
             despacho confiable. Para que tu energía esté donde importa: en tus
             clientes.
           </p>
+          
+          {/* Redes sociales */}
+          {siteInformation?.social_media &&
+            Array.isArray(siteInformation.social_media) &&
+            siteInformation.social_media.length > 0 && (
+              <div className="flex items-center justify-center md:justify-start gap-1">
+                {siteInformation.social_media
+                  .filter(
+                    (social: any) =>
+                      social &&
+                      social.label &&
+                      social.link &&
+                      typeof social.label === 'string'
+                  )
+                  .map((social: any, index: number) => (
+                    <a
+                      key={index}
+                      href={social.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-[38px] h-[38px] flex justify-center items-center hover:bg-slate-100 rounded transition-colors"
+                      title={
+                        social.label && typeof social.label === 'string'
+                          ? social.label.charAt(0).toUpperCase() +
+                            social.label.slice(1)
+                          : 'Red social'
+                      }
+                    >
+                      {renderSocialIcon(social.label)}
+                    </a>
+                  ))}
+              </div>
+            )}
         </div>
         {/* Atención al cliente */}
         <div className="space-y-1">
@@ -117,59 +147,46 @@ export default function Footer() {
             </li>
           </ul>
         </div>
-        {/* Contacto y Redes sociales */}
-        <div className="flex flex-col items-start gap-[10px]">
-          <h3 className="text-gray-500 font-bold">Contacto</h3>
-          {siteInformation?.footer?.contact_phone && siteInformation.footer.contact_phone.trim() !== '' && (
-            <div className="flex gap-1">
-              <span className="text-lime-600">
-                <PhoneIcon width={25} height={24} />
-              </span>
-              <div>
-                <p className="flex flex-col gap-1">
-                  <span className="text-lime-600 text-[16px]">
-                    <strong>Teléfono:</strong>
-                  </span>
-                  <span className="text-slate-400">{siteInformation.footer.contact_phone}</span>
-                </p>
-              </div>
-            </div>
-          )}
-          {siteInformation?.footer?.contact_email && siteInformation.footer.contact_email.trim() !== '' && (
-            <div className="flex gap-1">
-              <span className="text-lime-600">
-                <EnvelopeIcon width={25} height={24} />
-              </span>
-              <div>
-                <p className="flex flex-col gap-1">
-                  <span className="text-lime-600 text-[16px]">
-                    <strong>Email:</strong>
-                  </span>
-                  <span className="text-slate-400">{siteInformation.footer.contact_email}</span>
-                </p>
-              </div>
-            </div>
-          )}
+        {/* Contacto */}
+        <div className="flex flex-col items-start gap-4">
+          <h3 className="text-gray-500 font-bold mb-2">Contacto</h3>
           
-          {/* Redes sociales */}
-          {siteInformation?.social_media && Array.isArray(siteInformation.social_media) && siteInformation.social_media.length > 0 && (
-            <div className="flex items-center justify-start gap-1 mt-4">
-                          {siteInformation.social_media
-              .filter((social: any) => social && social.label && social.link && typeof social.label === 'string')
-              .map((social: any, index: number) => (
-                <a
-                  key={index}
-                  href={social.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-[38px] h-[38px] flex justify-center items-center hover:bg-slate-100 rounded transition-colors"
-                  title={social.label && typeof social.label === 'string' ? social.label.charAt(0).toUpperCase() + social.label.slice(1) : 'Red social'}
-                >
-                  {renderSocialIcon(social.label)}
-                </a>
-              ))}
-            </div>
-          )}
+          {siteInformation?.footer?.contact_phone &&
+            siteInformation.footer.contact_phone.trim() !== '' && (
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-1">
+                  <PhoneIcon className="w-5 h-5 text-lime-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-lime-600 font-semibold text-sm">
+                    Teléfono:
+                  </span>
+                  <span className="text-gray-600 text-sm">
+                    {siteInformation.footer.contact_phone}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+          {siteInformation?.footer?.contact_email &&
+            siteInformation.footer.contact_email.trim() !== '' && (
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-1">
+                  <EnvelopeIcon className="w-5 h-5 text-lime-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-lime-600 font-semibold text-sm">
+                    Email:
+                  </span>
+                  <a 
+                    href={`mailto:${siteInformation.footer.contact_email}`}
+                    className="text-gray-600 text-sm hover:text-lime-600 transition-colors"
+                  >
+                    {siteInformation.footer.contact_email}
+                  </a>
+                </div>
+              </div>
+            )}
         </div>
       </div>
 
