@@ -49,7 +49,7 @@ export default function Modal({ children }: ModalProps) {
       onClick={closeModal}
     >
       <div
-        className={`relative max-h-[90vh] w-full overflow-auto shadow-xl ${sizeClasses[modalSize]} ${
+        className={`relative max-h-[90vh] w-full overflow-auto shadow-xl bg-white rounded-md p-6 ${sizeClasses[modalSize]} ${
           isImageModal ? 'bg-transparent p-0' : 'bg-white p-6'
         }`}
         onClick={(e) => e.stopPropagation()}
