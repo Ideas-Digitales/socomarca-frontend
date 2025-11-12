@@ -14,7 +14,7 @@ export default async function PoliticaPrivacidadPage() {
 
         {content ? (
           <div 
-            className="prose max-w-none"
+            className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700"
             dangerouslySetInnerHTML={{ __html: content }}
           />
         ) : (

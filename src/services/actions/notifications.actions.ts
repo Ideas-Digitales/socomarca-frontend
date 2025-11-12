@@ -16,6 +16,160 @@ interface CreateNotificationRequest {
   created_at: string;
 }
 
+interface BackendNotification {
+  id: number;
+  user_id: number;
+  title: string;
+  message: string;
+  sent_at: string;
+}
+
+interface NotificationsResponse {
+  current_page: number;
+  data: BackendNotification[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: Array<{
+    url: string | null;
+    label: string;
+    active: boolean;
+  }>;
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
+}
+
+// Obtener todas las notificaciones con paginación del backend
+export const fetchAllNotifications = async (page: number = 1, perPage: number = 20): Promise<ActionResult<NotificationsResponse>> => {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token provided',
+      };
+    }
+
+    console.log('🔔 Obteniendo notificaciones paginadas - Página:', page, 'Por página:', perPage);
+    
+    const headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+    
+    console.log('🔔 Headers enviados:', headers);
+    
+    const response = await fetch(`${BACKEND_URL}/notifications?page=${page}&per_page=${perPage}&sort=sent_at&order=desc`, {
+      method: 'GET',
+      headers,
+    });
+
+    console.log('🔔 Response status:', response.status);
+    console.log('🔔 Response ok:', response.ok);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log('🔔 Error en la respuesta:', errorData);
+      return {
+        ok: false,
+        data: null,
+        error: errorData.message || `Error HTTP: ${response.status} - ${response.statusText}`,
+      };
+    }
+
+    const data: NotificationsResponse = await response.json();
+    console.log('🔔 Datos paginados recibidos del backend:', data);
+    console.log('🔔 Notificaciones en la respuesta:', data.data?.length || 0);
+    console.log('🔔 Primera notificación:', data.data?.[0]);
+
+    return {
+      ok: true,
+      data: data,
+      error: null,
+    };
+
+  } catch (error) {
+    console.error('Error fetching all notifications:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error inesperado al obtener las notificaciones',
+    };
+  }
+};
+
+// Obtener las últimas 5 notificaciones del backend
+export const fetchLatestNotifications = async (): Promise<ActionResult<BackendNotification[]>> => {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token provided',
+      };
+    }
+
+    console.log('🔔 Haciendo petición a:', `${BACKEND_URL}/notifications?per_page=5`);
+    console.log('🔔 Token disponible:', !!token);
+    
+    const headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+    
+    console.log('🔔 Headers enviados:', headers);
+    
+    const response = await fetch(`${BACKEND_URL}/notifications?per_page=5&sort=sent_at&order=desc`, {
+      method: 'GET',
+      headers,
+    });
+
+    console.log('🔔 Response status:', response.status);
+    console.log('🔔 Response ok:', response.ok);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log('🔔 Error en la respuesta:', errorData);
+      return {
+        ok: false,
+        data: null,
+        error: errorData.message || `Error HTTP: ${response.status} - ${response.statusText}`,
+      };
+    }
+
+    const data: NotificationsResponse = await response.json();
+    console.log('🔔 Datos recibidos del backend:', data);
+    console.log('🔔 Notificaciones en data.data:', data.data);
+
+    return {
+      ok: true,
+      data: data.data || [],
+      error: null,
+    };
+
+  } catch (error) {
+    console.error('Error fetching latest notifications:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error inesperado al obtener las notificaciones',
+    };
+  }
+};
+
 // Obtener notificaciones
 export const fetchGetNotifications = async (): Promise<ActionResult<Notification[]>> => {
   // Mock data para UI - Promociones y ofertas de supermercado

@@ -21,7 +21,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const hasNotifications = unreadCount > 0;
+  const hasNotifications = dropdownNotifications.length > 0;
 
 
 
@@ -47,11 +47,30 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
     setIsOpen(!isOpen);
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+  const formatTime = (dateString?: string) => {
+    if (!dateString) {
+      return new Date().toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    }
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    
+    if (diffInHours < 24) {
+      return date.toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    } else {
+      return date.toLocaleDateString('es-ES', { 
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit'
+      });
+    }
   };
 
   return (
@@ -82,7 +101,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
         {/* Badge de contador */}
         {hasNotifications && (
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {dropdownNotifications.length > 99 ? '99+' : dropdownNotifications.length}
           </span>
         )}
       </button>
@@ -100,7 +119,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
                 Notificaciones
                 {hasNotifications && (
                   <span className="ml-2 text-xs text-gray-500">
-                    ({unreadCount} nuevas)
+                    ({dropdownNotifications.length})
                   </span>
                 )}
               </h3>
@@ -112,36 +131,11 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
                   }}
                   className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                 >
-                  Limpiar todo
+                  Limpiar nuevas
                 </button>
               )}
             </div>
             
-            {/* Estado del token FCM */}
-            <div className="mt-2 text-xs">
-              {!token ? (
-                <button
-                  onClick={requestPermission}
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  Activar notificaciones push
-                </button>
-              ) : (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1">
-                    <span className={`w-2 h-2 rounded-full ${tokenSentToServer ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-                    <span className="text-gray-600">
-                      {tokenSentToServer ? 'Push activado' : 'Configurando...'}
-                    </span>
-                  </div>
-                  {tokenError && (
-                    <div className="text-red-500 text-xs">
-                      Error: {tokenError}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Lista de notificaciones */}
@@ -198,7 +192,7 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
                         </p>
                       )}
                       <p className="text-xs text-gray-400 mt-1">
-                        {formatTime(new Date())}
+                        {formatTime(notification.sent_at)}
                       </p>
                     </div>
 

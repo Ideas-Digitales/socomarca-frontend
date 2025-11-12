@@ -4,24 +4,29 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 import { app, vapid } from '../../lib/firebase';
 import { sendFCMToken } from '@/services/actions/fcm.actions';
+import { fetchLatestNotifications } from '@/services/actions/notifications.actions';
 
 interface NotificationPayload {
   title?: string;
   body?: string;
   icon?: string;
+  sent_at?: string;
+  id?: string | number;
 }
 
 interface NotificationContextType {
   token: string | null;
   notifications: NotificationPayload[]; // Para el banner (se auto-limpian)
-  dropdownNotifications: NotificationPayload[]; // Para el dropdown (persisten hasta que se abra)
+  dropdownNotifications: NotificationPayload[]; // Para el dropdown (combinadas: históricas + tiempo real)
+  historicalNotifications: NotificationPayload[]; // Notificaciones del backend (siempre visibles)
+  realtimeNotifications: NotificationPayload[]; // Notificaciones FCM (se pueden limpiar)
   unreadCount: number; // Contador de notificaciones no leídas
   isSupported: boolean;
   tokenSentToServer: boolean; // Estado para saber si el token se envió al servidor
   tokenError: string | null; // Error al enviar token al servidor
   requestPermission: () => Promise<string | null>;
   clearNotifications: () => void;
-  clearDropdownNotifications: () => void; // Nueva función para limpiar dropdown
+  clearDropdownNotifications: () => void; // Nueva función para limpiar solo las de tiempo real
   addTestNotification: () => void;
 }
 
@@ -39,6 +44,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [isSupported, setIsSupported] = useState(false);
   const [tokenSentToServer, setTokenSentToServer] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
+  const [historicalNotifications, setHistoricalNotifications] = useState<NotificationPayload[]>([]);
+  const [realtimeNotifications, setRealtimeNotifications] = useState<NotificationPayload[]>([]);
 
 
   useEffect(() => {
@@ -58,8 +65,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
             icon: payload.notification?.icon || '/assets/global/logo.png'
           };
 
-          // Las notificaciones FCM ahora solo van al dropdown del NotificationBell
-          setDropdownNotifications(prev => [notification, ...prev]);
+          // Las notificaciones FCM van a realtimeNotifications
+          setRealtimeNotifications(prev => [notification, ...prev]);
         });
 
         return () => unsubscribe();
@@ -68,6 +75,48 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       }
     }
   }, []);
+
+  // Cargar notificaciones históricas al inicializar
+  useEffect(() => {
+    const loadHistoricalNotifications = async () => {
+      try {
+        console.log('🔔 Cargando notificaciones históricas...');
+        const result = await fetchLatestNotifications();
+        console.log('🔔 Resultado de fetchLatestNotifications:', result);
+        
+        if (result.ok && result.data) {
+          // Convertir las notificaciones del backend al formato del contexto
+          const formattedNotifications: NotificationPayload[] = result.data.map(notification => ({
+            id: notification.id,
+            title: notification.title,
+            body: notification.message,
+            sent_at: notification.sent_at,
+            icon: '/assets/global/logo.png'
+          }));
+          
+          console.log('🔔 Notificaciones formateadas:', formattedNotifications);
+          setHistoricalNotifications(formattedNotifications);
+        } else {
+          console.log('🔔 No se pudieron cargar las notificaciones:', result.error);
+        }
+      } catch (error) {
+        console.error('🔔 Error loading historical notifications:', error);
+      }
+    };
+
+    loadHistoricalNotifications();
+  }, []);
+
+  // Combinar notificaciones históricas y en tiempo real para el dropdown
+  useEffect(() => {
+    console.log('🔔 Combinando notificaciones:', {
+      realtimeCount: realtimeNotifications.length,
+      historicalCount: historicalNotifications.length,
+      realtime: realtimeNotifications,
+      historical: historicalNotifications
+    });
+    setDropdownNotifications([...realtimeNotifications, ...historicalNotifications]);
+  }, [realtimeNotifications, historicalNotifications]);
 
   // Función para enviar token al servidor
   const sendTokenToServer = async (fcmToken: string) => {
@@ -120,7 +169,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   };
 
   const clearDropdownNotifications = () => {
-    setDropdownNotifications([]);
+    setRealtimeNotifications([]);
   };
 
   // Función para agregar notificación de prueba
@@ -131,9 +180,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       icon: '/assets/global/logo.png'
     };
     
-    // Las notificaciones de prueba también van solo al dropdown
-    setDropdownNotifications(prev => [testNotification, ...prev]);
+    // Las notificaciones de prueba van a realtimeNotifications
+    setRealtimeNotifications(prev => [testNotification, ...prev]);
   };
+
 
 
   // Contador de notificaciones no leídas (solo dropdown)
@@ -143,6 +193,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     token,
     notifications,
     dropdownNotifications,
+    historicalNotifications,
+    realtimeNotifications,
     unreadCount,
     isSupported,
     tokenSentToServer,

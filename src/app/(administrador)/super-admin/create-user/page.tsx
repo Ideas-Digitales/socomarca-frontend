@@ -289,7 +289,9 @@ export default function CreateUser() {
       try {
         const result = await getRolesAction();
         if (result.success && result.data) {
-          setRoles(result.data);
+          // Filtrar el rol 'customer' de la lista de roles disponibles
+          const filteredRoles = result.data.filter(role => role.name !== 'customer');
+          setRoles(filteredRoles);
         } else {
           console.error('Error loading roles:', result.error);
         }
