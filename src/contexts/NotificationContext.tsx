@@ -51,26 +51,38 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   useEffect(() => {
     // Verificar si estamos en el cliente y si Firebase Messaging es soportado
     if (typeof window !== 'undefined') {
-      setIsSupported(true);
+      // Detectar si estamos en Capacitor iOS
+      const Capacitor = (window as any).Capacitor;
+      const isCapacitorIOS = Capacitor && Capacitor.getPlatform() === 'ios';
       
-      try {
-        const _messaging = getMessaging(app);
-        setMessaging(_messaging);
+      // Solo deshabilitar Firebase Messaging en iOS (no soporta Service Workers)
+      // Android y web pueden usar FCM normalmente
+      if (!isCapacitorIOS) {
+        setIsSupported(true);
+        
+        try {
+          const _messaging = getMessaging(app);
+          setMessaging(_messaging);
 
-        // Configurar listener para mensajes cuando la app está abierta
-        const unsubscribe = onMessage(_messaging, (payload) => {
-          const notification = {
-            title: payload.notification?.title || 'Nueva notificación',
-            body: payload.notification?.body || '',
-            icon: payload.notification?.icon || '/assets/global/logo.png'
-          };
+          // Configurar listener para mensajes cuando la app está abierta
+          const unsubscribe = onMessage(_messaging, (payload) => {
+            const notification = {
+              title: payload.notification?.title || 'Nueva notificación',
+              body: payload.notification?.body || '',
+              icon: payload.notification?.icon || '/assets/global/logo.png'
+            };
 
-          // Las notificaciones FCM van a realtimeNotifications
-          setRealtimeNotifications(prev => [notification, ...prev]);
-        });
+            // Las notificaciones FCM van a realtimeNotifications
+            setRealtimeNotifications(prev => [notification, ...prev]);
+          });
 
-        return () => unsubscribe();
-      } catch (error) {
+          return () => unsubscribe();
+        } catch (error) {
+          console.log('Firebase Messaging no soportado:', error);
+          setIsSupported(false);
+        }
+      } else {
+        console.log('iOS detectado - Firebase Messaging deshabilitado (usar @capacitor/push-notifications)');
         setIsSupported(false);
       }
     }
