@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --webpack",
     "dev:large-files": "node server.js",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint"
   },
@@ -25,7 +25,7 @@
     "@tiptap/starter-kit": "^2.12.0",
     "date-fns": "^4.1.0",
     "firebase": "^12.2.1",
-    "next": "15.3.2",
+    "next": "16.1.1",
     "react": "^19.2.3",
     "react-day-picker": "^9.7.0",
     "react-dom": "^19.2.3",
@@ -39,7 +39,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.3.2",
+    "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
