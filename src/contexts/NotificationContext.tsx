@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
+import type { Messaging } from 'firebase/messaging';
 import { app, vapid } from '../../lib/firebase';
 import { sendFCMToken } from '@/services/actions/fcm.actions';
 import { fetchLatestNotifications } from '@/services/actions/notifications.actions';
@@ -60,27 +60,33 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       if (!isCapacitorIOS) {
         setIsSupported(true);
         
-        try {
-          const _messaging = getMessaging(app);
-          setMessaging(_messaging);
+        // Importar Firebase Messaging dinámicamente solo cuando no estamos en iOS
+        import('firebase/messaging').then(({ getMessaging, onMessage }) => {
+          try {
+            const _messaging = getMessaging(app);
+            setMessaging(_messaging);
 
-          // Configurar listener para mensajes cuando la app está abierta
-          const unsubscribe = onMessage(_messaging, (payload) => {
-            const notification = {
-              title: payload.notification?.title || 'Nueva notificación',
-              body: payload.notification?.body || '',
-              icon: payload.notification?.icon || '/assets/global/logo.png'
-            };
+            // Configurar listener para mensajes cuando la app está abierta
+            const unsubscribe = onMessage(_messaging, (payload) => {
+              const notification = {
+                title: payload.notification?.title || 'Nueva notificación',
+                body: payload.notification?.body || '',
+                icon: payload.notification?.icon || '/assets/global/logo.png'
+              };
 
-            // Las notificaciones FCM van a realtimeNotifications
-            setRealtimeNotifications(prev => [notification, ...prev]);
-          });
+              // Las notificaciones FCM van a realtimeNotifications
+              setRealtimeNotifications(prev => [notification, ...prev]);
+            });
 
-          return () => unsubscribe();
-        } catch (error) {
-          console.log('Firebase Messaging no soportado:', error);
+            return () => unsubscribe();
+          } catch (error) {
+            console.log('Firebase Messaging no soportado:', error);
+            setIsSupported(false);
+          }
+        }).catch((error) => {
+          console.log('Error cargando Firebase Messaging:', error);
           setIsSupported(false);
-        }
+        });
       } else {
         console.log('iOS detectado - Firebase Messaging deshabilitado (usar @capacitor/push-notifications)');
         setIsSupported(false);
@@ -155,6 +161,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
 
     try {
+      // Importar getToken dinámicamente
+      const { getToken } = await import('firebase/messaging');
+      
       // Solo obtener token FCM - sin solicitar permisos de notificaciones nativas
       const fcmToken = await getToken(messaging, {
         vapidKey: vapid,
