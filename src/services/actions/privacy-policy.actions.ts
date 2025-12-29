@@ -86,4 +86,38 @@ export async function getPrivacyPolicy() {
       content: 'Comienza a escribir tu contenido aquí...'
     };
   }
+}
+
+export async function getPrivacyPolicyPublic() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/privacy-policy`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+      cache: 'no-store'
+    }); 
+    
+    if (response.ok) {
+      const data = await response.json();
+      return { 
+        success: true, 
+        content: data.content || 'No hay contenido disponible en este momento.'
+      };
+    } else {
+      console.log('Failed to fetch privacy policy, status:', response.status);
+      return { 
+        success: false, 
+        error: 'Failed to fetch privacy policy',
+        content: 'No hay contenido disponible en este momento.'
+      };
+    }
+  } catch (error) {
+    console.error('Error fetching privacy policy:', error);
+    return { 
+      success: false, 
+      error: 'Internal server error',
+      content: 'No hay contenido disponible en este momento.'
+    };
+  }
 } 

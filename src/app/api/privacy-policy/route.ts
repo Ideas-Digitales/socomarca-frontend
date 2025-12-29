@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -39,21 +42,45 @@ export async function PUT(request: NextRequest) {
 
 export async function GET() {
   try {
-    // Here you would typically fetch from your database
-    // For now, we'll return a placeholder
-    // You can replace this with your actual database logic
-    
-    // Example: const privacyPolicy = await prisma.privacyPolicy.findFirst();
-    
-    return NextResponse.json(
-      { content: 'Comienza a escribir tu contenido aquí...' },
-      { status: 200 }
-    );
+    // Obtener el token de las cookies si existe
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    // Si hay token, agregarlo a los headers
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Hacer la petición al backend
+    const response = await fetch(`${BACKEND_URL}/privacy-policy`, {
+      method: 'GET',
+      headers,
+      cache: 'no-store'
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return NextResponse.json(
+        { content: data.content || 'No hay contenido disponible en este momento.' },
+        { status: 200 }
+      );
+    } else {
+      console.error('Backend returned error:', response.status);
+      return NextResponse.json(
+        { content: 'No hay contenido disponible en este momento.' },
+        { status: 200 }
+      );
+    }
   } catch (error) {
-    console.error('Error fetching privacy policy:', error);
+    console.error('Error fetching privacy policy from backend:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { content: 'No hay contenido disponible en este momento.' },
+      { status: 200 }
     );
   }
 } 

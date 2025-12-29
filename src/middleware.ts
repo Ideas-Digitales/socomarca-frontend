@@ -166,6 +166,7 @@ export default async function middleware(request: NextRequest) {
     '/auth/recuperar-admin',
     '/acceso-denegado',
     '/api/internal/auth',
+    '/politicas-privacidad',
   ];
 
   if (
