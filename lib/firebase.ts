@@ -4,7 +4,7 @@
  */
 
 import { initializeApp } from "firebase/app";
-import { getMessaging, Messaging } from "firebase/messaging";
+import type { Messaging } from "firebase/messaging";
 
 // Configuración de Firebase (obtener desde Firebase Console)
 const firebaseConfig = {
@@ -22,10 +22,8 @@ const vapid = "BC4MbdgGYKgeDvUwVIZ9WAiHlIYGqvZ0R_AHf2LLYUVSHnlF1siyKe5spPzFZxxQd
 // Instancia principal de Firebase
 const app = initializeApp(firebaseConfig);
 
-// Cloud Messaging para notificaciones push (solo en cliente)
+// Cloud Messaging para notificaciones push (solo en cliente, NO en iOS Capacitor)
+// NO inicializar aquí - se inicializa dinámicamente en NotificationContext cuando se necesita
 let messaging: Messaging | null = null;
-if (typeof window !== "undefined") {
-  messaging = getMessaging(app);
-}
 
 export { app, messaging, vapid };
