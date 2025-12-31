@@ -44,12 +44,18 @@ export default function AuthView({
         <div className="flex flex-col items-center gap-6 w-full justify-center">
           {children}
         </div>
-        <div className="mt-4 text-center">
-          <Link 
-            href="/politicas-privacidad" 
+        <div className="mt-4 text-center flex flex-col gap-2">
+          <Link
+            href="/politicas-privacidad"
             className="text-[12px] text-gray-600 hover:text-lime-600 transition-colors underline"
           >
             Política de Privacidad
+          </Link>
+          <Link
+            href="/sac"
+            className="text-[12px] text-gray-600 hover:text-lime-600 transition-colors underline"
+          >
+            Soporte y Atención al Cliente
           </Link>
         </div>
       </div>

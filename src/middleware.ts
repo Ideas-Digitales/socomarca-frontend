@@ -167,6 +167,7 @@ export default async function middleware(request: NextRequest) {
     '/acceso-denegado',
     '/api/internal/auth',
     '/politicas-privacidad',
+    '/sac',
   ];
 
   if (
