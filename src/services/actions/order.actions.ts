@@ -42,14 +42,19 @@ export async function createOrderFromCart({ shippingAddressId }: { shippingAddre
 }
 
 
-export async function getUserOrders(page = 1, per_page = 20): Promise<OrderResponse | null> {
+export async function getUserOrders(
+  page = 1,
+  per_page = 20,
+  sort: string = 'created_at',
+  sort_direction: 'asc' | 'desc' = 'desc'
+): Promise<OrderResponse | null> {
 
  const { getCookie } = await cookiesManagement();
   const token = getCookie("token");
   if (!token) return null
 
   try {
-    const res = await fetch(`${BACKEND_URL}/orders?page=${page}&per_page=${per_page}`, {
+    const res = await fetch(`${BACKEND_URL}/orders?page=${page}&per_page=${per_page}&sort=${sort}&sort_direction=${sort_direction}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',

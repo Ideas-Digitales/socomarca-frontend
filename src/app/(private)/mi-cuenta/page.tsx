@@ -48,6 +48,8 @@ export default function MiCuentaPage() {
     compras[0]
   );
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [sort, setSort] = useState<string>("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   /* Estados para seccion de direcciones del usuario */
   const [direcciones, setDirecciones] = useState<Address[]>([]);
@@ -104,7 +106,7 @@ export default function MiCuentaPage() {
       setLoadingOrders(true);
 
       try {
-        const res = await getUserOrders();
+        const res = await getUserOrders(1, 20, sort, sortDirection);
         if (res?.data) {
           const mapped: Compra[] = res.data.map(mapOrderToCompra);
           setCompras(mapped);
@@ -117,7 +119,7 @@ export default function MiCuentaPage() {
     };
 
     fetchOrders();
-  }, []);
+  }, [sort, sortDirection]);
 
   //Trae las direcciones del usuario
   useEffect(() => {
@@ -235,6 +237,12 @@ export default function MiCuentaPage() {
                   setSelected={setSelected}
                   router={router}
                   loading={loadingOrders}
+                  sort={sort}
+                  sortDirection={sortDirection}
+                  onSortChange={(newSort, newDirection) => {
+                    setSort(newSort);
+                    setSortDirection(newDirection);
+                  }}
                 />
               </div>
             )}

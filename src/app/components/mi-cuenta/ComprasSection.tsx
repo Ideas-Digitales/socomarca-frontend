@@ -25,14 +25,22 @@ export interface Compra {
   productos: ProductoCompra[]; // Lista de productos comprados
 }
 
+const SORT_OPTIONS = [
+  { label: "Más recientes", sort: "created_at", direction: "desc" as const },
+  { label: "Más antiguos", sort: "created_at", direction: "asc" as const },
+];
+
 export default function ComprasSection({
-  compras, // Todas las compras obtenidas desde el backend
-  busqueda, // Texto de búsqueda para filtrar por número de pedido
-  setBusqueda, // Función para actualizar el texto de búsqueda
-  setPedidoSeleccionado, // Función para guardar el pedido seleccionado (para detalle)
-  setSelected, // Función para cambiar la vista activa (ej: a 'detalle-compra')
-  router, // Next.js router para navegar (ej: para repetir pedido)
-  loading, // Booleano que indica si los datos aún están cargando
+  compras,
+  busqueda,
+  setBusqueda,
+  setPedidoSeleccionado,
+  setSelected,
+  router,
+  loading,
+  sort,
+  sortDirection,
+  onSortChange,
 }: {
   compras: Compra[];
   busqueda: string;
@@ -41,6 +49,9 @@ export default function ComprasSection({
   setSelected: (v: string) => void;
   router: any;
   loading: boolean;
+  sort: string;
+  sortDirection: "asc" | "desc";
+  onSortChange: (sort: string, direction: "asc" | "desc") => void;
 }) {
   // Filtra las compras que contienen el número buscado
   const comprasFiltradas = compras.filter((c) =>
@@ -63,21 +74,40 @@ export default function ComprasSection({
               Ver todos
             </button>
           ) : (
-            <div>&nbsp;</div> // Mantiene el mismo espacio si no hay búsqueda
+            <div>&nbsp;</div>
           )}
         </div>
 
-        {/* Input de búsqueda */}
-        <div className="relative w-full md:w-72">
-          <input
-            type="text"
-            placeholder="Buscar Nº de pedido"
-            className="border border-slate-400 px-4 py-2 rounded w-full pr-10"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-          {/* Ícono de lupa al lado derecho del input */}
-          <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-2.5 text-gray-500" />
+        <div className="flex gap-2 flex-wrap items-center ml-auto">
+          {/* Selector de ordenamiento */}
+          <select
+            className="border border-slate-400 px-3 py-2 rounded text-sm text-gray-700 w-full md:w-auto"
+            value={`${sort}_${sortDirection}`}
+            onChange={(e) => {
+              const option = SORT_OPTIONS.find(
+                (o) => `${o.sort}_${o.direction}` === e.target.value
+              );
+              if (option) onSortChange(option.sort, option.direction);
+            }}
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={`${o.sort}_${o.direction}`} value={`${o.sort}_${o.direction}`}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Input de búsqueda */}
+          <div className="relative w-full md:w-72">
+            <input
+              type="text"
+              placeholder="Buscar Nº de pedido"
+              className="border border-slate-400 px-4 py-2 rounded w-full pr-10"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+            <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-2.5 text-gray-500" />
+          </div>
         </div>
       </div>
 
