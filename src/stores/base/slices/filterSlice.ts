@@ -282,7 +282,7 @@ export const createFiltersSlice: StateCreator<
     if (selectedBrands.length === 0) return products;
 
     const filteredProducts = products.filter((product: Product) =>
-      selectedBrands.includes(product.brand.id)
+      product.brand != null && selectedBrands.includes(product.brand.id)
     );
 
     set({ filteredProducts });

@@ -231,12 +231,12 @@ export const fetchSearchProductsByFilters = async (
             case 'name':
               return product.name.toLowerCase().includes(searchTerm);
             case 'category_id':
-              return product.category.id.toString() === filters.value;
+              return product.category?.id.toString() === filters.value;
             case 'subcategory_id':
-              return product.subcategory.id.toString() === filters.value;
+              return product.subcategory?.id.toString() === filters.value;
             case 'brand_id':
               // NUEVO: Soporte para filtros por marca
-              return product.brand.id.toString() === filters.value;
+              return product.brand?.id.toString() === filters.value;
             case 'sales':
               return true;
             case 'is_favorite':
@@ -250,19 +250,19 @@ export const fetchSearchProductsByFilters = async (
       // Aplicar filtros directos (no por campo)
       if (filters.category_id !== undefined) {
         filteredProducts = filteredProducts.filter((product) =>
-          product.category.id === filters.category_id
+          product.category?.id === filters.category_id
         );
       }
 
       if (filters.subcategory_id !== undefined) {
         filteredProducts = filteredProducts.filter((product) =>
-          product.subcategory.id === filters.subcategory_id
+          product.subcategory?.id === filters.subcategory_id
         );
       }
 
       if (filters.brand_id !== undefined && filters.brand_id.length > 0) {
         filteredProducts = filteredProducts.filter((product) =>
-          filters.brand_id!.includes(product.brand.id)
+          product.brand != null && filters.brand_id!.includes(product.brand.id)
         );
       }
 

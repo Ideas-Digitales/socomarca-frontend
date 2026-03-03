@@ -275,7 +275,7 @@ export const getProductsByBrand = (
   count: number = 10
 ): Product[] => {
   return generateProducts(count * 2)
-    .filter((product) => product.brand.id === brandId)
+    .filter((product) => product.brand?.id === brandId)
     .slice(0, count);
 };
 
