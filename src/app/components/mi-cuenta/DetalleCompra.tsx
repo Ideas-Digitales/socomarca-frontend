@@ -30,7 +30,7 @@ export default function DetalleCompra({
 
       <h2 className="text-lg font-bold mb-2">Pedido Nº {pedido.numero}</h2>
       <p className="text-sm text-gray-500 mb-4">
-        Pedido entregado el {pedido.fecha}
+        Fecha del pedido {pedido.fecha}
       </p>
       <p className="text-lime-500 font-medium mb-6">
         {pedido.productos.length} Productos
