@@ -39,7 +39,7 @@ export const calculateRelevanceScore = (
   searchWords: string[]
 ): number => {
   // Normalizar nombre y descripción del producto
-  const normalizedName = normalizeText(product.name);
+  const normalizedName = normalizeText(product.name ?? '');
 
   // Dividir el nombre del producto en palabras
   const productWords = normalizedName

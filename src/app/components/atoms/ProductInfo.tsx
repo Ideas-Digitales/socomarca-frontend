@@ -3,7 +3,7 @@ import { formatCurrency } from '@/utils/formatCurrency';
 interface ProductInfoProps {
   brand: {
     name: string;
-  };
+  } | null;
   name: string;
   price: number | null | undefined;
   stock?: number;
@@ -50,13 +50,14 @@ export default function ProductInfo({
   };
 
   const getBrandName = () => {
-    const truncatedBrand = truncateText(brand.name, brandTruncateLength);
-    const shouldShowTooltip = brand.name.length > brandTruncateLength;
-    
+    const brandName = brand?.name ?? '';
+    const truncatedBrand = truncateText(brandName, brandTruncateLength);
+    const shouldShowTooltip = brandName.length > brandTruncateLength;
+
     return {
       text: truncatedBrand,
       showTooltip: shouldShowTooltip,
-      fullText: brand.name
+      fullText: brandName
     };
   };
 

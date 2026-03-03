@@ -266,7 +266,7 @@ export const getProductsByCategory = (
   count: number = 10
 ): Product[] => {
   return generateProducts(count * 3)
-    .filter((product) => product.category.id === categoryId)
+    .filter((product) => product.category?.id === categoryId)
     .slice(0, count);
 };
 
@@ -287,8 +287,8 @@ export const searchProducts = (
   return allProducts.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm) ||
-      product.category.name.toLowerCase().includes(searchTerm) ||
-      product.brand.name.toLowerCase().includes(searchTerm) ||
+      product.category?.name?.toLowerCase().includes(searchTerm) ||
+      product.brand?.name?.toLowerCase().includes(searchTerm) ||
       product.sku.toLowerCase().includes(searchTerm)
   );
 };

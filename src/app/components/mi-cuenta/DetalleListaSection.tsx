@@ -282,9 +282,9 @@ export default function DetalleListaSection({
                         </p>
                         <p
                           className="text-gray-500 truncate pr-2 text-xs md:text-sm"
-                          title={favorite.product.brand.name || ''}
+                          title={favorite.product.brand?.name || ''}
                         >
-                          {favorite.product.brand.name || ''}
+                          {favorite.product.brand?.name || ''}
                         </p>
                       </div>
                     </div>

@@ -57,7 +57,7 @@ export default function CarroCompraCardMobile({
       /> */}
 
       <div className="flex-1 pr-6">
-        <p className="text-xs text-slate-400">{p.brand.name}</p>
+        <p className="text-xs text-slate-400">{p.brand?.name}</p>
         <p data-cy="cart-item-name" className="text-sm font-semibold text-black">{p.name}</p>
         <p data-cy="cart-item-price" className="text-sm font-bold text-gray-700 mt-1">
           ${(p.price * p.quantity).toLocaleString('es-CL')}

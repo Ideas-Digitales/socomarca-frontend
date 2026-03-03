@@ -14,7 +14,7 @@ export default function VerPedidoItemCard({ cartItem }: Props) {
       />
       <div className="flex max-w-[169px] w-full flex-col items-start gap-[2px]">
         <span className="text-xs font-medium text-slate-500">
-          {cartItem.brand.name}
+          {cartItem.brand?.name}
         </span>
         <p className="text-sm">{cartItem.name}</p>
         <p className="text-xs text-slate-500">Cantidad: {cartItem.quantity}</p>

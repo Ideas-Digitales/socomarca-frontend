@@ -24,6 +24,26 @@ import { SYNC_CONFIG, validateFile, getErrorMessage } from './sync-config';
 import { InputFile } from '@/interfaces/server-file.interface';
 
 /**
+ * Normalizes a raw product from the API, replacing null/undefined primitive
+ * fields with safe defaults so components never crash on null access.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const normalizeProduct = (raw: any): Product => ({
+  id: raw.id,
+  name: raw.name ?? '',
+  price: typeof raw.price === 'string' ? parseFloat(raw.price) || 0 : (raw.price ?? 0),
+  stock: raw.stock ?? 0,
+  sku: raw.sku ?? '',
+  image: raw.image ?? '',
+  unit: raw.unit ?? '',
+  status: raw.status ?? false,
+  is_favorite: raw.is_favorite ?? false,
+  brand: raw.brand ?? null,
+  category: raw.category ?? null,
+  subcategory: raw.subcategory ?? null,
+});
+
+/**
  * Formats paginated product data into a Laravel-style API response.
  * @param paginatedData - Paginated product data
  * @param baseUrl - Base URL for links (defaults to BACKEND_URL)
@@ -165,6 +185,9 @@ export const fetchGetProducts = async ({
       }
 
       const data = await response.json();
+      if (Array.isArray(data?.data)) {
+        data.data = data.data.map(normalizeProduct);
+      }
 
       return {
         ok: true,
@@ -286,12 +309,12 @@ export const fetchSearchProductsByFilters = async (
               bValue = b.stock;
               break;
             case 'category_name':
-              aValue = a.category.name.toLowerCase();
-              bValue = b.category.name.toLowerCase();
+              aValue = a.category?.name?.toLowerCase() ?? '';
+              bValue = b.category?.name?.toLowerCase() ?? '';
               break;
             case 'brand_name':
-              aValue = a.brand.name.toLowerCase();
-              bValue = b.brand.name.toLowerCase();
+              aValue = a.brand?.name?.toLowerCase() ?? '';
+              bValue = b.brand?.name?.toLowerCase() ?? '';
               break;
             default:
               return 0;
@@ -443,6 +466,10 @@ export const fetchSearchProductsByFilters = async (
         throw new Error(`Error HTTP: ${response.status}`);
       }
 
+      if (Array.isArray(data?.data)) {
+        data.data = data.data.map(normalizeProduct);
+      }
+
       return {
         ok: true,
         data,
@@ -492,7 +519,7 @@ export const fetchGetProductsByCategory = async (
 
     const allProducts = getCachedProducts();
     const categoryProducts = allProducts.filter(
-      (p) => p.category.id === categoryId
+      (p) => p.category?.id === categoryId
     );
     const paginatedData = paginateProducts(categoryProducts, page, size);
     const response = createLaravelStyleResponse(paginatedData);
@@ -528,8 +555,8 @@ export const fetchSearchProducts = async (
     const filteredProducts = allProducts.filter(
       (product) =>
         product.name.toLowerCase().includes(searchTerm) ||
-        product.category.name.toLowerCase().includes(searchTerm) ||
-        product.brand.name.toLowerCase().includes(searchTerm) ||
+        product.category?.name?.toLowerCase().includes(searchTerm) ||
+        product.brand?.name?.toLowerCase().includes(searchTerm) ||
         product.sku.toLowerCase().includes(searchTerm)
     );
 
@@ -681,6 +708,10 @@ export const fetchGetProductsList = async ({
         data: null,
         error: data.message || `HTTP error! status: ${response.status}`,
       };
+    }
+
+    if (Array.isArray(data?.data)) {
+      data.data = data.data.map(normalizeProduct);
     }
 
     return {

@@ -136,7 +136,7 @@ export default function ProductCardGrid({ product }: Props) {
       {/* Información del producto */}
       <div className="flex flex-col w-full items-center">
         <span className="text-[#64748B] text-xs font-medium">
-          {product.brand.name}
+          {product.brand?.name}
         </span>
         <span data-cy="product-name" className="text-sm font-medium text-center">
           {product.name.length > 25

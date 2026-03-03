@@ -5,9 +5,9 @@ export interface Product {
   stock: number;
   sku: string;
   image: string;
-  category: Category;
-  subcategory: Subcategory;
-  brand: Brand;
+  category: Category | null;
+  subcategory: Subcategory | null;
+  brand: Brand | null;
   status: boolean;
   unit: string;
   is_favorite: boolean;
