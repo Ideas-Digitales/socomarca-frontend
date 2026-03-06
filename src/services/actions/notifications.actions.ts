@@ -21,6 +21,7 @@ interface BackendNotification {
   user_id: number;
   title: string;
   message: string;
+  viewed?: boolean;
   sent_at: string;
 }
 
@@ -166,6 +167,72 @@ export const fetchLatestNotifications = async (): Promise<ActionResult<BackendNo
       ok: false,
       data: null,
       error: error instanceof Error ? error.message : 'Error inesperado al obtener las notificaciones',
+    };
+  }
+};
+
+// Marcar notificaciones como vistas en batch
+export const fetchMarkNotificationsViewedBatch = async (
+  notificationIds: number[]
+): Promise<ActionResult<any>> => {
+  try {
+    const uniqueIds = Array.from(new Set(notificationIds.filter(id => Number.isInteger(id) && id > 0)));
+
+    if (uniqueIds.length === 0) {
+      return {
+        ok: true,
+        data: { resources: [] },
+        error: null,
+      };
+    }
+
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      return {
+        ok: false,
+        data: null,
+        error: 'Unauthorized: No token provided',
+      };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/viewed-notifications/batch`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        resources: uniqueIds.map(id => ({
+          fcm_notification_id: id,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        ok: false,
+        data: null,
+        error: errorData.message || `Error HTTP: ${response.status} - ${response.statusText}`,
+      };
+    }
+
+    const data = await response.json().catch(() => ({}));
+
+    return {
+      ok: true,
+      data,
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error marking notifications as viewed:', error);
+    return {
+      ok: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Error inesperado al marcar notificaciones como vistas',
     };
   }
 };

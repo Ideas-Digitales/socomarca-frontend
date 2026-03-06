@@ -9,10 +9,12 @@ interface NotificationBellProps {
 
 export default function NotificationBell({ className = '' }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const wasOpenRef = useRef(false);
   const { 
     dropdownNotifications, 
     unreadCount, 
     clearDropdownNotifications, 
+    markHistoricalNotificationsAsViewed,
     token, 
     tokenSentToServer, 
     tokenError,
@@ -46,6 +48,15 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
   const handleToggleDropdown = () => {
     setIsOpen(!isOpen);
   };
+
+  useEffect(() => {
+    // Marcar como vistas solo al cerrar el dropdown (transición abierto -> cerrado)
+    if (wasOpenRef.current && !isOpen) {
+      void markHistoricalNotificationsAsViewed();
+    }
+
+    wasOpenRef.current = isOpen;
+  }, [isOpen, markHistoricalNotificationsAsViewed]);
 
   const formatTime = (dateString?: string) => {
     if (!dateString) {
@@ -125,13 +136,14 @@ export default function NotificationBell({ className = '' }: NotificationBellPro
               </h3>
               {hasNotifications && (
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    await markHistoricalNotificationsAsViewed();
                     clearDropdownNotifications();
                     setIsOpen(false);
                   }}
                   className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                 >
-                  Limpiar nuevas
+                  Marcar como leidas
                 </button>
               )}
             </div>

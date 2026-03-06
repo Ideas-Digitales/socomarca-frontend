@@ -1,10 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import type { Messaging } from 'firebase/messaging';
 import { app, vapid } from '../../lib/firebase';
 import { sendFCMToken } from '@/services/actions/fcm.actions';
-import { fetchLatestNotifications } from '@/services/actions/notifications.actions';
+import { fetchLatestNotifications, fetchMarkNotificationsViewedBatch } from '@/services/actions/notifications.actions';
 
 interface NotificationPayload {
   title?: string;
@@ -12,6 +12,7 @@ interface NotificationPayload {
   icon?: string;
   sent_at?: string;
   id?: string | number;
+  viewed?: boolean;
 }
 
 interface NotificationContextType {
@@ -27,6 +28,7 @@ interface NotificationContextType {
   requestPermission: () => Promise<string | null>;
   clearNotifications: () => void;
   clearDropdownNotifications: () => void; // Nueva función para limpiar solo las de tiempo real
+  markHistoricalNotificationsAsViewed: () => Promise<void>;
   addTestNotification: () => void;
 }
 
@@ -46,6 +48,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [historicalNotifications, setHistoricalNotifications] = useState<NotificationPayload[]>([]);
   const [realtimeNotifications, setRealtimeNotifications] = useState<NotificationPayload[]>([]);
+  const isLoadingHistoricalRef = useRef(false);
 
 
   useEffect(() => {
@@ -94,36 +97,59 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   }, []);
 
-  // Cargar notificaciones históricas al inicializar
-  useEffect(() => {
-    const loadHistoricalNotifications = async () => {
-      try {
-        console.log('🔔 Cargando notificaciones históricas...');
-        const result = await fetchLatestNotifications();
-        console.log('🔔 Resultado de fetchLatestNotifications:', result);
-        
-        if (result.ok && result.data) {
-          // Convertir las notificaciones del backend al formato del contexto
-          const formattedNotifications: NotificationPayload[] = result.data.map(notification => ({
+  const loadHistoricalNotifications = useCallback(async () => {
+    if (isLoadingHistoricalRef.current) {
+      return;
+    }
+
+    isLoadingHistoricalRef.current = true;
+
+    try {
+      console.log('🔔 Cargando notificaciones históricas...');
+      const result = await fetchLatestNotifications();
+      console.log('🔔 Resultado de fetchLatestNotifications:', result);
+      
+      if (result.ok && result.data) {
+        // Convertir las notificaciones del backend al formato del contexto
+        const formattedNotifications: NotificationPayload[] = result.data
+          .filter(notification => !notification.viewed)
+          .map(notification => ({
             id: notification.id,
             title: notification.title,
             body: notification.message,
             sent_at: notification.sent_at,
+            viewed: notification.viewed,
             icon: '/assets/global/logo.png'
           }));
-          
-          console.log('🔔 Notificaciones formateadas:', formattedNotifications);
-          setHistoricalNotifications(formattedNotifications);
-        } else {
-          console.log('🔔 No se pudieron cargar las notificaciones:', result.error);
-        }
-      } catch (error) {
-        console.error('🔔 Error loading historical notifications:', error);
+        
+        console.log('🔔 Notificaciones formateadas:', formattedNotifications);
+        setHistoricalNotifications(formattedNotifications);
+      } else {
+        console.log('🔔 No se pudieron cargar las notificaciones:', result.error);
       }
-    };
-
-    loadHistoricalNotifications();
+    } catch (error) {
+      console.error('🔔 Error loading historical notifications:', error);
+    } finally {
+      isLoadingHistoricalRef.current = false;
+    }
   }, []);
+
+  // Cargar notificaciones históricas al inicializar
+  useEffect(() => {
+    void loadHistoricalNotifications();
+  }, [loadHistoricalNotifications]);
+
+  // Polling cada 60 segundos para refrescar notificaciones
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+      void loadHistoricalNotifications();
+    }, 60_000);
+
+    return () => window.clearInterval(intervalId);
+  }, [loadHistoricalNotifications]);
 
   // Combinar notificaciones históricas y en tiempo real para el dropdown
   useEffect(() => {
@@ -193,6 +219,28 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     setRealtimeNotifications([]);
   };
 
+  const markHistoricalNotificationsAsViewed = useCallback(async () => {
+    const notificationIds = historicalNotifications
+      .map(notification => Number(notification.id))
+      .filter(id => Number.isInteger(id) && id > 0);
+
+    if (notificationIds.length === 0) {
+      return;
+    }
+
+    const result = await fetchMarkNotificationsViewedBatch(notificationIds);
+
+    if (result.ok) {
+      const idsSet = new Set(notificationIds);
+      setHistoricalNotifications(prev =>
+        prev.filter(notification => !idsSet.has(Number(notification.id)))
+      );
+      return;
+    }
+
+    console.error('🔔 No se pudieron marcar notificaciones como vistas:', result.error);
+  }, [historicalNotifications]);
+
   // Función para agregar notificación de prueba
   const addTestNotification = () => {
     const testNotification = {
@@ -223,6 +271,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     requestPermission,
     clearNotifications,
     clearDropdownNotifications,
+    markHistoricalNotificationsAsViewed,
     addTestNotification,
   };
 
