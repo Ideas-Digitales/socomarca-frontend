@@ -5,12 +5,10 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '@/stores/useAuthStore';
 import { useAuthInitialization } from '@/hooks/useAuthInitialization';
-
 export default function LoginPage() {
   const { isLoggedIn, user, isInitialized } = useAuthStore();
   const router = useRouter();
-  
-  // Asegurar que el estado de autenticación se inicialice
+
   useAuthInitialization();
 
   useEffect(() => {

@@ -115,9 +115,10 @@ export default function Header({ carro }: Props) {
   return (
     <>
       <div
-        className={`fixed top-0 left-0 w-full bg-white text-black py-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs z-30 transition-shadow duration-300 ${
+        className={`fixed top-0 left-0 w-full bg-white text-black pb-4 border-t-10 border-[#6CB409] border-b-0 border-l-0 border-r-0 text-xs z-30 transition-shadow duration-300 ${
           isScrolled ? 'shadow-md' : ''
         }`}
+        style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
       >
         <div className="max-w-7xl px-4 flex justify-between items-center mx-auto">
           <div className="flex gap-3 items-center">
@@ -269,7 +270,14 @@ export default function Header({ carro }: Props) {
         </div>
       </div>
 
-      <div className="h-16 sm:h-20"></div>
+      <div
+        className="sm:hidden"
+        style={{ height: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
+      ></div>
+      <div
+        className="hidden sm:block"
+        style={{ height: 'calc(5rem + env(safe-area-inset-top, 0px))' }}
+      ></div>
 
       {menuMobileOpen && (
         <div
@@ -286,7 +294,10 @@ export default function Header({ carro }: Props) {
           menuMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+        <div
+          className="flex justify-between items-center px-4 pb-4 border-b border-gray-200"
+          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
+        >
           <Image
             src={imagoLogoUrl}
             width={28}

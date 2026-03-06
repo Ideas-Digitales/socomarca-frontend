@@ -6,8 +6,20 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     url: 'https://www.appsocomarca.cl',
-    cleartext: true
-  }
+    cleartext: true,
+    allowNavigation: [
+      '*.transbank.cl',
+      'webpay3gint.transbank.cl',
+      'webpay3g.transbank.cl',
+    ],
+  },
+  plugins: {
+    StatusBar: {
+      overlaysWebView: false,
+      style: 'LIGHT',
+      backgroundColor: '#6CB409',
+    },
+  },
 };
 
 export default config;
