@@ -133,30 +133,30 @@ export default function CargaMasivaPage() {
             Carga Masiva de Imágenes
           </h1>
           <p className="text-gray-600">
-            Sube un archivo ZIP que contenga un archivo Excel con la información de productos y una carpeta &quot;images&quot; con las imágenes correspondientes.
+            Sube un archivo ZIP con una carpeta llamada{' '}<strong>images</strong>{' '}que contenga las imágenes de los productos. Cada imagen debe tener como nombre el SKU del producto.
           </p>
         </div>
 
         {/* Upload Area */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="space-y-6">
-                         {/* File Input */}
-             <div>
-               <label htmlFor="file-input" className="block text-sm font-medium text-gray-700 mb-2">
-                 Seleccionar archivo ZIP (con Excel + carpeta images)
-               </label>
-               <div className="mt-1">
-                 <input
-                   id="file-input"
-                   name="file-input"
-                   type="file"
-                   accept=".zip"
-                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-lime-50 file:text-lime-700 hover:file:bg-lime-100 file:cursor-pointer"
-                   onChange={handleFileChange}
-                   disabled={isUploading}
-                 />
-               </div>
-             </div>
+            {/* File Input */}
+            <div>
+              <label htmlFor="file-input" className="block text-sm font-medium text-gray-700 mb-2">
+                Seleccionar archivo ZIP
+              </label>
+              <div className="mt-1">
+                <input
+                  id="file-input"
+                  name="file-input"
+                  type="file"
+                  accept=".zip"
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-lime-50 file:text-lime-700 hover:file:bg-lime-100 file:cursor-pointer"
+                  onChange={handleFileChange}
+                  disabled={isUploading}
+                />
+              </div>
+            </div>
 
 
 
@@ -228,65 +228,46 @@ export default function CargaMasivaPage() {
           </div>
         </div>
 
-                 {/* Instructions */}
-         <div className="mt-8 bg-blue-50 rounded-lg p-6">
-           <h3 className="text-lg font-medium text-blue-900 mb-3">
-             Instrucciones para la carga masiva
-           </h3>
-           <ul className="space-y-2 text-sm text-blue-800">
-             <li className="flex items-start">
-               <span className="text-blue-600 mr-2">•</span>
-               El archivo debe estar en formato ZIP
-             </li>
-             <li className="flex items-start">
-               <span className="text-blue-600 mr-2">•</span>
-               El ZIP debe contener un archivo Excel (.xlsx) y una carpeta llamada &quot;images&quot;
-             </li>
-                           <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
-                El archivo Excel debe tener las columnas: SKU, Nombre, Categoría, Subcategoria, Imágenes
-              </li>
-             <li className="flex items-start">
-               <span className="text-blue-600 mr-2">•</span>
-               Las imágenes deben estar en la carpeta &quot;images&quot; con formatos: JPG y WEBP
-             </li>
-             <li className="flex items-start">
-               <span className="text-blue-600 mr-2">•</span>
-               El proceso puede tomar varios minutos dependiendo del tamaño del archivo
-             </li>
-             <li className="flex items-start">
-               <span className="text-blue-600 mr-2">•</span>
-               Si hay errores, usa la información de debug para diagnosticar problemas
-             </li>
-           </ul>
-           
-           {/* Estructura del ZIP */}
-           <div className="mt-4 p-4 bg-blue-100 rounded-lg">
-             <h4 className="text-sm font-medium text-blue-900 mb-2">Estructura del archivo ZIP:</h4>
-             <div className="text-xs text-blue-800 font-mono">
-               <div>📁 archivo.zip</div>
-               <div className="ml-4">📄 archivo.xlsx</div>
-               <div className="ml-4">📁 images/</div>
-               <div className="ml-8">🖼️ imagen1.jpg</div>
-               <div className="ml-8">🖼️ imagen2.webp</div>
-               <div className="ml-8">🖼️ imagen3.jpg</div>
-             </div>
-           </div>
-           
-                       {/* Columnas del Excel */}
-            <div className="mt-4 p-4 bg-blue-100 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">Columnas requeridas en el Excel:</h4>
-              <div className="text-xs text-blue-800 font-mono">
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  <div className="bg-blue-200 p-1 rounded">SKU</div>
-                  <div className="bg-blue-200 p-1 rounded">Nombre</div>
-                  <div className="bg-blue-200 p-1 rounded">Categoría</div>
-                  <div className="bg-blue-200 p-1 rounded">Subcategoria</div>
-                  <div className="bg-blue-200 p-1 rounded">Imágenes</div>
-                </div>
-              </div>
+        {/* Instructions */}
+        <div className="mt-8 bg-lime-50 rounded-lg p-6 border border-lime-200">
+          <h3 className="text-lg font-medium text-slate-800 mb-3">
+            Instrucciones para la carga masiva
+          </h3>
+          <ul className="space-y-2 text-sm text-slate-700">
+            <li className="flex items-start">
+              <span className="text-lime-600 mr-2">•</span>
+              El archivo debe estar en formato ZIP
+            </li>
+            <li className="flex items-start">
+              <span className="text-lime-600 mr-2">•</span>
+              El ZIP debe contener una carpeta llamada{' '}<strong>images</strong>{' '}con las imágenes de los productos
+            </li>
+            <li className="flex items-start">
+              <span className="text-lime-600 mr-2">•</span>
+              Cada imagen debe tener como nombre el{' '}<strong>SKU del producto</strong>{' '}(ej:{' '}<code className="bg-lime-100 text-lime-800 px-1 rounded">SKU123.jpg</code>)
+            </li>
+            <li className="flex items-start">
+              <span className="text-lime-600 mr-2">•</span>
+              Formatos de imagen aceptados: JPG, WEBP
+            </li>
+            <li className="flex items-start">
+              <span className="text-lime-600 mr-2">•</span>
+              El proceso puede tomar varios minutos dependiendo del tamaño del archivo
+            </li>
+          </ul>
+
+          {/* Estructura del ZIP */}
+          <div className="mt-4 p-4 bg-lime-100 rounded-lg">
+            <h4 className="text-sm font-medium text-slate-700 mb-2">Estructura del archivo ZIP:</h4>
+            <div className="text-xs text-slate-600 font-mono space-y-1">
+              <div>📦 archivo.zip</div>
+              <div className="ml-4">📁 images/</div>
+              <div className="ml-8">🖼️ SKU001.jpg</div>
+              <div className="ml-8">🖼️ SKU002.jpg</div>
+              <div className="ml-8">🖼️ SKU003.webp</div>
             </div>
-         </div>
+          </div>
+        </div>
       </div>
     </div>
   );
