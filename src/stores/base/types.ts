@@ -153,8 +153,10 @@ export interface ProductsSlice {
 // Categories Slice
 export interface CategoriesSlice {
   categories: CategoryComplexData[];
+  searchCategories: Category[] | null;
 
   setCategories: (categories: Category[]) => void;
+  setSearchCategories: (categories: Category[] | null) => void;
   fetchCategories: () => Promise<void>;
 }
 
@@ -331,6 +333,7 @@ export interface StoreState extends LoadingStates, AuthState {
   currentPage: number;
 
   categories: CategoryComplexData[];
+  searchCategories: Category[] | null;
   brands: Brand[];
 
   isMobile: boolean;

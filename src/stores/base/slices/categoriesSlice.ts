@@ -10,10 +10,15 @@ export const createCategoriesSlice: StateCreator<
 > = (set) => ({
   // Estado inicial
   categories: [],
+  searchCategories: null,
 
   // Acciones
   setCategories: (categories) => {
     set({ categories });
+  },
+
+  setSearchCategories: (categories) => {
+    set({ searchCategories: categories });
   },
 
   fetchCategories: async () => {

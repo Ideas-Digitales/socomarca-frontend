@@ -60,6 +60,7 @@ const initialState: StoreState = {
 
   // Category & Brand states
   categories: [],
+  searchCategories: null,
   brands: [],
 
   // UI states

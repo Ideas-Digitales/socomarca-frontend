@@ -24,6 +24,7 @@ export default function CategoryFilterMobile({
   const {
     // Estados de datos
     categories,
+    searchCategories,
     brands,
 
     // Estados de filtros
@@ -70,7 +71,8 @@ export default function CategoryFilterMobile({
   }, []);
 
   // Filtrar categorías por término de búsqueda
-  const filteredCategories = categories.filter((category) =>
+  const activeCategories = searchCategories ?? categories;
+  const filteredCategories = activeCategories.filter((category) =>
     category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
   );
   // Filtrar marcas por término de búsqueda

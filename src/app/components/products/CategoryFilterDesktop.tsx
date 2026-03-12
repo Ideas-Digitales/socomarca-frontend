@@ -10,6 +10,7 @@ export default function CategoryFilterDesktop() {
   const {
     // Estados de datos
     categories,
+    searchCategories,
     brands,
 
     // Estados de filtros
@@ -112,7 +113,7 @@ export default function CategoryFilterDesktop() {
         }`}
       >
         <div className="w-full max-h-[40dvh] overflow-y-auto">
-          {categories?.map((category) => (
+          {(searchCategories ?? categories)?.map((category) => (
             <div key={category.id} className="w-full">
               <div
                 className={`flex w-full min-h-[40px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-3 py-2 ${

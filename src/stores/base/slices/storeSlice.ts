@@ -69,6 +69,7 @@ export const createStoreSlice: StateCreator<
       selectedBrands: [],
       selectedFavorites: [],
       isLoading: false,
+      searchCategories: null,
     });
 
     try {

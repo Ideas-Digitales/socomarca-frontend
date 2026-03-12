@@ -5,6 +5,7 @@ import {
   ProductsSlice,
   FavoritesSlice,
   StoreSlice,
+  CategoriesSlice,
 } from '../types';
 import {
   Product,
@@ -13,7 +14,7 @@ import {
 import { fetchSearchProductsByFilters } from '@/services/actions/products.actions';
 
 export const createFiltersSlice: StateCreator<
-  StoreState & FiltersSlice & ProductsSlice & FavoritesSlice & StoreSlice,
+  StoreState & FiltersSlice & ProductsSlice & FavoritesSlice & StoreSlice & CategoriesSlice,
   [],
   [],
   FiltersSlice
@@ -188,6 +189,8 @@ export const createFiltersSlice: StateCreator<
       const response = await fetchSearchProductsByFilters(searchParams);
 
       if (response.ok && response.data) {
+        const extraCategories = response.data.extra?.categories ?? null;
+
         set({
           filteredProducts: response.data.data,
           productPaginationMeta: response.data.meta,
@@ -195,6 +198,7 @@ export const createFiltersSlice: StateCreator<
           currentPage: response.data.meta.current_page,
           isLoadingProducts: false,
           isFiltered: true,
+          searchCategories: extraCategories,
         });
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
@@ -223,6 +227,7 @@ export const createFiltersSlice: StateCreator<
       selectedMinPrice: minPrice,
       selectedMaxPrice: maxPrice,
       isFiltered: false,
+      searchCategories: null,
     });
 
     try {
@@ -250,6 +255,7 @@ export const createFiltersSlice: StateCreator<
       isFavoritesOpen: false,
       isPriceOpen: true,
       isFiltered: false,
+      searchCategories: null,
     });
   },
 
