@@ -132,8 +132,10 @@ export default function CargaMasivaPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Carga Masiva de Imágenes
           </h1>
-          <p className="text-gray-600">
-            Sube un archivo ZIP con una carpeta llamada{' '}<strong>images</strong>{' '}que contenga las imágenes de los productos. Cada imagen debe tener como nombre el SKU del producto.
+          <p className="text-gray-600 leading-relaxed">
+            Sube un archivo ZIP con una carpeta llamada <strong>images</strong> que contenga
+            las imágenes de los productos. El nombre de cada imagen debe ser exactamente el
+            SKU del producto, sin prefijos ni texto adicional.
           </p>
         </div>
 
@@ -233,25 +235,23 @@ export default function CargaMasivaPage() {
           <h3 className="text-lg font-medium text-slate-800 mb-3">
             Instrucciones para la carga masiva
           </h3>
-          <ul className="space-y-2 text-sm text-slate-700">
-            <li className="flex items-start">
-              <span className="text-lime-600 mr-2">•</span>
+          <ul className="space-y-2 text-sm leading-relaxed text-slate-700">
+            <li className="ml-5 list-disc marker:text-lime-600">
               El archivo debe estar en formato ZIP
             </li>
-            <li className="flex items-start">
-              <span className="text-lime-600 mr-2">•</span>
-              El ZIP debe contener una carpeta llamada{' '}<strong>images</strong>{' '}con las imágenes de los productos
+            <li className="ml-5 list-disc marker:text-lime-600">
+              El ZIP debe contener una carpeta llamada <strong>images</strong> con las
+              imágenes de los productos
             </li>
-            <li className="flex items-start">
-              <span className="text-lime-600 mr-2">•</span>
-              Cada imagen debe tener como nombre el{' '}<strong>SKU del producto</strong>{' '}(ej:{' '}<code className="bg-lime-100 text-lime-800 px-1 rounded">SKU123.jpg</code>)
+            <li className="ml-5 list-disc marker:text-lime-600">
+              Cada imagen debe tener como nombre solo el <strong>SKU del producto</strong>,
+              sin agregar prefijos como <code className="bg-lime-100 px-1 rounded text-lime-800">SKU</code>{' '}
+              ni otro texto (ej.: <code className="bg-lime-100 px-1 rounded text-lime-800">090789.png</code>)
             </li>
-            <li className="flex items-start">
-              <span className="text-lime-600 mr-2">•</span>
-              Formatos de imagen aceptados: JPG, WEBP
+            <li className="ml-5 list-disc marker:text-lime-600">
+              Formatos de imagen aceptados: JPG, PNG y WEBP
             </li>
-            <li className="flex items-start">
-              <span className="text-lime-600 mr-2">•</span>
+            <li className="ml-5 list-disc marker:text-lime-600">
               El proceso puede tomar varios minutos dependiendo del tamaño del archivo
             </li>
           </ul>
@@ -262,9 +262,9 @@ export default function CargaMasivaPage() {
             <div className="text-xs text-slate-600 font-mono space-y-1">
               <div>📦 archivo.zip</div>
               <div className="ml-4">📁 images/</div>
-              <div className="ml-8">🖼️ SKU001.jpg</div>
-              <div className="ml-8">🖼️ SKU002.jpg</div>
-              <div className="ml-8">🖼️ SKU003.webp</div>
+              <div className="ml-8">🖼️ 090789.png</div>
+              <div className="ml-8">🖼️ 123456.jpg</div>
+              <div className="ml-8">🖼️ 456789.webp</div>
             </div>
           </div>
         </div>
