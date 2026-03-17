@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 export const cookiesManagement = async () => {
   const cookieStore = await cookies();
-  const setCookie = (cookie: string, cookieName: string): boolean => {
+  const setCookie = (cookie: string, cookieName: string, maxAge: number = 60 * 60 * 24 * 30): boolean => {
     if (cookie === undefined || cookie === null) {
       return false;
     }
@@ -20,6 +20,7 @@ export const cookiesManagement = async () => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
+      maxAge,
     });
 
     return true;
