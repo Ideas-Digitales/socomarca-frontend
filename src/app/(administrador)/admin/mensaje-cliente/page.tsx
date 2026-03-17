@@ -440,7 +440,7 @@ export default function MensajesCliente() {
           </p>
           <p className="text-sm text-gray-600">
             Resolución recomendada: <strong>1500 x 400 px</strong> para desktop
-            y <strong>600 x 400 px</strong> para responsivo
+            y <strong>750 x 400 px</strong> para responsivo
             <br />
             Peso máximo por imagen: <strong>15 MB</strong>
             <br />
