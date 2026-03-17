@@ -28,7 +28,7 @@ export default function ProductImage({
   const getVariantClasses = () => {
     switch (variant) {
       case 'list':
-        return 'w-[37px] h-[70px] py-[15px] px-[37px]';
+        return 'w-[80px] h-[80px] flex-shrink-0';
       case 'grid':
         return 'w-full h-[87px]';
       case 'cart':

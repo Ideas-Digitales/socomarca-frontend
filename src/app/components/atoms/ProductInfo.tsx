@@ -45,7 +45,7 @@ export default function ProductInfo({
         return 'text-left';
       case 'list':
       default:
-        return 'text-center sm:text-left';
+        return 'text-left';
     }
   };
 

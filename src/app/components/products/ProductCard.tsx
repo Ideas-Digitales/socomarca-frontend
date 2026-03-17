@@ -132,11 +132,11 @@ export default function ProductCard({ product }: Props) {
           variant="list"
         />
         <div className="sm:flex sm:h-[74px] sm:flex-col sm:justify-between sm:items-end sm:gap-[6px] sm:flex-1-0-0 gap-4">
-          <p className="text-[#64748B] text-[10px] font-medium my-2 text-center sm:text-left">
+          <p className="text-[#64748B] text-[10px] font-medium my-2 text-left">
             <strong>Stock:</strong> {product.stock} <strong>|</strong>{' '}
             <strong>SKU:</strong> {product.sku}
           </p>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+          <div className="flex flex-row justify-center items-center gap-3">
             <QuantitySelector
               quantity={quantity}
               maxQuantity={Math.min(product.stock, 999)}
