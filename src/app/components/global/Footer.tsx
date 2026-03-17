@@ -161,9 +161,12 @@ export default function Footer() {
                   <span className="text-lime-600 font-semibold text-sm">
                     Teléfono:
                   </span>
-                  <span className="text-gray-600 text-sm">
+                  <a
+                    href={`tel:${siteInformation.footer.contact_phone.replace(/\s+/g, '')}`}
+                    className="text-gray-600 text-sm hover:text-lime-600 transition-colors"
+                  >
                     {siteInformation.footer.contact_phone}
-                  </span>
+                  </a>
                 </div>
               </div>
             )}
