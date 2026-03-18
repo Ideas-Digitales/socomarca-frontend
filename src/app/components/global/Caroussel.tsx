@@ -176,7 +176,7 @@ export default function Carousel({ banner, desktopImage, mobileImage, images, mo
         <img
           src={currentImage}
           alt={`Banner - ${isMobile ? 'Móvil' : 'Desktop'}`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
         />
       </div>
     </div>

@@ -173,6 +173,19 @@ export default function Header({ carro }: Props) {
                 unoptimized
               />
             )}
+            {/* Teléfono en móvil - a la derecha del logo */}
+            {isTablet && (
+              <div className="flex items-center">
+                {isLoadingSiteInfo || !siteInformation ? (
+                  <div className="animate-pulse w-6 h-6 bg-gray-200 rounded" />
+                ) : siteInformation?.header?.contact_phone &&
+                  siteInformation.header.contact_phone.trim() !== '' ? (
+                  <a href={`tel:${siteInformation.header.contact_phone.replace(/\s+/g, '')}`} aria-label="Llamar">
+                    <PhoneIcon width={24} height={24} />
+                  </a>
+                ) : null}
+              </div>
+            )}
           </div>
           {!isTablet && (
             <Link href="/">

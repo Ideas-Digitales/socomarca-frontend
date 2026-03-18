@@ -8,6 +8,7 @@ import TerminosYCondicionesContent from '@/app/components/global/TerminosYCondic
 import {getUserData} from '@/services/actions/user.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import ShippingAddressSelect from '@/app/components/user/ShippingAddressSelect';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 
 
@@ -292,6 +293,11 @@ const goNext = () => {
         disabled
       />
     </div>*/}
+
+ <div className="col-span-1 md:col-span-2 flex items-start gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-md px-3 py-2">
+    <InformationCircleIcon width={16} height={16} className="shrink-0 mt-0.5" />
+    <p>Si necesitas actualizar tu información personal, por favor comunícate con el soporte.</p>
+  </div>
 
  <div className="col-span-1 md:col-span-2 mt-8">
     <h2 className="text-2xl font-bold mb-2">Información de envío</h2>
