@@ -150,7 +150,6 @@ export const createProductsSlice: StateCreator<
 
       if (response.ok && response.data) {
         const products = response.data.data;
-
         set({
           products: products,
           filteredProducts: products,

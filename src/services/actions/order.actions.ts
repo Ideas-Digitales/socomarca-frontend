@@ -5,7 +5,13 @@ import { BACKEND_URL } from "@/utils/getEnv";
 
 import type { OrderResponse } from "@/interfaces/order.interface";
 
-export async function createOrderFromCart({ shippingAddressId }: { shippingAddressId: number }) {
+export async function createOrderFromCart({
+  shippingAddressId,
+  paymentMethod,
+}: {
+  shippingAddressId: number;
+  paymentMethod: string;
+}) {
   const { getCookie } = await cookiesManagement();
   const token = getCookie("token");
 
@@ -22,23 +28,16 @@ export async function createOrderFromCart({ shippingAddressId }: { shippingAddre
   const res = await fetch(`${BACKEND_URL}/orders/pay`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ address_id: shippingAddressId }),
+    body: JSON.stringify({ address_id: shippingAddressId, payment_method: paymentMethod }),
   });
 
   const json = await res.json();
+  console.log('[orders/pay] Respuesta cruda:', JSON.stringify(json, null, 2));
   if (!res.ok) {
-    throw new Error(
-      json.message || 'Error al crear la orden y generar el pago'
-    );
+    throw new Error(json.message || 'Error al crear la orden y generar el pago');
   }
 
-  const { payment_url, token: webpayToken } = json.data;
-
-  if (!payment_url || !webpayToken) {
-    throw new Error("No se obtuvo la URL ni el token de pago");
-  }
-
-  return { payment_url, token: webpayToken };
+  return json;
 }
 
 

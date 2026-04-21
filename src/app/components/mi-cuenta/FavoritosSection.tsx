@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useFavorites } from '@/hooks/useFavorites';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
@@ -140,13 +139,17 @@ export default function FavoritosSection({
                   </div>
                   <div className="flex gap-2 overflow-x-auto mt-2">
                     {(lista.favorites || []).slice(0, 5).map((favorite, j) => (
-                      <Image
+                      <img
                         key={favorite.id || j}
-                        src="/assets/global/logo_plant.png"
+                        src={favorite.product?.image || '/assets/global/logo_plant.png'}
                         alt={favorite.product?.name || 'Producto'}
                         width={48}
                         height={64}
                         className="object-contain rounded"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = '/assets/global/logo_plant.png';
+                        }}
                       />
                     ))}
                   </div>

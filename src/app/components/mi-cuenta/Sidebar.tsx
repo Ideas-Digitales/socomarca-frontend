@@ -3,6 +3,7 @@
 import {
   ArrowRightOnRectangleIcon,
   ChevronRightIcon,
+  CreditCardIcon,
   HeartIcon,
   KeyIcon,
   MapPinIcon,
@@ -15,6 +16,7 @@ const items = [
   { key: 'direcciones', label: 'Direcciones', icon: MapPinIcon },
   { key: 'favoritos', label: 'Mis favoritos', icon: HeartIcon },
   { key: 'compras', label: 'Mis compras', icon: ShoppingBagIcon },
+  { key: 'linea-credito', label: 'Línea de Crédito', icon: CreditCardIcon },
   { key: 'cambiar-contraseña', label: 'Cambiar contraseña', icon: KeyIcon },
   { key: 'logout', label: 'Cerrar sesión', icon: ArrowRightOnRectangleIcon },
 ];

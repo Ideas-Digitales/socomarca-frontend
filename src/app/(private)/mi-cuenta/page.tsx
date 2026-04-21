@@ -11,6 +11,7 @@ import SectionSync from "@/app/components/mi-cuenta/SectionSync";
 import { useFavorites } from "@/hooks/useFavorites";
 import DatosPersonalesForm from "@/app/components/mi-cuenta/DatosPersonalesForm";
 import useStore from "@/stores/base";
+import useAuthStore from "@/stores/useAuthStore";
 import { getUserOrders } from "@/services/actions/order.actions";
 import { mapOrderToCompra } from "@/utils/mapOrderToCompra";
 import ComprasSection, {
@@ -24,6 +25,7 @@ import {
 import LoadingSpinner from "@/app/components/global/LoadingSpinner";
 import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
 import CambiarContraseñaSection from "@/app/components/mi-cuenta/CambiarContraseñaSection";
+import LineaCreditoSection from "@/app/components/mi-cuenta/LineaCreditoSection";
 
 const SECCIONES_VALIDAS = [
   "datos",
@@ -32,6 +34,7 @@ const SECCIONES_VALIDAS = [
   "detalle-lista",
   "compras",
   "detalle-compra",
+  "linea-credito",
   "cambiar-contraseña",
 ];
 export default function MiCuentaPage() {
@@ -56,6 +59,7 @@ export default function MiCuentaPage() {
   const [loadingDirecciones, setLoadinDirecciones] = useState(true);
 
   const router = useRouter();
+  const { user } = useAuthStore();
   const { handleViewListDetail, clearSelectedList } = useFavorites();
 
   const handleSectionChange = (newSection: string) => {
@@ -172,7 +176,7 @@ export default function MiCuentaPage() {
   return (
     <div className="bg-[#f1f5f9] min-h-screen px-4">
       <div className="max-w-7xl mx-auto py-6">
-        <h1 className="text-3xl font-bold mb-6">Hola, Damary</h1>
+        <h1 className="text-3xl font-bold mb-6">Hola, {user?.name || ''}</h1>
         <div className="flex flex-col md:flex-row gap-6">
           <Sidebar
             selectedKey={selected}
@@ -244,6 +248,11 @@ export default function MiCuentaPage() {
                     setSortDirection(newDirection);
                   }}
                 />
+              </div>
+            )}
+            {selected === "linea-credito" && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <LineaCreditoSection />
               </div>
             )}
             {selected === "cambiar-contraseña" && (

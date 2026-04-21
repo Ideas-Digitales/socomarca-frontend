@@ -3,6 +3,32 @@
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { BACKEND_URL } from '@/utils/getEnv';
 
+export interface PaymentMethod {
+  id: number;
+  name: string;
+  active: boolean;
+  code: string;
+}
+
+export async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
+  const { getCookie } = await cookiesManagement();
+  const token = getCookie('token');
+
+  const res = await fetch(`${BACKEND_URL}/payment-methods`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    cache: 'no-store',
+  });
+
+  if (!res.ok) return [];
+
+  const json = await res.json();
+  return (json.data as PaymentMethod[]).filter((m) => m.active);
+}
+
 /**
  * Consulta el detalle del pago en el backend usando el token_ws
  */

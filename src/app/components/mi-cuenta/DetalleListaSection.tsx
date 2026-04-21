@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   ChevronLeftIcon,
   PencilSquareIcon,
@@ -266,12 +265,16 @@ export default function DetalleListaSection({
                         disabled={isDeleting || isAdding}
                         className="flex-shrink-0"
                       />
-                      <Image
-                        src="/assets/global/logo_plant.png"
+                      <img
+                        src={favorite.product?.image || '/assets/global/logo_plant.png'}
                         alt={favorite.product.name}
                         width={56}
                         height={64}
                         className="object-contain rounded flex-shrink-0 w-12 h-14 md:w-14 md:h-16"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = '/assets/global/logo_plant.png';
+                        }}
                       />
                       <div className="text-sm min-w-0 flex-1">
                         <p
