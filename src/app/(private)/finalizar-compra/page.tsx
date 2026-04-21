@@ -313,7 +313,7 @@ export default function FinalizarCompraPage() {
                     </div>
                   ) : (
                     <div className="flex-1">
-                      <p className="font-bold text-sm">{method.name}</p>
+                      <p className="font-bold text-sm">Línea de Crédito</p>
                       <div className="flex items-center gap-2 my-1">
                         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-lime-100 text-lime-600 shrink-0">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
