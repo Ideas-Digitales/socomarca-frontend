@@ -45,7 +45,8 @@ export async function getUserOrders(
   page = 1,
   per_page = 20,
   sort: string = 'created_at',
-  sort_direction: 'asc' | 'desc' = 'desc'
+  sort_direction: 'asc' | 'desc' = 'desc',
+  payment_method_code?: string,
 ): Promise<OrderResponse | null> {
 
  const { getCookie } = await cookiesManagement();
@@ -53,7 +54,14 @@ export async function getUserOrders(
   if (!token) return null
 
   try {
-    const res = await fetch(`${BACKEND_URL}/orders?page=${page}&per_page=${per_page}&sort=${sort}&sort_direction=${sort_direction}`, {
+    const params = new URLSearchParams({
+      page: String(page),
+      per_page: String(per_page),
+      sort,
+      sort_direction,
+      ...(payment_method_code ? { payment_method_code } : {}),
+    });
+    const res = await fetch(`${BACKEND_URL}/orders?${params}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',

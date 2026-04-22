@@ -1,33 +1,18 @@
 'use client';
 
-import { mockLineaCredito, type MovimientoCredito } from '@/mock/lineaCredito';
+import { useEffect, useState } from 'react';
+import { mockLineaCredito } from '@/mock/lineaCredito';
+import { getUserOrders } from '@/services/actions/order.actions';
 
 const formatCLP = (value: number) =>
-  Math.abs(value).toLocaleString('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-  });
+  Math.abs(value).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
 
-const formatFecha = (fecha: string) =>
-  new Date(fecha + 'T00:00:00').toLocaleDateString('es-CL', {
+const formatFecha = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-CL', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
   });
-
-function MovimientoRow({ mov }: { mov: MovimientoCredito }) {
-  return (
-    <div className="flex items-center justify-between bg-[#edf2f7] px-4 py-3 rounded">
-      <div>
-        <p className="font-medium text-gray-700 text-sm">{mov.descripcion}</p>
-        <p className="text-xs text-gray-500">{formatFecha(mov.fecha)}</p>
-      </div>
-      <span className="font-semibold text-sm text-lime-600">
-        − {formatCLP(mov.monto)}
-      </span>
-    </div>
-  );
-}
 
 export function logCreditoRaw(raw: Record<string, unknown>) {
   console.log('[Línea de Crédito] Datos crudos del ERP:', {
@@ -44,9 +29,31 @@ export function logCreditoRaw(raw: Record<string, unknown>) {
   });
 }
 
+interface CompraCredito {
+  id: number;
+  monto: number;
+  fecha: string;
+}
+
 export default function LineaCreditoSection() {
   const credito = mockLineaCredito;
-  const comprasRegistradas = credito.movimientos.filter((mov) => mov.tipo === 'compra');
+  const [compras, setCompras] = useState<CompraCredito[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getUserOrders(1, 20, 'created_at', 'desc', 'random_credit').then((res) => {
+      if (res?.data) {
+        setCompras(
+          res.data.map((order: any) => ({
+            id: order.id,
+            monto: order.amount,
+            fecha: order.created_at,
+          }))
+        );
+      }
+      setLoading(false);
+    });
+  }, []);
 
   const estadoLabel =
     credito.estado === 'activa' ? 'Activa'
@@ -67,13 +74,11 @@ export default function LineaCreditoSection() {
 
       {/* Resumen principal */}
       <div className="rounded-xl bg-white shadow-sm mb-6 overflow-hidden">
-        {/* Header con saldo disponible */}
         <div className="bg-[#edf2f7] px-6 py-5">
           <p className="text-xs font-medium text-[#64748B] mb-1 uppercase tracking-wide">Saldo disponible</p>
           <p className="text-4xl font-extrabold text-[#1E1E2F]">{formatCLP(credito.disponible)}</p>
         </div>
 
-        {/* Barra de progreso */}
         <div className="px-6 py-4">
           <div className="flex justify-between text-xs text-[#64748B] mb-2">
             <span>Utilizado: <strong className="text-[#1E1E2F]">{formatCLP(credito.utilizado)}</strong></span>
@@ -94,7 +99,6 @@ export default function LineaCreditoSection() {
           </div>
         </div>
 
-        {/* 3 columnas */}
         <div className="grid grid-cols-3 px-0">
           <div className="px-5 py-4">
             <p className="text-xs text-[#64748B] mb-1">Cupo autorizado</p>
@@ -113,13 +117,24 @@ export default function LineaCreditoSection() {
 
       <h3 className="font-bold text-gray-800 mb-3">Compras registradas en el sitio</h3>
       <div className="space-y-2">
-        {comprasRegistradas.map((mov) => (
-          <MovimientoRow key={mov.id} mov={mov} />
-        ))}
-        {comprasRegistradas.length === 0 && (
+        {loading ? (
+          <div className="rounded bg-[#edf2f7] px-4 py-3 text-sm text-gray-500">Cargando...</div>
+        ) : compras.length === 0 ? (
           <div className="rounded bg-[#edf2f7] px-4 py-3 text-sm text-gray-500">
             Aún no hay compras registradas en el sitio para esta línea de crédito.
           </div>
+        ) : (
+          compras.map((compra) => (
+            <div key={compra.id} className="flex items-center justify-between bg-[#edf2f7] px-4 py-3 rounded">
+              <div>
+                <p className="font-medium text-gray-700 text-sm">Compra #{compra.id}</p>
+                <p className="text-xs text-gray-500">{formatFecha(compra.fecha)}</p>
+              </div>
+              <span className="font-semibold text-sm text-lime-600">
+                − {formatCLP(compra.monto)}
+              </span>
+            </div>
+          ))
         )}
       </div>
 
