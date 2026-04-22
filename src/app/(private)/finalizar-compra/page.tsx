@@ -82,7 +82,7 @@ export default function FinalizarCompraPage() {
 
   const totalQuantity = cartProducts.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartProducts.reduce((sum, item) => sum + item.quantity * item.price, 0);
-  const shipping = subtotal * 0.1;
+  const shipping = subtotal >= 70000 ? 0 : Math.round(subtotal * 0.1);
   const total = subtotal + shipping;
 
   const handleOpenModal = () => {
@@ -260,7 +260,9 @@ export default function FinalizarCompraPage() {
           </div>
           <div className="flex justify-between mb-5">
             <span>Costos de envío</span>
-            <span>{formatCLP(shipping)}</span>
+            <span className={shipping === 0 ? 'text-lime-600 font-semibold' : ''}>
+              {shipping === 0 ? 'Gratis' : formatCLP(shipping)}
+            </span>
           </div>
           <div className="flex justify-between font-bold text-lg border-t-slate-200 border-t py-5">
             <span>Total a pagar</span>
