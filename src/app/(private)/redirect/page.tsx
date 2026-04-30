@@ -19,6 +19,7 @@ export default function RedireccionandoPago() {
   const { fetchCartProducts } = useStore();
   const [creditResult, setCreditResult] = useState<CreditPaymentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [blockedCreditLine, setBlockedCreditLine] = useState(false);
   const hasProcessed = useRef(false);
 
   useEffect(() => {
@@ -37,9 +38,20 @@ export default function RedireccionandoPago() {
     const process = async () => {
       try {
         console.log('[redirect] Enviando a /orders/pay:', { address_id: shippingAddressId, payment_method: paymentMethod });
-        const json = await createOrderFromCart({ shippingAddressId, paymentMethod });
-        console.log('[redirect] Respuesta cruda:', json);
+        const result = await createOrderFromCart({ shippingAddressId, paymentMethod });
+        console.log('[redirect] Respuesta:', result);
 
+        if (!result.ok) {
+          const message: string = result.body?.message ?? 'Error al procesar el pago';
+          if (/línea de crédito.*bloqueada/i.test(message)) {
+            setBlockedCreditLine(true);
+          } else {
+            setError(message);
+          }
+          return;
+        }
+
+        const json = result.body;
         localStorage.removeItem('paymentMethod');
         localStorage.removeItem('selectedAddressId');
         await fetchCartProducts();
@@ -76,42 +88,40 @@ export default function RedireccionandoPago() {
     process();
   }, []);
 
-  if (error) {
-    const isBlockedCreditLine = /línea de crédito.*bloqueada/i.test(error);
-
-    if (isBlockedCreditLine) {
-      return (
-        <div className="flex flex-col items-center bg-[#f1f5f9] text-center p-6">
-          <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 text-amber-600 mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.75 5.25a.75.75 0 0 0-1.5 0v5.25c0 .2.08.39.22.53l3.5 3.5a.75.75 0 1 0 1.06-1.06l-3.28-3.28V7.5Z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold mb-2">Línea de crédito en uso</h2>
-            <p className="text-gray-600 mb-2">
-              Tienes un pago anterior con Línea de Crédito que aún se está procesando.
-            </p>
-            <p className="text-gray-500 text-sm mb-6">
-              Espera unos minutos a que se complete antes de generar una nueva compra con este método.
-            </p>
-            <button
-              onClick={() => router.push('/mi-cuenta?section=compras')}
-              className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded mb-2"
-            >
-              Ver mis pedidos
-            </button>
-            <button
-              onClick={() => router.push('/finalizar-compra')}
-              className="w-full border border-gray-300 text-gray-700 py-2 rounded"
-            >
-              Volver a finalizar compra
-            </button>
+  if (blockedCreditLine) {
+    return (
+      <div className="flex flex-col items-center bg-[#f1f5f9] text-center p-6">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 text-amber-600 mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+              <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.75 5.25a.75.75 0 0 0-1.5 0v5.25c0 .2.08.39.22.53l3.5 3.5a.75.75 0 1 0 1.06-1.06l-3.28-3.28V7.5Z" clipRule="evenodd" />
+            </svg>
           </div>
+          <h2 className="text-xl font-bold mb-2">Línea de crédito en uso</h2>
+          <p className="text-gray-600 mb-2">
+            Tienes un pago anterior con Línea de Crédito que aún se está procesando.
+          </p>
+          <p className="text-gray-500 text-sm mb-6">
+            Espera unos minutos a que se complete antes de generar una nueva compra con este método.
+          </p>
+          <button
+            onClick={() => router.push('/mi-cuenta?section=compras')}
+            className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded mb-2"
+          >
+            Ver mis pedidos
+          </button>
+          <button
+            onClick={() => router.push('/finalizar-compra')}
+            className="w-full border border-gray-300 text-gray-700 py-2 rounded"
+          >
+            Volver a finalizar compra
+          </button>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
+  if (error) {
     return (
       <div className="flex flex-col items-center bg-[#f1f5f9] text-center p-6">
         <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
