@@ -14,60 +14,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Install Vercel CLI
-        run: pnpm add -g vercel
-
-      - name: Pull envs (preview)
-        if: github.ref != 'refs/heads/main'
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Pull envs (production)
-        if: github.ref == 'refs/heads/main'
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Build (preview)
-        if: github.ref != 'refs/heads/main'
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build (production)
-        if: github.ref == 'refs/heads/main'
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Debug build output
-        run: |
-          echo "=== .vercel/output structure ==="
-          ls -la .vercel/output/ || echo "NO .vercel/output DIRECTORY"
-          echo "=== output size ==="
-          du -sh .vercel/output/ 2>/dev/null || echo "empty"
-          echo "=== output config ==="
-          cat .vercel/output/config.json 2>/dev/null || echo "no config.json"
-          echo "=== functions ==="
-          ls -la .vercel/output/functions/ 2>/dev/null || echo "no functions dir"
-          echo "=== static ==="
-          ls -la .vercel/output/static/ 2>/dev/null | head -20 || echo "no static dir"
+        run: npm install -g vercel
 
       - name: Deploy QA
         if: github.ref == 'refs/heads/qa'
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy Prod
         if: github.ref == 'refs/heads/main'
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --yes --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
