@@ -51,6 +51,19 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Debug build output
+        run: |
+          echo "=== .vercel/output structure ==="
+          ls -la .vercel/output/ || echo "NO .vercel/output DIRECTORY"
+          echo "=== output size ==="
+          du -sh .vercel/output/ 2>/dev/null || echo "empty"
+          echo "=== output config ==="
+          cat .vercel/output/config.json 2>/dev/null || echo "no config.json"
+          echo "=== functions ==="
+          ls -la .vercel/output/functions/ 2>/dev/null || echo "no functions dir"
+          echo "=== static ==="
+          ls -la .vercel/output/static/ 2>/dev/null | head -20 || echo "no static dir"
+
       - name: Deploy QA
         if: github.ref == 'refs/heads/qa'
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
