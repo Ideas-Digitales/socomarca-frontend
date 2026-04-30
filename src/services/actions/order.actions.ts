@@ -33,7 +33,7 @@ export async function createOrderFromCart({
 
   const json = await res.json();
   console.log('[orders/pay] Respuesta cruda:', JSON.stringify(json, null, 2));
-  if (!res.ok) {
+  if (!res.ok || json?.success === false) {
     throw new Error(json.message || 'Error al crear la orden y generar el pago');
   }
 
