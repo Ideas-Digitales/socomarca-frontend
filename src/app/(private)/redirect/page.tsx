@@ -102,7 +102,7 @@ export default function RedireccionandoPago() {
             Tienes un pago anterior con Línea de Crédito que aún se está procesando.
           </p>
           <p className="text-gray-500 text-sm mb-6">
-            Espera a que se complete antes de generar una nueva compra con este método.
+            Espera a que se facture antes de generar una nueva compra con este método.
           </p>
           <button
             onClick={() => router.push('/mi-cuenta?section=compras')}
