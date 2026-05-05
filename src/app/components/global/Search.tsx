@@ -1,6 +1,7 @@
 'use client';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { XCircleIcon } from '@heroicons/react/24/solid';
 import { useSearch } from '@/hooks/useSearch';
 import useStore from '@/stores/base';
 
@@ -54,6 +55,15 @@ export default function Search({
             </label>
           )}
           <div className="flex relative">
+            {inputValue && (
+              <button
+                onClick={clearInput}
+                className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-lime-600 hover:text-lime-700 transition-colors cursor-pointer z-10"
+                aria-label="Limpiar búsqueda"
+              >
+                <XCircleIcon width={22} height={22} />
+              </button>
+            )}
             <input
               type="text"
               id="search"
@@ -61,17 +71,10 @@ export default function Search({
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              className="input-search w-full px-2 sm:px-3 py-2 sm:py-[11px] text-sm sm:text-base"
+              className={`input-search w-full py-2 sm:py-[11px] text-sm sm:text-base ${
+                inputValue ? 'pl-9 sm:pl-10' : 'pl-2 sm:pl-3'
+              } pr-2 sm:pr-3`}
             />
-            {inputValue && (
-              <button
-                onClick={clearInput}
-                className="absolute right-12 sm:right-16 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                aria-label="Limpiar búsqueda"
-              >
-                ×
-              </button>
-            )}
             <button
               onClick={handleSearch}
               className="flex py-[9px] px-2 sm:px-[15px] justify-end items-center gap-[10px] button-search cursor-pointer"

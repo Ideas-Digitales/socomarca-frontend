@@ -41,7 +41,14 @@ export default function Header({ carro }: Props) {
     siteInformation,
     fetchSiteInformation,
     isLoadingSiteInfo,
+    clearAllFilters,
   } = useStore();
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    clearAllFilters();
+    window.location.href = '/';
+  };
 
   // Cargar información del sitio al montar el componente
   useEffect(() => {
@@ -168,7 +175,7 @@ export default function Header({ carro }: Props) {
                 width={28}
                 height={34}
                 alt="Imagologo"
-                onClick={() => router.push('/')}
+                onClick={handleLogoClick}
                 className="cursor-pointer"
                 unoptimized
               />
@@ -188,7 +195,7 @@ export default function Header({ carro }: Props) {
             )}
           </div>
           {!isTablet && (
-            <Link href="/">
+            <Link href="/" onClick={handleLogoClick}>
               <img
                 src={logoUrl}
                 width={368}
@@ -316,7 +323,7 @@ export default function Header({ carro }: Props) {
             width={28}
             height={34}
             alt="Imagologo"
-            onClick={() => router.push('/')}
+            onClick={handleLogoClick}
             className="cursor-pointer"
             unoptimized
           />

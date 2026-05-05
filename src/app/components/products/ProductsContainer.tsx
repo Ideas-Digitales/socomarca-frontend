@@ -5,7 +5,11 @@ import ProductCardGrid from './ProductCardGrid';
 import CategoryFilterDesktop from './CategoryFilterDesktop';
 import CartProductsDesktop from './CartProductsDesktop';
 import Pagination from '../global/Pagination';
-import { ListBulletIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
+import {
+  ListBulletIcon,
+  ViewColumnsIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import CartsProductsMobile from './CartsProductsMobile';
 import useStore from '@/stores/base';
 
@@ -21,7 +25,11 @@ export default function ProductsContainer() {
     viewMode,
     setViewMode,
     isFiltered,
+    hasActiveFilters,
+    clearAllFilters,
   } = useStore();
+
+  const filtersActive = hasActiveFilters();
 
   const handlePageChange = (pageNumber: number) => {
     setProductPage(pageNumber);
@@ -38,10 +46,22 @@ export default function ProductsContainer() {
 
       <div className="flex-1 space-y-2 mb-2">
         {!isTablet && (
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium">
-              {isFiltered ? 'Todos' : 'Por filtro'} ({filteredProducts.length} productos)
-            </h2>
+          <div className="flex justify-between items-center mb-4 gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-lg font-medium">
+                {isFiltered ? 'Todos' : 'Por filtro'} ({filteredProducts.length} productos)
+              </h2>
+              {filtersActive && (
+                <button
+                  onClick={clearAllFilters}
+                  className="inline-flex items-center gap-1 rounded-md border border-lime-500 bg-white px-3 py-1.5 text-sm font-medium text-lime-700 hover:bg-lime-50 transition-colors cursor-pointer"
+                  aria-label="Limpiar todos los filtros"
+                >
+                  <XMarkIcon width={16} height={16} />
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
             <div className="flex gap-2">
               <button
                 data-cy="view-mode-list"
