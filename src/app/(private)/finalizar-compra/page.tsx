@@ -5,13 +5,13 @@ import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import Image from 'next/image';
 import useStore from '@/stores/base';
 import TerminosYCondicionesContent from '@/app/components/global/TerminosYCondicionesContent';
-import {getUserData} from '@/services/actions/user.actions';
+import { getUserData, getUserCreditLine } from '@/services/actions/user.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import ShippingAddressSelect from '@/app/components/user/ShippingAddressSelect';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { fetchPaymentMethods, type PaymentMethod } from '@/services/actions/payment.actions';
-import { mockLineaCredito } from '@/mock/lineaCredito';
 import { logCreditoRaw } from '@/app/components/mi-cuenta/LineaCreditoSection';
+import useAuthStore from '@/stores/useAuthStore';
 
 type PaymentMethodCode = string;
 
@@ -23,11 +23,15 @@ export default function FinalizarCompraPage() {
   const cartProducts = useStore((state) => state.cartProducts);
   const [loadingUser, setLoadingUser] = useState(true);
   const { openModal } = useStore();
+  const { user } = useAuthStore();
   const [direccionError, setDireccionError] = useState('');
   const [terminosError, setTerminosError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodCode>('transbank');
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [creditoDisponible, setCreditoDisponible] = useState<number | null>(null);
+  const [creditoBloqueado, setCreditoBloqueado] = useState(false);
+  const [creditoLoading, setCreditoLoading] = useState(true);
   const [formData, setFormData] = useState({
     nombre: '',
     rut: '',
@@ -120,16 +124,24 @@ export default function FinalizarCompraPage() {
   };
 
   useEffect(() => {
-    logCreditoRaw({
-      KOEN:   '—',
-      SUEN:   '—',
-      CRSD:   mockLineaCredito.limite,
-      CRSDVU: mockLineaCredito.utilizado,
-      CRSDVV: 0,
-      CRSDCU: 0,
-      CRSDCV: 0,
+    if (!user?.id) {
+      setCreditoLoading(false);
+      return;
+    }
+
+    setCreditoLoading(true);
+    getUserCreditLine(user.id).then((res) => {
+      if (res.success && res.data) {
+        logCreditoRaw(res.data as unknown as Record<string, unknown>);
+        setCreditoDisponible(Math.max(res.data.CRSD - res.data.CRSDVU, 0));
+        setCreditoBloqueado(res.data.status === 'blocked');
+      } else {
+        setCreditoDisponible(null);
+        setCreditoBloqueado(false);
+      }
+      setCreditoLoading(false);
     });
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchPaymentMethods().then((methods) => {
@@ -276,14 +288,22 @@ export default function FinalizarCompraPage() {
             {paymentMethods.map((method) => {
               const isTransbank = method.code === 'transbank';
               const isSelected = paymentMethod === method.code;
-              const saldoDisponible = mockLineaCredito.disponible;
-              const saldoInsuficiente = !isTransbank && saldoDisponible < total;
+              const isCreditoOption = !isTransbank;
+              const saldoDisponible = creditoDisponible ?? 0;
+              const saldoInsuficiente =
+                isCreditoOption && creditoDisponible !== null && saldoDisponible < total;
+              const optionDisabled =
+                isCreditoOption &&
+                (creditoLoading ||
+                  creditoDisponible === null ||
+                  creditoBloqueado ||
+                  saldoInsuficiente);
 
               return (
                 <label
                   key={method.id}
                   className={`flex items-start gap-3 p-3 rounded border mb-2 ${
-                    saldoInsuficiente
+                    optionDisabled
                       ? 'border-slate-200 bg-[#f8f8f8] opacity-60 cursor-not-allowed'
                       : isSelected
                       ? 'border-lime-500 bg-[#f0fdf4] cursor-pointer'
@@ -295,8 +315,8 @@ export default function FinalizarCompraPage() {
                     name="paymentMethod"
                     value={method.code}
                     checked={isSelected}
-                    disabled={saldoInsuficiente}
-                    onChange={() => !saldoInsuficiente && setPaymentMethod(method.code)}
+                    disabled={optionDisabled}
+                    onChange={() => !optionDisabled && setPaymentMethod(method.code)}
                     className="mt-1 shrink-0"
                   />
                   {isTransbank ? (
@@ -324,13 +344,29 @@ export default function FinalizarCompraPage() {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-gray-500">
-                            Saldo disponible: {formatCLP(saldoDisponible)}
-                          </p>
-                          {saldoInsuficiente ? (
-                            <p className="text-xs text-gray-400">Saldo insuficiente para esta compra</p>
+                          {creditoLoading ? (
+                            <p className="text-xs font-semibold text-gray-500">
+                              Cargando saldo disponible...
+                            </p>
+                          ) : creditoDisponible === null ? (
+                            <p className="text-xs font-semibold text-gray-500">
+                              Saldo no disponible
+                            </p>
                           ) : (
-                            <p className="text-xs text-gray-500">Pago con crédito asignado a tu cuenta</p>
+                            <>
+                              <p className="text-xs font-semibold text-gray-500">
+                                Saldo disponible: {formatCLP(saldoDisponible)}
+                              </p>
+                              {creditoBloqueado ? (
+                                <p className="text-xs text-amber-700">
+                                  Tu pago anterior aún se está facturando. Intenta más tarde.
+                                </p>
+                              ) : saldoInsuficiente ? (
+                                <p className="text-xs text-gray-400">Saldo insuficiente para esta compra</p>
+                              ) : (
+                                <p className="text-xs text-gray-500">Pago con crédito asignado a tu cuenta</p>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
