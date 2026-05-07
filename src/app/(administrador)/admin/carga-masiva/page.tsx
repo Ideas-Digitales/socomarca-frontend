@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { DocumentArrowUpIcon } from '@heroicons/react/24/outline';
-import { syncProductImages } from '@/services/actions/products.actions';
 import { hasPermission } from '@/configs/permisos';
 import useAuthStore from '@/stores/useAuthStore';
 import { useRouter } from 'next/navigation';
@@ -85,28 +84,29 @@ export default function CargaMasivaPage() {
     setMessage('');
 
     try {
-      const result = await syncProductImages(file);
-      
-      if (result.success) {
+      const formData = new FormData();
+      formData.append('sync_file', file);
+
+      const response = await fetch('/api/admin/products/sync-images', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (response.ok) {
         setUploadStatus('success');
-        setMessage('Archivo subido exitosamente. Las imágenes se están procesando.');
+        setMessage(result.message || 'Archivo subido exitosamente. Las imágenes se están procesando.');
         setFile(null);
-        // Limpiar el input
         const fileInput = document.getElementById('file-input') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
       } else {
         setUploadStatus('error');
-        setMessage(result.message || 'Error al subir el archivo.');
+        setMessage(result.message || `Error al subir el archivo (HTTP ${response.status}).`);
       }
     } catch (error: any) {
       setUploadStatus('error');
-      
-      let errorMessage = 'Error inesperado al subir el archivo.';
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      setMessage(errorMessage);
+      setMessage(error?.message || 'Error inesperado al subir el archivo.');
       console.error('Error uploading file:', error);
     } finally {
       setIsUploading(false);
