@@ -124,6 +124,8 @@ export default function CargaMasivaPage() {
       }
 
       const { presignedUploadUrl, path } = getPresignedUploadData(presignedPayload);
+      console.log('[product-images-sync] presigned payload:', presignedPayload);
+      console.log('[product-images-sync] extracted path:', path);
 
       if (!presignedUploadUrl || !path) {
         setUploadStatus('error');

@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
     : null;
   const path = typeof pathValue === 'string' ? pathValue.trim() : '';
 
+  console.log('[product-images-sync route] received body:', body);
+  console.log('[product-images-sync route] extracted path:', path);
+
   if (!path) {
     return NextResponse.json(
       { message: 'El path S3 es requerido' },
@@ -44,6 +47,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    console.log('[product-images-sync route] forwarding body:', { sync_file_path: path });
+
     const backendResponse = await fetch(`${BACKEND_URL}/products/images/sync`, {
       method: 'POST',
       headers: {
@@ -51,7 +56,7 @@ export async function POST(request: NextRequest) {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ path }),
+      body: JSON.stringify({ sync_file_path: path }),
       cache: 'no-store',
     });
 
