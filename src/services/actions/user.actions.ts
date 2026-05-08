@@ -471,3 +471,58 @@ export async function createUserAction(userData: CreateUserRequest): Promise<{
     };
   }
 }
+
+export interface CreditLineRaw {
+  KOEN: string;
+  SUEN: string;
+  CRSD: number;
+  CRSDVU: number;
+  CRSDVV: number;
+  CRSDCU: number;
+  CRSDCV: number;
+  status: 'blocked' | 'unblocked';
+}
+
+export async function getUserCreditLine(userId: number): Promise<{
+  success: boolean;
+  data?: CreditLineRaw;
+  error?: string;
+}> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie('token');
+
+    if (!token) {
+      throw new Error('No token found in cookies');
+    }
+
+    const response = await fetch(`${BACKEND_URL}/users/${userId}/credit-line`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
+    }
+
+    const data = (await response.json()) as CreditLineRaw;
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error('Error fetching credit line:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
+}

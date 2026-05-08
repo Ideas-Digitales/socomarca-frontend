@@ -98,11 +98,8 @@ export default function RedireccionandoPago() {
             </svg>
           </div>
           <h2 className="text-xl font-bold mb-2">Línea de crédito en uso</h2>
-          <p className="text-gray-600 mb-2">
-            Tienes un pago anterior con Línea de Crédito que aún se está procesando.
-          </p>
-          <p className="text-gray-500 text-sm mb-6">
-            Espera a que se facture antes de generar una nueva compra con este método.
+          <p className="text-gray-600 mb-6">
+            Tu pago anterior aún se está facturando. Intenta más tarde.
           </p>
           <button
             onClick={() => router.push('/mi-cuenta?section=compras')}
