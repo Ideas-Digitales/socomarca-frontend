@@ -6,6 +6,31 @@ import { hasPermission } from '@/configs/permisos';
 import useAuthStore from '@/stores/useAuthStore';
 import { useRouter } from 'next/navigation';
 
+type PresignedUploadResponse = {
+  presigned_upload_url?: string;
+  host?: string;
+  path?: string;
+  message?: string;
+  data?: {
+    presigned_upload_url?: string;
+    host?: string;
+    path?: string;
+  };
+};
+
+const parseJsonResponse = async (response: Response) => {
+  return response.json().catch(() => ({}));
+};
+
+const getPresignedUploadData = (payload: PresignedUploadResponse) => {
+  const source = payload.data ?? payload;
+
+  return {
+    presignedUploadUrl: source.presigned_upload_url,
+    path: source.path,
+  };
+};
+
 export default function CargaMasivaPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -63,7 +88,7 @@ export default function CargaMasivaPage() {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       // Validar que sea un archivo ZIP
-      if (selectedFile.type === 'application/zip' || selectedFile.name.endsWith('.zip')) {
+      if (selectedFile.type === 'application/zip' || selectedFile.name.toLowerCase().endsWith('.zip')) {
         setFile(selectedFile);
         setUploadStatus('idle');
         setMessage('');
@@ -84,26 +109,68 @@ export default function CargaMasivaPage() {
     setMessage('');
 
     try {
-      const formData = new FormData();
-      formData.append('sync_file', file);
+      setMessage('Generando URL prefirmada para la subida...');
 
-      const response = await fetch('/api/admin/products/sync-images', {
+      const presignedResponse = await fetch('/api/admin/products/images/presigned-upload-url', {
         method: 'POST',
-        body: formData,
       });
 
-      const result = await response.json().catch(() => ({}));
+      const presignedPayload: PresignedUploadResponse = await parseJsonResponse(presignedResponse);
 
-      if (response.ok) {
-        setUploadStatus('success');
-        setMessage(result.message || 'Archivo subido exitosamente. Las imágenes se están procesando.');
-        setFile(null);
-        const fileInput = document.getElementById('file-input') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
-      } else {
+      if (!presignedResponse.ok) {
         setUploadStatus('error');
-        setMessage(result.message || `Error al subir el archivo (HTTP ${response.status}).`);
+        setMessage(presignedPayload.message || `Error al generar URL prefirmada (HTTP ${presignedResponse.status}).`);
+        return;
       }
+
+      const { presignedUploadUrl, path } = getPresignedUploadData(presignedPayload);
+
+      if (!presignedUploadUrl || !path) {
+        setUploadStatus('error');
+        setMessage('La respuesta de URL prefirmada no incluye la URL de subida o el path S3.');
+        return;
+      }
+
+      setMessage('Subiendo archivo ZIP a S3...');
+
+      // El header Host lo define el navegador desde la URL prefirmada; no se puede setear manualmente.
+      const uploadResponse = await fetch(presignedUploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) {
+        setUploadStatus('error');
+        setMessage(`Error al subir el archivo a S3 (HTTP ${uploadResponse.status}).`);
+        return;
+      }
+
+      setMessage('Despachando sincronización de imágenes...');
+
+      const syncResponse = await fetch('/api/admin/products/images/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ path }),
+      });
+
+      const syncPayload = await parseJsonResponse(syncResponse);
+
+      if (!syncResponse.ok) {
+        setUploadStatus('error');
+        setMessage(syncPayload.message || `Error al despachar sincronización (HTTP ${syncResponse.status}).`);
+        return;
+      }
+
+      setUploadStatus('success');
+      setMessage(syncPayload.message || 'Archivo subido exitosamente. Las imágenes se están procesando.');
+      setFile(null);
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
     } catch (error: any) {
       setUploadStatus('error');
       setMessage(error?.message || 'Error inesperado al subir el archivo.');
