@@ -74,7 +74,7 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   const addToCart = async () => {
-    if (quantity <= 0) return;
+    if (quantity <= 0 || isOutOfStock) return;
 
     setIsLoading(true);
 
@@ -116,12 +116,28 @@ export default function ProductCardGrid({ product }: Props) {
   };
 
   const isProductFavorite = isFavorite(product.id);
+  const isOutOfStock = product.stock <= 0;
 
   return (
-    <div data-cy="product-card" className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b relative">
+    <div
+      data-cy="product-card"
+      data-out-of-stock={isOutOfStock}
+      className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b relative"
+    >
       {/* Imagen del producto */}
       <div className="flex items-center justify-center h-[100px] w-full relative">
-        <ProductImage src={product.image} alt={product.name} variant="grid" />
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          variant="grid"
+          className={isOutOfStock ? 'grayscale opacity-60' : ''}
+        />
+        {/* Badge de sin stock */}
+        {isOutOfStock && (
+          <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-sm">
+            Agotado
+          </span>
+        )}
         {/* Botón de favorito */}
         <div className="absolute top-2 right-2">
           <FavoriteButton
@@ -171,14 +187,14 @@ export default function ProductCardGrid({ product }: Props) {
             onDecrease={decreaseQuantity}
             onIncrease={increaseQuantity}
             onChange={handleQuantityChange}
-            disabled={isLoading}
+            disabled={isLoading || isOutOfStock}
             size="md"
           />
         </div>
 
         <AddToCartButton
           onClick={addToCart}
-          disabled={quantity === 0 || product.stock === 0}
+          disabled={quantity === 0 || isOutOfStock}
           isLoading={isLoading}
           isSuccess={isOptimisticUpdate}
           quantity={quantity}

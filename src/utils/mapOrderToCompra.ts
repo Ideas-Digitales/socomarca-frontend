@@ -10,6 +10,7 @@ export function mapOrderToCompra(order: Order): Compra {
       minute: '2-digit',
     }),
     total: order.amount,
+    estado: order.status,
     productos: order.order_items.map((item): ProductoCompra => ({
       nombre: item.product.name,
       marca: `Marca ${item.product.brand_id}`,

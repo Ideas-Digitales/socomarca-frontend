@@ -5,6 +5,7 @@ import { usePagination } from "@/hooks/usePagination";
 import Pagination from "../global/Pagination";
 import { addOrderToCart } from "@/services/actions/cart.actions";
 import useStore from "@/stores/base";
+import OrderStatusBadge from "./OrderStatusBadge";
 
 export default function DetalleCompra({
   pedido,
@@ -28,7 +29,10 @@ export default function DetalleCompra({
         ← Volver atrás
       </button>
 
-      <h2 className="text-lg font-bold mb-2">Pedido Nº {pedido.numero}</h2>
+      <div className="flex items-center gap-3 mb-2">
+        <h2 className="text-lg font-bold">Pedido Nº {pedido.numero}</h2>
+        <OrderStatusBadge status={pedido.estado} />
+      </div>
       <p className="text-sm text-gray-500 mb-4">
         Fecha del pedido {pedido.fecha}
       </p>

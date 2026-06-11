@@ -4,6 +4,7 @@ import LoadingSpinner from "@/app/components/global/LoadingSpinner";
 import { useState } from "react";
 import { addOrderToCart } from "@/services/actions/cart.actions";
 import useStore from "@/stores/base";
+import OrderStatusBadge from "./OrderStatusBadge";
 
 // Tipos de datos que recibe el componente:
 
@@ -22,6 +23,7 @@ export interface Compra {
   numero: string; // ID de la compra
   hora: string; // Hora en que se registró
   total: number; // Monto total de la compra
+  estado: string; // Estado de la compra (pending, processing, completed, etc.)
   productos: ProductoCompra[]; // Lista de productos comprados
 }
 
@@ -133,8 +135,11 @@ export default function ComprasSection({
                 </span>
               </div>
 
-              {/* Número de pedido y hora */}
-              <p className="text-slate-400 font-medium">Pedido Nº {c.numero}</p>
+              {/* Número de pedido, estado y hora */}
+              <div className="flex justify-between items-center gap-2">
+                <p className="text-slate-400 font-medium">Pedido Nº {c.numero}</p>
+                <OrderStatusBadge status={c.estado} />
+              </div>
               <p className="text-sm text-gray-500 mb-2">
                 Creado a las {c.hora} hrs.
               </p>

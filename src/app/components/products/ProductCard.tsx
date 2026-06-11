@@ -73,7 +73,7 @@ export default function ProductCard({ product }: Props) {
   };
 
   const addToCart = async () => {
-    if (quantity <= 0) return;
+    if (quantity <= 0 || isOutOfStock) return;
 
     setIsLoading(true);
 
@@ -110,9 +110,14 @@ export default function ProductCard({ product }: Props) {
   };
 
   const isProductFavorite = isFavorite(product.id);
+  const isOutOfStock = product.stock <= 0;
 
   return (
-    <div data-cy="product-card" className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative">
+    <div
+      data-cy="product-card"
+      data-out-of-stock={isOutOfStock}
+      className="flex p-3 items-center gap-2 bg-white border-b border-slate-300 relative"
+    >
       <div className="flex items-center gap-[6px]">
         <div className="hidden sm:flex">
           <FavoriteButton
@@ -122,7 +127,19 @@ export default function ProductCard({ product }: Props) {
             variant="default"
           />
         </div>
-        <ProductImage src={product.image} alt={product.name} variant="list" />
+        <div className="relative">
+          <ProductImage
+            src={product.image}
+            alt={product.name}
+            variant="list"
+            className={isOutOfStock ? 'grayscale opacity-60' : ''}
+          />
+          {isOutOfStock && (
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap">
+              Agotado
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
         <ProductInfo
@@ -143,12 +160,12 @@ export default function ProductCard({ product }: Props) {
               onDecrease={decreaseQuantity}
               onIncrease={increaseQuantity}
               onChange={handleQuantityChange}
-              disabled={isLoading}
+              disabled={isLoading || isOutOfStock}
               size="md"
             />
             <AddToCartButton
               onClick={addToCart}
-              disabled={quantity === 0}
+              disabled={quantity === 0 || isOutOfStock}
               isLoading={isLoading}
               isSuccess={isOptimisticUpdate}
               quantity={quantity}

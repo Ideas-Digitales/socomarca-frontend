@@ -3,6 +3,7 @@
 import AuthView from '@/app/components/auth/AuthView';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import useAuthStore from '@/stores/useAuthStore';
 import { useNotifications } from '@/contexts/NotificationContext';
 import Link from 'next/link';
@@ -29,6 +30,7 @@ export default function LoginForm({
 }: LoginFormProps) {
   const [rut, setRut] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState('');
   const { login, isLoading, setLoading } = useAuthStore();
@@ -186,14 +188,30 @@ export default function LoginForm({
             <label htmlFor="password" className="text-[14px]">
               Contraseña
             </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={finalIsLoading}
-              className="w-full border bg-[#EBEFF7] border-[#EBEFF7] p-[10px] h-[40px] focus:outline-none focus:ring-1 focus:ring-[#EBEFF7] focus:border-[#EBEFF7] disabled:opacity-50"
-            />
+            <div className="relative w-full">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={finalIsLoading}
+                className="w-full border bg-[#EBEFF7] border-[#EBEFF7] p-[10px] pr-10 h-[40px] focus:outline-none focus:ring-1 focus:ring-[#EBEFF7] focus:border-[#EBEFF7] disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                disabled={finalIsLoading}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 disabled:opacity-50"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

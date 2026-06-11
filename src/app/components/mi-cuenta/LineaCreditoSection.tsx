@@ -83,6 +83,8 @@ export default function LineaCreditoSection() {
         setCredito(buildCreditoView(res.data));
         setCreditoError(null);
       } else {
+        // El detalle técnico solo va a consola; al usuario se le muestra un mensaje genérico
+        console.error('[Línea de Crédito] Error al obtener la línea de crédito:', res.error);
         setCreditoError(res.error ?? 'No se pudo obtener la línea de crédito');
       }
       setLoadingCredito(false);
@@ -147,8 +149,14 @@ export default function LineaCreditoSection() {
           Cargando línea de crédito...
         </div>
       ) : creditoError || !credito ? (
-        <div className="rounded-xl bg-white shadow-sm mb-6 px-6 py-8 text-sm text-red-600">
-          {creditoError ?? 'No se pudo cargar la línea de crédito.'}
+        <div className="rounded-xl bg-white shadow-sm mb-6 px-6 py-8 flex items-start gap-3 text-sm">
+          <ExclamationTriangleIcon className="w-5 h-5 shrink-0 mt-0.5 text-gray-400" />
+          <div>
+            <p className="font-medium text-gray-700">Línea de crédito no disponible</p>
+            <p className="text-gray-500 mt-0.5">
+              No pudimos cargar tu línea de crédito en este momento. Intenta nuevamente más tarde.
+            </p>
+          </div>
         </div>
       ) : (
         <div
