@@ -108,26 +108,11 @@ export default function PrivatePage() {
     showModalIfValid();
   }, [customerMessage, openModal, userRole]);
 
-  // CÓDIGO ANTERIOR COMENTADO PARA REFERENCIA:
-  // const getCarouselImages = () => {
-  //   if (customerMessage?.banner?.desktop_image && customerMessage?.banner?.mobile_image) {
-  //     // Si hay imágenes del banner configuradas, usarlas
-  //     return [customerMessage.banner.desktop_image, customerMessage.banner.mobile_image];
-  //   }
-  //   // Si no hay imágenes configuradas, usar las imágenes por defecto
-  //   return defaultImages;
-  // };
-
-  // NUEVO CÓDIGO: Determinar qué datos usar para el banner
   const getBannerData = () => {
-    if (
-      customerMessage?.banner?.desktop_image &&
-      customerMessage?.banner?.mobile_image
-    ) {
-      // Si hay datos del banner configurados, usar el objeto completo
+    if (customerMessage?.banner?.slides?.length) {
       return customerMessage.banner;
     }
-    // Si no hay banner configurado, retornar undefined para usar fallback
+
     return undefined;
   };
 
@@ -180,10 +165,6 @@ export default function PrivatePage() {
           <CarouselSkeleton />
         ) : (
           customerMessage?.banner?.enabled && (
-            /* CÓDIGO ANTERIOR COMENTADO:
-            <Caroussel images={getCarouselImages()} />
-            */
-            // NUEVO CÓDIGO: Pasa el objeto banner completo y fallback
             <Caroussel banner={getBannerData()} images={defaultImages} />
           )
         )}

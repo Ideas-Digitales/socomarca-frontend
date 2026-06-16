@@ -1,143 +1,117 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-interface BannerData {
+interface BannerSlide {
+  id?: string;
   desktop_image: string;
   mobile_image: string;
+  alt?: string;
+  order?: number;
+  enabled?: boolean;
+}
+
+interface BannerData {
   enabled: boolean;
+  slides?: BannerSlide[];
+  desktop_image?: string;
+  mobile_image?: string;
 }
 
 interface CarouselProps {
-  // Objeto banner del backend
   banner?: BannerData;
-  // Props individuales (alternativa)
   desktopImage?: string;
   mobileImage?: string;
-  // Mantener compatibilidad con la prop anterior (deprecated)
   images?: string[];
-  modalData?: {
-    image: string;
-    enabled: boolean;
-  };
 }
 
-export default function Carousel({ banner, desktopImage, mobileImage, images, modalData }: CarouselProps) {
-  const [isMobile, setIsMobile] = useState(false);
-  const [currentImage, setCurrentImage] = useState<string>('');
+const AUTOPLAY_MS = 5000;
 
-  // Detectar si estamos en dispositivo móvil
+export default function Carousel({ banner, desktopImage, mobileImage, images }: CarouselProps) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
   useEffect(() => {
-    const checkIsMobile = () => {
-      const width = window.innerWidth;
-      const newIsMobile = width < 768; // Tailwind md breakpoint
-      console.log('📱 Detección de dispositivo:', {
-        windowWidth: width,
-        isMobile: newIsMobile,
-        breakpoint: 768,
-        deviceType: newIsMobile ? 'MÓVIL' : 'DESKTOP'
-      });
-      setIsMobile(newIsMobile);
-    };
-    
-    // Verificar al montar el componente
+    const checkIsMobile = () => setIsMobile(window.innerWidth < 768);
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleMotionChange = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
+
     checkIsMobile();
-    
-    // Escuchar cambios de tamaño
+    setPrefersReducedMotion(motionQuery.matches);
+
     window.addEventListener('resize', checkIsMobile);
-    
-    return () => window.removeEventListener('resize', checkIsMobile);
+    motionQuery.addEventListener('change', handleMotionChange);
+
+    return () => {
+      window.removeEventListener('resize', checkIsMobile);
+      motionQuery.removeEventListener('change', handleMotionChange);
+    };
   }, []);
 
-  // Determinar qué imagen usar basándose en el dispositivo (reactivo)
+  const slides = useMemo(() => {
+    const bannerSlides = banner?.slides?.length
+      ? banner.slides
+      : banner?.desktop_image || banner?.mobile_image
+        ? [{
+            id: 'legacy-banner',
+            desktop_image: banner.desktop_image || '',
+            mobile_image: banner.mobile_image || '',
+            alt: 'Banner principal',
+            order: 1,
+            enabled: true,
+          }]
+        : [];
+
+    const enabledSlides = bannerSlides
+      .filter((slide) => slide.enabled !== false)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    if (enabledSlides.length > 0) {
+      return enabledSlides;
+    }
+
+    if (desktopImage || mobileImage) {
+      return [{ desktop_image: desktopImage || '', mobile_image: mobileImage || '', alt: 'Banner principal' }];
+    }
+
+    return (images || []).map((image, index) => ({
+      id: `fallback-${index}`,
+      desktop_image: image,
+      mobile_image: image,
+      alt: `Banner ${index + 1}`,
+      order: index + 1,
+      enabled: true,
+    }));
+  }, [banner, desktopImage, mobileImage, images]);
+
+  const isBannerEnabled = banner?.enabled !== false;
+  const hasMultipleSlides = slides.length > 1;
+
   useEffect(() => {
-    console.log('🖼️ Selección de imagen (useEffect):', {
-      isMobile,
-      'banner?.desktop_image': banner?.desktop_image,
-      'banner?.mobile_image': banner?.mobile_image,
-      hasBannerImages: !!(banner?.desktop_image && banner?.mobile_image),
-      desktopImage,
-      mobileImage,
-      hasIndividualProps: !!(desktopImage && mobileImage),
-      fallbackImage: images?.[0]
-    });
+    setCurrentIndex(0);
+  }, [slides.length]);
 
-    let selectedImage = '';
-
-    // Prioridad 1: Usar el objeto banner del backend
-    if (banner?.desktop_image && banner?.mobile_image) {
-      selectedImage = isMobile ? banner.mobile_image : banner.desktop_image;
-      console.log('✅ Usando banner del backend:', {
-        isMobile,
-        selectedImage,
-        source: isMobile ? 'mobile_image' : 'desktop_image'
-      });
-    }
-    // Prioridad 2: Usar props individuales
-    else if (desktopImage && mobileImage) {
-      selectedImage = isMobile ? mobileImage : desktopImage;
-      console.log('✅ Usando props individuales:', {
-        isMobile,
-        selectedImage,
-        source: isMobile ? 'mobileImage prop' : 'desktopImage prop'
-      });
-    }
-    // Fallback: Primera imagen del array original para compatibilidad
-    else {
-      selectedImage = images?.[0] || '';
-      console.log('✅ Usando fallback:', {
-        selectedImage,
-        source: 'images[0]'
-      });
-    }
-
-    setCurrentImage(selectedImage);
-  }, [isMobile, banner?.desktop_image, banner?.mobile_image, desktopImage, mobileImage, images]);
-
-  // Verificar si el banner está habilitado
-  const isBannerEnabled = banner?.enabled !== false; // Por defecto true si no se especifica
-
-  // Console log para debug (detallado)
   useEffect(() => {
-    console.log('🔍 Banner Debug - Datos actuales:', {
-      // Detección de dispositivo
-      isMobile,
-      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'undefined',
-      breakpoint: 768,
-      
-      // Datos del banner
-      banner,
-      'banner.desktop_image': banner?.desktop_image,
-      'banner.mobile_image': banner?.mobile_image,
-      'banner.enabled': banner?.enabled,
-      
-      // Props individuales
-      desktopImage,
-      mobileImage,
-      
-      // Imagen seleccionada
-      currentImage,
-      imageSource: banner?.desktop_image && banner?.mobile_image 
-        ? 'banner object' 
-        : desktopImage && mobileImage 
-          ? 'individual props'
-          : 'fallback images array',
-      
-      // Estado
-      isBannerEnabled,
-      modalData
-    });
-  }, [currentImage, banner, desktopImage, mobileImage, isMobile, isBannerEnabled, modalData]);
+    if (!hasMultipleSlides || isPaused || prefersReducedMotion) {
+      return;
+    }
 
-  // No mostrar nada si el banner está deshabilitado
+    const timer = window.setInterval(() => {
+      setCurrentIndex((index) => (index + 1) % slides.length);
+    }, AUTOPLAY_MS);
+
+    return () => window.clearInterval(timer);
+  }, [hasMultipleSlides, isPaused, prefersReducedMotion, slides.length]);
+
   if (!isBannerEnabled) {
     return null;
   }
 
-  // Mostrar placeholder si no hay imagen
-  if (!currentImage) {
+  if (!slides.length) {
     return (
-      <div className="w-full max-w-7xl h-[144px] sm:h-[344px] mx-auto px-4">
+      <div className="w-full max-w-7xl h-[200px] sm:h-[344px] mx-auto px-4">
         <div className="w-full h-full flex items-center justify-center rounded-lg bg-gray-200">
           <p className="text-gray-500">No hay imagen para mostrar</p>
         </div>
@@ -145,40 +119,73 @@ export default function Carousel({ banner, desktopImage, mobileImage, images, mo
     );
   }
 
+  const goToPrevious = () => setCurrentIndex((index) => (index - 1 + slides.length) % slides.length);
+  const goToNext = () => setCurrentIndex((index) => (index + 1) % slides.length);
+
   return (
-    <div className="w-full max-w-7xl sm:h-[344px] h-[200px] mx-auto relative px-4">
-      {/* Container de imagen con bordes redondeados */}
-      <div className="w-full h-full overflow-hidden rounded-lg">
-        {/* 
-        // CÓDIGO ANTERIOR DEL CARRUSEL COMENTADO PARA REFERENCIA FUTURA:
-        // Este era el código que renderizaba un carrusel con múltiples imágenes
-        // <div
-        //   className="flex transition-transform duration-500 ease-in-out w-full h-full"
-        //   style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-        // >
-        //   {images.map((image, index) => (
-        //     <div key={index} className="w-full h-full flex-shrink-0">
-        //       <img
-        //         src={image}
-        //         alt={`Slide ${index + 1}`}
-        //         className="w-full h-full object-cover"
-        //       />
-        //     </div>
-        //   ))}
-        // </div>
-        // 
-        // + Botones de navegación
-        // + Indicadores
-        // + Autoplay
-        */}
-        
-        {/* NUEVO CÓDIGO: Renderiza imagen del backend específica según el dispositivo */}
-        <img
-          src={currentImage}
-          alt={`Banner - ${isMobile ? 'Móvil' : 'Desktop'}`}
-          className="w-full h-full object-contain"
-        />
+    <section
+      className="w-full max-w-7xl h-[200px] sm:h-[344px] mx-auto relative px-4"
+      aria-label="Banner principal"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onBlur={() => setIsPaused(false)}
+    >
+      <div className="w-full h-full overflow-hidden rounded-lg bg-white">
+        <div
+          className="flex h-full transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {slides.map((slide, index) => {
+            const image = isMobile ? slide.mobile_image || slide.desktop_image : slide.desktop_image || slide.mobile_image;
+
+            return (
+              <div key={slide.id || index} className="w-full h-full flex-shrink-0">
+                <img
+                  src={image}
+                  alt={slide.alt || `Banner ${index + 1}`}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      {hasMultipleSlides && (
+        <>
+          <button
+            type="button"
+            aria-label="Banner anterior"
+            onClick={goToPrevious}
+            className="absolute left-6 top-1/2 -translate-y-1/2 min-h-11 min-w-11 rounded-full bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-lime-500"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            aria-label="Banner siguiente"
+            onClick={goToNext}
+            className="absolute right-6 top-1/2 -translate-y-1/2 min-h-11 min-w-11 rounded-full bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-lime-500"
+          >
+            ›
+          </button>
+
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+            {slides.map((slide, index) => (
+              <button
+                key={slide.id || index}
+                type="button"
+                aria-label={`Ver banner ${index + 1}`}
+                onClick={() => setCurrentIndex(index)}
+                className={`h-3 w-3 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-lime-500 ${
+                  currentIndex === index ? 'bg-lime-500' : 'bg-white/80'
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </section>
   );
 }

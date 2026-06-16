@@ -3,32 +3,90 @@
 import { BACKEND_URL, IS_QA_MODE } from '@/utils/getEnv';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 
+export interface BannerSlideData {
+  id?: string;
+  desktop_image?: string;
+  mobile_image?: string;
+  desktop_file?: File;
+  mobile_file?: File;
+  alt?: string;
+  order?: number;
+  enabled?: boolean;
+}
+
 interface CustomerMessageData {
   header_color: string;
   header_content: string;
   message_enabled: boolean;
   banner_desktop_image?: File;
   banner_mobile_image?: File;
+  banner_slides?: BannerSlideData[];
   banner_enabled: boolean;
   modal_image?: File;
   modal_enabled: boolean;
 }
 
-interface CustomerMessageResponse {
+export interface CustomerMessageResponse {
   header: {
     color: string;
     content: string;
   };
   banner: {
-    desktop_image: string;
-    mobile_image: string;
     enabled: boolean;
+    slides: Array<{
+      id: string;
+      desktop_image: string;
+      mobile_image: string;
+      alt: string;
+      order: number;
+      enabled: boolean;
+    }>;
   };
   modal: {
     image: string;
     enabled: boolean;
   };
 }
+
+const normalizeCustomerMessage = (data: any): CustomerMessageResponse => {
+  const banner = data?.banner || {};
+  const legacySlides = banner.desktop_image || banner.mobile_image
+    ? [{
+        id: 'legacy-banner',
+        desktop_image: banner.desktop_image || '',
+        mobile_image: banner.mobile_image || '',
+        alt: 'Banner principal',
+        order: 1,
+        enabled: true,
+      }]
+    : [];
+
+  const slides = Array.isArray(banner.slides) ? banner.slides : legacySlides;
+
+  return {
+    header: {
+      color: data?.header?.color || '#ffffff',
+      content: data?.header?.content || '',
+    },
+    banner: {
+      enabled: Boolean(banner.enabled),
+      slides: slides
+        .map((slide: any, index: number) => ({
+          id: String(slide.id || `banner-${index + 1}`),
+          desktop_image: String(slide.desktop_image || ''),
+          mobile_image: String(slide.mobile_image || ''),
+          alt: String(slide.alt || 'Banner principal'),
+          order: Number(slide.order || index + 1),
+          enabled: slide.enabled !== false,
+        }))
+        .sort((a: { order: number }, b: { order: number }) => a.order - b.order),
+    },
+    modal: {
+      image: data?.modal?.image || '',
+      enabled: Boolean(data?.modal?.enabled),
+    },
+  };
+};
 
 interface ActionResult<T> {
   ok: boolean;
@@ -49,9 +107,8 @@ export const fetchGetCustomerMessage = async (): Promise<ActionResult<CustomerMe
           content: 'Bienvenido a Socomarca'
         },
         banner: {
-          desktop_image: '',
-          mobile_image: '',
-          enabled: true
+          enabled: true,
+          slides: []
         },
         modal: {
           image: '',
@@ -109,7 +166,7 @@ export const fetchGetCustomerMessage = async (): Promise<ActionResult<CustomerMe
     }
 
     // Extraer la estructura correcta que espera el slice
-    const responseData = data.respuesta || data;
+    const responseData = normalizeCustomerMessage(data.respuesta || data);
 
     return {
       ok: true,
@@ -181,6 +238,26 @@ export const fetchSendCustomerMessage = async (
     if (messageData.banner_mobile_image) {
       formData.append('banner_mobile_image', messageData.banner_mobile_image);
     }
+
+    messageData.banner_slides?.forEach((slide, index) => {
+      if (slide.id) {
+        formData.append(`banner_slides[${index}][id]`, slide.id);
+      }
+
+      formData.append(`banner_slides[${index}][alt]`, slide.alt || 'Banner principal');
+      formData.append(`banner_slides[${index}][order]`, String(slide.order || index + 1));
+      formData.append(`banner_slides[${index}][enabled]`, slide.enabled === false ? '0' : '1');
+      formData.append(`banner_slides[${index}][existing_desktop_image]`, slide.desktop_image || '');
+      formData.append(`banner_slides[${index}][existing_mobile_image]`, slide.mobile_image || '');
+
+      if (slide.desktop_file) {
+        formData.append(`banner_slides[${index}][desktop_image]`, slide.desktop_file);
+      }
+
+      if (slide.mobile_file) {
+        formData.append(`banner_slides[${index}][mobile_image]`, slide.mobile_file);
+      }
+    });
     
     if (messageData.modal_image) {
       formData.append('modal_image', messageData.modal_image);
