@@ -416,6 +416,10 @@ export const fetchSearchProductsByFilters = async (
       }
 
       // Agregar otros filtros solo si vienen en filters
+      if (filters.supercategory_id !== undefined) {
+        requestBody.filters.supercategory_id = filters.supercategory_id;
+      }
+
       if (filters.category_id !== undefined) {
         requestBody.filters.category_id = filters.category_id;
       }

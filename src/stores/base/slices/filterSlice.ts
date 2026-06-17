@@ -11,7 +11,107 @@ import {
   Product,
   SearchWithPaginationProps,
 } from '@/interfaces/product.interface';
+import { CategoryComplexData } from '@/interfaces/category.interface';
 import { fetchSearchProductsByFilters } from '@/services/actions/products.actions';
+
+const findCategoryPath = (
+  categories: CategoryComplexData[] | null,
+  categoryId: number,
+  path: CategoryComplexData[] = []
+): CategoryComplexData[] | null => {
+  for (const category of categories ?? []) {
+    const nextPath = [...path, category];
+
+    if (category.id === categoryId) {
+      return nextPath;
+    }
+
+    const childPath = findCategoryPath(
+      category.categories ?? category.subcategories ?? null,
+      categoryId,
+      nextPath
+    );
+
+    if (childPath) {
+      return childPath;
+    }
+  }
+
+  return null;
+};
+
+const getHierarchicalSelection = (
+  categories: CategoryComplexData[],
+  searchCategories: CategoryComplexData[] | null,
+  categoryId: number
+) => {
+  const path =
+    findCategoryPath(searchCategories, categoryId) ??
+    findCategoryPath(categories, categoryId) ??
+    [];
+  const selectedSupercategoryId = path[0]?.id ?? null;
+  const selectedCategoryId = path[1]?.id ?? null;
+  const selectedSubcategoryId = path[2]?.id ?? null;
+
+  return {
+    selectedCategories: path.map((category) => category.id),
+    selectedSupercategoryId,
+    selectedCategoryId,
+    selectedSubcategoryId,
+  };
+};
+
+export const buildCategoryTreeFromSearchExtra = (
+  extra: any,
+  allCategories: CategoryComplexData[]
+): CategoryComplexData[] | null => {
+  const supercategoryIds = new Set<number>(
+    (extra?.supercategories ?? []).map((category: CategoryComplexData) => category.id)
+  );
+  const categoryIds = new Set<number>(
+    (extra?.categories ?? []).map((category: CategoryComplexData) => category.id)
+  );
+  const subcategoryIds = new Set<number>(
+    (extra?.subcategories ?? []).map((category: CategoryComplexData) => category.id)
+  );
+
+  if (supercategoryIds.size === 0 && categoryIds.size === 0 && subcategoryIds.size === 0) {
+    return null;
+  }
+
+  return allCategories.flatMap((supercategory) => {
+    const categories = (supercategory.categories ?? []).flatMap((category) => {
+      const subcategories = (category.subcategories ?? []).filter((subcategory) =>
+        subcategoryIds.has(subcategory.id)
+      );
+      const shouldIncludeCategory = categoryIds.has(category.id) || subcategories.length > 0;
+
+      return shouldIncludeCategory ? [{ ...category, subcategories }] : [];
+    });
+    const shouldIncludeSupercategory = supercategoryIds.has(supercategory.id) || categories.length > 0;
+
+    return shouldIncludeSupercategory ? [{ ...supercategory, categories }] : [];
+  });
+};
+
+export const addSelectedCategoryFilter = (
+  searchParams: SearchWithPaginationProps,
+  selectedSupercategoryId: number | null,
+  selectedCategoryId: number | null,
+  selectedSubcategoryId: number | null
+) => {
+  if (selectedSupercategoryId) {
+    searchParams.supercategory_id = selectedSupercategoryId;
+  }
+
+  if (selectedCategoryId) {
+    searchParams.category_id = selectedCategoryId;
+  }
+
+  if (selectedSubcategoryId) {
+    searchParams.subcategory_id = selectedSubcategoryId;
+  }
+};
 
 export const createFiltersSlice: StateCreator<
   StoreState & FiltersSlice & ProductsSlice & FavoritesSlice & StoreSlice & CategoriesSlice,
@@ -20,6 +120,9 @@ export const createFiltersSlice: StateCreator<
   FiltersSlice
 > = (set, get) => ({
   selectedCategories: [],
+  selectedSupercategoryId: null,
+  selectedCategoryId: null,
+  selectedSubcategoryId: null,
   selectedBrands: [],
   selectedFavorites: [],
   minPrice: 0,
@@ -37,16 +140,36 @@ export const createFiltersSlice: StateCreator<
   isPriceOpen: true,
 
   setSelectedCategories: (categories) => {
-    set({ selectedCategories: categories });
+    const categoryId = categories[categories.length - 1];
+
+    if (!categoryId) {
+      set({
+        selectedCategories: [],
+        selectedSupercategoryId: null,
+        selectedCategoryId: null,
+        selectedSubcategoryId: null,
+      });
+      return;
+    }
+
+    const { categories: allCategories, searchCategories } = get();
+    set(getHierarchicalSelection(allCategories, searchCategories, categoryId));
   },
 
   toggleCategorySelection: (categoryId) => {
-    const { selectedCategories } = get();
-    const newSelection = selectedCategories.includes(categoryId)
-      ? selectedCategories.filter((id) => id !== categoryId)
-      : [...selectedCategories, categoryId];
+    const { selectedCategories, categories, searchCategories } = get();
 
-    set({ selectedCategories: newSelection });
+    if (selectedCategories.includes(categoryId)) {
+      set({
+        selectedCategories: [],
+        selectedSupercategoryId: null,
+        selectedCategoryId: null,
+        selectedSubcategoryId: null,
+      });
+      return;
+    }
+
+    set(getHierarchicalSelection(categories, searchCategories, categoryId));
   },
 
   setSelectedBrands: (brands) => {
@@ -145,7 +268,9 @@ export const createFiltersSlice: StateCreator<
 
   applyFilters: async () => {
     const {
-      selectedCategories,
+      selectedSupercategoryId,
+      selectedCategoryId,
+      selectedSubcategoryId,
       selectedBrands,
       //    selectedFavorites,
       selectedMinPrice,
@@ -172,9 +297,12 @@ export const createFiltersSlice: StateCreator<
       }
 
       // Agregar categorías si están seleccionadas
-      if (selectedCategories.length > 0) {
-        searchParams.category_id = selectedCategories[0];
-      }
+      addSelectedCategoryFilter(
+        searchParams,
+        selectedSupercategoryId,
+        selectedCategoryId,
+        selectedSubcategoryId
+      );
 
       // Agregar marcas si están seleccionadas
       if (selectedBrands.length > 0) {
@@ -189,8 +317,6 @@ export const createFiltersSlice: StateCreator<
       const response = await fetchSearchProductsByFilters(searchParams);
 
       if (response.ok && response.data) {
-        const extraCategories = response.data.extra?.categories ?? null;
-
         set({
           filteredProducts: response.data.data,
           productPaginationMeta: response.data.meta,
@@ -198,7 +324,6 @@ export const createFiltersSlice: StateCreator<
           currentPage: response.data.meta.current_page,
           isLoadingProducts: false,
           isFiltered: true,
-          searchCategories: extraCategories,
         });
       } else {
         console.error('Error en la respuesta del servidor:', response.error);
@@ -221,6 +346,9 @@ export const createFiltersSlice: StateCreator<
 
     set({
       selectedCategories: [],
+      selectedSupercategoryId: null,
+      selectedCategoryId: null,
+      selectedSubcategoryId: null,
       selectedBrands: [],
       selectedFavorites: [],
       showOnlyFavorites: false,
@@ -241,6 +369,9 @@ export const createFiltersSlice: StateCreator<
   resetFiltersState: () => {
     set({
       selectedCategories: [],
+      selectedSupercategoryId: null,
+      selectedCategoryId: null,
+      selectedSubcategoryId: null,
       selectedBrands: [],
       selectedFavorites: [],
       minPrice: 0,
@@ -262,6 +393,9 @@ export const createFiltersSlice: StateCreator<
   hasActiveFilters: () => {
     const {
       selectedCategories,
+      selectedSupercategoryId,
+      selectedCategoryId,
+      selectedSubcategoryId,
       selectedBrands,
       selectedFavorites,
       selectedMinPrice,
@@ -274,6 +408,9 @@ export const createFiltersSlice: StateCreator<
 
     return (
       selectedCategories.length > 0 ||
+      selectedSupercategoryId !== null ||
+      selectedCategoryId !== null ||
+      selectedSubcategoryId !== null ||
       selectedBrands.length > 0 ||
       selectedFavorites.length > 0 ||
       selectedMinPrice > minPrice ||

@@ -108,10 +108,6 @@ export const createProductsSlice: StateCreator<
 
       if (response.ok && response.data) {
         const products = response.data.data;
-        const hasSearchTerm = !!(terms.value && terms.value.trim());
-        const extraCategories = hasSearchTerm
-          ? (response.data.extra?.categories ?? null)
-          : null;
 
         set({
           searchTerm: terms.value || '',
@@ -120,7 +116,6 @@ export const createProductsSlice: StateCreator<
           productPaginationLinks: response.data.links,
           currentPage: response.data.meta.current_page,
           isLoadingProducts: false,
-          searchCategories: extraCategories,
         });
       } else {
         console.error('Error en la respuesta del servidor:', response.error);

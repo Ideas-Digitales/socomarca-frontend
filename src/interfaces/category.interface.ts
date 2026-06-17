@@ -1,12 +1,20 @@
 export interface Category {
   id: number;
   name: string;
+  level?: number | string | null;
 }
 
 export interface CategoryComplexData extends Category {
-  created_at?: string;
-  updated_at?: string;
-  description?: string;
+  description?: string | null;
+  code?: string | null;
+  key?: string | null;
+  categories?: CategoryComplexData[];
+  subcategories?: CategoryComplexData[];
+  categories_count?: number | string;
+  subcategories_count?: number | string;
+  products_count?: number | string;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface SubCategory {
