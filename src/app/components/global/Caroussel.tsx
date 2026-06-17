@@ -144,7 +144,7 @@ export default function Carousel({ banner, desktopImage, mobileImage, images }: 
                 <img
                   src={image}
                   alt={slide.alt || `Banner ${index + 1}`}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               </div>
             );
