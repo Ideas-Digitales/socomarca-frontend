@@ -1,8 +1,10 @@
 import { StateCreator } from 'zustand';
-import { PaginationSlice, ProductsSlice, StoreState } from '../types';
+import { FiltersSlice, PaginationSlice, ProductsSlice, StoreState } from '../types';
+import { SearchWithPaginationProps } from '@/interfaces/product.interface';
+import { addSelectedCategoryFilter } from './filterSlice';
 
 export const createPaginationSlice: StateCreator<
-  StoreState & PaginationSlice & ProductsSlice,
+  StoreState & PaginationSlice & ProductsSlice & FiltersSlice,
   [],
   [],
   PaginationSlice
@@ -11,7 +13,9 @@ export const createPaginationSlice: StateCreator<
     const { 
       searchTerm, 
       productPaginationMeta,
-      selectedCategories,
+      selectedSupercategoryId,
+      selectedCategoryId,
+      selectedSubcategoryId,
       selectedBrands,
       selectedMinPrice,
       selectedMaxPrice,
@@ -22,8 +26,7 @@ export const createPaginationSlice: StateCreator<
     const size = productPaginationMeta?.per_page || 9;
 
     if (searchTerm || isFiltered) {
-      // Si hay búsqueda o filtros activos, usar setSearchTerm
-      setSearchTerm({
+      const searchParams: SearchWithPaginationProps = {
         field: 'name',
         value: searchTerm,
         operator: 'fulltext',
@@ -31,9 +34,18 @@ export const createPaginationSlice: StateCreator<
         size,
         min: selectedMinPrice,
         max: selectedMaxPrice,
-        category_id: selectedCategories[0],
         brand_id: selectedBrands
-      });
+      };
+
+      addSelectedCategoryFilter(
+        searchParams,
+        selectedSupercategoryId,
+        selectedCategoryId,
+        selectedSubcategoryId
+      );
+
+      // Si hay búsqueda o filtros activos, usar setSearchTerm
+      setSearchTerm(searchParams);
     } else {
       // Si no hay búsqueda ni filtros, usar fetchProducts
       fetchProducts(page, size);

@@ -3,7 +3,7 @@ import {
   Product,
   SearchWithPaginationProps,
 } from '@/interfaces/product.interface';
-import { Category, CategoryComplexData } from '@/interfaces/category.interface';
+import { CategoryComplexData } from '@/interfaces/category.interface';
 import { Brand } from '@/interfaces/brand.interface';
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
 import { FavoriteList } from '@/interfaces/favorite.inteface';
@@ -153,10 +153,10 @@ export interface ProductsSlice {
 // Categories Slice
 export interface CategoriesSlice {
   categories: CategoryComplexData[];
-  searchCategories: Category[] | null;
+  searchCategories: CategoryComplexData[] | null;
 
-  setCategories: (categories: Category[]) => void;
-  setSearchCategories: (categories: Category[] | null) => void;
+  setCategories: (categories: CategoryComplexData[]) => void;
+  setSearchCategories: (categories: CategoryComplexData[] | null) => void;
   fetchCategories: () => Promise<void>;
 }
 
@@ -249,6 +249,9 @@ export interface FavoritesSlice {
 // Filters Slice
 export interface FiltersSlice {
   selectedCategories: number[];
+  selectedSupercategoryId: number | null;
+  selectedCategoryId: number | null;
+  selectedSubcategoryId: number | null;
   selectedBrands: number[];
   selectedFavorites: number[];
   minPrice: number;
@@ -262,7 +265,7 @@ export interface FiltersSlice {
   isFavoritesOpen: boolean;
   isPriceOpen: boolean;
   isFiltered: boolean;
-  
+   
   setSelectedCategories: (categories: number[]) => void;
   toggleCategorySelection: (categoryId: number) => void;
   setSelectedBrands: (brands: number[]) => void;
@@ -333,7 +336,7 @@ export interface StoreState extends LoadingStates, AuthState {
   currentPage: number;
 
   categories: CategoryComplexData[];
-  searchCategories: Category[] | null;
+  searchCategories: CategoryComplexData[] | null;
   brands: Brand[];
 
   isMobile: boolean;
@@ -422,6 +425,9 @@ export interface StoreState extends LoadingStates, AuthState {
   customerMessageError: string | null;
 
   selectedCategories: number[];
+  selectedSupercategoryId: number | null;
+  selectedCategoryId: number | null;
+  selectedSubcategoryId: number | null;
   selectedBrands: number[];
   selectedFavorites: number[];
   minPrice: number;

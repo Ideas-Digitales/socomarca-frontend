@@ -25,7 +25,16 @@ export default function PrivatePage() {
     isTablet,
     searchTerm,
     setSearchTerm,
-    resetSearchRelatedStates,
+    selectedCategories,
+    selectedSupercategoryId,
+    selectedCategoryId,
+    selectedSubcategoryId,
+    selectedBrands,
+    selectedMinPrice,
+    selectedMaxPrice,
+    productPaginationMeta,
+    showOnlyFavorites,
+    fetchProducts,
     customerMessage,
     isLoadingCustomerMessage,
     fetchCustomerMessage,
@@ -116,6 +125,37 @@ export default function PrivatePage() {
     return undefined;
   };
 
+  const buildActiveFilterParams = (): SearchWithPaginationProps => {
+    const searchParams: SearchWithPaginationProps = {
+      page: 1,
+      size: productPaginationMeta?.per_page || 9,
+      min: selectedMinPrice,
+      max: selectedMaxPrice,
+    };
+
+    if (selectedSupercategoryId) {
+      searchParams.supercategory_id = selectedSupercategoryId;
+    }
+
+    if (selectedCategoryId) {
+      searchParams.category_id = selectedCategoryId;
+    }
+
+    if (selectedSubcategoryId) {
+      searchParams.subcategory_id = selectedSubcategoryId;
+    }
+
+    if (selectedBrands.length > 0) {
+      searchParams.brand_id = selectedBrands;
+    }
+
+    if (showOnlyFavorites) {
+      searchParams.is_favorite = true;
+    }
+
+    return searchParams;
+  };
+
   const handleSearch = (term: string) => {
     if (!term || term.trim() === '') {
       handleClearSearch();
@@ -123,18 +163,28 @@ export default function PrivatePage() {
     }
 
     const searchParams: SearchWithPaginationProps = {
+      ...buildActiveFilterParams(),
       field: 'name',
       value: term,
       operator: 'fulltext',
-      page: 1,
-      size: 9,
     };
 
     setSearchTerm(searchParams);
   };
 
   const handleClearSearch = async () => {
-    await resetSearchRelatedStates();
+    if (
+      selectedCategories.length > 0 ||
+      selectedBrands.length > 0 ||
+      showOnlyFavorites ||
+      selectedMinPrice > 0 ||
+      selectedMaxPrice > 0
+    ) {
+      setSearchTerm(buildActiveFilterParams());
+      return;
+    }
+
+    await fetchProducts(1, productPaginationMeta?.per_page || 9);
   };
 
   const handleOpenFilter = () => {

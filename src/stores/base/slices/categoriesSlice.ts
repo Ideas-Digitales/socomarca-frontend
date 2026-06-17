@@ -27,8 +27,30 @@ export const createCategoriesSlice: StateCreator<
       const response = await fetchGetCategories();
 
       if (response.ok && response.data) {
+        const categories = response.data.data || response.data;
+
+        if (process.env.NODE_ENV === 'development') {
+          console.info('[categories]', {
+            supercategories: categories.length,
+            categories: categories.reduce(
+              (total: number, category: any) => total + (category.categories?.length ?? 0),
+              0
+            ),
+            subcategories: categories.reduce(
+              (total: number, category: any) =>
+                total +
+                (category.categories ?? []).reduce(
+                  (subtotal: number, child: any) => subtotal + (child.subcategories?.length ?? 0),
+                  0
+                ),
+              0
+            ),
+            sample: categories[0],
+          });
+        }
+
         set({
-          categories: response.data.data || response.data,
+          categories,
           isLoading: false,
         });
       } else {

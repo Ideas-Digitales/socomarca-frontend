@@ -11,6 +11,95 @@ import {
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
 import { formatNumber } from '@/utils/formatCurrency';
+import { CategoryComplexData } from '@/interfaces/category.interface';
+
+const getCategoryChildren = (category: CategoryComplexData) =>
+  category.categories ?? category.subcategories ?? [];
+
+const categoryMatchesTerm = (category: CategoryComplexData, term: string): boolean => {
+  const normalizedTerm = term.toLowerCase();
+
+  return (
+    category.name.toLowerCase().includes(normalizedTerm) ||
+    getCategoryChildren(category).some((child) => categoryMatchesTerm(child, term))
+  );
+};
+
+const renderCategoryOption = (
+  category: CategoryComplexData,
+  selectedCategories: number[],
+  toggleCategorySelection: (categoryId: number) => void,
+  expandedCategories: number[],
+  toggleExpandedCategory: (categoryId: number) => void,
+  level = 0
+) => {
+  const isSelected = selectedCategories.includes(category.id);
+  const children = getCategoryChildren(category);
+  const hasChildren = children.length > 0;
+  const isExpanded = expandedCategories.includes(category.id);
+
+  return (
+    <div key={`${category.level ?? level}-${category.id}`} className="w-full">
+      <div
+        className={`flex w-full min-h-[42px] items-start gap-2 hover:bg-gray-50 transition-all duration-200 px-4 py-2 ${
+          isSelected ? 'bg-gray-100' : ''
+        }`}
+        style={{ paddingLeft: `${16 + level * 14}px` }}
+      >
+        <button
+          type="button"
+          className="w-5 h-5 mt-0.5 flex items-center justify-center text-lime-500 disabled:text-transparent"
+          disabled={!hasChildren}
+          onClick={() => toggleExpandedCategory(category.id)}
+          aria-label={isExpanded ? 'Contraer categoría' : 'Expandir categoría'}
+        >
+          {hasChildren && (isExpanded ? <MinusIcon width={16} /> : <PlusIcon width={16} />)}
+        </button>
+        <div
+          className={`w-5 h-5 mt-0.5 border-2 rounded flex items-center justify-center transition-all duration-200 ease-in-out transform cursor-pointer shrink-0 ${
+            isSelected
+              ? 'bg-lime-500 border-lime-500 scale-110'
+              : 'border-gray-300 scale-100 hover:border-lime-300'
+          }`}
+          onClick={() => toggleCategorySelection(category.id)}
+        >
+          <div
+            className={`transition-all duration-200 ${
+              isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+            }`}
+          >
+            {isSelected && (
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+          </div>
+        </div>
+        <span
+          className="text-base text-slate-600 flex-1 transition-colors duration-200 cursor-pointer whitespace-normal break-words leading-6"
+          title={category.name}
+          onClick={() => hasChildren ? toggleExpandedCategory(category.id) : toggleCategorySelection(category.id)}
+        >
+          {category.name}
+        </span>
+      </div>
+      {isExpanded && children.map((child) =>
+        renderCategoryOption(
+          child,
+          selectedCategories,
+          toggleCategorySelection,
+          expandedCategories,
+          toggleExpandedCategory,
+          level + 1
+        )
+      )}
+    </div>
+  );
+};
 
 interface CategoryFilterMobileProps {
   isOpen: boolean;
@@ -66,6 +155,16 @@ export default function CategoryFilterMobile({
   // Estados locales para búsqueda
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [brandSearchTerm, setBrandSearchTerm] = useState('');
+  const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
+
+  const toggleExpandedCategory = useCallback((categoryId: number) => {
+    setExpandedCategories((current) =>
+      current.includes(categoryId)
+        ? current.filter((id) => id !== categoryId)
+        : [...current, categoryId]
+    );
+  }, []);
+
   const formatPrice = useCallback((price: number): string => {
     return formatNumber(price);
   }, []);
@@ -73,7 +172,7 @@ export default function CategoryFilterMobile({
   // Filtrar categorías por término de búsqueda
   const activeCategories = searchCategories ?? categories;
   const filteredCategories = activeCategories.filter((category) =>
-    category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
+    categoryMatchesTerm(category, categorySearchTerm)
   );
   // Filtrar marcas por término de búsqueda
   const filteredBrands = brands.filter((brand) =>
@@ -221,53 +320,17 @@ export default function CategoryFilterMobile({
                 </div>
               </div>
 
-              <div className="w-full max-h-[32vh] overflow-y-auto">
+              <div className="w-full max-h-[32vh] overflow-y-auto overflow-x-hidden">
                 {filteredCategories.length > 0 ? (
-                  filteredCategories.map((category) => (
-                    <div key={category.id} className="w-full">
-                      <div
-                        className={`flex w-full min-h-[48px] items-center gap-3 cursor-pointer hover:bg-gray-50 transition-all duration-300 px-4 py-3 ${
-                          selectedCategories.includes(category.id)
-                            ? 'bg-gray-100'
-                            : ''
-                        }`}
-                        onClick={() => toggleCategorySelection(category.id)}
-                      >
-                        <div
-                          className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all duration-300 ease-in-out transform ${
-                            selectedCategories.includes(category.id)
-                              ? 'bg-lime-500 border-lime-500 scale-110'
-                              : 'border-gray-300 scale-100 hover:border-lime-300'
-                          }`}
-                        >
-                          <div
-                            className={`transition-all duration-200 ${
-                              selectedCategories.includes(category.id)
-                                ? 'opacity-100 scale-100'
-                                : 'opacity-0 scale-75'
-                            }`}
-                          >
-                            {selectedCategories.includes(category.id) && (
-                              <svg
-                                className="w-3 h-3 text-white"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            )}
-                          </div>
-                        </div>
-                        <span className="text-base text-slate-600 flex-1 transition-colors duration-200">
-                          {category.name}
-                        </span>
-                      </div>
-                    </div>
-                  ))
+                  filteredCategories.map((category) =>
+                    renderCategoryOption(
+                      category,
+                      selectedCategories,
+                      toggleCategorySelection,
+                      expandedCategories,
+                      toggleExpandedCategory
+                    )
+                  )
                 ) : (
                   <div className="p-4 text-center text-gray-500">
                     No se encontraron categorías
