@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ArrowUpTrayIcon, PaintBrushIcon } from '@heroicons/react/24/solid';
+import { ArrowUpTrayIcon, PhotoIcon, PaintBrushIcon } from '@heroicons/react/24/solid';
 import { EyeIcon } from '@heroicons/react/24/outline';
 import {
   fetchSendCustomerMessage,
@@ -203,13 +203,16 @@ export default function MensajesCliente() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-10">
+    <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-slate-800">Mensajes para el cliente</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Mensajes para el cliente</h1>
+          <p className="mt-1 text-sm text-slate-500">Configurá el banner del catálogo, el modal y el mensaje superior del sitio.</p>
+        </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
           <button
             onClick={() => (window.location.href = '/')}
-            className="w-full sm:w-auto px-6 py-2 rounded-md font-medium transition-colors bg-lime-500 hover:bg-lime-600 text-white flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-6 py-2 rounded-md font-medium transition-colors bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 flex items-center justify-center gap-2"
           >
             <EyeIcon className="w-5 h-5" />
             Ver en el sitio
@@ -217,7 +220,7 @@ export default function MensajesCliente() {
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="w-full sm:w-auto bg-lime-500 text-white px-4 py-2 rounded hover:bg-lime-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto bg-lime-500 text-white px-4 py-2 rounded-md hover:bg-lime-600 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Guardando...' : 'Guardar cambios'}
           </button>
@@ -225,14 +228,17 @@ export default function MensajesCliente() {
       </div>
 
       {message && (
-        <div className={`p-4 rounded text-sm ${message.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
+        <div className={`p-4 rounded-lg text-sm border ${message.type === 'success' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
           {message.text}
         </div>
       )}
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold text-slate-700">Modal</h2>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-5">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-800">Modal de bienvenida</h2>
+          <p className="text-sm text-slate-500">Imagen que se muestra al ingresar al sitio.</p>
+        </div>
+        <div className="flex flex-col lg:flex-row items-start gap-5">
           <div className="w-full sm:w-1/2">
             <input
               type="file"
@@ -253,89 +259,102 @@ export default function MensajesCliente() {
             <button
               type="button"
               onClick={() => modalInputRef.current?.click()}
-              className="flex items-center gap-2 justify-center sm:justify-start border w-full rounded px-4 py-2 text-sm"
+              className="flex items-center justify-center gap-2 w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-gray-50 transition-colors"
             >
               <ArrowUpTrayIcon className="w-5 h-5" />
               Subir imagen
             </button>
             {modalFileName && <p className="text-xs text-gray-500 mt-1 truncate">{modalFileName}</p>}
-            {modalImageUrl && <img src={modalImageUrl} alt="Imagen modal actual" className="mt-2 max-h-24 rounded border" />}
+            {modalImageUrl && <img src={modalImageUrl} alt="Imagen modal actual" className="mt-3 h-28 w-full rounded-md border border-gray-200 object-contain bg-gray-50" />}
           </div>
 
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-1 text-sm">
+          <div className="flex items-center gap-4 rounded-lg bg-gray-50 px-4 py-3">
+            <label className="flex items-center gap-2 text-sm text-slate-700">
               <input type="radio" name="modal" checked={modalActivo} onChange={() => setModalActivo(true)} />
               Activar
             </label>
-            <label className="flex items-center gap-1 text-sm">
+            <label className="flex items-center gap-2 text-sm text-slate-700">
               <input type="radio" name="modal" checked={!modalActivo} onChange={() => setModalActivo(false)} />
               Desactivar
             </label>
           </div>
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 bg-lime-50 border border-lime-200 rounded-lg p-3">
           Resolución recomendada: <strong>620x400 px</strong>. Peso máximo por imagen: <strong>15 MB</strong>.
         </p>
       </section>
 
-      <section className="bg-slate-50 p-4 rounded space-y-4">
+      <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-700">Banner principal</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-800">Banner principal</h2>
+            <p className="text-sm text-slate-500">Administrá los slides que se muestran en el catálogo.</p>
+          </div>
           <button
             type="button"
             onClick={() => setBannerSlides((slides) => [...slides, createEmptySlide()])}
-            className="w-full sm:w-auto border border-lime-500 text-lime-700 rounded px-4 py-2 text-sm hover:bg-lime-50"
+            className="w-full sm:w-auto border border-lime-500 text-lime-700 rounded-md px-4 py-2 text-sm font-medium hover:bg-lime-50 transition-colors"
           >
             Agregar slide
           </button>
         </div>
 
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1 text-sm">
+        <div className="flex flex-wrap items-center gap-4 rounded-lg bg-gray-50 px-4 py-3">
+          <span className="text-sm font-medium text-slate-700">Estado del banner</span>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
             <input type="radio" name="banner" checked={bannerActivo} onChange={() => setBannerActivo(true)} />
             Activar
           </label>
-          <label className="flex items-center gap-1 text-sm">
+          <label className="flex items-center gap-2 text-sm text-slate-700">
             <input type="radio" name="banner" checked={!bannerActivo} onChange={() => setBannerActivo(false)} />
             Desactivar
           </label>
         </div>
 
         {bannerSlides.length === 0 && (
-          <div className="rounded border border-dashed border-slate-300 p-6 text-sm text-slate-500 text-center">
-            No hay slides configurados. Agregá uno para mostrar el banner del catálogo.
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+            <PhotoIcon className="mx-auto h-10 w-10 text-slate-400" />
+            <p className="mt-2 text-sm font-medium text-slate-700">No hay slides configurados</p>
+            <p className="mt-1 text-sm text-slate-500">Agregá uno para mostrar el banner del catálogo.</p>
           </div>
         )}
 
         <div className="space-y-4">
           {bannerSlides.map((slide, index) => (
-            <article key={slide.id} className="rounded border bg-white p-4 space-y-4">
+            <article key={slide.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <h3 className="font-medium text-slate-700">Slide {index + 1}</h3>
+                <div className="flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-lime-100 text-xs font-semibold text-lime-700">{index + 1}</span>
+                  <h3 className="font-medium text-slate-800">Slide {index + 1}</h3>
+                </div>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => moveSlide(index, -1)} disabled={index === 0} className="border rounded px-3 py-1 text-xs disabled:opacity-40">Subir</button>
-                  <button type="button" onClick={() => moveSlide(index, 1)} disabled={index === bannerSlides.length - 1} className="border rounded px-3 py-1 text-xs disabled:opacity-40">Bajar</button>
-                  <button type="button" onClick={() => removeSlide(slide.id)} className="border border-red-200 text-red-600 rounded px-3 py-1 text-xs">Eliminar</button>
+                  <button type="button" onClick={() => moveSlide(index, -1)} disabled={index === 0} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">Subir</button>
+                  <button type="button" onClick={() => moveSlide(index, 1)} disabled={index === bannerSlides.length - 1} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">Bajar</button>
+                  <button type="button" onClick={() => removeSlide(slide.id)} className="rounded-md border border-red-200 bg-white px-3 py-1.5 text-xs text-red-600 hover:bg-red-50">Eliminar</button>
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <label className="space-y-2 text-sm">
                   <span className="font-medium text-slate-600">Imagen desktop</span>
-                  <input type="file" accept="image/*" onChange={(event) => {
+                  <input className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-lime-50 file:text-lime-700 hover:file:bg-lime-100 file:cursor-pointer" type="file" accept="image/*" onChange={(event) => {
                     const file = event.target.files?.[0];
                     if (file) handleSlideFile(slide, file, 'desktop');
                   }} />
-                  {slide.desktopPreviewUrl && <img src={slide.desktopPreviewUrl} alt="Preview desktop" className="max-h-28 rounded border" />}
+                  <div className="flex h-28 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-white">
+                    {slide.desktopPreviewUrl ? <img src={slide.desktopPreviewUrl} alt="Preview desktop" className="h-full w-full object-contain" /> : <PhotoIcon className="h-8 w-8 text-slate-300" />}
+                  </div>
                 </label>
 
                 <label className="space-y-2 text-sm">
                   <span className="font-medium text-slate-600">Imagen responsiva</span>
-                  <input type="file" accept="image/*" onChange={(event) => {
+                  <input className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-lime-50 file:text-lime-700 hover:file:bg-lime-100 file:cursor-pointer" type="file" accept="image/*" onChange={(event) => {
                     const file = event.target.files?.[0];
                     if (file) handleSlideFile(slide, file, 'mobile');
                   }} />
-                  {slide.mobilePreviewUrl && <img src={slide.mobilePreviewUrl} alt="Preview móvil" className="max-h-28 rounded border" />}
+                  <div className="flex h-28 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-white">
+                    {slide.mobilePreviewUrl ? <img src={slide.mobilePreviewUrl} alt="Preview móvil" className="h-full w-full object-contain" /> : <PhotoIcon className="h-8 w-8 text-slate-300" />}
+                  </div>
                 </label>
               </div>
 
@@ -346,11 +365,11 @@ export default function MensajesCliente() {
                     type="text"
                     value={slide.alt || ''}
                     onChange={(event) => updateSlide(slide.id, { alt: event.target.value })}
-                    className="w-full rounded border px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
                     placeholder="Descripción del banner"
                   />
                 </label>
-                <label className="flex items-center gap-2 text-sm min-h-10">
+                <label className="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm text-slate-700 border border-gray-200 min-h-10">
                   <input
                     type="checkbox"
                     checked={slide.enabled !== false}
@@ -363,25 +382,29 @@ export default function MensajesCliente() {
           ))}
         </div>
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 bg-lime-50 border border-lime-200 rounded-lg p-3">
           Resolución recomendada: <strong>1500 x 400 px</strong> para desktop y <strong>750 x 400 px</strong> para responsivo. Peso máximo por imagen: <strong>15 MB</strong>.
         </p>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-700">Mensaje en el header</h2>
+      <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-800">Mensaje en el header</h2>
+          <p className="text-sm text-slate-500">Texto y color de la franja informativa superior.</p>
+        </div>
         <div className="grid md:grid-cols-2 gap-4">
           <textarea
             placeholder="Ingresar el mensaje de su preferencia"
             value={headerMensaje}
             onChange={(e) => setHeaderMensaje(e.target.value)}
-            className="p-4 border rounded text-sm h-24"
+            className="p-4 border border-gray-300 rounded-md text-sm h-24 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
           />
           <div className="space-y-2">
-            <label className="block text-sm">Seleccionar color de fondo</label>
+            <label className="block text-sm font-medium text-slate-700">Seleccionar color de fondo</label>
             <div className="flex items-center gap-2">
-              <input type="color" value={headerColor} onChange={(e) => setHeaderColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
+              <input type="color" value={headerColor} onChange={(e) => setHeaderColor(e.target.value)} className="w-10 h-10 rounded-md border border-gray-300 cursor-pointer" />
               <PaintBrushIcon className="w-5 h-5 text-slate-600" />
+              <span className="text-sm text-slate-500">{headerColor}</span>
             </div>
           </div>
         </div>
