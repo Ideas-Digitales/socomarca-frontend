@@ -13,7 +13,17 @@ type AdminBannerSlide = BannerSlideData & {
   id: string;
   desktopPreviewUrl?: string;
   mobilePreviewUrl?: string;
+  desktopError?: string;
+  mobileError?: string;
 };
+
+const MAX_IMAGE_SIZE_MB = 15;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1000 * 1000;
+const BannerImageHelpText = () => (
+  <>
+    Resolución recomendada: <strong>1500 x 400 px</strong> para desktop y <strong>750 x 400 px</strong> para responsivo. Peso máximo por imagen: 15 MB.
+  </>
+);
 
 const createEmptySlide = (): AdminBannerSlide => ({
   id: `slide-${Date.now()}`,
@@ -39,17 +49,27 @@ export default function MensajesCliente() {
   const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
   const [bannerSlides, setBannerSlides] = useState<AdminBannerSlide[]>([]);
 
+  const getFileSizeError = (file: File): string | null => {
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      return `El archivo "${file.name}" excede el tamaño máximo de ${MAX_IMAGE_SIZE_MB} MB. Tamaño actual: ${(file.size / 1000 / 1000).toFixed(2)} MB.`;
+    }
+
+    return null;
+  };
+
   const validateFileSize = (file: File): boolean => {
-    const maxSize = 15 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setMessage({
-        type: 'error',
-        text: `El archivo "${file.name}" excede el tamaño máximo de 15MB. Tamaño actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
-      });
+    const error = getFileSizeError(file);
+
+    if (error) {
+      setMessage({ type: 'error', text: error });
       return false;
     }
 
     return true;
+  };
+
+  const clearFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.target.value = '';
   };
 
   const cleanupPreviewUrl = (url?: string) => {
@@ -117,7 +137,11 @@ export default function MensajesCliente() {
   };
 
   const handleSlideFile = (slide: AdminBannerSlide, file: File, kind: 'desktop' | 'mobile') => {
-    if (!validateFileSize(file)) {
+    const sizeError = getFileSizeError(file);
+
+    if (sizeError) {
+      updateSlide(slide.id, kind === 'desktop' ? { desktopError: sizeError } : { mobileError: sizeError });
+      setMessage({ type: 'error', text: sizeError });
       return;
     }
 
@@ -125,10 +149,10 @@ export default function MensajesCliente() {
 
     if (kind === 'desktop') {
       cleanupPreviewUrl(slide.desktopPreviewUrl);
-      updateSlide(slide.id, { desktop_file: file, desktopPreviewUrl: previewUrl });
+      updateSlide(slide.id, { desktop_file: file, desktopPreviewUrl: previewUrl, desktopError: undefined });
     } else {
       cleanupPreviewUrl(slide.mobilePreviewUrl);
-      updateSlide(slide.id, { mobile_file: file, mobilePreviewUrl: previewUrl });
+      updateSlide(slide.id, { mobile_file: file, mobilePreviewUrl: previewUrl, mobileError: undefined });
     }
 
     setMessage(null);
@@ -155,6 +179,15 @@ export default function MensajesCliente() {
   };
 
   const handleSave = async () => {
+    const oversizedSlideFile = bannerSlides
+      .flatMap((slide) => [slide.desktop_file, slide.mobile_file])
+      .find((file): file is File => !!file && !!getFileSizeError(file));
+
+    if (oversizedSlideFile || (modalFile && getFileSizeError(modalFile))) {
+      validateFileSize(oversizedSlideFile ?? modalFile!);
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
 
@@ -252,6 +285,8 @@ export default function MensajesCliente() {
                   setModalFileName(file.name);
                   setModalImageUrl(URL.createObjectURL(file));
                   setMessage(null);
+                } else {
+                  clearFileInput(e);
                 }
               }}
               className="hidden"
@@ -339,22 +374,32 @@ export default function MensajesCliente() {
                   <span className="font-medium text-slate-600">Imagen desktop</span>
                   <input className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-lime-50 file:text-lime-700 hover:file:bg-lime-100 file:cursor-pointer" type="file" accept="image/*" onChange={(event) => {
                     const file = event.target.files?.[0];
-                    if (file) handleSlideFile(slide, file, 'desktop');
+                    if (file) {
+                      handleSlideFile(slide, file, 'desktop');
+                      if (getFileSizeError(file)) clearFileInput(event);
+                    }
                   }} />
+                  <p className="text-xs leading-5 text-slate-500"><BannerImageHelpText /></p>
                   <div className="flex h-28 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-white">
                     {slide.desktopPreviewUrl ? <img src={slide.desktopPreviewUrl} alt="Preview desktop" className="h-full w-full object-contain" /> : <PhotoIcon className="h-8 w-8 text-slate-300" />}
                   </div>
+                  {slide.desktopError && <p className="text-xs leading-5 text-red-600">{slide.desktopError}</p>}
                 </label>
 
                 <label className="space-y-2 text-sm">
                   <span className="font-medium text-slate-600">Imagen responsiva</span>
                   <input className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-lime-50 file:text-lime-700 hover:file:bg-lime-100 file:cursor-pointer" type="file" accept="image/*" onChange={(event) => {
                     const file = event.target.files?.[0];
-                    if (file) handleSlideFile(slide, file, 'mobile');
+                    if (file) {
+                      handleSlideFile(slide, file, 'mobile');
+                      if (getFileSizeError(file)) clearFileInput(event);
+                    }
                   }} />
+                  <p className="text-xs leading-5 text-slate-500"><BannerImageHelpText /></p>
                   <div className="flex h-28 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-white">
                     {slide.mobilePreviewUrl ? <img src={slide.mobilePreviewUrl} alt="Preview móvil" className="h-full w-full object-contain" /> : <PhotoIcon className="h-8 w-8 text-slate-300" />}
                   </div>
+                  {slide.mobileError && <p className="text-xs leading-5 text-red-600">{slide.mobileError}</p>}
                 </label>
               </div>
 
@@ -382,9 +427,7 @@ export default function MensajesCliente() {
           ))}
         </div>
 
-        <p className="text-sm text-gray-600 bg-lime-50 border border-lime-200 rounded-lg p-3">
-          Resolución recomendada: <strong>1500 x 400 px</strong> para desktop y <strong>750 x 400 px</strong> para responsivo. Peso máximo por imagen: <strong>15 MB</strong>.
-        </p>
+        <p className="text-sm text-gray-600 bg-lime-50 border border-lime-200 rounded-lg p-3"><BannerImageHelpText /></p>
       </section>
 
       <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
