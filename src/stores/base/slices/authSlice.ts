@@ -104,15 +104,17 @@ export const createAuthSlice: StateCreator<
     rut,
     password,
     role,
+    normalizeRut,
   }: {
     rut: string;
     password: string;
     role?: string;
+    normalizeRut?: boolean;
   }) => {
     set({ isLoading: true });
 
     try {
-      const response = await fetchLogin(rut, password, role);
+      const response = await fetchLogin(rut, password, role, normalizeRut);
 
       if (!response.user) {
         set({ isLoading: false });

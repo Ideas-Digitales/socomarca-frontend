@@ -31,6 +31,7 @@ export default function LoginForm({
   const [rut, setRut] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [formatRut, setFormatRut] = useState(true);
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState('');
   const { login, isLoading, setLoading } = useAuthStore();
@@ -71,7 +72,9 @@ export default function LoginForm({
     setError('');
 
     try {
-      const loginData = role ? { rut, password, role } : { rut, password };
+      const loginData = role
+        ? { rut, password, role, normalizeRut: formatRut }
+        : { rut, password, normalizeRut: formatRut };
       const result = await login(loginData);
 
       if (result.success) {
@@ -181,8 +184,24 @@ export default function LoginForm({
               onChange={setRut}
               onValidationChange={setIsValid}
               errorMessage="El RUT ingresado no es válido"
+              formatEnabled={formatRut}
               disabled={finalIsLoading}
             />
+            <label className="flex items-center gap-2 text-[12px] text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formatRut}
+                onChange={(e) => {
+                  setFormatRut(e.target.checked);
+                  setRut('');
+                  setIsValid(false);
+                }}
+                disabled={finalIsLoading}
+                className="sr-only peer"
+              />
+              <span className="relative h-5 w-9 rounded-full bg-gray-300 transition-colors peer-checked:bg-lime-500 peer-disabled:opacity-50 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+              Validar y formatear RUT
+            </label>
           </div>
           <div className="flex flex-col items-start gap-[9px] w-full">
             <label htmlFor="password" className="text-[14px]">
