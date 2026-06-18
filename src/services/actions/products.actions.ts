@@ -416,15 +416,15 @@ export const fetchSearchProductsByFilters = async (
       }
 
       // Agregar otros filtros solo si vienen en filters
-      if (filters.supercategory_id !== undefined) {
+      if (filters.supercategory_id !== undefined && filters.supercategory_id.length > 0) {
         requestBody.filters.supercategory_id = filters.supercategory_id;
       }
 
-      if (filters.category_id !== undefined) {
+      if (filters.category_id !== undefined && filters.category_id.length > 0) {
         requestBody.filters.category_id = filters.category_id;
       }
 
-      if (filters.subcategory_id !== undefined) {
+      if (filters.subcategory_id !== undefined && filters.subcategory_id.length > 0) {
         requestBody.filters.subcategory_id = filters.subcategory_id;
       }
 

@@ -113,7 +113,7 @@ export default function ProductsAdmin() {
       setLoading(true);
       if (selectedCategories.length > 0) {
         fetchSearchProductsByFilters({
-          category_id: selectedCategories[0],
+          category_id: [selectedCategories[0]],
           page,
           size: PAGE_SIZE,
           ...sortParams,
@@ -159,7 +159,7 @@ export default function ProductsAdmin() {
       setLoading(true);
       if (selectedCategories.length > 0) {
         fetchSearchProductsByFilters({
-          category_id: selectedCategories[0],
+          category_id: [selectedCategories[0]],
           page,
           size: PAGE_SIZE,
           ...sortParams,

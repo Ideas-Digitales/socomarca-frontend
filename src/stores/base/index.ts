@@ -92,9 +92,9 @@ const initialState: StoreState = {
 
   // Filter states
   selectedCategories: [],
-  selectedSupercategoryId: null,
-  selectedCategoryId: null,
-  selectedSubcategoryId: null,
+  selectedSupercategoryIds: [],
+  selectedCategoryIds: [],
+  selectedSubcategoryIds: [],
   selectedBrands: [],
   selectedFavorites: [],
   minPrice: 0,

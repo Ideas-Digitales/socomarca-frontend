@@ -62,7 +62,7 @@ export default function ProductsAdmin() {
     setSearchTerm({
       field: merged.searchTerm ? 'name' : undefined,
       value: merged.searchTerm || undefined,
-      category_id: merged.selectedCategory || undefined,
+      category_id: merged.selectedCategory ? [merged.selectedCategory] : undefined,
       sort: merged.sortOption?.direction === 'asc' ? 'asc' : merged.sortOption?.direction === 'desc' ? 'desc' : undefined,
       page: merged.page,
       size: productPaginationMeta?.per_page || 20,

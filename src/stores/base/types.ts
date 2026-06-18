@@ -249,9 +249,9 @@ export interface FavoritesSlice {
 // Filters Slice
 export interface FiltersSlice {
   selectedCategories: number[];
-  selectedSupercategoryId: number | null;
-  selectedCategoryId: number | null;
-  selectedSubcategoryId: number | null;
+  selectedSupercategoryIds: number[];
+  selectedCategoryIds: number[];
+  selectedSubcategoryIds: number[];
   selectedBrands: number[];
   selectedFavorites: number[];
   minPrice: number;
@@ -425,9 +425,9 @@ export interface StoreState extends LoadingStates, AuthState {
   customerMessageError: string | null;
 
   selectedCategories: number[];
-  selectedSupercategoryId: number | null;
-  selectedCategoryId: number | null;
-  selectedSubcategoryId: number | null;
+  selectedSupercategoryIds: number[];
+  selectedCategoryIds: number[];
+  selectedSubcategoryIds: number[];
   selectedBrands: number[];
   selectedFavorites: number[];
   minPrice: number;
