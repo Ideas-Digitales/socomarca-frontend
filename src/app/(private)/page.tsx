@@ -26,9 +26,9 @@ export default function PrivatePage() {
     searchTerm,
     setSearchTerm,
     selectedCategories,
-    selectedSupercategoryId,
-    selectedCategoryId,
-    selectedSubcategoryId,
+    selectedSupercategoryIds,
+    selectedCategoryIds,
+    selectedSubcategoryIds,
     selectedBrands,
     selectedMinPrice,
     selectedMaxPrice,
@@ -133,16 +133,16 @@ export default function PrivatePage() {
       max: selectedMaxPrice,
     };
 
-    if (selectedSupercategoryId) {
-      searchParams.supercategory_id = selectedSupercategoryId;
+    if (selectedSupercategoryIds.length > 0) {
+      searchParams.supercategory_id = selectedSupercategoryIds;
     }
 
-    if (selectedCategoryId) {
-      searchParams.category_id = selectedCategoryId;
+    if (selectedCategoryIds.length > 0) {
+      searchParams.category_id = selectedCategoryIds;
     }
 
-    if (selectedSubcategoryId) {
-      searchParams.subcategory_id = selectedSubcategoryId;
+    if (selectedSubcategoryIds.length > 0) {
+      searchParams.subcategory_id = selectedSubcategoryIds;
     }
 
     if (selectedBrands.length > 0) {

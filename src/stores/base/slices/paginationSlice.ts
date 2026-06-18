@@ -13,9 +13,9 @@ export const createPaginationSlice: StateCreator<
     const { 
       searchTerm, 
       productPaginationMeta,
-      selectedSupercategoryId,
-      selectedCategoryId,
-      selectedSubcategoryId,
+      selectedSupercategoryIds,
+      selectedCategoryIds,
+      selectedSubcategoryIds,
       selectedBrands,
       selectedMinPrice,
       selectedMaxPrice,
@@ -34,14 +34,17 @@ export const createPaginationSlice: StateCreator<
         size,
         min: selectedMinPrice,
         max: selectedMaxPrice,
-        brand_id: selectedBrands
       };
+
+      if (selectedBrands.length > 0) {
+        searchParams.brand_id = selectedBrands;
+      }
 
       addSelectedCategoryFilter(
         searchParams,
-        selectedSupercategoryId,
-        selectedCategoryId,
-        selectedSubcategoryId
+        selectedSupercategoryIds,
+        selectedCategoryIds,
+        selectedSubcategoryIds
       );
 
       // Si hay búsqueda o filtros activos, usar setSearchTerm
