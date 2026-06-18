@@ -18,7 +18,8 @@ type PaymentMethodCode = string;
 const formatCLP = (value: number) =>
   value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
 const FREE_SHIPPING_MINIMUM = 70000;
-const FIXED_SHIPPING_COST = 5990;
+const configuredShippingCost = Number(process.env.NEXT_PUBLIC_FIXED_SHIPPING_COST);
+const FIXED_SHIPPING_COST = Number.isFinite(configuredShippingCost) ? configuredShippingCost : 5990;
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
