@@ -362,8 +362,16 @@ export const createFiltersSlice: StateCreator<
       const response = await fetchSearchProductsByFilters(searchParams);
 
       if (response.ok && response.data) {
+        const searchCategories = searchTerm
+          ? buildCategoryTreeFromSearchExtra(
+              response.data.extra,
+              get().categories
+            ) ?? []
+          : null;
+
         set({
           filteredProducts: response.data.data,
+          searchCategories,
           productPaginationMeta: response.data.meta,
           productPaginationLinks: response.data.links,
           currentPage: response.data.meta.current_page,
