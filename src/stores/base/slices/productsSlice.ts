@@ -14,6 +14,7 @@ import {
 } from '@/services/actions/products.actions';
 import { filterAndRankProducts } from '../utils/searchUtils';
 import { FetchSearchProductsByFiltersProps } from '@/interfaces/product.interface';
+import { buildCategoryTreeFromSearchExtra } from './filterSlice';
 
 export const createProductsSlice: StateCreator<
   StoreState & ProductsSlice & FiltersSlice & CategoriesSlice,
@@ -108,10 +109,17 @@ export const createProductsSlice: StateCreator<
 
       if (response.ok && response.data) {
         const products = response.data.data;
+        const searchCategories = terms.value
+          ? buildCategoryTreeFromSearchExtra(
+              response.data.extra,
+              get().categories
+            ) ?? []
+          : null;
 
         set({
           searchTerm: terms.value || '',
           filteredProducts: products,
+          searchCategories,
           productPaginationMeta: response.data.meta,
           productPaginationLinks: response.data.links,
           currentPage: response.data.meta.current_page,

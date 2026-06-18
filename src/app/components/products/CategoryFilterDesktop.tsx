@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import useStore from '@/stores/base';
 import DualRangeSlider from './DualRangerSlider';
@@ -9,6 +9,15 @@ import { CategoryComplexData } from '@/interfaces/category.interface';
 
 const getCategoryChildren = (category: CategoryComplexData) =>
   category.categories ?? category.subcategories ?? [];
+
+const collectExpandedCategoryIds = (categories: CategoryComplexData[]): number[] =>
+  categories.flatMap((category) => {
+    const children = getCategoryChildren(category);
+
+    return children.length > 0
+      ? [category.id, ...collectExpandedCategoryIds(children)]
+      : [];
+  });
 
 const renderCategoryOption = (
   category: CategoryComplexData,
@@ -129,6 +138,12 @@ export default function CategoryFilterDesktop() {
     hasActiveFilters,
   } = useStore();
   const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (searchCategories) {
+      setExpandedCategories(collectExpandedCategoryIds(searchCategories));
+    }
+  }, [searchCategories]);
 
   const toggleExpandedCategory = useCallback((categoryId: number) => {
     setExpandedCategories((current) =>
