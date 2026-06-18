@@ -17,6 +17,8 @@ type PaymentMethodCode = string;
 
 const formatCLP = (value: number) =>
   value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
+const FREE_SHIPPING_MINIMUM = 70000;
+const FIXED_SHIPPING_COST = 5990;
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
@@ -86,7 +88,7 @@ export default function FinalizarCompraPage() {
 
   const totalQuantity = cartProducts.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartProducts.reduce((sum, item) => sum + item.quantity * item.price, 0);
-  const shipping = subtotal >= 70000 ? 0 : Math.round(subtotal * 0.1);
+  const shipping = subtotal >= FREE_SHIPPING_MINIMUM ? 0 : FIXED_SHIPPING_COST;
   const total = subtotal + shipping;
 
   const handleOpenModal = () => {
