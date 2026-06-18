@@ -9,7 +9,8 @@ import { IS_QA_MODE, BACKEND_URL } from '@/utils/getEnv';
 export const fetchLogin = async (
   rut: string,
   password: string,
-  role?: string
+  role?: string,
+  normalizeRut = true
 ): Promise<LoginResponse> => {
   if (IS_QA_MODE) {
     return new Promise((resolve, reject) => {
@@ -25,7 +26,7 @@ export const fetchLogin = async (
 
   const { setCookie } = await cookiesManagement();
   const bodyRequest = {
-    rut: removeDots(rut),
+    rut: normalizeRut ? removeDots(rut) : rut,
     password,
     role: role || null,
   };
