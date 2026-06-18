@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import { getWebpayPaymentDetail } from '@/services/actions/payment.actions';
@@ -11,6 +11,10 @@ import {
   ClipboardIcon,
 } from '@heroicons/react/24/outline';
 
+// Caché por token_ws para confirmar el pago una sola vez aunque la página se
+// remonte o Strict Mode duplique el efecto (evita órdenes duplicadas).
+const webpayRequestCache = new Map<string, Promise<any>>();
+
 type Estado =
   | { status: 'loading' }
   | { status: 'success'; data: any }
@@ -20,25 +24,44 @@ export default function ConfirmacionPagoPage() {
   const [estado, setEstado] = useState<Estado>({ status: 'loading' });
   const [copiado, setCopiado] = useState(false);
   const router = useRouter();
+  const yaEjecutado = useRef(false);
 
   useEffect(() => {
+    // Evita el doble-invoke de Strict Mode dentro de un mismo montaje.
+    if (yaEjecutado.current) return;
+    yaEjecutado.current = true;
+
     const token_ws = new URLSearchParams(window.location.search).get('token_ws');
     if (!token_ws) {
       setEstado({ status: 'error', message: 'No se pudo completar la operación de pago.' });
       return;
     }
 
-    (async () => {
-      try {
-        const data = await getWebpayPaymentDetail(token_ws);
-        setEstado({ status: 'success', data });
-      } catch (error: any) {
-        setEstado({
-          status: 'error',
-          message: error?.message || 'No se pudo confirmar el pago.',
-        });
-      }
-    })();
+    let cancelado = false;
+
+    // Reutiliza la petición en curso/previa de este token; no duplica órdenes.
+    let request = webpayRequestCache.get(token_ws);
+    if (!request) {
+      request = getWebpayPaymentDetail(token_ws);
+      webpayRequestCache.set(token_ws, request);
+    }
+
+    request
+      .then((data) => {
+        if (!cancelado) setEstado({ status: 'success', data });
+      })
+      .catch((error: any) => {
+        if (!cancelado) {
+          setEstado({
+            status: 'error',
+            message: error?.message || 'No se pudo confirmar el pago.',
+          });
+        }
+      });
+
+    return () => {
+      cancelado = true;
+    };
   }, []);
 
   const formatCLP = (valor: number) =>
