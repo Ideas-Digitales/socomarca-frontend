@@ -8,6 +8,7 @@ interface RutInputProps
   onValidationChange?: (isValid: boolean) => void;
   errorMessage?: string;
   className?: string;
+  formatEnabled?: boolean;
 }
 
 const validateRut = (rut: string): boolean => {
@@ -61,6 +62,7 @@ const RutInput: React.FC<RutInputProps> = ({
   onValidationChange,
   className,
   errorMessage = 'RUT inválido',
+  formatEnabled = true,
   ...props
 }) => {
   const [internalValue, setInternalValue] = useState<string>('');
@@ -68,6 +70,14 @@ const RutInput: React.FC<RutInputProps> = ({
   const [isDirty, setIsDirty] = useState<boolean>(false);
 
   const validateInput = useCallback((rutValue: string): void => {
+    if (!formatEnabled) {
+      setIsValid(true);
+      if (onValidationChange) {
+        onValidationChange(rutValue.trim().length > 0);
+      }
+      return;
+    }
+
     if (!rutValue || rutValue.length < 3) {
       setIsValid(true);
       if (onValidationChange) {
@@ -82,7 +92,7 @@ const RutInput: React.FC<RutInputProps> = ({
     if (onValidationChange) {
       onValidationChange(valid);
     }
-  }, [onValidationChange]);
+  }, [formatEnabled, onValidationChange]);
 
   useEffect(() => {
     if (value !== undefined && value !== internalValue) {
@@ -92,8 +102,10 @@ const RutInput: React.FC<RutInputProps> = ({
   }, [value, internalValue, validateInput]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const rawValue = e.target.value;
-    const formattedValue = formatRut(rawValue);
+    const rawValue = e.target.value.replace(/\s/g, '');
+    const formattedValue = formatEnabled
+      ? formatRut(rawValue.replace(/[^0-9kK]/g, '').slice(0, 9))
+      : rawValue;
 
     setInternalValue(formattedValue);
     setIsDirty(true);
