@@ -99,6 +99,7 @@ export interface AuthSlice extends AuthState {
     rut: string;
     password: string;
     role?: string;
+    normalizeRut?: boolean;
   }) => Promise<{ success: boolean; error?: string; user?: User }>;
   logout: () => Promise<void>;
   initializeFromAuth: () => Promise<void>;
