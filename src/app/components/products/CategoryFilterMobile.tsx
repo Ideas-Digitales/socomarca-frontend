@@ -16,6 +16,15 @@ import { CategoryComplexData } from '@/interfaces/category.interface';
 const getCategoryChildren = (category: CategoryComplexData) =>
   category.categories ?? category.subcategories ?? [];
 
+const collectExpandedCategoryIds = (categories: CategoryComplexData[]): number[] =>
+  categories.flatMap((category) => {
+    const children = getCategoryChildren(category);
+
+    return children.length > 0
+      ? [category.id, ...collectExpandedCategoryIds(children)]
+      : [];
+  });
+
 const categoryMatchesTerm = (category: CategoryComplexData, term: string): boolean => {
   const normalizedTerm = term.toLowerCase();
 
@@ -156,6 +165,12 @@ export default function CategoryFilterMobile({
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [brandSearchTerm, setBrandSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (searchCategories) {
+      setExpandedCategories(collectExpandedCategoryIds(searchCategories));
+    }
+  }, [searchCategories]);
 
   const toggleExpandedCategory = useCallback((categoryId: number) => {
     setExpandedCategories((current) =>
