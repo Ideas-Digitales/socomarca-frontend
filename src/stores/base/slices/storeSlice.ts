@@ -44,6 +44,9 @@ export const createStoreSlice: StateCreator<
   resetFiltersState: () => {
     set({
       selectedCategories: [],
+      selectedSupercategoryIds: [],
+      selectedCategoryIds: [],
+      selectedSubcategoryIds: [],
       selectedBrands: [],
       selectedFavorites: [],
       minPrice: 0,
@@ -66,6 +69,9 @@ export const createStoreSlice: StateCreator<
     set({
       searchTerm: '',
       selectedCategories: [],
+      selectedSupercategoryIds: [],
+      selectedCategoryIds: [],
+      selectedSubcategoryIds: [],
       selectedBrands: [],
       selectedFavorites: [],
       isLoading: false,

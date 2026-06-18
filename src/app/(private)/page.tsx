@@ -25,7 +25,16 @@ export default function PrivatePage() {
     isTablet,
     searchTerm,
     setSearchTerm,
-    resetSearchRelatedStates,
+    selectedCategories,
+    selectedSupercategoryIds,
+    selectedCategoryIds,
+    selectedSubcategoryIds,
+    selectedBrands,
+    selectedMinPrice,
+    selectedMaxPrice,
+    productPaginationMeta,
+    showOnlyFavorites,
+    fetchProducts,
     customerMessage,
     isLoadingCustomerMessage,
     fetchCustomerMessage,
@@ -108,27 +117,43 @@ export default function PrivatePage() {
     showModalIfValid();
   }, [customerMessage, openModal, userRole]);
 
-  // CÓDIGO ANTERIOR COMENTADO PARA REFERENCIA:
-  // const getCarouselImages = () => {
-  //   if (customerMessage?.banner?.desktop_image && customerMessage?.banner?.mobile_image) {
-  //     // Si hay imágenes del banner configuradas, usarlas
-  //     return [customerMessage.banner.desktop_image, customerMessage.banner.mobile_image];
-  //   }
-  //   // Si no hay imágenes configuradas, usar las imágenes por defecto
-  //   return defaultImages;
-  // };
-
-  // NUEVO CÓDIGO: Determinar qué datos usar para el banner
   const getBannerData = () => {
-    if (
-      customerMessage?.banner?.desktop_image &&
-      customerMessage?.banner?.mobile_image
-    ) {
-      // Si hay datos del banner configurados, usar el objeto completo
+    if (customerMessage?.banner?.slides?.length) {
       return customerMessage.banner;
     }
-    // Si no hay banner configurado, retornar undefined para usar fallback
+
     return undefined;
+  };
+
+  const buildActiveFilterParams = (): SearchWithPaginationProps => {
+    const searchParams: SearchWithPaginationProps = {
+      page: 1,
+      size: productPaginationMeta?.per_page || 9,
+      min: selectedMinPrice,
+      max: selectedMaxPrice,
+    };
+
+    if (selectedSupercategoryIds.length > 0) {
+      searchParams.supercategory_id = selectedSupercategoryIds;
+    }
+
+    if (selectedCategoryIds.length > 0) {
+      searchParams.category_id = selectedCategoryIds;
+    }
+
+    if (selectedSubcategoryIds.length > 0) {
+      searchParams.subcategory_id = selectedSubcategoryIds;
+    }
+
+    if (selectedBrands.length > 0) {
+      searchParams.brand_id = selectedBrands;
+    }
+
+    if (showOnlyFavorites) {
+      searchParams.is_favorite = true;
+    }
+
+    return searchParams;
   };
 
   const handleSearch = (term: string) => {
@@ -138,18 +163,28 @@ export default function PrivatePage() {
     }
 
     const searchParams: SearchWithPaginationProps = {
+      ...buildActiveFilterParams(),
       field: 'name',
       value: term,
       operator: 'fulltext',
-      page: 1,
-      size: 9,
     };
 
     setSearchTerm(searchParams);
   };
 
   const handleClearSearch = async () => {
-    await resetSearchRelatedStates();
+    if (
+      selectedCategories.length > 0 ||
+      selectedBrands.length > 0 ||
+      showOnlyFavorites ||
+      selectedMinPrice > 0 ||
+      selectedMaxPrice > 0
+    ) {
+      setSearchTerm(buildActiveFilterParams());
+      return;
+    }
+
+    await fetchProducts(1, productPaginationMeta?.per_page || 9);
   };
 
   const handleOpenFilter = () => {
@@ -180,10 +215,6 @@ export default function PrivatePage() {
           <CarouselSkeleton />
         ) : (
           customerMessage?.banner?.enabled && (
-            /* CÓDIGO ANTERIOR COMENTADO:
-            <Caroussel images={getCarouselImages()} />
-            */
-            // NUEVO CÓDIGO: Pasa el objeto banner completo y fallback
             <Caroussel banner={getBannerData()} images={defaultImages} />
           )
         )}

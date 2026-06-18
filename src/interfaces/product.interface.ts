@@ -59,6 +59,7 @@ export interface CartResponse {
 type Operator = 'fulltext' | '=';
 export type Field =
   | 'name'
+  | 'supercategory_id'
   | 'category_id'
   | 'subcategory_id'
   | 'sales'
@@ -75,8 +76,9 @@ export interface FetchSearchProductsByFiltersProps {
   sort_field?: 'id' | 'name' | 'price' | 'stock' | 'category_name' | 'brand_name';
   sort_direction?: 'asc' | 'desc';
   unit?: string;
-  category_id?: number;
-  subcategory_id?: number;
+  supercategory_id?: number[];
+  category_id?: number[];
+  subcategory_id?: number[];
   brand_id?: number[];
   is_favorite?: boolean;
 }

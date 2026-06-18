@@ -9,9 +9,15 @@ export interface CustomerMessageSlice {
       content: string;
     };
     banner: {
-      desktop_image: string;
-      mobile_image: string;
       enabled: boolean;
+      slides: Array<{
+        id: string;
+        desktop_image: string;
+        mobile_image: string;
+        alt: string;
+        order: number;
+        enabled: boolean;
+      }>;
     };
     modal: {
       image: string;
