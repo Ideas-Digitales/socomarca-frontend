@@ -67,6 +67,7 @@ export interface OrderItem {
 
 export interface Order {
   id: number;
+  internal_sale_note: number | null;
   user: UserData;
   subtotal: number;
   amount: number;
