@@ -34,6 +34,9 @@ export default function DetalleCompra({
         <OrderStatusBadge status={pedido.estado} />
       </div>
       <p className="text-sm text-gray-500 mb-4">
+        Referencia interna {pedido?.referencia ?? "No disponible"}
+      </p>
+      <p className="text-sm text-gray-500 mb-4">
         Fecha del pedido {pedido.fecha}
       </p>
       <p className="text-lime-500 font-medium mb-6">
