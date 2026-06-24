@@ -26,7 +26,7 @@ export default function ProductInfo({
 }: ProductInfoProps) {
   const {
     brand: brandTruncateLength = variant === 'cart' ? 10 : 30,
-    name: nameTruncateLength = variant === 'cart' ? 10 : variant === 'grid' ? 25 : 30
+    name: nameTruncateLength = variant === 'cart' ? 10 : 40
   } = truncateLength;
 
   const truncateText = (text: string, maxLength: number) => {
@@ -62,6 +62,14 @@ export default function ProductInfo({
   };
 
   const getProductName = () => {
+    if (variant === 'list') {
+      return {
+        text: name,
+        showTooltip: true,
+        fullText: name
+      };
+    }
+
     const truncatedName = truncateText(name, nameTruncateLength);
     const shouldShowTooltip = name.length > nameTruncateLength;
     
@@ -100,11 +108,15 @@ export default function ProductInfo({
   }
 
   return (
-    <div className={`flex flex-col ${variant === 'grid' ? 'w-full items-center' : ''}`}>
+    <div className={`flex flex-col ${variant === 'grid' ? 'w-full items-center' : variant === 'list' ? 'min-w-0 flex-1' : ''}`}>
       <span className={`text-[#64748B] ${variant === 'list' ? 'text-[12px]' : 'text-xs'} font-medium ${textAlignment}`}>
         {brandInfo.text}
       </span>
-      <span data-cy="product-name" className={`${variant === 'list' ? 'text-[12px]' : 'text-sm'} font-medium ${textAlignment}`}>
+      <span
+        data-cy="product-name"
+        className={`${variant === 'list' ? 'text-[12px] line-clamp-2' : 'text-sm'} font-medium ${textAlignment} leading-tight ${variant === 'list' ? 'max-w-full' : ''}`}
+        title={nameInfo.showTooltip ? nameInfo.fullText : undefined}
+      >
         {nameInfo.text}
       </span>
       <span data-cy="product-price" className={`text-lime-500 font-bold ${textAlignment} text-lg mt-1`}>

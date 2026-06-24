@@ -122,7 +122,7 @@ export default function ProductCardGrid({ product }: Props) {
     <div
       data-cy="product-card"
       data-out-of-stock={isOutOfStock}
-      className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] h-[350px] border-b-slate-200 border-b relative"
+      className="flex p-3 items-center flex-col justify-between gap-2 bg-white w-full max-w-[220px] min-h-[350px] border-b-slate-200 border-b relative"
     >
       {/* Imagen del producto */}
       <div className="flex items-center justify-center h-[100px] w-full relative">
@@ -154,10 +154,12 @@ export default function ProductCardGrid({ product }: Props) {
         <span className="text-[#64748B] text-xs font-medium">
           {product.brand?.name}
         </span>
-        <span data-cy="product-name" className="text-sm font-medium text-center">
-          {product.name.length > 25
-            ? product.name.substring(0, 25) + '...'
-            : product.name}
+        <span
+          data-cy="product-name"
+          className="text-sm font-medium text-center leading-tight min-h-[34px] line-clamp-2"
+          title={product.name}
+        >
+          {product.name}
         </span>
         <span data-cy="product-price" className="text-lime-500 font-bold text-center text-lg mt-1">
           {product.price !== null && product.price !== undefined
