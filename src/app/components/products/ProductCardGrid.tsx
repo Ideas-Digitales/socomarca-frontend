@@ -117,10 +117,6 @@ export default function ProductCardGrid({ product }: Props) {
 
   const isProductFavorite = isFavorite(product.id);
   const isOutOfStock = product.stock <= 0;
-  const shouldTruncateName = product.name.length > 40;
-  const displayedName = shouldTruncateName
-    ? `${product.name.substring(0, 40)}...`
-    : product.name;
 
   return (
     <div
@@ -160,10 +156,10 @@ export default function ProductCardGrid({ product }: Props) {
         </span>
         <span
           data-cy="product-name"
-          className="text-sm font-medium text-center leading-tight min-h-[34px]"
-          title={shouldTruncateName ? product.name : undefined}
+          className="text-sm font-medium text-center leading-tight min-h-[34px] line-clamp-2"
+          title={product.name}
         >
-          {displayedName}
+          {product.name}
         </span>
         <span data-cy="product-price" className="text-lime-500 font-bold text-center text-lg mt-1">
           {product.price !== null && product.price !== undefined
