@@ -141,7 +141,7 @@ export default function ProductCard({ product }: Props) {
           )}
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
+      <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-1 min-w-0">
         <ProductInfo
           brand={product.brand}
           name={product.name}
