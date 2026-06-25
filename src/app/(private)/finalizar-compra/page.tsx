@@ -341,7 +341,7 @@ export default function FinalizarCompraPage() {
               </div>
 
               <div className="col-span-1 md:col-span-2">
-                <label className="block font-medium">Notas</label>
+                <label className="block font-medium">Notas del pedido</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
