@@ -12,6 +12,8 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { fetchPaymentMethods, type PaymentMethod } from '@/services/actions/payment.actions';
 import { logCreditoRaw } from '@/app/components/mi-cuenta/LineaCreditoSection';
 import useAuthStore from '@/stores/useAuthStore';
+import { fetchBranches } from '@/services/actions/branches.actions';
+import type { Branch } from '@/interfaces/branch.interface';
 
 type PaymentMethodCode = string;
 
@@ -43,6 +45,11 @@ export default function FinalizarCompraPage() {
     shippingAddressId: null as number | null,
   });
   const [aceptaTerminos, setAceptaTerminos] = useState(true);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
+  const [paymentDocumentType, setPaymentDocumentType] = useState<'invoice' | 'receipt'>('receipt');
+  const [notes, setNotes] = useState('');
+  const [docTypeError, setDocTypeError] = useState('');
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAceptaTerminos(e.target.checked);
@@ -117,11 +124,21 @@ export default function FinalizarCompraPage() {
       setTerminosError('');
     }
 
+    if (!paymentDocumentType) {
+      setDocTypeError('Selecciona un tipo de documento.');
+      hasError = true;
+    } else {
+      setDocTypeError('');
+    }
+
     if (hasError) return;
 
     if (formData.shippingAddressId !== null) {
       localStorage.setItem('selectedAddressId', formData.shippingAddressId.toString());
       localStorage.setItem('paymentMethod', paymentMethod);
+      localStorage.setItem('paymentDocumentType', paymentDocumentType);
+      if (selectedBranchId) localStorage.setItem('branchId', selectedBranchId.toString());
+      if (notes.trim()) localStorage.setItem('notes', notes.trim());
       router.push('/redirect');
     }
   };
@@ -171,6 +188,14 @@ export default function FinalizarCompraPage() {
       }
     };
     fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    fetchBranches().then((res) => {
+      if (res.ok && res.data) {
+        setBranches(res.data.data);
+      }
+    });
   }, []);
 
   return (
@@ -256,6 +281,74 @@ export default function FinalizarCompraPage() {
                 {direccionError && (
                   <p className="text-red-500 text-sm mt-1">{direccionError}</p>
                 )}
+              </div>
+
+              {branches.length > 0 && (
+                <div className="col-span-1 md:col-span-2">
+                  <label className="block font-medium">Sucursal</label>
+                  <select
+                    value={selectedBranchId ?? ''}
+                    onChange={(e) => setSelectedBranchId(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+                  >
+                    <option value="">Sucursal principal</option>
+                    {branches.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="col-span-1 md:col-span-2 mt-6">
+                <p className="font-medium mb-2">Tipo de documento</p>
+                <div className="flex gap-4">
+                  <label className={`flex items-center gap-2 p-3 rounded border cursor-pointer ${
+                    paymentDocumentType === 'receipt'
+                      ? 'border-lime-500 bg-[#f0fdf4]'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="paymentDocumentType"
+                      value="receipt"
+                      checked={paymentDocumentType === 'receipt'}
+                      onChange={() => { setPaymentDocumentType('receipt'); setDocTypeError(''); }}
+                      className="shrink-0"
+                    />
+                    <span className="text-sm font-medium">Boleta</span>
+                  </label>
+                  <label className={`flex items-center gap-2 p-3 rounded border cursor-pointer ${
+                    paymentDocumentType === 'invoice'
+                      ? 'border-lime-500 bg-[#f0fdf4]'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="paymentDocumentType"
+                      value="invoice"
+                      checked={paymentDocumentType === 'invoice'}
+                      onChange={() => { setPaymentDocumentType('invoice'); setDocTypeError(''); }}
+                      className="shrink-0"
+                    />
+                    <span className="text-sm font-medium">Factura</span>
+                  </label>
+                </div>
+                {docTypeError && (
+                  <p className="text-red-500 text-sm mt-1">{docTypeError}</p>
+                )}
+              </div>
+
+              <div className="col-span-1 md:col-span-2">
+                <label className="block font-medium">Notas</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Ej: Dejar en portería"
+                  rows={3}
+                  className="w-full p-2 mt-1 rounded bg-[#EBEFF7] resize-none"
+                />
               </div>
             </div>
           )}
