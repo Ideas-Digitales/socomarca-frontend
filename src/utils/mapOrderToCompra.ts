@@ -5,7 +5,7 @@ export function mapOrderToCompra(order: Order): Compra {
   return {
     fecha: new Date(order.created_at).toLocaleDateString('es-CL'),
     numero: order.id.toString(),
-    referencia: order.internal_sale_note,
+    referencia: order.random_document_number,
     hora: new Date(order.created_at).toLocaleTimeString('es-CL', {
       hour: '2-digit',
       minute: '2-digit',

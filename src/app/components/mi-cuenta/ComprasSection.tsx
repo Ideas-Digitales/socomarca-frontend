@@ -21,7 +21,7 @@ export interface ProductoCompra {
 export interface Compra {
   fecha: string; // Fecha en que se realizó la compra
   numero: string; // ID de la compra
-  referencia: number | null; // IDMAEEDO
+  referencia: string | null; // IDMAEEDO
   hora: string; // Hora en que se registró
   total: number; // Monto total de la compra
   estado: string; // Estado de la compra (pending, processing, completed, etc.)
