@@ -74,8 +74,16 @@ export interface Order {
   status: string;
   order_items: OrderItem[];
   order_meta: string; // viene como string, tipo JSON
+  branch: Branch;
+  notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Branch {
+  id: number | null;
+  name: string | null;
+  code: string | null;
 }
 
 export interface OrderResponse {

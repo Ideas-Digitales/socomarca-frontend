@@ -37,6 +37,12 @@ export default function DetalleCompra({
         Referencia interna {pedido?.referencia ?? "No disponible"}
       </p>
       <p className="text-sm text-gray-500 mb-4">
+        Sucursal {pedido?.sucursal.nombre ?? "Nombre no disponible"} | {pedido?.sucursal.codigo ?? "Código no disponible"}
+      </p>
+      <p className="text-sm text-gray-500 mb-4">
+        Notas {pedido?.notas ?? ""}
+      </p>
+      <p className="text-sm text-gray-500 mb-4">
         Fecha del pedido {pedido.fecha}
       </p>
       <p className="text-lime-500 font-medium mb-6">

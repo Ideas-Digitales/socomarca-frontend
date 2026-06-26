@@ -26,6 +26,14 @@ export interface Compra {
   total: number; // Monto total de la compra
   estado: string; // Estado de la compra (pending, processing, completed, etc.)
   productos: ProductoCompra[]; // Lista de productos comprados
+  sucursal: Sucursal;
+  notas: string | null;
+}
+
+export interface Sucursal {
+  id: number | null;
+  nombre: string | null;
+  codigo: string | null;
 }
 
 const SORT_OPTIONS = [
