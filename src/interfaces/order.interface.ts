@@ -67,15 +67,23 @@ export interface OrderItem {
 
 export interface Order {
   id: number;
-  internal_sale_note: number | null;
+  random_document_number: string | null;
   user: UserData;
   subtotal: number;
   amount: number;
   status: string;
   order_items: OrderItem[];
   order_meta: string; // viene como string, tipo JSON
+  branch: Branch;
+  notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Branch {
+  id: number | null;
+  name: string | null;
+  code: string | null;
 }
 
 export interface OrderResponse {

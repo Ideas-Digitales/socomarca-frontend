@@ -21,11 +21,19 @@ export interface ProductoCompra {
 export interface Compra {
   fecha: string; // Fecha en que se realizó la compra
   numero: string; // ID de la compra
-  referencia: number | null; // IDMAEEDO
+  referencia: string | null; // IDMAEEDO
   hora: string; // Hora en que se registró
   total: number; // Monto total de la compra
   estado: string; // Estado de la compra (pending, processing, completed, etc.)
   productos: ProductoCompra[]; // Lista de productos comprados
+  sucursal: Sucursal;
+  notas: string | null;
+}
+
+export interface Sucursal {
+  id: number | null;
+  nombre: string | null;
+  codigo: string | null;
 }
 
 const SORT_OPTIONS = [

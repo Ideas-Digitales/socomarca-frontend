@@ -8,9 +8,15 @@ import type { OrderResponse } from "@/interfaces/order.interface";
 export async function createOrderFromCart({
   shippingAddressId,
   paymentMethod,
+  branchId,
+  paymentDocumentType,
+  notes,
 }: {
   shippingAddressId: number;
   paymentMethod: string;
+  branchId?: number;
+  paymentDocumentType: 'invoice' | 'receipt';
+  notes?: string;
 }) {
   const { getCookie } = await cookiesManagement();
   const token = getCookie("token");
@@ -25,10 +31,19 @@ export async function createOrderFromCart({
     Accept: "application/json",
   };
 
+  const body: Record<string, unknown> = {
+    address_id: shippingAddressId,
+    payment_method: paymentMethod,
+    payment_document_type: paymentDocumentType,
+  };
+
+  if (branchId) body.branch_id = branchId;
+  if (notes) body.notes = notes;
+
   const res = await fetch(`${BACKEND_URL}/orders/pay`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ address_id: shippingAddressId, payment_method: paymentMethod }),
+    body: JSON.stringify(body),
   });
 
   const json = await res.json();

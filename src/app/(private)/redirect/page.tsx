@@ -27,6 +27,9 @@ export default function RedireccionandoPago() {
     hasProcessed.current = true;
     const paymentMethod = localStorage.getItem('paymentMethod') ?? 'transbank';
     const id = localStorage.getItem('selectedAddressId');
+    const branchId = localStorage.getItem('branchId');
+    const paymentDocumentType = (localStorage.getItem('paymentDocumentType') as 'invoice' | 'receipt') || 'receipt';
+    const notes = localStorage.getItem('notes') || undefined;
 
     if (!id) {
       setError('No se encontró una dirección de envío seleccionada');
@@ -37,8 +40,14 @@ export default function RedireccionandoPago() {
 
     const process = async () => {
       try {
-        console.log('[redirect] Enviando a /orders/pay:', { address_id: shippingAddressId, payment_method: paymentMethod });
-        const result = await createOrderFromCart({ shippingAddressId, paymentMethod });
+        console.log('[redirect] Enviando a /orders/pay:', { address_id: shippingAddressId, payment_method: paymentMethod, branch_id: branchId || undefined, payment_document_type: paymentDocumentType, notes });
+        const result = await createOrderFromCart({
+          shippingAddressId,
+          paymentMethod,
+          branchId: branchId ? Number(branchId) : undefined,
+          paymentDocumentType,
+          notes,
+        });
         console.log('[redirect] Respuesta:', result);
 
         if (!result.ok) {
@@ -54,6 +63,9 @@ export default function RedireccionandoPago() {
         const json = result.body;
         localStorage.removeItem('paymentMethod');
         localStorage.removeItem('selectedAddressId');
+        localStorage.removeItem('branchId');
+        localStorage.removeItem('paymentDocumentType');
+        localStorage.removeItem('notes');
         await fetchCartProducts();
 
         if (paymentMethod === 'transbank') {
