@@ -27,12 +27,9 @@ export default function CarroCompraCard({ product }: CartCardProps) {
     isLoading,
     backgroundImage,
     totalPrice,
-    isBrandTruncated,
-    isNameTruncated,
     decreaseQuantity,
     increaseQuantity,
     deleteAllQuantity,
-    truncateText
   } = useCartItem(product);
 
   return (
@@ -47,9 +44,6 @@ export default function CarroCompraCard({ product }: CartCardProps) {
         <ProductInfo
           brandName={product.brand?.name || 'Sin marca'}
           productName={product.name}
-          isBrandTruncated={isBrandTruncated}
-          isNameTruncated={isNameTruncated}
-          truncateText={truncateText}
         />
       </td>
 
