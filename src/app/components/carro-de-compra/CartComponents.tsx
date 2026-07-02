@@ -27,31 +27,13 @@ export const ProductImage = ({ backgroundImage, alt }: ProductImageProps) => (
 interface ProductInfoProps {
   brandName: string;
   productName: string;
-  isBrandTruncated: boolean;
-  isNameTruncated: boolean;
-  truncateText: (text: string) => string;
 }
 
-export const ProductInfo = ({ 
-  brandName, 
-  productName, 
-  isBrandTruncated, 
-  isNameTruncated, 
-  truncateText 
-}: ProductInfoProps) => (
-  <div>
-    <p
-      className="text-xs text-slate-400 cursor-help"
-      title={isBrandTruncated ? brandName : undefined}
-    >
-      {isBrandTruncated ? truncateText(brandName) : brandName}
-    </p>
-    <p
-      data-cy="cart-item-name"
-      className="text-black text-xs cursor-help"
-      title={isNameTruncated ? productName : undefined}
-    >
-      {isNameTruncated ? truncateText(productName) : productName}
+export const ProductInfo = ({ brandName, productName }: ProductInfoProps) => (
+  <div className="min-w-0">
+    <p className="text-xs text-slate-400 break-words">{brandName}</p>
+    <p data-cy="cart-item-name" className="text-black text-xs break-words">
+      {productName}
     </p>
   </div>
 );

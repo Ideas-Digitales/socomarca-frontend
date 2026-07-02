@@ -10,12 +10,9 @@ interface UseCartItemReturn {
   isLoading: boolean;
   backgroundImage: string;
   totalPrice: string;
-  isBrandTruncated: boolean;
-  isNameTruncated: boolean;
   decreaseQuantity: () => Promise<void>;
   increaseQuantity: () => Promise<void>;
   deleteAllQuantity: () => Promise<void>;
-  truncateText: (text: string, maxLength?: number) => string;
 }
 
 export const useCartItem = (product: CartItem): UseCartItemReturn => {
@@ -87,41 +84,21 @@ export const useCartItem = (product: CartItem): UseCartItemReturn => {
       setIsLoading(false);
     }
   }, [isLoading, product, removeProductFromCart, handleError]);
-  /** Trunca texto si excede la longitud máxima */
-  const truncateText = useCallback((text: string, maxLength: number = CART_CONFIG.MAX_TEXT_LENGTH) => {
-    if (text.length > maxLength) {
-      return text.substring(0, maxLength) + '...';
-    }
-    return text;
-  }, []);
 
   // Cálculos memorizados
-  const totalPrice = useMemo(() => 
+  const totalPrice = useMemo(() =>
     (product.price * product.quantity).toLocaleString(CART_CONFIG.LOCALE, {
       style: 'currency',
       currency: CART_CONFIG.CURRENCY,
     }), [product.price, product.quantity]
   );
 
-  const isBrandTruncated = useMemo(() => 
-    (product.brand?.name?.length || 0) > CART_CONFIG.MAX_TEXT_LENGTH, 
-    [product.brand?.name]
-  );
-
-  const isNameTruncated = useMemo(() => 
-    product.name.length > CART_CONFIG.MAX_TEXT_LENGTH, 
-    [product.name]
-  );
-
   return {
     isLoading,
     backgroundImage,
     totalPrice,
-    isBrandTruncated,
-    isNameTruncated,
     decreaseQuantity,
     increaseQuantity,
     deleteAllQuantity,
-    truncateText
   };
 };
