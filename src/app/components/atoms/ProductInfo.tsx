@@ -8,6 +8,7 @@ interface ProductInfoProps {
   price: number | null | undefined;
   stock?: number;
   sku?: string;
+  unit?: string;
   variant?: 'list' | 'grid' | 'cart';
   truncateLength?: {
     brand?: number;
@@ -21,6 +22,7 @@ export default function ProductInfo({
   price,
   stock,
   sku,
+  unit,
   variant = 'list',
   truncateLength = {}
 }: ProductInfoProps) {
@@ -103,6 +105,11 @@ export default function ProductInfo({
         >
           {nameInfo.text}
         </span>
+        {unit && (
+          <span className="text-[10px] font-semibold text-lime-600 uppercase">
+            {unit}
+          </span>
+        )}
       </div>
     );
   }
@@ -122,7 +129,7 @@ export default function ProductInfo({
       <span data-cy="product-price" className={`text-lime-500 font-bold ${textAlignment} text-lg mt-1`}>
         {price != null ? formatCurrency(price) : '-'}
       </span>
-      
+
       {(stock !== undefined || sku) && variant === 'grid' && (
         <div className="w-full px-2 py-1 text-center">
           {stock !== undefined && (

@@ -196,8 +196,8 @@ export interface CartSlice {
     product: Product
   ) => Promise<ApiResponse>;
   fetchCartProducts: () => Promise<void>;
-  incrementProductInCart: (productId: number) => void;
-  decrementProductInCart: (productId: number) => void;
+  incrementProductInCart: (productId: number, unit: string) => void;
+  decrementProductInCart: (productId: number, unit: string) => void;
   removeProductFromCart: (
     product: CartItem,
     quantity: number
@@ -206,7 +206,7 @@ export interface CartSlice {
     product: CartItem,
     quantity: number
   ) => Promise<ApiResponse>;
-  removeAllQuantityByProductId: (productId: number) => void;
+  removeAllQuantityByProductId: (productId: number, unit: string) => void;
   clearCart: () => Promise<void>;
 }
 

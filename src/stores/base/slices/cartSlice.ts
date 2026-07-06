@@ -62,7 +62,7 @@ export const createCartSlice: StateCreator<
     try {
       // Update optimista: agregar el producto inmediatamente al carrito
       const existingItemIndex = cartProducts.findIndex(
-        (item) => item.id === product_id
+        (item) => item.id === product_id && item.unit === unit
       );
 
       let updatedCart;
@@ -143,18 +143,20 @@ export const createCartSlice: StateCreator<
     }
   },
 
-  incrementProductInCart: (productId: number) => {
+  incrementProductInCart: (productId: number, unit: string) => {
     const { cartProducts } = get();
     const updatedCart = cartProducts.map((item) =>
-      item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
+      item.id === productId && item.unit === unit
+        ? { ...item, quantity: item.quantity + 1 }
+        : item
     );
     set({ cartProducts: updatedCart });
   },
 
-  decrementProductInCart: (productId: number) => {
+  decrementProductInCart: (productId: number, unit: string) => {
     const { cartProducts } = get();
     const updatedCart = cartProducts.map((item) =>
-      item.id === productId && item.quantity > 1
+      item.id === productId && item.unit === unit && item.quantity > 1
         ? { ...item, quantity: item.quantity - 1 }
         : item
     );
@@ -196,7 +198,7 @@ export const createCartSlice: StateCreator<
       // Update optimista: actualizar el carrito inmediatamente
       let updatedCart;
       const existingItemIndex = cartProducts.findIndex(
-        (item) => item.id === product.id
+        (item) => item.id === product.id && item.unit === product.unit
       );
 
       if (existingItemIndex !== -1) {
@@ -205,7 +207,9 @@ export const createCartSlice: StateCreator<
 
         if (newQuantity <= 0) {
           // Eliminar el producto completamente
-          updatedCart = cartProducts.filter((item) => item.id !== product.id);
+          updatedCart = cartProducts.filter(
+            (item) => item.id !== product.id || item.unit !== product.unit
+          );
         } else {
           // Reducir la cantidad
           updatedCart = cartProducts.map((item, index) =>
@@ -254,9 +258,11 @@ export const createCartSlice: StateCreator<
     }
   },
 
-  removeAllQuantityByProductId: (productId: number) => {
+  removeAllQuantityByProductId: (productId: number, unit: string) => {
     const { cartProducts } = get();
-    const updatedCart = cartProducts.filter((item) => item.id !== productId);
+    const updatedCart = cartProducts.filter(
+      (item) => item.id !== productId || item.unit !== unit
+    );
     set({ cartProducts: updatedCart });
   },
   clearCart: async () => {

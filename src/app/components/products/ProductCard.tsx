@@ -146,12 +146,15 @@ export default function ProductCard({ product }: Props) {
           brand={product.brand}
           name={product.name}
           price={product.price}
+          unit={product.unit}
           variant="list"
         />
         <div className="sm:flex sm:h-[74px] sm:flex-col sm:justify-between sm:items-end sm:gap-[6px] sm:flex-1-0-0 gap-4">
           <p className="text-[#64748B] text-[10px] font-medium my-2 text-left">
-            <strong>Stock:</strong> {product.stock} <strong>|</strong>{' '}
-            <strong>SKU:</strong> {product.sku}
+            <strong>Unidad:</strong>{' '}
+            <span className="text-lime-600 font-bold">{product.unit}</span>{' '}
+            <strong>|</strong> <strong>Stock:</strong> {product.stock}{' '}
+            <strong>|</strong> <strong>SKU:</strong> {product.sku}
           </p>
           <div className="flex flex-row justify-center items-center gap-3">
             <QuantitySelector

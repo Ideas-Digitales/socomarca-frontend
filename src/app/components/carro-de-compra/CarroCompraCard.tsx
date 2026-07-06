@@ -13,9 +13,9 @@ interface CartCardProps {
   /** Producto del carrito */
   product: CartItem;
   /** Callback opcional cuando cambia la cantidad */
-  onQuantityChange?: (productId: number, newQuantity: number) => void;
+  onQuantityChange?: (productId: number, unit: string, newQuantity: number) => void;
   /** Callback opcional cuando se elimina el producto */
-  onRemove?: (productId: number) => void;
+  onRemove?: (productId: number, unit: string) => void;
 }
 
 /**
@@ -33,7 +33,7 @@ export default function CarroCompraCard({ product }: CartCardProps) {
   } = useCartItem(product);
 
   return (
-    <tr data-cy="cart-item" key={product.id} className="border border-slate-100">
+    <tr data-cy="cart-item" key={`${product.id}-${product.unit}`} className="border border-slate-100">
       {/* Información del producto */}
       <td className="px-4 py-4 flex items-center gap-4">
         <ProductImage
@@ -45,6 +45,9 @@ export default function CarroCompraCard({ product }: CartCardProps) {
           brandName={product.brand?.name || 'Sin marca'}
           productName={product.name}
         />
+        <span className="text-xs font-semibold text-lime-600 ml-2 uppercase">
+          {product.unit}
+        </span>
       </td>
 
       {/* Controles de cantidad */}
@@ -56,6 +59,7 @@ export default function CarroCompraCard({ product }: CartCardProps) {
           onIncrease={increaseQuantity}
           onDecrease={decreaseQuantity}
           productId={product.id}
+          unit={product.unit}
         />
       </td>
 

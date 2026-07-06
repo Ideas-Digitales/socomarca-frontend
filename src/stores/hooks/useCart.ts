@@ -68,12 +68,18 @@ export const useCart = () => {
 };
 
 // Hook para verificar si un producto específico está en el carrito
-export const useIsProductInCart = (productId: number) =>
-  useStore((state) => state.cartProducts.some((item) => item.id === productId));
+export const useIsProductInCart = (productId: number, unit?: string) =>
+  useStore((state) =>
+    state.cartProducts.some(
+      (item) => item.id === productId && (!unit || item.unit === unit)
+    )
+  );
 
 // Hook para obtener la cantidad de un producto específico en el carrito
-export const useProductCartQuantity = (productId: number) =>
+export const useProductCartQuantity = (productId: number, unit?: string) =>
   useStore((state) => {
-    const item = state.cartProducts.find((item) => item.id === productId);
+    const item = state.cartProducts.find(
+      (item) => item.id === productId && (!unit || item.unit === unit)
+    );
     return item?.quantity || 0;
   });

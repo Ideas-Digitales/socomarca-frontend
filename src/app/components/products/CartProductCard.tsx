@@ -95,6 +95,7 @@ export default function CartProductCard({ product, index }: Props) {
         brand={product.brand}
         name={product.name}
         price={product.price}
+        unit={product.unit}
         variant="cart"
         truncateLength={{ brand: 10, name: 10 }}
       />
