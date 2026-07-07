@@ -176,6 +176,10 @@ export default function ProductCardGrid({ product }: Props) {
         {/* Información de stock */}
         <div className="w-full px-2 py-1 text-center">
           <p className="text-[#64748B] text-xs">
+            <span className="font-semibold">Unidad:</span>{' '}
+            <span className="text-lime-600 font-bold">{product.unit}</span>
+          </p>
+          <p className="text-[#64748B] text-xs">
             <span className="font-semibold">Stock:</span> {product.stock}
           </p>
           <p className="text-[#64748B] text-xs">

@@ -45,6 +45,7 @@ interface QuantityControlsProps {
   onIncrease: () => void;
   onDecrease: () => void;
   productId: number;
+  unit: string;
 }
 
 export const QuantityControls = ({ 

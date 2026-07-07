@@ -118,22 +118,6 @@ async function getAuthData(
   }
 }
 
-// Función para limpiar cookies usando la API interna
-async function clearAuthCookies(request: NextRequest): Promise<void> {
-  try {
-    await fetch(new URL('/api/internal/auth', request.url).toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') || '',
-      },
-      body: JSON.stringify({ action: 'clear' }),
-    });
-  } catch (error) {
-    console.error('Middleware - Error clearing cookies:', error);
-  }
-}
-
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const method = request.method;
@@ -151,7 +135,13 @@ export default async function middleware(request: NextRequest) {
     // Para archivos grandes, solo verificar autenticación básica
     const authData = await getAuthData(request, false);
     if (!authData.authenticated) {
-      return NextResponse.redirect(new URL('/auth/login', request.url));
+      const redirectResponse = NextResponse.redirect(new URL('/auth/login', request.url));
+      redirectResponse.cookies.delete('token');
+      redirectResponse.cookies.delete('role');
+      redirectResponse.cookies.delete('permissions');
+      redirectResponse.cookies.delete('userId');
+      redirectResponse.cookies.delete('userData');
+      return redirectResponse;
     }
     
     // Permitir la solicitud para archivos grandes
@@ -209,12 +199,16 @@ export default async function middleware(request: NextRequest) {
 
   // ========== VERIFICAR AUTENTICACIÓN ==========
   if (!authData.authenticated) {
-    await clearAuthCookies(request);
-
     const isAdminRoute =
       pathname.startsWith('/admin') || pathname.startsWith('/super-admin');
     const loginUrl = isAdminRoute ? '/auth/login-admin' : '/auth/login';
-    return NextResponse.redirect(new URL(loginUrl, request.url));
+    const redirectResponse = NextResponse.redirect(new URL(loginUrl, request.url));
+    redirectResponse.cookies.delete('token');
+    redirectResponse.cookies.delete('role');
+    redirectResponse.cookies.delete('permissions');
+    redirectResponse.cookies.delete('userId');
+    redirectResponse.cookies.delete('userData');
+    return redirectResponse;
   }
 
   // Obtener el rol del usuario - puede ser una cadena con múltiples roles separados por comas

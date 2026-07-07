@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 
 interface Props {
   p: ProductToBuy;
-  decrementProductInCart: (id: number) => void;
-  incrementProductInCart: (id: number) => void;
-  setIdProductoAEliminar: (id: number) => void;
+  decrementProductInCart: (id: number, unit: string) => void;
+  incrementProductInCart: (id: number, unit: string) => void;
+  setIdProductoAEliminar: (id: number, unit: string) => void;
 }
 
 export default function CarroCompraCardMobile({
@@ -26,13 +26,16 @@ export default function CarroCompraCardMobile({
   return (
     <div
       data-cy="cart-item"
-      key={p.id}
+      key={`${p.id}-${p.unit}`}
       className="relative flex gap-4 bg-white p-4 border-b border-b-slate-200"
     >
+      <span className="absolute top-2 left-2 text-[10px] font-semibold text-lime-600 uppercase">
+        {p.unit}
+      </span>
       {/* Botón eliminar arriba a la derecha */}
       <button
         data-cy="delete-product-btn"
-        onClick={() => setIdProductoAEliminar(p.id)}
+        onClick={() => setIdProductoAEliminar(p.id, p.unit)}
         className="absolute top-2 right-2 text-red-500"
         title="Eliminar producto"
       >
@@ -66,7 +69,7 @@ export default function CarroCompraCardMobile({
         <div className="flex items-center gap-2 mt-2">
           <button
             data-cy="decrease-quantity-btn"
-            onClick={() => decrementProductInCart(p.id)}
+            onClick={() => decrementProductInCart(p.id, p.unit)}
             className="px-2 py-1 bg-gray-200 rounded"
           >
             −
@@ -74,7 +77,7 @@ export default function CarroCompraCardMobile({
           <span data-cy="cart-item-quantity" className="w-6 text-center">{p.quantity}</span>
           <button
             data-cy="increase-quantity-btn"
-            onClick={() => incrementProductInCart(p.id)}
+            onClick={() => incrementProductInCart(p.id, p.unit)}
             className="px-2 py-1 bg-gray-200 rounded"
           >
             +

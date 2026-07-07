@@ -18,7 +18,10 @@ export const useCartPage = () => {
   } = useStore();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [idProductoAEliminar, setIdProductoAEliminar] = useState<number | null>(null);
+  const [idProductoAEliminar, setIdProductoAEliminar] = useState<{
+    productId: number;
+    unit: string;
+  } | null>(null);
 
   /** Datos de paginación calculados */
   const paginationData = useMemo(() => {
@@ -76,11 +79,13 @@ export const useCartPage = () => {
   }, []);
 
   /** Eliminar producto y ajustar paginación */
-  const handleProductRemoval = useCallback((productId: number) => {
-    removeAllQuantityByProductId(productId);
+  const handleProductRemoval = useCallback((productId: number, unit: string) => {
+    removeAllQuantityByProductId(productId, unit);
 
     // Ajustar página si queda vacía después de eliminar
-    const remainingProducts = cartProducts?.filter((p) => p.id !== productId) || [];
+    const remainingProducts = cartProducts?.filter(
+      (p) => p.id !== productId || p.unit !== unit
+    ) || [];
     const totalPagesAfterRemoval = Math.ceil(remainingProducts.length / ITEMS_PER_PAGE);
 
     if (currentPage > totalPagesAfterRemoval && totalPagesAfterRemoval > 0) {
