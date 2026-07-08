@@ -178,7 +178,7 @@ Fecha transacción: ${new Date(transaction_date).toLocaleString('es-CL')}
             )}
 
             {estado.data?.data && (
-              <details open className="mt-6 text-sm text-gray-700 bg-gray-100 rounded p-4">
+              <details className="mt-6 text-sm text-gray-700 bg-gray-100 rounded p-4">
                 <summary className="cursor-pointer font-medium text-neutral-800 mb-3">
                   Detalle técnico de la transacción
                 </summary>
