@@ -1,6 +1,10 @@
 'use server';
 
-import { LoginResponse } from '@/interfaces/user.interface';
+import {
+  LoginResponse,
+  RestoreCredentialsResponse,
+  UpdateCredentialsResponse,
+} from '@/interfaces/user.interface';
 import { mockResponse } from '@/mock/login';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { removeDots } from '@/stores/base/utils/removeDots';
@@ -98,6 +102,12 @@ export const fetchLogin = async (
         roles: data.user.roles || [],
         permissions: data.user.permissions || [],
       },
+      extra: data.extra
+        ? {
+            missing_email: Boolean(data.extra.missing_email),
+            weak_password: Boolean(data.extra.weak_password),
+          }
+        : undefined,
     };
   } catch (error) {
     console.log('Error en la autenticación:', error);
@@ -107,16 +117,16 @@ export const fetchLogin = async (
   }
 };
 
+// POST /auth/restore. Two branches, discriminated by whether data.provisional_token
+// is present: no-email accounts get a provisional token scoped only to
+// PATCH /auth/credentials; accounts that already have an email skip straight to
+// "check your inbox" (data.missing_email is redundant with provisional_token's
+// presence, so callers should branch on provisionalToken alone).
 export const sendRecoveryEmail = async (
   rut: string
-): Promise<{ success: boolean; message: string }> => {
-  console.log('BACKEND_URL:', BACKEND_URL);
-  
+): Promise<RestoreCredentialsResponse> => {
   try {
-    const url = `${BACKEND_URL}/auth/restore`;
-    console.log('URL de la petición:', url);
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${BACKEND_URL}/auth/restore`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -125,9 +135,7 @@ export const sendRecoveryEmail = async (
       body: JSON.stringify({ rut: removeDots(rut) }),
     });
 
-    console.log('Status de la respuesta:', response.status);
     const data = await response.json();
-    console.log('Datos de la respuesta:', data);
 
     if (!response.ok) {
       return {
@@ -138,10 +146,60 @@ export const sendRecoveryEmail = async (
 
     return {
       success: true,
-      message: 'Correo de recuperación enviado',
+      message: data.message || 'Correo de recuperación enviado',
+      provisionalToken: data.data?.provisional_token,
+      email: data.data?.email,
     };
   } catch (error) {
     console.error('Error al enviar correo de recuperación:', error);
+    return {
+      success: false,
+      message: 'Ocurrió un error inesperado',
+    };
+  }
+};
+
+// PATCH /auth/credentials — only reachable with the provisional token returned by
+// the no-email branch of sendRecoveryEmail. On success the backend emails a temp
+// password and revokes the provisional token; it never returns the password itself.
+export const updateCredentialsAction = async (
+  provisionalToken: string,
+  email: string
+): Promise<UpdateCredentialsResponse> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/auth/credentials`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+        Authorization: `Bearer ${provisionalToken}`,
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 422) {
+        return {
+          success: false,
+          message: data.message || 'No se pudo actualizar el correo',
+          fieldErrors: data.errors,
+        };
+      }
+
+      return {
+        success: false,
+        message: data.message || 'No se pudo actualizar el correo',
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || 'Correo actualizado',
+    };
+  } catch (error) {
+    console.error('Error al actualizar credenciales:', error);
     return {
       success: false,
       message: 'Ocurrió un error inesperado',
