@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-const logo = '/assets/global/logo.png';
+const s3Base = process.env.NEXT_PUBLIC_S3_BASE_URL;
+const logo = s3Base ? `${s3Base}/assets/logo.png` : '/assets/global/logo.png';
 
 interface Props {
   width?: number;
