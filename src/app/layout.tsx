@@ -12,11 +12,15 @@ const poppins = Poppins({
   variable: '--font-poppins',
 });
 
+const s3Base = process.env.NEXT_PUBLIC_S3_BASE_URL;
+const favicon = s3Base ? `${s3Base}/assets/icons/logo.ico` : '/favicon.ico';
+
 export const metadata: Metadata = {
   title: 'Socomarca | Compra rápida',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icons/logo_plant-192.png',
+    icon: favicon,
+    shortcut: favicon,
     apple: '/icons/logo_plant-192.png',
   },
 };

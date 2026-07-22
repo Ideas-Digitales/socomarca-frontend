@@ -100,7 +100,12 @@ export interface AuthSlice extends AuthState {
     password: string;
     role?: string;
     normalizeRut?: boolean;
-  }) => Promise<{ success: boolean; error?: string; user?: User }>;
+  }) => Promise<{
+    success: boolean;
+    error?: string;
+    user?: User;
+    extra?: { missing_email: boolean; weak_password: boolean };
+  }>;
   logout: () => Promise<void>;
   initializeFromAuth: () => Promise<void>;
   setLoading: (loading: boolean) => void;

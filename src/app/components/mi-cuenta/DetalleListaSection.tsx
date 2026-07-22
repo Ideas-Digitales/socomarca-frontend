@@ -12,6 +12,7 @@ import ModalBase from '../global/ModalBase';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Favorite } from '@/interfaces/favorite.inteface';
 import { useCartActions } from '@/stores/hooks/useCart';
+import { DEFAULT_IMAGE } from '@/utils/assets';
 
 export default function DetalleListaSection({
   onVolver,
@@ -266,14 +267,14 @@ export default function DetalleListaSection({
                         className="flex-shrink-0"
                       />
                       <img
-                        src={favorite.product?.image || '/assets/global/logo_plant.png'}
+                        src={favorite.product?.image || DEFAULT_IMAGE}
                         alt={favorite.product.name}
                         width={56}
                         height={64}
                         className="object-contain rounded flex-shrink-0 w-12 h-14 md:w-14 md:h-16"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
-                          e.currentTarget.src = '/assets/global/logo_plant.png';
+                          e.currentTarget.src = DEFAULT_IMAGE;
                         }}
                       />
                       <div className="text-sm min-w-0 flex-1">

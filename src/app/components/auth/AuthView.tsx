@@ -2,7 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-const logoUrl = '/assets/global/logo.png';
+const s3Base = process.env.NEXT_PUBLIC_S3_BASE_URL;
+const logoUrl = s3Base ? `${s3Base}/assets/logo.png` : '/assets/global/logo.png';
 
 interface Props {
   children: React.ReactNode;

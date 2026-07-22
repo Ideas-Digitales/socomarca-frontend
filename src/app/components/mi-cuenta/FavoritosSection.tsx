@@ -3,6 +3,7 @@
 import { useFavorites } from '@/hooks/useFavorites';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import { DEFAULT_IMAGE } from '@/utils/assets';
 
 export interface ProductoFavorito {
   name: string;
@@ -141,14 +142,14 @@ export default function FavoritosSection({
                     {(lista.favorites || []).slice(0, 5).map((favorite, j) => (
                       <img
                         key={favorite.id || j}
-                        src={favorite.product?.image || '/assets/global/logo_plant.png'}
+                        src={favorite.product?.image || DEFAULT_IMAGE}
                         alt={favorite.product?.name || 'Producto'}
                         width={48}
                         height={64}
                         className="object-contain rounded"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
-                          e.currentTarget.src = '/assets/global/logo_plant.png';
+                          e.currentTarget.src = DEFAULT_IMAGE;
                         }}
                       />
                     ))}

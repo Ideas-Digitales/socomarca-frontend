@@ -5,6 +5,7 @@ import { useState } from "react";
 import { addOrderToCart } from "@/services/actions/cart.actions";
 import useStore from "@/stores/base";
 import OrderStatusBadge from "./OrderStatusBadge";
+import { DEFAULT_IMAGE } from "@/utils/assets";
 
 // Tipos de datos que recibe el componente:
 
@@ -162,7 +163,7 @@ export default function ComprasSection({
                     alt={producto.nombre}
                     onError={(e) => {
                       e.currentTarget.onerror = null;
-                      e.currentTarget.src = "/assets/global/logo_plant.png";
+                      e.currentTarget.src = DEFAULT_IMAGE;
                     }}
                     className="w-12 h-16 object-contain rounded"
                   />

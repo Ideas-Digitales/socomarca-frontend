@@ -9,9 +9,30 @@ export interface User {
 
 export interface LoginResponse {
   user: User | null;
+  extra?: {
+    missing_email: boolean;
+    weak_password: boolean;
+  };
   error?: {
     message: string;
     status: number;
+  };
+}
+
+// POST /auth/restore — discriminated by whether the account has an email on file.
+// no-email branch: { data: { provisional_token } }; has-email branch: { data: { email } }.
+export interface RestoreCredentialsResponse {
+  success: boolean;
+  message: string;
+  provisionalToken?: string;
+  email?: string;
+}
+
+export interface UpdateCredentialsResponse {
+  success: boolean;
+  message: string;
+  fieldErrors?: {
+    email?: string[];
   };
 }
 

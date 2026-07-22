@@ -2,6 +2,21 @@
 
 const nextConfig = {
   reactStrictMode: true,
+  images: {
+    // Buckets S3 desde donde se cargan imágenes remotas (p. ej. el logo).
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname:
+          'socomarca-prod-058264421289-us-east-2-an.s3.us-east-2.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname:
+          'socomarca-qa-058264421289-us-east-2-an.s3.us-east-2.amazonaws.com',
+      },
+    ],
+  },
   compiler: {
     removeConsole: process.env.NODE_ENV !== 'development',
   },

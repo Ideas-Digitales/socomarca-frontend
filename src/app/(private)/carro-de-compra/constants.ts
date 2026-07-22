@@ -1,11 +1,12 @@
 /**
  * Constantes para la página del carrito de compras
  */
+import { DEFAULT_IMAGE } from '@/utils/assets';
 
 export const CART_PAGE_CONFIG = {
   ITEMS_PER_PAGE: 10,
   MAX_HEIGHT_DESKTOP: '60dvh',
-  EMPTY_CART_IMAGE: '/assets/global/logo_plant.png',
+  EMPTY_CART_IMAGE: DEFAULT_IMAGE,
   CURRENCY_LOCALE: 'es-CL',
 } as const;
 
