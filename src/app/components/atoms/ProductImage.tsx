@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { DEFAULT_IMAGE } from '@/utils/assets';
 
 interface ProductImageProps {
   src: string;
@@ -11,7 +12,7 @@ interface ProductImageProps {
 export default function ProductImage({
   src,
   alt = 'Product image',
-  fallbackSrc = '/assets/global/logo_plant.png',
+  fallbackSrc = DEFAULT_IMAGE,
   className = '',
   variant = 'list'
 }: ProductImageProps) {

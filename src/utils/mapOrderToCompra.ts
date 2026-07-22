@@ -1,5 +1,6 @@
 import type { Order } from '@/interfaces/order.interface'
 import type { Compra, ProductoCompra, Sucursal } from '@/app/components/mi-cuenta/ComprasSection'
+import { DEFAULT_IMAGE } from '@/utils/assets'
 
 export function mapOrderToCompra(order: Order): Compra {
   const suc: Sucursal = {
@@ -23,7 +24,7 @@ export function mapOrderToCompra(order: Order): Compra {
     productos: order.order_items.map((item): ProductoCompra => ({
       nombre: item.product.name,
       marca: `Marca ${item.product.brand_id}`,
-      imagen: item.product.image || '/assets/global/logo_plant.png',
+      imagen: item.product.image || DEFAULT_IMAGE,
       precio: parseInt(item.price),
       cantidad: item.quantity,
     })),

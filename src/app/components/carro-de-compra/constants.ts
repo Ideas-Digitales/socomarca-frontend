@@ -1,10 +1,11 @@
 /**
  * Constantes de configuración para el carrito de compras
  */
+import { DEFAULT_IMAGE } from '@/utils/assets';
 
 export const CART_CONFIG = {
   MAX_TEXT_LENGTH: 20,
-  FALLBACK_IMAGE: '/assets/global/logo_plant.png',
+  FALLBACK_IMAGE: DEFAULT_IMAGE,
   CURRENCY: 'CLP',
   LOCALE: 'es-CL'
 } as const;

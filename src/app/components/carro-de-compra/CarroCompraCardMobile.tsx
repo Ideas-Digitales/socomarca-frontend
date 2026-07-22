@@ -1,6 +1,7 @@
 import { ProductToBuy } from '@/interfaces/product.interface';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
+import { DEFAULT_IMAGE } from '@/utils/assets';
 
 interface Props {
   p: ProductToBuy;
@@ -20,7 +21,7 @@ export default function CarroCompraCardMobile({
     const img = new Image();
     img.src = p.image;
     img.onerror = () => {
-      setBackgroundImage(`url(/assets/global/logo_plant.png)`);
+      setBackgroundImage(`url(${DEFAULT_IMAGE})`);
     };
   }, [p.image]);
   return (

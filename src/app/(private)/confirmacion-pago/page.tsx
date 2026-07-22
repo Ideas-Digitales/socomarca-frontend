@@ -10,6 +10,7 @@ import {
   ExclamationCircleIcon,
   ClipboardIcon,
 } from '@heroicons/react/24/outline';
+import { DEFAULT_IMAGE } from '@/utils/assets';
 
 // Caché por token_ws para confirmar el pago una sola vez aunque la página se
 // remonte o Strict Mode duplique el efecto (evita órdenes duplicadas).
@@ -159,7 +160,7 @@ Fecha transacción: ${new Date(transaction_date).toLocaleString('es-CL')}
 
             <div className="mt-6">
               <img
-                src="/assets/global/logo_plant.png"
+                src={DEFAULT_IMAGE}
                 alt="Logo"
                 className={`w-24 h-24 mb-6 mx-auto ${isPagoExitoso ? '' : 'grayscale'}`}
               />
