@@ -10,6 +10,21 @@ import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
 import { removeDots } from '@/stores/base/utils/removeDots';
 import { IS_QA_MODE, BACKEND_URL } from '@/utils/getEnv';
 
+// Traduce las respuestas de error del backend en el login a mensajes claros
+// para el usuario final. El backend suele devolver textos técnicos en inglés
+// (p. ej. "Unauthorized") que no deben mostrarse tal cual.
+const getFriendlyLoginError = (status: number): string => {
+  if (status === 429) {
+    return 'Demasiados intentos. Espera unos minutos.';
+  }
+
+  if (status >= 500) {
+    return 'Error del servidor. Inténtalo más tarde.';
+  }
+
+  return 'RUT o contraseña incorrectos.';
+};
+
 export const fetchLogin = async (
   rut: string,
   password: string,
@@ -45,11 +60,10 @@ export const fetchLogin = async (
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
       return {
         user: null,
         error: {
-          message: errorData.message || 'Error en la autenticación',
+          message: getFriendlyLoginError(response.status),
           status: response.status,
         },
       };
