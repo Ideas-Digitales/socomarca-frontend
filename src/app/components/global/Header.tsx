@@ -18,9 +18,10 @@ import { CartItem } from '@/interfaces/product.interface';
 import { logoutAction } from '@/services/actions/auth.actions';
 import useAuthStore from '@/stores/useAuthStore';
 import NotificationBell from '@/app/components/notifications/NotificationBell';
+import { DEFAULT_IMAGE } from '@/utils/assets';
 
 const s3Base = process.env.NEXT_PUBLIC_S3_BASE_URL;
-const imagoLogoUrl = '/assets/global/imagotipo.png';
+const imagoLogoUrl = DEFAULT_IMAGE;
 const logoUrl = s3Base ? `${s3Base}/assets/logo.png` : '/assets/global/logo-header.png';
 
 interface Props {
