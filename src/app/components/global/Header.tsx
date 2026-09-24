@@ -5,6 +5,7 @@ import Link from 'next/link';
 import useStore, { useInitMobileDetection } from '@/stores/base';
 import {
   Bars3Icon,
+  BookOpenIcon,
   HeartIcon,
   ListBulletIcon,
   PhoneIcon,
@@ -119,6 +120,7 @@ export default function Header({ carro }: Props) {
     { name: 'Direcciones', href: '/mi-cuenta?section=direcciones', disabled: isAdminUser() },
     { name: 'Mis Compras', href: '/mi-cuenta?section=compras', disabled: isAdminUser() },
     { name: 'Carrito', href: '/carro-de-compra', disabled: isAdminUser() },
+    { name: 'Guía de compra', href: '/guia-de-compra', disabled: false },
   ];
 
   return (
@@ -215,6 +217,15 @@ export default function Header({ carro }: Props) {
                   <NotificationBell />
                 </div>
               )}
+              <Link
+                href="/guia-de-compra"
+                className="items-center gap-2 hidden sm:flex"
+              >
+                <BookOpenIcon width={24} height={24} />
+                <span className="font-bold hidden sm:block">
+                  Guía de compra
+                </span>
+              </Link>
               {isAdminUser() ? (
                 <div className="items-center gap-2 hidden sm:flex cursor-not-allowed opacity-50">
                   <ListBulletIcon width={24} height={24} />

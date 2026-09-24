@@ -108,6 +108,11 @@ export default function Footer() {
           <h3 className="text-gray-500 font-bold">Atención al cliente</h3>
           <ul className="space-y-1">
             <li>
+              <Link href="/guia-de-compra" className="">
+                Guía de compra paso a paso
+              </Link>
+            </li>
+            <li>
               {isAdminUser() ? (
                 <span className="text-gray-400 cursor-not-allowed">
                   Preguntas frecuentes
