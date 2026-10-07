@@ -39,6 +39,11 @@ export default function DetalleCompra({
       <p className="text-sm text-gray-500 mb-4">
         Sucursal {pedido?.sucursal.nombre ?? "Nombre no disponible"} | {pedido?.sucursal.codigo ?? "Código no disponible"}
       </p>
+      {pedido.emitidoPor && (
+        <p className="text-sm text-gray-500 mb-4">
+          Emitido por {pedido.emitidoPor}
+        </p>
+      )}
       <p className="text-sm text-gray-500 mb-4">
         Notas {pedido?.notas ?? ""}
       </p>
