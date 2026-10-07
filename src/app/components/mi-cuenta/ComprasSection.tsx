@@ -33,8 +33,12 @@ export interface Compra {
   estado: string; // Estado de la compra (pending, processing, completed, etc.)
   productos: ProductoCompra[]; // Lista de productos comprados
   sucursal: Sucursal;
+  emitidoPor: string | null; // Nombre de quien emitió el pedido, si no fue el usuario actual
   notas: string | null;
 }
+
+export const formatSucursal = (sucursal: Sucursal): string =>
+  [sucursal.nombre, sucursal.codigo].filter(Boolean).join(" · ");
 
 export interface Sucursal {
   id: number | null;
@@ -155,9 +159,13 @@ export default function ComprasSection({
                 <p className="text-slate-400 font-medium">Pedido Nº {c.numero}</p>
                 <OrderStatusBadge status={c.estado} />
               </div>
-              <p className="text-sm text-gray-500 mb-2">
-                Creado a las {c.hora} hrs.
-              </p>
+              <div className="text-sm text-gray-500 mb-2">
+                <p>Creado a las {c.hora} hrs.</p>
+                {formatSucursal(c.sucursal) && (
+                  <p>Sucursal {formatSucursal(c.sucursal)}</p>
+                )}
+                {c.emitidoPor && <p>Emitido por {c.emitidoPor}</p>}
+              </div>
 
               {/* Galería horizontal de productos */}
               <div className="flex gap-2 overflow-x-auto mb-4">
