@@ -1,6 +1,8 @@
 "use server";
 
+import { unstable_rethrow } from "next/navigation";
 import { cookiesManagement } from "@/stores/base/utils/cookiesManagement";
+import { expireSessionOnUnauthorized } from "@/stores/base/utils/expireSessionOnUnauthorized";
 import { BACKEND_URL } from "@/utils/getEnv";
 import { Region, Municipality } from "./location.actions";
 
@@ -32,6 +34,17 @@ export interface ReplaceAddressPayload {
   alias: string;
 }
 
+/** Campos que el frontend puede enviar: `is_synced` lo define el backend (422 si se envía) */
+type MutableAddressFields = Omit<
+  Address,
+  "id" | "is_synced" | "municipality_name" | "region_name"
+>;
+
+/** `forbidden`: la dirección está sincronizada desde Random y el backend respondió 403 */
+export type AddressMutationResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; forbidden: boolean };
+
 interface AddressResponse {
   data: Address[];
 }
@@ -51,6 +64,8 @@ export async function getUserAddresses(): Promise<Address[] | null> {
       },
       cache: "no-store",
     });
+
+    await expireSessionOnUnauthorized(res);
 
     if (!res.ok) {
       console.error("Error al obtener direcciones:", res.statusText);
@@ -104,6 +119,7 @@ export async function getUserAddresses(): Promise<Address[] | null> {
 
     return validAddresses;
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Error de red al obtener direcciones:", error);
     return null;
   }
@@ -113,24 +129,23 @@ export async function updateUserAddress(
   id: number,
   data: Partial<
     Pick<
-      Address,
+      MutableAddressFields,
       | "is_default"
       | "alias"
       | "address_line1"
       | "address_line2"
       | "phone"
       | "contact_name"
-      | "municipality_name"
-      | "region_name"
       | "postal_code"
       | "type"
     >
-  >
-): Promise<Address | null> {
+  > &
+    Partial<Pick<Address, "municipality_name" | "region_name">>
+): Promise<AddressMutationResult<Address>> {
   const { getCookie } = await cookiesManagement();
   const authToken = getCookie("token");
 
-  if (!authToken) return null;
+  if (!authToken) return { ok: false, forbidden: false };
 
   try {
     const res = await fetch(`${BACKEND_URL}/addresses/${id}`, {
@@ -144,21 +159,28 @@ export async function updateUserAddress(
       cache: "no-store",
     });
 
+    await expireSessionOnUnauthorized(res);
+
     if (!res.ok) {
       console.error("Error al actualizar dirección:", res.statusText);
-      return null;
+      return { ok: false, forbidden: res.status === 403 };
     }
 
     const updatedAddress: Address = await res.json();
-    return updatedAddress;
+    return { ok: true, data: updatedAddress };
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Error de red al actualizar dirección:", error);
-    return null;
+    return { ok: false, forbidden: false };
   }
 }
 
 export async function createUserAddress(
-  data: Partial<Address> & { municipality_id: number }
+  data: Partial<MutableAddressFields> & {
+    municipality_id: number;
+    municipality_name?: string;
+    region_name?: string;
+  }
 ): Promise<Address | null> {
   const { getCookie } = await cookiesManagement();
   const authToken = getCookie("token");
@@ -177,6 +199,8 @@ export async function createUserAddress(
       cache: "no-store",
     });
 
+    await expireSessionOnUnauthorized(res);
+
     if (!res.ok) {
       console.error("Error al crear dirección:", res.statusText);
       return null;
@@ -185,6 +209,7 @@ export async function createUserAddress(
     const nuevaDireccion: Address = await res.json();
     return nuevaDireccion;
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Error de red al crear dirección:", error);
     return null;
   }
@@ -249,11 +274,11 @@ export async function replaceUserAddress(
     alias: string;
     // region_name: string
   }
-): Promise<Address | null> {
+): Promise<AddressMutationResult<Address>> {
   const { getCookie } = await cookiesManagement();
   const token = getCookie("token");
 
-  if (!token) return null;
+  if (!token) return { ok: false, forbidden: false };
 
   console.log("Reemplazando dirección con ID:", id, "y datos:", data);
   try {
@@ -268,24 +293,27 @@ export async function replaceUserAddress(
       cache: "no-store",
     });
 
+    await expireSessionOnUnauthorized(res);
+
     if (!res.ok) {
       console.error("Error al reemplazar dirección:", await res.text());
-      return null;
+      return { ok: false, forbidden: res.status === 403 };
     }
 
     const updated: Address = await res.json();
-    return updated;
+    return { ok: true, data: updated };
   } catch (err) {
+    unstable_rethrow(err);
     console.error("Error de red al reemplazar dirección:", err);
-    return null;
+    return { ok: false, forbidden: false };
   }
 }
 
-export async function deleteUserAddress(id: number): Promise<boolean> {
+export async function deleteUserAddress(id: number): Promise<AddressMutationResult<null>> {
   const { getCookie } = await cookiesManagement();
   const authToken = getCookie("token");
 
-  if (!authToken) return false;
+  if (!authToken) return { ok: false, forbidden: false };
 
   try {
     const res = await fetch(`${BACKEND_URL}/addresses/${id}`, {
@@ -298,14 +326,17 @@ export async function deleteUserAddress(id: number): Promise<boolean> {
       cache: "no-store",
     });
 
+    await expireSessionOnUnauthorized(res);
+
     if (!res.ok) {
       console.error("Error al eliminar dirección:", res.statusText);
-      return false;
+      return { ok: false, forbidden: res.status === 403 };
     }
 
-    return true;
+    return { ok: true, data: null };
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Error de red al eliminar dirección:", error);
-    return false;
+    return { ok: false, forbidden: false };
   }
 }
