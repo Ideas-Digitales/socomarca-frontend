@@ -93,6 +93,8 @@ export const fetchLogin = async (
         rut: user.rut,
         roles: user.roles || [],
         permissions: user.permissions || [],
+        branch_type: user.branch_type ?? null,
+        can_order_for_branches: Boolean(user.can_order_for_branches),
       };
       setCookie(JSON.stringify(userData), 'userData');
     }
@@ -115,12 +117,11 @@ export const fetchLogin = async (
         rut: data.user.rut,
         roles: data.user.roles || [],
         permissions: data.user.permissions || [],
+        branch_type: data.user.branch_type ?? null,
+        can_order_for_branches: Boolean(data.user.can_order_for_branches),
       },
       extra: data.extra
-        ? {
-            missing_email: Boolean(data.extra.missing_email),
-            weak_password: Boolean(data.extra.weak_password),
-          }
+        ? { weak_password: Boolean(data.extra.weak_password) }
         : undefined,
     };
   } catch (error) {

@@ -41,6 +41,8 @@ const initialState: StoreState = {
     rut: '',
     roles: [],
     permissions: [],
+    branch_type: null,
+    can_order_for_branches: false,
   },
   token: '',
   isInitialized: false,

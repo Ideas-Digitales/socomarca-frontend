@@ -17,6 +17,7 @@ import { SiteInformationSlice } from './slices/siteInformationSlice';
 import { ChartSlice } from './slices/chartSlice';
 import { LocationSlice } from './slices/locationSlice';
 import { CustomerMessageSlice } from './slices/customerMessageSlice';
+import type { BranchType } from '@/interfaces/branch.interface';
 
 // ===== BASE TYPES =====
 export type ViewMode = 'grid' | 'list';
@@ -31,6 +32,8 @@ export interface User {
   rut: string;
   roles: string[];
   permissions: string[];
+  branch_type: BranchType | null;
+  can_order_for_branches: boolean;
 }
 
 export interface AuthState {
@@ -104,7 +107,7 @@ export interface AuthSlice extends AuthState {
     success: boolean;
     error?: string;
     user?: User;
-    extra?: { missing_email: boolean; weak_password: boolean };
+    extra?: { weak_password: boolean };
   }>;
   logout: () => Promise<void>;
   initializeFromAuth: () => Promise<void>;

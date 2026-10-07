@@ -11,9 +11,9 @@ const toNumber = (value: unknown): number => {
 
 export function mapOrderToCompra(order: Order): Compra {
   const suc: Sucursal = {
-    id: order.branch?.id,
-    nombre: order.branch?.name,
-    codigo: order.branch?.code,
+    id: order.customer?.id ?? null,
+    nombre: order.customer?.name ?? null,
+    codigo: order.customer?.branch_code ?? null,
   };
 
   return {
