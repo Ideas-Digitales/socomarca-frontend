@@ -1,7 +1,6 @@
 'use client';
 
 import AuthView from '@/app/components/auth/AuthView';
-import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import useAuthStore from '@/stores/useAuthStore';
@@ -10,6 +9,8 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 // Removido react-toastify - usaremos notificaciones nativas
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface LoginFormProps {
   title?: string;
@@ -28,11 +29,12 @@ export default function LoginForm({
   onSuccessRedirect = '/',
   useWindowLocation = false,
 }: LoginFormProps) {
-  const [rut, setRut] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState('');
+  const isValid = EMAIL_REGEX.test(email.trim());
   const { login, isLoading, setLoading } = useAuthStore();
   const { token, requestPermission, isSupported } = useNotifications();
   const router = useRouter();
@@ -71,8 +73,7 @@ export default function LoginForm({
     setError('');
 
     try {
-      const loginData = role ? { rut, password, role } : { rut, password };
-      const result = await login(loginData);
+      const result = await login({ email, password });
 
       if (result.success) {
         // Determinar la redirección basada en el rol
@@ -121,21 +122,7 @@ export default function LoginForm({
         }
       }
     } catch (error: any) {
-      // Error manejado internamente
-
-      // Si el error es una respuesta del servidor
-      if (error?.response?.status === 422) {
-        const data = error.response.data;
-        const rutError = data?.errors?.rut?.[0];
-
-        setError(
-          rutError ||
-            data?.message ||
-            'Las credenciales ingresadas no son válidas'
-        );
-      } else {
-        setError(error.message || 'Las credenciales ingresadas no son válidas');
-      }
+      setError(error.message || 'Email o contraseña incorrectos.');
 
       if (role === 'admin') {
         setLocalLoading(false);
@@ -172,17 +159,28 @@ export default function LoginForm({
         {/* Inputs */}
         <div className="flex flex-col items-start gap-5 w-full">
           <div className="flex flex-col items-start gap-[9px] w-full">
-            <label htmlFor="rut" className="text-[14px]">
-              Rut
+            <label htmlFor="email" className="text-[14px]">
+              Email
             </label>
-            <RutInput
-              id="rut"
-              value={rut}
-              onChange={setRut}
-              onValidationChange={setIsValid}
-              errorMessage="El RUT ingresado no es válido"
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setEmailTouched(true)}
               disabled={finalIsLoading}
+              className="w-full border bg-[#EBEFF7] border-[#EBEFF7] p-[10px] h-[40px] focus:outline-none focus:ring-1 focus:ring-[#EBEFF7] focus:border-[#EBEFF7] disabled:opacity-50"
             />
+            {emailTouched && email.trim() && !isValid && (
+              <p className="text-red-500 text-sm">El email ingresado no es válido</p>
+            )}
+            {role !== 'admin' && (
+              <p className="text-[12px] text-gray-500">
+                Ingresa con tu email comercial. Si es tu primer acceso, usa
+                &quot;¿Olvidaste tu contraseña?&quot; para recibir una contraseña.
+              </p>
+            )}
           </div>
           <div className="flex flex-col items-start gap-[9px] w-full">
             <label htmlFor="password" className="text-[14px]">

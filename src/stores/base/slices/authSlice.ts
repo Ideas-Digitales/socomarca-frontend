@@ -93,18 +93,16 @@ export const createAuthSlice: StateCreator<
 
   // Función de login
   login: async ({
-    rut,
+    email,
     password,
-    role,
   }: {
-    rut: string;
+    email: string;
     password: string;
-    role?: string;
   }) => {
     set({ isLoading: true });
 
     try {
-      const response = await fetchLogin(rut, password, role);
+      const response = await fetchLogin(email, password);
 
       if (!response.user) {
         set({ isLoading: false });
