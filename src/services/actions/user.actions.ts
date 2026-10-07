@@ -1,8 +1,11 @@
 'use server';
 
+import { unstable_rethrow } from 'next/navigation';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
+import { expireSessionOnUnauthorized } from '@/stores/base/utils/expireSessionOnUnauthorized';
 import { BACKEND_URL } from '@/utils/getEnv';
 import { SearchUsersRequest } from '@/interfaces/user.interface';
+import type { BranchType } from '@/interfaces/branch.interface';
 
 export interface ApiAddress {
   id: number;
@@ -16,6 +19,7 @@ export interface ApiAddress {
   municipality_name: string;
   region_name: string;
   alias: string | null;
+  is_synced: boolean;
 }
 
 export interface ApiUser {
@@ -25,6 +29,9 @@ export interface ApiUser {
   email: string;
   phone: string;
   is_active: boolean;
+  branch_type: BranchType | null;
+  /** Puede cambiar durante la sesión: este es el valor vigente */
+  can_order_for_branches: boolean;
   billing_address: ApiAddress;
   default_shipping_address: ApiAddress;
 }
@@ -68,13 +75,16 @@ export async function getUserData() {
       },
     });
 
+    await expireSessionOnUnauthorized(res);
+
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    const data = await res.json();
+    const data: ApiUser = await res.json();
     return data;
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Error fetching user data:', error);
     throw new Error('Failed to fetch user data');
   }

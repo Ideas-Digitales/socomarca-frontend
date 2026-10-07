@@ -1,3 +1,5 @@
+import type { BranchType } from './branch.interface';
+
 export interface User {
   id: number;
   name: string;
@@ -5,12 +7,15 @@ export interface User {
   rut: string;
   roles: string[] | null;
   permissions: string[] | null;
+  /** `null` para usuarios internos (administración) */
+  branch_type: BranchType | null;
+  /** Sucursal principal con al menos una secundaria activa */
+  can_order_for_branches: boolean;
 }
 
 export interface LoginResponse {
   user: User | null;
   extra?: {
-    missing_email: boolean;
     weak_password: boolean;
   };
   error?: {
@@ -44,6 +49,9 @@ export interface ApiUser {
   rut: string | null;
   business_name: string | null;
   is_active: boolean;
+  /** Proviene de Random ERP: solo se puede activar o desactivar */
+  is_synced: boolean;
+  branch_type: BranchType | null;
   last_login: string | null;
   roles: string[];
   created_at: string;

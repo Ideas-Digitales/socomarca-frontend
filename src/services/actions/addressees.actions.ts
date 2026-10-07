@@ -16,6 +16,8 @@ export interface Address {
   municipality_name: string;
   region_name: string;
   alias: string | null;
+  /** La administra la sincronización con Random: no se puede editar ni eliminar */
+  is_synced: boolean;
 }
 
 export interface ReplaceAddressPayload {
