@@ -18,10 +18,12 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 import { useState, useEffect, useCallback } from 'react';
-import { getUsersAction, searchUsersAction, updateUserAction, deleteUserAction, UpdateUserRequest } from '@/services/actions/user.actions';
+import { getUsersAction, searchUsersAction, updateUserAction, patchUserAction, deleteUserAction, UpdateUserRequest } from '@/services/actions/user.actions';
 import { getRolesAction, Role } from '@/services/actions/roles.actions';
 import { ROLES_ASIGNABLES } from '@/configs/permisos';
 import { transformApiUserToUser, ApiMeta, SearchUsersRequest } from '@/interfaces/user.interface';
+import { branchTypeLabel, type BranchType } from '@/interfaces/branch.interface';
+import { mapUserFieldErrors } from '@/utils/userFieldErrors';
 
 export interface User {
   id: number;
@@ -33,6 +35,10 @@ export interface User {
   rut: string;
   business_name?: string;
   phone?: string;
+  is_active: boolean;
+  /** Proviene de Random: solo se puede activar o desactivar */
+  is_synced: boolean;
+  branch_type: BranchType | null;
   actions?: string[];
 }
 
@@ -47,6 +53,7 @@ interface EditFormData {
   userProfile: string;
   password: string;
   changePassword: boolean;
+  isActive: boolean;
 }
 
 interface EditFormErrors {
@@ -177,9 +184,11 @@ const EditUserForm = ({
     userProfile: user.profile.toLowerCase(),
     password: '',
     changePassword: false,
+    isActive: user.is_active,
   });
 
   const [errors, setErrors] = useState<EditFormErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -355,6 +364,7 @@ const EditUserForm = ({
     }
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       // Preparar datos para la API
@@ -364,7 +374,7 @@ const EditUserForm = ({
         phone: formData.phone,
         rut: formData.rut,
         business_name: formData.businessName,
-        is_active: true, // Por defecto activo
+        is_active: formData.isActive,
         roles: [formData.userProfile], // Convertir perfil a rol
       };
 
@@ -385,10 +395,15 @@ const EditUserForm = ({
         onClose();
       } else {
         console.error('Error al actualizar usuario:', result.error);
-        // Aquí podrías mostrar un mensaje de error más específico
+        const fieldErrors = result.fieldErrors ? mapUserFieldErrors(result.fieldErrors) : {};
+        setErrors(fieldErrors);
+        if (Object.keys(fieldErrors).length === 0) {
+          setSubmitError(result.error || 'Error al actualizar usuario');
+        }
       }
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
+      setSubmitError('Error al actualizar usuario');
     } finally {
       setIsSubmitting(false);
     }
@@ -557,6 +572,19 @@ const EditUserForm = ({
           )}
         </div>
 
+        {/* Estado */}
+        <div className="flex gap-2 items-center">
+          <input
+            type="checkbox"
+            id="is-active-edit"
+            checked={formData.isActive}
+            onChange={(e) => handleInputChange('isActive', e.target.checked)}
+          />
+          <label className="text-sm" htmlFor="is-active-edit">
+            Usuario activo
+          </label>
+        </div>
+
         {/* Cambiar contraseña */}
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 items-center">
@@ -638,6 +666,12 @@ const EditUserForm = ({
           )}
         </div>
 
+        {submitError && (
+          <div className="p-2 bg-red-100 text-red-700 rounded text-sm">
+            {submitError}
+          </div>
+        )}
+
         {/* Botones de acción */}
         <div className="flex gap-3 justify-end pt-4">
           <button
@@ -655,6 +689,114 @@ const EditUserForm = ({
                 ? 'bg-lime-500 hover:bg-lime-600 cursor-pointer'
                 : 'bg-gray-400 cursor-not-allowed'
             }`}
+          >
+            {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+};
+
+// Usuarios sincronizados desde Random: el backend solo permite cambiar is_active
+const SyncedUserForm = ({
+  user,
+  onClose,
+  onSuccess,
+}: {
+  user: User;
+  onClose: () => void;
+  onSuccess: () => void;
+}) => {
+  const [isActive, setIsActive] = useState(user.is_active);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const fields = [
+    { label: 'Nombre', value: `${user.name} ${user.lastname}`.trim() },
+    { label: 'Correo electrónico', value: user.email },
+    { label: 'RUT', value: user.rut },
+    { label: 'Empresa', value: user.business_name },
+    { label: 'Teléfono', value: user.phone },
+    { label: 'Tipo de sucursal', value: branchTypeLabel(user.branch_type) },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const result = await patchUserAction(user.id, { is_active: isActive });
+
+      if (result.success) {
+        onSuccess();
+        onClose();
+      } else {
+        setSubmitError(
+          result.fieldErrors?.is_active?.[0] || result.error || 'Error al actualizar usuario'
+        );
+      }
+    } catch (error) {
+      console.error('Error al actualizar usuario:', error);
+      setSubmitError('Error al actualizar usuario');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2 py-0.5 rounded">
+            Sincronizado desde Random
+          </span>
+        </div>
+        <p className="text-[13px] text-[#6D7587]">
+          Los datos de este usuario se administran en Random ERP. Desde aquí solo puedes
+          activarlo o desactivarlo.
+        </p>
+
+        <dl className="flex flex-col gap-2">
+          {fields.map((field) => (
+            <div key={field.label} className="flex flex-col">
+              <dt className="text-xs text-gray-500">{field.label}</dt>
+              <dd className="text-sm text-gray-800">{field.value || '—'}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="flex gap-2 items-center">
+          <input
+            type="checkbox"
+            id="is-active-synced"
+            checked={isActive}
+            onChange={(e) => setIsActive(e.target.checked)}
+          />
+          <label className="text-sm" htmlFor="is-active-synced">
+            Usuario activo
+          </label>
+        </div>
+
+        {submitError && (
+          <div className="p-2 bg-red-100 text-red-700 rounded text-sm">
+            {submitError}
+          </div>
+        )}
+
+        <div className="flex gap-3 justify-end pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm font-medium px-6 py-2 border-[1px] border-slate-400 text-slate-400 rounded-md hover:bg-slate-100 transition-colors duration-300 ease-in-out cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting || isActive === user.is_active}
+            className="text-sm text-white font-medium px-6 py-2 rounded-md transition-colors duration-300 ease-in-out bg-lime-500 hover:bg-lime-600 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
           </button>
@@ -799,11 +941,12 @@ export default function UsersPage() {
   };
 
   const handleEditUser = (user: User) => {
+    const FormComponent = user.is_synced ? SyncedUserForm : EditUserForm;
     openModal('edit-user', {
       title: 'Editar usuario',
       size: 'md',
       content: (
-        <EditUserForm
+        <FormComponent
           user={user}
           onClose={() => {
             closeModal();
@@ -833,6 +976,16 @@ export default function UsersPage() {
     {
       label: 'Perfil',
       key: 'profile',
+    },
+    {
+      label: 'Sucursal',
+      key: 'branch_type',
+      render: (value: BranchType | null) => branchTypeLabel(value) || '—',
+    },
+    {
+      label: 'Estado',
+      key: 'is_active',
+      render: (value: boolean) => (value ? 'Activo' : 'Inactivo'),
     },
     {
       label: 'Acciones',

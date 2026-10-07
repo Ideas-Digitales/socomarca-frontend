@@ -95,6 +95,9 @@ export function transformApiUserToUser(apiUser: ApiUser): {
   rut: string;
   business_name: string;
   phone: string;
+  is_active: boolean;
+  is_synced: boolean;
+  branch_type: BranchType | null;
 } {
   // La API puede devolver estos campos en null (ej: cuentas sin correo registrado)
   const email = apiUser.email ?? '';
@@ -119,5 +122,8 @@ export function transformApiUserToUser(apiUser: ApiUser): {
     rut: apiUser.rut ?? '',
     business_name: apiUser.business_name ?? '',
     phone: apiUser.phone ?? '',
+    is_active: apiUser.is_active,
+    is_synced: Boolean(apiUser.is_synced),
+    branch_type: apiUser.branch_type ?? null,
   };
 }
