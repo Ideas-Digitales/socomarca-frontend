@@ -8,6 +8,7 @@ import {
 import { createUserAction, CreateUserRequest } from '@/services/actions/user.actions';
 import { getRolesAction, Role } from '@/services/actions/roles.actions';
 import { ROLES_ASIGNABLES } from '@/configs/permisos';
+import { mapUserFieldErrors } from '@/utils/userFieldErrors';
 import { EyeSlashIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -274,7 +275,11 @@ export default function CreateUser() {
         router.push('/super-admin/users');
         return;
       } else {
-        setFormError(result.error || 'Error al crear usuario');
+        const fieldErrors = result.fieldErrors ? mapUserFieldErrors(result.fieldErrors) : {};
+        setErrors(fieldErrors);
+        if (Object.keys(fieldErrors).length === 0) {
+          setFormError(result.error || 'Error al crear usuario');
+        }
       }
     } catch (error) {
       console.error('Error al crear usuario:', error);

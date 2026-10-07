@@ -11,6 +11,7 @@ import CustomTable from '@/app/components/admin/CustomTable';
 import SearchableDropdown from '@/app/components/filters/SearchableDropdown';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import ClientsPageSkeleton from '@/app/components/admin/ClientsPageSkeleton';
+import { branchTypeLabel } from '@/interfaces/branch.interface';
 import { fetchExportClients } from '@/services/actions/exports.actions';
 
 interface ClientTableData {
@@ -20,6 +21,7 @@ interface ClientTableData {
   phone: string;
   rut: string;
   business_name: string;
+  branch_type: string;
   is_active: string;
   last_login: string;
   created_at: string;
@@ -66,6 +68,7 @@ const ClientsPage = () => {
       phone: apiUser.phone ?? '',
       rut: apiUser.rut ?? '',
       business_name: apiUser.business_name ?? '',
+      branch_type: branchTypeLabel(apiUser.branch_type),
       is_active: apiUser.is_active ? 'Activo' : 'Inactivo',
       last_login: apiUser.last_login
         ? new Date(apiUser.last_login).toLocaleDateString('es-CL')
@@ -126,7 +129,7 @@ const ClientsPage = () => {
 
         const searchRequest: SearchUsersRequest = {
           filters: buildSearchFilters(),
-          roles: ['cliente'], // Siempre filtrar solo por rol cliente
+          roles: ['customer'], // Siempre filtrar solo por rol cliente
           per_page: 10,
           sort_by: sortField,
           sort_order: sortOrder,
@@ -265,6 +268,15 @@ const ClientsPage = () => {
       render: (value: string) => (
         <div className="text-center">
           <span className="text-gray-900">{value}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'branch_type',
+      label: 'Sucursal',
+      render: (value: string) => (
+        <div className="text-center">
+          <span className="text-gray-900">{value || '—'}</span>
         </div>
       ),
     },
