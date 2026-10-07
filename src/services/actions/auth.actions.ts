@@ -189,7 +189,7 @@ export async function logoutAction() {
   }
 
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/api/auth/token`, {
+    const response = await fetch(`${BACKEND_URL}/auth/token`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${cookie}`,
