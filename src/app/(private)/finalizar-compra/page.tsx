@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { unstable_rethrow, useRouter } from 'next/navigation';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import Image from 'next/image';
 import useStore from '@/stores/base';
@@ -12,8 +12,9 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { fetchPaymentMethods, type PaymentMethod } from '@/services/actions/payment.actions';
 import { logCreditoRaw } from '@/app/components/mi-cuenta/LineaCreditoSection';
 import useAuthStore from '@/stores/useAuthStore';
-import { fetchBranches } from '@/services/actions/branches.actions';
-import type { Branch } from '@/interfaces/branch.interface';
+import { fetchAllBranches } from '@/services/actions/branches.actions';
+import { branchTypeLabel, type Branch } from '@/interfaces/branch.interface';
+import type { Address } from '@/services/actions/addressees.actions';
 import { buildVatBreakdown } from '@/utils/vat';
 
 type PaymentMethodCode = string;
@@ -23,6 +24,16 @@ const formatCLP = (value: number) =>
 const FREE_SHIPPING_MINIMUM = 70000;
 const configuredShippingCost = Number(process.env.NEXT_PUBLIC_FIXED_SHIPPING_COST);
 const FIXED_SHIPPING_COST = Number.isFinite(configuredShippingCost) ? configuredShippingCost : 5990;
+
+const branchOptionLabel = (branch: Branch) =>
+  [branch.name, branch.branch_code, branchTypeLabel(branch.branch_type)]
+    .filter(Boolean)
+    .join(' · ');
+
+const formatAddress = (address: Address) =>
+  [address.address_line1, address.address_line2, address.municipality_name, address.region_name]
+    .filter(Boolean)
+    .join(', ');
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
@@ -48,8 +59,14 @@ export default function FinalizarCompraPage() {
     shippingAddressId: null as number | null,
   });
   const [aceptaTerminos, setAceptaTerminos] = useState(true);
+  // `null` mientras no responde GET /profile: se usa el valor de la sesión
+  const [profileCanOrderForBranches, setProfileCanOrderForBranches] = useState<boolean | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
+  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [branchesError, setBranchesError] = useState('');
+  // `null` = "Mi sucursal": se compra para el propio usuario y no se envía customer_id
+  const [customerId, setCustomerId] = useState<number | null>(null);
+  const [branchAddressId, setBranchAddressId] = useState<number | null>(null);
   const [paymentDocumentType, setPaymentDocumentType] = useState<'invoice' | 'receipt'>('receipt');
   const [notes, setNotes] = useState('');
   const [docTypeError, setDocTypeError] = useState('');
@@ -111,6 +128,36 @@ export default function FinalizarCompraPage() {
     amount: total,
   } = buildVatBreakdown(netSubtotal, vatRate, shipping);
 
+  const canOrderForBranches = profileCanOrderForBranches ?? user.can_order_for_branches;
+  const selectedBranch = customerId != null
+    ? branches.find((branch) => branch.id === customerId) ?? null
+    : null;
+  const branchAddresses = selectedBranch?.addresses ?? [];
+  const branchWithoutAddresses = selectedBranch != null && branchAddresses.length === 0;
+  const shippingAddressId = selectedBranch ? branchAddressId : formData.shippingAddressId;
+  const ownCreditUnavailable =
+    creditoLoading ||
+    creditoDisponible === null ||
+    creditoBloqueado ||
+    creditoDisponible < total;
+
+  const handleCustomerChange = (value: string) => {
+    const id = value ? Number(value) : null;
+    const branch = id != null ? branches.find((b) => b.id === id) : undefined;
+    const addresses = branch?.addresses ?? [];
+
+    setCustomerId(branch ? branch.id : null);
+    setBranchAddressId(
+      (addresses.find((address) => address.is_default) ?? addresses[0])?.id ?? null
+    );
+    setDireccionError('');
+
+    // El crédito propio puede no alcanzar al volver a "Mi sucursal"
+    if (!branch && paymentMethod !== 'transbank' && ownCreditUnavailable) {
+      setPaymentMethod('transbank');
+    }
+  };
+
   const handleOpenModal = () => {
     openModal('', {
       content: <TerminosYCondicionesContent />,
@@ -122,7 +169,9 @@ export default function FinalizarCompraPage() {
   const goNext = () => {
     let hasError = false;
 
-    if (!formData.shippingAddressId) {
+    if (branchWithoutAddresses) {
+      hasError = true;
+    } else if (!shippingAddressId) {
       setDireccionError('Debes seleccionar una dirección de envío.');
       hasError = true;
     } else {
@@ -145,12 +194,15 @@ export default function FinalizarCompraPage() {
 
     if (hasError) return;
 
-    if (formData.shippingAddressId !== null) {
-      localStorage.setItem('selectedAddressId', formData.shippingAddressId.toString());
+    if (shippingAddressId !== null) {
+      localStorage.setItem('selectedAddressId', shippingAddressId.toString());
       localStorage.setItem('paymentMethod', paymentMethod);
       localStorage.setItem('paymentDocumentType', paymentDocumentType);
-      if (selectedBranchId) localStorage.setItem('branchId', selectedBranchId.toString());
+      localStorage.removeItem('branchId');
+      if (selectedBranch) localStorage.setItem('customerId', selectedBranch.id.toString());
+      else localStorage.removeItem('customerId');
       if (notes.trim()) localStorage.setItem('notes', notes.trim());
+      else localStorage.removeItem('notes');
       router.push('/redirect');
     }
   };
@@ -199,7 +251,9 @@ export default function FinalizarCompraPage() {
           correo: userData.email || '',
           telefono: userData.phone || '',
         }));
+        setProfileCanOrderForBranches(Boolean(userData.can_order_for_branches));
       } catch (error) {
+        unstable_rethrow(error);
         console.error('Error fetching user data:', error);
       } finally {
         setLoadingUser(false);
@@ -209,12 +263,21 @@ export default function FinalizarCompraPage() {
   }, []);
 
   useEffect(() => {
-    fetchBranches().then((res) => {
-      if (res.ok && res.data) {
-        setBranches(res.data.data);
-      }
-    });
-  }, []);
+    if (loadingUser || !canOrderForBranches) return;
+
+    setBranchesLoading(true);
+    fetchAllBranches()
+      .then((res) => {
+        if (res.ok && res.data) {
+          setBranches(res.data);
+          setBranchesError('');
+        } else {
+          setBranches([]);
+          setBranchesError('No se pudieron cargar las sucursales. Solo puedes comprar para tu sucursal.');
+        }
+      })
+      .finally(() => setBranchesLoading(false));
+  }, [loadingUser, canOrderForBranches]);
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen p-4">
@@ -288,36 +351,91 @@ export default function FinalizarCompraPage() {
                 <h2 className="text-2xl font-bold mb-2">Información de envío</h2>
               </div>
 
+              {canOrderForBranches && (
+                <div className="col-span-1 md:col-span-2">
+                  <label htmlFor="customer" className="block font-medium">Comprar para</label>
+                  <select
+                    id="customer"
+                    value={customerId ?? ''}
+                    onChange={(e) => handleCustomerChange(e.target.value)}
+                    disabled={branchesLoading}
+                    className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+                  >
+                    <option value="">Mi sucursal</option>
+                    {branches.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branchOptionLabel(branch)}
+                      </option>
+                    ))}
+                  </select>
+                  {branchesLoading && (
+                    <p className="text-sm text-gray-500 mt-1">Cargando sucursales...</p>
+                  )}
+                  {branchesError && (
+                    <p className="text-red-500 text-sm mt-1">{branchesError}</p>
+                  )}
+                  {selectedBranch && (
+                    <div className="flex items-start gap-2 mt-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-md px-3 py-2">
+                      <InformationCircleIcon width={16} height={16} className="shrink-0 mt-0.5" />
+                      <p>
+                        El total final se calcula con los precios de {selectedBranch.name} y puede
+                        diferir del total que ves aquí.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="col-span-1 md:col-span-2">
-                <ShippingAddressSelect
-                  selectedAddressId={formData.shippingAddressId}
-                  onChange={(id) => {
-                    setFormData({ ...formData, shippingAddressId: id });
-                    if (id) setDireccionError('');
-                  }}
-                />
+                {selectedBranch ? (
+                  <>
+                    <label htmlFor="branch-address" className="block font-medium">
+                      Dirección de envío de la sucursal
+                    </label>
+                    {branchWithoutAddresses ? (
+                      <p className="text-red-500 text-sm mt-1">
+                        Esta sucursal no tiene direcciones registradas, por lo que no es posible
+                        pagar. Elige otra sucursal o comunícate con soporte.
+                      </p>
+                    ) : branchAddresses.length === 1 ? (
+                      <div className="w-full p-3 mt-1 rounded bg-[#EBEFF7] text-sm text-gray-800">
+                        <p className="font-medium">
+                          {branchAddresses[0].alias || branchAddresses[0].contact_name || 'Dirección de sucursal'}
+                        </p>
+                        <p>{formatAddress(branchAddresses[0])}</p>
+                      </div>
+                    ) : (
+                      <select
+                        id="branch-address"
+                        value={branchAddressId ?? ''}
+                        onChange={(e) => {
+                          setBranchAddressId(Number(e.target.value));
+                          setDireccionError('');
+                        }}
+                        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+                      >
+                        {branchAddresses.map((address) => (
+                          <option key={address.id} value={address.id}>
+                            {address.alias ? `${address.alias} - ` : ''}
+                            {formatAddress(address)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </>
+                ) : (
+                  <ShippingAddressSelect
+                    selectedAddressId={formData.shippingAddressId}
+                    onChange={(id) => {
+                      setFormData((prev) => ({ ...prev, shippingAddressId: id }));
+                      if (id) setDireccionError('');
+                    }}
+                  />
+                )}
                 {direccionError && (
                   <p className="text-red-500 text-sm mt-1">{direccionError}</p>
                 )}
               </div>
-
-              {branches.length > 0 && (
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block font-medium">Sucursal</label>
-                  <select
-                    value={selectedBranchId ?? ''}
-                    onChange={(e) => setSelectedBranchId(e.target.value ? Number(e.target.value) : null)}
-                    className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  >
-                    <option value="">Sucursal principal</option>
-                    {branches.map((branch) => (
-                      <option key={branch.id} value={branch.id}>
-                        {branch.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
 
               <div className="col-span-1 md:col-span-2 mt-6">
                 <p className="font-medium mb-2">Tipo de documento</p>
@@ -410,8 +528,10 @@ export default function FinalizarCompraPage() {
               const saldoDisponible = creditoDisponible ?? 0;
               const saldoInsuficiente =
                 isCreditoOption && creditoDisponible !== null && saldoDisponible < total;
+              // El crédito propio no aplica a otra sucursal: el backend valida el de la sucursal
               const optionDisabled =
                 isCreditoOption &&
+                !selectedBranch &&
                 (creditoLoading ||
                   creditoDisponible === null ||
                   creditoBloqueado ||
@@ -462,7 +582,11 @@ export default function FinalizarCompraPage() {
                           </svg>
                         </div>
                         <div>
-                          {creditoLoading ? (
+                          {selectedBranch ? (
+                            <p className="text-xs text-gray-500">
+                              El crédito de {selectedBranch.name} se valida al confirmar el pago.
+                            </p>
+                          ) : creditoLoading ? (
                             <p className="text-xs font-semibold text-gray-500">
                               Cargando saldo disponible...
                             </p>
@@ -518,7 +642,8 @@ export default function FinalizarCompraPage() {
 
           <button
             onClick={goNext}
-            className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer"
+            disabled={branchWithoutAddresses}
+            className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Finalizar compra
           </button>

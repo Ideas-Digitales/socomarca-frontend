@@ -1,6 +1,7 @@
 "use server";
 
 import { cookiesManagement } from "@/stores/base/utils/cookiesManagement";
+import { expireSessionOnUnauthorized } from "@/stores/base/utils/expireSessionOnUnauthorized";
 import { BACKEND_URL } from "@/utils/getEnv";
 
 import type { OrderResponse } from "@/interfaces/order.interface";
@@ -8,13 +9,14 @@ import type { OrderResponse } from "@/interfaces/order.interface";
 export async function createOrderFromCart({
   shippingAddressId,
   paymentMethod,
-  branchId,
+  customerId,
   paymentDocumentType,
   notes,
 }: {
   shippingAddressId: number;
   paymentMethod: string;
-  branchId?: number;
+  /** Sucursal para la que se compra; se omite cuando el usuario compra para sí mismo */
+  customerId?: number;
   paymentDocumentType: 'invoice' | 'receipt';
   notes?: string;
 }) {
@@ -37,7 +39,7 @@ export async function createOrderFromCart({
     payment_document_type: paymentDocumentType,
   };
 
-  if (branchId) body.branch_id = branchId;
+  if (customerId) body.customer_id = customerId;
   if (notes) body.notes = notes;
 
   const res = await fetch(`${BACKEND_URL}/orders/pay`, {
@@ -45,6 +47,8 @@ export async function createOrderFromCart({
     headers,
     body: JSON.stringify(body),
   });
+
+  await expireSessionOnUnauthorized(res);
 
   const json = await res.json();
   console.log('[orders/pay] Respuesta cruda:', JSON.stringify(json, null, 2));
