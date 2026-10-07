@@ -99,10 +99,8 @@ export interface LoadingStates {
 // Auth Slice
 export interface AuthSlice extends AuthState {
   login: (credentials: {
-    rut: string;
+    email: string;
     password: string;
-    role?: string;
-    normalizeRut?: boolean;
   }) => Promise<{
     success: boolean;
     error?: string;

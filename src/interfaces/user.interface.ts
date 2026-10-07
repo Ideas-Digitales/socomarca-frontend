@@ -24,21 +24,11 @@ export interface LoginResponse {
   };
 }
 
-// POST /auth/restore — discriminated by whether the account has an email on file.
-// no-email branch: { data: { provisional_token } }; has-email branch: { data: { email } }.
 export interface RestoreCredentialsResponse {
   success: boolean;
   message: string;
-  provisionalToken?: string;
+  /** Email solicitado, enmascarado */
   email?: string;
-}
-
-export interface UpdateCredentialsResponse {
-  success: boolean;
-  message: string;
-  fieldErrors?: {
-    email?: string[];
-  };
 }
 
 export interface ApiUser {
