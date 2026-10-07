@@ -15,6 +15,9 @@ import {
   getUserAddresses, 
 } from "@/services/actions/addressees.actions";
 
+const SYNCED_ADDRESS_ERROR =
+  "Esta dirección proviene de Random ERP y no se puede modificar";
+
 export default function DireccionesSection({
   direcciones,
 }: {
@@ -32,9 +35,11 @@ export default function DireccionesSection({
   const [mostrarModalAgregar, setMostrarModalAgregar] = useState(false);
   const [region, setRegion] = useState("");
   const [comuna, setComuna] = useState<string | number>("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const marcarComoPrincipal = async (direccion: Address) => {
-    if (direccion.is_default) return;
+    if (direccion.is_default || direccion.is_synced) return;
+    setErrorMessage("");
 
     // 1. Guardar el estado anterior para poder revertirlo si falla
     const prevDirecciones = [...direccionesState];
@@ -49,20 +54,26 @@ export default function DireccionesSection({
     );
 
     // 3. Hacer la petición real
-    const actualizada = await updateUserAddress(direccion.id, {
+    const result = await updateUserAddress(direccion.id, {
       is_default: true,
     });
 
     // 4. Si falla, revertir el estado
-    if (!actualizada) {
+    if (!result.ok) {
       setDireccionesState(prevDirecciones);
-      // Aquí podrías mostrar un mensaje de error
+      if (result.forbidden) setErrorMessage(SYNCED_ADDRESS_ERROR);
     }
   };
 
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">Direcciones</h2>
+
+      {errorMessage && (
+        <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
+          {errorMessage}
+        </div>
+      )}
 
       <div className="space-y-2 mb-4">
         {direccionesState.map((direccion, idx) => (
@@ -73,46 +84,57 @@ export default function DireccionesSection({
             <div className="space-y-1 w-full">
               <div className="flex items-center justify-between text-gray-700">
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => marcarComoPrincipal(direccion)}
-                    title="Marcar como principal"
-                  >
-                    {direccion.is_default ? (
-                      <StarSolid className="w-5 h-5 text-lime-500" />
-                    ) : (
-                      <StarOutline className="w-5 h-5 text-gray-400 hover:text-gray-500" />
-                    )}
-                  </button>
+                  {!direccion.is_synced && (
+                    <button
+                      onClick={() => marcarComoPrincipal(direccion)}
+                      title="Marcar como principal"
+                    >
+                      {direccion.is_default ? (
+                        <StarSolid className="w-5 h-5 text-lime-500" />
+                      ) : (
+                        <StarOutline className="w-5 h-5 text-gray-400 hover:text-gray-500" />
+                      )}
+                    </button>
+                  )}
                   <span className="font-semibold text-base">
                     {direccion.alias || "Sin alias"}
                   </span>
+                  {direccion.is_synced && (
+                    <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2 py-0.5 rounded">
+                      Sincronizada desde Random ERP
+                    </span>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    title="Editar"
-                    onClick={() => {
-                      setDireccionAEditar(direccion);
-                      setRegion(direccion.region_name || "");
-                      setComuna(direccion.municipality_name || "");
-                    }}
-                  >
-                    <PencilSquareIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
-                  </button>
+                {!direccion.is_synced && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      title="Editar"
+                      onClick={() => {
+                        setErrorMessage("");
+                        setDireccionAEditar(direccion);
+                        setRegion(direccion.region_name || "");
+                        setComuna(direccion.municipality_name || "");
+                      }}
+                    >
+                      <PencilSquareIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
+                    </button>
 
-                  <button
-                    title="Eliminar"
-                    onClick={() => {
-                      setDireccionAEliminar(direccion);
-                      setModalVisible(true);
-                    }}
-                  >
-                    <TrashIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
-                  </button>
-                </div>
+                    <button
+                      title="Eliminar"
+                      onClick={() => {
+                        setErrorMessage("");
+                        setDireccionAEliminar(direccion);
+                        setModalVisible(true);
+                      }}
+                    >
+                      <TrashIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div className="text-sm text-gray-600 pl-7">
+              <div className={`text-sm text-gray-600 ${direccion.is_synced ? "pl-0" : "pl-7"}`}>
                 <p>
                   <strong>Dirección:</strong> {direccion.address_line1},{" "}
                   {direccion.address_line2}
@@ -154,11 +176,11 @@ export default function DireccionesSection({
               setModalVisible(false);
               setDireccionAEliminar(null);
               // Llamar a la server action
-              const ok = await deleteUserAddress(direccionAEliminar.id);
-              if (!ok) {
+              const result = await deleteUserAddress(direccionAEliminar.id);
+              if (!result.ok) {
                 // Revertir si falla
                 setDireccionesState(prevDirecciones);
-                // Aquí podrías mostrar un mensaje de error
+                if (result.forbidden) setErrorMessage(SYNCED_ADDRESS_ERROR);
               }
             }
           }}
@@ -189,7 +211,8 @@ export default function DireccionesSection({
             };
 
             if (direccionAEditar) {
-              await replaceUserAddress(direccionAEditar.id, payload);
+              const result = await replaceUserAddress(direccionAEditar.id, payload);
+              if (!result.ok && result.forbidden) setErrorMessage(SYNCED_ADDRESS_ERROR);
               const updated = await getUserAddresses();
               if (updated) setDireccionesState(updated);
               setDireccionAEditar(null);
