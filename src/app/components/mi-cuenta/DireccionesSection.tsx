@@ -1,261 +1,58 @@
 "use client";
 
-import { useState } from "react";
-import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
-import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
-import ModalConfirmacion from "../global/ModalConfirmacion";
-import ModalEditarDireccion from "./ModalEditarDireccion";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import type { Address } from "@/services/actions/addressees.actions";
-import {
-  updateUserAddress,
-  createUserAddress,
-  replaceUserAddress,
-  deleteUserAddress,
-  getUserAddresses, 
-} from "@/services/actions/addressees.actions";
-
-const SYNCED_ADDRESS_ERROR =
-  "Esta dirección proviene de Random ERP y no se puede modificar";
 
 export default function DireccionesSection({
   direcciones,
 }: {
   direcciones: Address[];
 }) {
-  const [direccionesState, setDireccionesState] =
-    useState<Address[]>(direcciones);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [direccionAEliminar, setDireccionAEliminar] = useState<Address | null>(
-    null
-  );
-  const [direccionAEditar, setDireccionAEditar] = useState<Address | null>(
-    null
-  );
-  const [mostrarModalAgregar, setMostrarModalAgregar] = useState(false);
-  const [region, setRegion] = useState("");
-  const [comuna, setComuna] = useState<string | number>("");
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const marcarComoPrincipal = async (direccion: Address) => {
-    if (direccion.is_default || direccion.is_synced) return;
-    setErrorMessage("");
-
-    // 1. Guardar el estado anterior para poder revertirlo si falla
-    const prevDirecciones = [...direccionesState];
-
-    // 2. Optimistic update: marcar como principal en el estado local
-    setDireccionesState((prev) =>
-      prev.map((d) =>
-        d.id === direccion.id
-          ? { ...d, is_default: true }
-          : { ...d, is_default: false }
-      )
-    );
-
-    // 3. Hacer la petición real
-    const result = await updateUserAddress(direccion.id, {
-      is_default: true,
-    });
-
-    // 4. Si falla, revertir el estado
-    if (!result.ok) {
-      setDireccionesState(prevDirecciones);
-      if (result.forbidden) setErrorMessage(SYNCED_ADDRESS_ERROR);
-    }
-  };
-
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">Direcciones</h2>
 
-      {errorMessage && (
-        <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
-          {errorMessage}
-        </div>
-      )}
+      <div className="flex items-start gap-2 mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-md px-3 py-2">
+        <InformationCircleIcon width={16} height={16} className="shrink-0 mt-0.5" />
+        <p>
+          Las direcciones se sincronizan desde Random ERP. Si necesitas actualizarlas,
+          comunícate con soporte.
+        </p>
+      </div>
 
-      <div className="space-y-2 mb-4">
-        {direccionesState.map((direccion, idx) => (
-          <div
-            key={direccion.id ?? `direccion-${idx}`}
-            className="flex items-center justify-between bg-[#edf2f7] px-4 py-2 rounded"
-          >
-            <div className="space-y-1 w-full">
-              <div className="flex items-center justify-between text-gray-700">
-                <div className="flex items-center gap-2">
-                  {!direccion.is_synced && (
-                    <button
-                      onClick={() => marcarComoPrincipal(direccion)}
-                      title="Marcar como principal"
-                    >
-                      {direccion.is_default ? (
-                        <StarSolid className="w-5 h-5 text-lime-500" />
-                      ) : (
-                        <StarOutline className="w-5 h-5 text-gray-400 hover:text-gray-500" />
-                      )}
-                    </button>
-                  )}
-                  <span className="font-semibold text-base">
-                    {direccion.alias || "Sin alias"}
+      {direcciones.length === 0 ? (
+        <p className="text-sm text-gray-500">No tienes direcciones registradas.</p>
+      ) : (
+        <div className="space-y-2">
+          {direcciones.map((direccion) => (
+            <div
+              key={direccion.id}
+              className="bg-[#edf2f7] px-4 py-2 rounded space-y-1"
+            >
+              <div className="flex items-center gap-2 text-gray-700">
+                <span className="font-semibold text-base">
+                  {direccion.alias || "Sin alias"}
+                </span>
+                {direccion.is_synced && (
+                  <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2 py-0.5 rounded">
+                    Sincronizada desde Random ERP
                   </span>
-                  {direccion.is_synced && (
-                    <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2 py-0.5 rounded">
-                      Sincronizada desde Random ERP
-                    </span>
-                  )}
-                </div>
-
-                {!direccion.is_synced && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      title="Editar"
-                      onClick={() => {
-                        setErrorMessage("");
-                        setDireccionAEditar(direccion);
-                        setRegion(direccion.region_name || "");
-                        setComuna(direccion.municipality_name || "");
-                      }}
-                    >
-                      <PencilSquareIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
-                    </button>
-
-                    <button
-                      title="Eliminar"
-                      onClick={() => {
-                        setErrorMessage("");
-                        setDireccionAEliminar(direccion);
-                        setModalVisible(true);
-                      }}
-                    >
-                      <TrashIcon className="w-5 h-5 text-gray-800 hover:text-gray-600" />
-                    </button>
-                  </div>
                 )}
               </div>
-
-              <div className={`text-sm text-gray-600 ${direccion.is_synced ? "pl-0" : "pl-7"}`}>
+              <div className="text-sm text-gray-600">
                 <p>
-                  <strong>Dirección:</strong> {direccion.address_line1},{" "}
-                  {direccion.address_line2}
+                  <strong>Dirección:</strong>{" "}
+                  {[direccion.address_line1, direccion.address_line2]
+                    .filter(Boolean)
+                    .join(", ")}
                 </p>
                 <p className="text-xs text-gray-500">
                   Comuna: {direccion.municipality_name}, {direccion.region_name}
                 </p>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      <button
-        onClick={() => setMostrarModalAgregar(true)}
-        className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded"
-      >
-        Agregar nueva dirección
-      </button>
-
-      {modalVisible && direccionAEliminar && (
-        <ModalConfirmacion
-          isOpen={modalVisible}
-          titulo={`¿Eliminar dirección "${
-            direccionAEliminar.alias || "Sin alias"
-          }"?`}
-          descripcion="Esta acción eliminará la dirección seleccionada."
-          onCancel={() => {
-            setModalVisible(false);
-            setDireccionAEliminar(null);
-          }}
-          onConfirm={async () => {
-            // Optimistic update: eliminar de inmediato
-            const prevDirecciones = [...direccionesState];
-            if (direccionAEliminar) {
-              setDireccionesState((prev) =>
-                prev.filter((d) => d.id !== direccionAEliminar.id)
-              );
-              setModalVisible(false);
-              setDireccionAEliminar(null);
-              // Llamar a la server action
-              const result = await deleteUserAddress(direccionAEliminar.id);
-              if (!result.ok) {
-                // Revertir si falla
-                setDireccionesState(prevDirecciones);
-                if (result.forbidden) setErrorMessage(SYNCED_ADDRESS_ERROR);
-              }
-            }
-          }}
-        />
-      )}
-
-      {direccionAEditar && (
-        <ModalEditarDireccion
-          direccion={direccionAEditar}
-          region={region}
-          setRegion={setRegion}
-          comuna={comuna}
-          setComuna={setComuna}
-          onClose={() => setDireccionAEditar(null)}
-          onSave={async (data) => {
-            const payload = {
-              address_line1: data.address_line1 ?? "",
-              address_line2: data.address_line2 ?? "",
-              postal_code: "1234567",
-              is_default: false,
-              type: "shipping" as const,
-              phone: data.phone ?? "",
-              contact_name: data.contact_name ?? "",
-              municipality_id: data.municipality_id ?? 0,
-              alias: data.alias ?? "",
-              region_name: data.region_name ?? region,
-              municipality_name: data.municipality_name ?? "",
-            };
-
-            if (direccionAEditar) {
-              const result = await replaceUserAddress(direccionAEditar.id, payload);
-              if (!result.ok && result.forbidden) setErrorMessage(SYNCED_ADDRESS_ERROR);
-              const updated = await getUserAddresses();
-              if (updated) setDireccionesState(updated);
-              setDireccionAEditar(null);
-            }
-            setRegion("");
-            setComuna("");
-          }}
-        />
-      )}
-
-      {mostrarModalAgregar && (
-        <ModalEditarDireccion
-          direccion={undefined}
-          region={region}
-          setRegion={setRegion}
-          comuna={comuna}
-          setComuna={setComuna}
-          onClose={() => setMostrarModalAgregar(false)}
-          onSave={async (data) => {
-            const payload = {
-              address_line1: data.address_line1 ?? "",
-              address_line2: data.address_line2 ?? "",
-              postal_code: "1234567",
-              is_default: false,
-              type: "shipping" as const,
-              phone: data.phone ?? "",
-              contact_name: data.contact_name ?? "",
-              municipality_id: data.municipality_id ?? 0,
-              alias: data.alias ?? "",
-              region_name: data.region_name ?? region,
-              municipality_name: data.municipality_name ?? "",
-            };
-
-            await createUserAddress(payload);
-            // Refrescar lista desde backend
-            const updated = await getUserAddresses();
-            if (updated) setDireccionesState(updated);
-            setMostrarModalAgregar(false);
-            // Limpiar estados
-            setRegion("");
-            setComuna("");
-          }}
-        />
+          ))}
+        </div>
       )}
     </div>
   );

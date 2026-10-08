@@ -7,14 +7,14 @@ import useStore from '@/stores/base';
 import TerminosYCondicionesContent from '@/app/components/global/TerminosYCondicionesContent';
 import { getUserData, getUserCreditLine } from '@/services/actions/user.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
-import ShippingAddressSelect from '@/app/components/user/ShippingAddressSelect';
+import ShippingAddressCard from '@/app/components/user/ShippingAddressCard';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { fetchPaymentMethods, type PaymentMethod } from '@/services/actions/payment.actions';
 import { logCreditoRaw } from '@/app/components/mi-cuenta/LineaCreditoSection';
 import useAuthStore from '@/stores/useAuthStore';
 import { fetchAllBranches } from '@/services/actions/branches.actions';
-import { branchTypeLabel, type Branch } from '@/interfaces/branch.interface';
-import type { Address } from '@/services/actions/addressees.actions';
+import { branchTypeLabel, type Branch, type BranchType } from '@/interfaces/branch.interface';
+import { getUserAddresses, type Address } from '@/services/actions/addressees.actions';
 import { buildVatBreakdown } from '@/utils/vat';
 
 type PaymentMethodCode = string;
@@ -30,10 +30,12 @@ const branchOptionLabel = (branch: Branch) =>
     .filter(Boolean)
     .join(' · ');
 
-const formatAddress = (address: Address) =>
-  [address.address_line1, address.address_line2, address.municipality_name, address.region_name]
-    .filter(Boolean)
-    .join(', ');
+// Cada sucursal despacha a su dirección sincronizada desde Random
+const pickShippingAddress = (addresses: Address[]): Address | null =>
+  addresses.find((address) => address.is_synced) ??
+  addresses.find((address) => address.is_default) ??
+  addresses[0] ??
+  null;
 
 export default function FinalizarCompraPage() {
   const router = useRouter();
@@ -43,7 +45,6 @@ export default function FinalizarCompraPage() {
   const [loadingUser, setLoadingUser] = useState(true);
   const { openModal } = useStore();
   const { user } = useAuthStore();
-  const [direccionError, setDireccionError] = useState('');
   const [terminosError, setTerminosError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodCode>('transbank');
@@ -56,17 +57,18 @@ export default function FinalizarCompraPage() {
     rut: '',
     correo: '',
     telefono: '',
-    shippingAddressId: null as number | null,
   });
   const [aceptaTerminos, setAceptaTerminos] = useState(true);
   // `null` mientras no responde GET /profile: se usa el valor de la sesión
   const [profileCanOrderForBranches, setProfileCanOrderForBranches] = useState<boolean | null>(null);
+  const [profileBranchType, setProfileBranchType] = useState<BranchType | null>(null);
+  const [ownAddress, setOwnAddress] = useState<Address | null>(null);
+  const [ownAddressLoading, setOwnAddressLoading] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [branchesLoading, setBranchesLoading] = useState(false);
   const [branchesError, setBranchesError] = useState('');
-  // `null` = "Mi sucursal": se compra para el propio usuario y no se envía customer_id
+  // `null` = la propia sucursal: se compra para el usuario y no se envía customer_id
   const [customerId, setCustomerId] = useState<number | null>(null);
-  const [branchAddressId, setBranchAddressId] = useState<number | null>(null);
   const [paymentDocumentType, setPaymentDocumentType] = useState<'invoice' | 'receipt'>('receipt');
   const [notes, setNotes] = useState('');
   const [docTypeError, setDocTypeError] = useState('');
@@ -132,9 +134,17 @@ export default function FinalizarCompraPage() {
   const selectedBranch = customerId != null
     ? branches.find((branch) => branch.id === customerId) ?? null
     : null;
-  const branchAddresses = selectedBranch?.addresses ?? [];
-  const branchWithoutAddresses = selectedBranch != null && branchAddresses.length === 0;
-  const shippingAddressId = selectedBranch ? branchAddressId : formData.shippingAddressId;
+  const ownBranchLabel = [
+    formData.nombre,
+    branchTypeLabel(profileBranchType ?? user.branch_type),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const shippingAddress = selectedBranch
+    ? pickShippingAddress(selectedBranch.addresses ?? [])
+    : ownAddress;
+  const addressLoading = !selectedBranch && ownAddressLoading;
+  const canPay = !addressLoading && shippingAddress != null;
   const ownCreditUnavailable =
     creditoLoading ||
     creditoDisponible === null ||
@@ -144,15 +154,10 @@ export default function FinalizarCompraPage() {
   const handleCustomerChange = (value: string) => {
     const id = value ? Number(value) : null;
     const branch = id != null ? branches.find((b) => b.id === id) : undefined;
-    const addresses = branch?.addresses ?? [];
 
     setCustomerId(branch ? branch.id : null);
-    setBranchAddressId(
-      (addresses.find((address) => address.is_default) ?? addresses[0])?.id ?? null
-    );
-    setDireccionError('');
 
-    // El crédito propio puede no alcanzar al volver a "Mi sucursal"
+    // El crédito propio puede no alcanzar al volver a la propia sucursal
     if (!branch && paymentMethod !== 'transbank' && ownCreditUnavailable) {
       setPaymentMethod('transbank');
     }
@@ -167,16 +172,8 @@ export default function FinalizarCompraPage() {
   };
 
   const goNext = () => {
-    let hasError = false;
-
-    if (branchWithoutAddresses) {
-      hasError = true;
-    } else if (!shippingAddressId) {
-      setDireccionError('Debes seleccionar una dirección de envío.');
-      hasError = true;
-    } else {
-      setDireccionError('');
-    }
+    // Sin dirección la tarjeta de envío ya explica por qué no se puede pagar
+    let hasError = !canPay;
 
     if (!aceptaTerminos) {
       setTerminosError('Debes aceptar los términos y condiciones.');
@@ -194,8 +191,8 @@ export default function FinalizarCompraPage() {
 
     if (hasError) return;
 
-    if (shippingAddressId !== null) {
-      localStorage.setItem('selectedAddressId', shippingAddressId.toString());
+    if (shippingAddress) {
+      localStorage.setItem('selectedAddressId', shippingAddress.id.toString());
       localStorage.setItem('paymentMethod', paymentMethod);
       localStorage.setItem('paymentDocumentType', paymentDocumentType);
       localStorage.removeItem('branchId');
@@ -252,6 +249,7 @@ export default function FinalizarCompraPage() {
           telefono: userData.phone || '',
         }));
         setProfileCanOrderForBranches(Boolean(userData.can_order_for_branches));
+        setProfileBranchType(userData.branch_type ?? null);
       } catch (error) {
         unstable_rethrow(error);
         console.error('Error fetching user data:', error);
@@ -260,6 +258,12 @@ export default function FinalizarCompraPage() {
       }
     };
     fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    getUserAddresses()
+      .then((addresses) => setOwnAddress(pickShippingAddress(addresses ?? [])))
+      .finally(() => setOwnAddressLoading(false));
   }, []);
 
   useEffect(() => {
@@ -353,7 +357,7 @@ export default function FinalizarCompraPage() {
 
               {canOrderForBranches && (
                 <div className="col-span-1 md:col-span-2">
-                  <label htmlFor="customer" className="block font-medium">Comprar para</label>
+                  <label htmlFor="customer" className="block font-medium">Sucursal</label>
                   <select
                     id="customer"
                     value={customerId ?? ''}
@@ -361,7 +365,7 @@ export default function FinalizarCompraPage() {
                     disabled={branchesLoading}
                     className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
                   >
-                    <option value="">Mi sucursal</option>
+                    <option value="">{ownBranchLabel || 'Mi sucursal'}</option>
                     {branches.map((branch) => (
                       <option key={branch.id} value={branch.id}>
                         {branchOptionLabel(branch)}
@@ -387,54 +391,7 @@ export default function FinalizarCompraPage() {
               )}
 
               <div className="col-span-1 md:col-span-2">
-                {selectedBranch ? (
-                  <>
-                    <label htmlFor="branch-address" className="block font-medium">
-                      Dirección de envío de la sucursal
-                    </label>
-                    {branchWithoutAddresses ? (
-                      <p className="text-red-500 text-sm mt-1">
-                        Esta sucursal no tiene direcciones registradas, por lo que no es posible
-                        pagar. Elige otra sucursal o comunícate con soporte.
-                      </p>
-                    ) : branchAddresses.length === 1 ? (
-                      <div className="w-full p-3 mt-1 rounded bg-[#EBEFF7] text-sm text-gray-800">
-                        <p className="font-medium">
-                          {branchAddresses[0].alias || branchAddresses[0].contact_name || 'Dirección de sucursal'}
-                        </p>
-                        <p>{formatAddress(branchAddresses[0])}</p>
-                      </div>
-                    ) : (
-                      <select
-                        id="branch-address"
-                        value={branchAddressId ?? ''}
-                        onChange={(e) => {
-                          setBranchAddressId(Number(e.target.value));
-                          setDireccionError('');
-                        }}
-                        className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                      >
-                        {branchAddresses.map((address) => (
-                          <option key={address.id} value={address.id}>
-                            {address.alias ? `${address.alias} - ` : ''}
-                            {formatAddress(address)}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </>
-                ) : (
-                  <ShippingAddressSelect
-                    selectedAddressId={formData.shippingAddressId}
-                    onChange={(id) => {
-                      setFormData((prev) => ({ ...prev, shippingAddressId: id }));
-                      if (id) setDireccionError('');
-                    }}
-                  />
-                )}
-                {direccionError && (
-                  <p className="text-red-500 text-sm mt-1">{direccionError}</p>
-                )}
+                <ShippingAddressCard address={shippingAddress} loading={addressLoading} />
               </div>
 
               <div className="col-span-1 md:col-span-2 mt-6">
@@ -512,9 +469,16 @@ export default function FinalizarCompraPage() {
               {shipping === 0 ? 'Gratis' : formatCLP(shipping)}
             </span>
           </div>
-          <div className="flex justify-between font-bold text-lg border-t-slate-200 border-t py-5">
-            <span>Total a pagar</span>
+          <div className="flex justify-between font-bold text-lg border-t-slate-200 border-t pt-5">
+            <span>{selectedBranch ? 'Total estimado' : 'Total a pagar'}</span>
             <span>{formatCLP(total)}</span>
+          </div>
+          <div className="pb-5">
+            {selectedBranch && (
+              <p className="text-xs text-yellow-800 mt-1">
+                Se recalcula con los precios de {selectedBranch.name} al confirmar el pago.
+              </p>
+            )}
           </div>
 
           {/* Selección de método de pago */}
@@ -642,7 +606,7 @@ export default function FinalizarCompraPage() {
 
           <button
             onClick={goNext}
-            disabled={branchWithoutAddresses}
+            disabled={!canPay}
             className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Finalizar compra
