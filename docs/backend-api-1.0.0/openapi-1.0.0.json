@@ -3,7 +3,7 @@
     "info": {
         "title": "Socomarca API",
         "version": "1.0.0",
-        "description": "Backend of Socomarca's quick purchase platform (B2B ordering). Products, prices, customers and their\nbranches are synced from Random ERP; orders are sent back to Random ERP as sales documents.\n\n## Authentication\n\n1. Request a token with `POST /auth/token`, sending the user's email and password.\n2. Send the token in every request: `Authorization: Bearer {token}`.\n\nRequests without a valid token get `401`. Tokens of a user stop working as soon as the user is deactivated.\n\n## Authorization\n\nAccess is granted by role permissions (roles: `superadmin`, `admin`, `supervisor`, `editor` and\n`customer`). Each endpoint states the permission it requires; without it the API responds `403` with\n`{\"message\": \"You do not have permission.\"}`.\n\n## Customers and branches\n\n- Every Random ERP entity branch (entity code `user_code` + branch code `branch_code`) is a user with\n  the `customer` role. `branch_type` tells whether it is the primary (`P`) or a secondary (`S`) branch.\n- A primary branch can place orders for itself and for the active secondary branches of its entity:\n  `GET /branches` lists them and `POST /orders/pay` receives the chosen one as `customer_id`. A secondary\n  branch can only order for itself.\n- Customers log in with their commercial email (Random ERP `EMAILCOMER`). Their data is managed by the\n  sync, so the administration can only activate or deactivate them.\n\n## Conventions\n\n- Requests and responses are JSON.\n- Paginated lists accept `page` and `per_page`, and respond with `data`, `links` and `meta`.\n- Validation errors respond `422` with `message` and an `errors` object keyed by field.\n- Amounts are in Chilean pesos (CLP).\n"
+        "description": "Backend of Socomarca's quick purchase platform (B2B ordering). Products, prices, customers and their\nbranches are synced from Random ERP; orders are sent back to Random ERP as sales documents.\n\n## Authentication\n\n1. Request a token with `POST /auth/token`, sending the user's email and password.\n2. Send the token in every request: `Authorization: Bearer {token}`.\n\nRequests without a valid token get `401`. Tokens of a user stop working as soon as the user is deactivated.\n\n## Authorization\n\nAccess is granted by role permissions (roles: `superadmin`, `admin`, `supervisor`, `editor` and\n`customer`). Each endpoint states the permission it requires; without it the API responds `403` with\n`{\"message\": \"You do not have permission.\"}`.\n\n## Customers and branches\n\n- Every Random ERP entity branch (entity code `user_code` + branch code `branch_code`) is a user with\n  the `customer` role. `branch_type` tells whether it is the primary (`P`) or a secondary (`S`) branch.\n- A primary branch can place orders for itself and for the active secondary branches of its entity:\n  `GET /branches` lists them and `POST /orders/pay` receives the chosen one as `customer_id`. A secondary\n  branch can only order for itself.\n- The user who places an order always pays and is billed: catalog, cart and order use its price lists,\n  credit payments use its credit line and the Random ERP sales note is issued for its branch. The branch\n  in `customer_id` is the shipping branch: the order ships to one of its addresses.\n- Customers log in with their commercial email (Random ERP `EMAILCOMER`). Their data is managed by the\n  sync, so the administration can only activate or deactivate them.\n\n## Conventions\n\n- Requests and responses are JSON.\n- Paginated lists accept `page` and `per_page`, and respond with `data`, `links` and `meta`.\n- Validation errors respond `422` with `message` and an `errors` object keyed by field.\n- Amounts are in Chilean pesos (CLP).\n"
     },
     "servers": [
         {
@@ -4411,7 +4411,7 @@
         "/cart": {
             "get": {
                 "operationId": "cart.index",
-                "description": "Lists the authenticated user's cart items with the active price of their unit in the user's price\nlists, and the cart total. Items without such a price show a price and subtotal of 0.\n\nRequires the `read-own-cart` permission.",
+                "description": "Lists the authenticated user's cart items with the active price of their unit in the user's price\nlists, and the cart total. Prices are resolved as Pay the cart does (the first list, in the user's\norder, that prices the product and unit), so the total is the one charged. Items without such a\nprice show a price and subtotal of 0, and Pay the cart rejects them.\n\nRequires the `read-own-cart` permission.",
                 "summary": "Show the cart",
                 "tags": [
                     "Cart"
@@ -4514,7 +4514,7 @@
         "/cart/add-order": {
             "post": {
                 "operationId": "cart.add-order",
-                "description": "Re-adds the products of a previous order to the authenticated user's cart, with the order's\nquantities and units. Products already in the cart with the same unit get their quantity increased.\nPrices are not taken from the order: the returned cart is priced with the current user's price lists.\n\nAllowed for orders the user placed or orders placed for the user (as customer); other orders respond 403.\n\nRequires the `create-orders` permission.",
+                "description": "Re-adds the products of a previous order to the authenticated user's cart, with the order's\nquantities and units. Products already in the cart with the same unit get their quantity increased.\nPrices are not taken from the order: the returned cart is priced as Show the cart.\n\nAllowed for orders the user placed or orders placed for the user (as customer); other orders respond 403.\n\nRequires the `create-orders` permission.",
                 "summary": "Add the items of an order to the cart",
                 "tags": [
                     "Cart"
@@ -5012,7 +5012,7 @@
         "/orders/pay": {
             "post": {
                 "operationId": "orders.pay",
-                "description": "Creates an order out of the authenticated user's cart and starts its payment. The order is placed\nfor `customer_id` (the user itself by default): a primary branch can also order for the active\nsecondary branches of its entity. Items are priced with the customer's price lists (the first list,\nin the customer's order, that prices the product and unit), and the prices, VAT and shipping cost\nare frozen on the order. Shipping is free from a net subtotal of 70,000.\n\n`payment_method` decides how the order is paid:\n\n- `random_credit`: the amount is charged to the customer's Random ERP credit line and the order is\n  sent to Random ERP right away as a sales note (NVV) issued with the customer's entity and branch\n  codes. Failures also respond 200, with `success: false` and one of these messages:\n  - `L\u00ednea de cr\u00e9dito bloqueada`: a previous credit order of the customer is not invoiced in\n    Random ERP yet. The order is left pending.\n  - `Cr\u00e9dito insuficiente`: the available credit does not cover the amount; `data.credit_status`\n    has the credit summary from Random ERP. The order is left pending.\n  - `Creaci\u00f3n de nota de venta fallida`: Random ERP rejected the sales note. The order and its\n    payment are marked failed.\n\n  On success the order is completed with its `random_document_number`, the cart is emptied and the\n  customer's credit line is blocked until Random ERP invoices the sales note.\n- Any other method pays with Webpay: the response has the pending order and the Transbank\n  `payment_url` and `token`. Send the buyer to `payment_url` posting the token as `token_ws`;\n  Transbank sends the buyer back to the configured return URL with `token_ws`, which must be passed\n  to `GET /webpay/return` to settle the order. The cart is kept until the payment is authorized.\n\nRequires the `update-orders` permission.",
+                "description": "Creates an order out of the authenticated user's cart and starts its payment. The order ships to\n`customer_id` (the user itself by default): a primary branch can also order for the active\nsecondary branches of its entity. The authenticated user always pays and is billed: items are\npriced with its price lists (the first list, in the user's order, that prices the product and\nunit), as in the cart, and the prices, VAT and shipping cost are frozen on the order. Shipping is\nfree from a net subtotal of 70,000.\n\nThe order is sent to Random ERP as a sales note (NVV) issued for the authenticated user's entity\nand branch, with the branch of `customer_id` as the shipping branch.\n\n`payment_method` decides how the order is paid:\n\n- `random_credit`: the amount is charged to the authenticated user's Random ERP credit line and the\n  sales note is created right away. Failures also respond 200, with `success: false` and one of\n  these messages:\n  - `L\u00ednea de cr\u00e9dito bloqueada`: a previous credit order of the user is not invoiced in Random\n    ERP yet. The order is left pending.\n  - `Cr\u00e9dito insuficiente`: the available credit does not cover the amount; `data.credit_status`\n    has the credit summary from Random ERP. The order is left pending.\n  - `Creaci\u00f3n de nota de venta fallida`: Random ERP rejected the sales note. The order and its\n    payment are marked failed.\n\n  On success the order is completed with its `random_document_number`, the cart is emptied and the\n  user's credit line is blocked until Random ERP invoices the sales note.\n- Any other method pays with Webpay: the response has the pending order and the Transbank\n  `payment_url` and `token`. Send the buyer to `payment_url` posting the token as `token_ws`;\n  Transbank sends the buyer back to the configured return URL with `token_ws`, which must be passed\n  to `GET /webpay/return` to settle the order. The cart is kept until the payment is authorized.\n\nRequires the `update-orders` permission.",
                 "summary": "Pay the cart",
                 "tags": [
                     "Orders"
@@ -5220,7 +5220,7 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error, or some cart products have no price in the customer's price lists (`products`)",
+                        "description": "Validation error, or some cart products have no active price in the user's price lists (`products`)",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -5251,7 +5251,7 @@
                                             "properties": {
                                                 "message": {
                                                     "type": "string",
-                                                    "const": "Algunos productos del carrito no tienen precio para el cliente del pedido"
+                                                    "const": "Algunos productos del carrito no tienen precio vigente"
                                                 },
                                                 "products": {
                                                     "type": "array",
@@ -11520,7 +11520,14 @@
                         "type": "integer"
                     },
                     "unit": {
-                        "type": "string"
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     },
                     "price": {
                         "type": "integer",
@@ -12400,7 +12407,7 @@
                     },
                     "customer": {
                         "type": "object",
-                        "description": "User (Random ERP branch) the order is placed for.",
+                        "description": "User (Random ERP branch) the order ships to; `user_id` placed, paid and is billed for it.",
                         "properties": {
                             "id": {
                                 "type": "integer"
@@ -12510,7 +12517,7 @@
                 "properties": {
                     "customer_id": {
                         "type": "integer",
-                        "description": "User (Random ERP branch) the order is placed for: the authenticated user, or one of the active\nsecondary branches of its entity when the authenticated user is a primary branch. Defaults to\nthe authenticated user."
+                        "description": "User (Random ERP branch) the order ships to: the authenticated user, or one of the active\nsecondary branches of its entity when the authenticated user is a primary branch. Defaults to\nthe authenticated user. The authenticated user pays and is billed either way."
                     },
                     "address_id": {
                         "type": "integer",
@@ -12518,7 +12525,7 @@
                     },
                     "payment_method": {
                         "type": "string",
-                        "description": "Payment method `code`: `random_credit` charges the customer's Random ERP credit line; any other\nmethod pays with Webpay.",
+                        "description": "Payment method `code`: `random_credit` charges the authenticated user's Random ERP credit line; any other\nmethod pays with Webpay.",
                         "example": "transbank"
                     },
                     "payment_document_type": {
