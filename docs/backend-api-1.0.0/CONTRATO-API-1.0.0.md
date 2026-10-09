@@ -228,10 +228,13 @@ Reglas:
 - `address_id` debe pertenecer al **customer** (no al usuario que compra):
   - Compra propia: una dirección de `GET /addresses`
   - Compra para una sucursal: una de `branch.addresses`
-- Los precios se **recalculan** con las listas de precios del customer. El catálogo y el carrito muestran
-  los precios del usuario autenticado, por lo que el total cobrado puede diferir del total del carrito
-  cuando se compra para otra sucursal.
-- El crédito (`random_credit`) que se consulta y descuenta es el del **customer**.
+- Quien **paga y factura** es siempre el usuario autenticado, también cuando compra para una sucursal:
+  - Los precios son los de **sus** listas de precios, igual que en el catálogo y el carrito: el total
+    cobrado es el total del carrito
+  - El crédito (`random_credit`) que se consulta y descuenta es el **suyo** (el de
+    `GET /users/{id}/credit-line` con su propio `id`)
+  - La nota de venta (NVV) en Random se emite para su sucursal; la sucursal del `customer` es la
+    sucursal de despacho
 - Respuestas `200`, flujo Webpay y crédito: sin cambios de estructura, salvo que la orden ahora trae
   `customer` en lugar de `branch` (ver sección 6).
 
@@ -245,12 +248,12 @@ Errores `422` nuevos:
 { "message": "...", "errors": { "address_id": ["La dirección no pertenece al cliente del pedido."] } }
 ```
 
-Productos sin precio para el customer (**sin** clave `errors`; no se crea la orden y el carrito se
-conserva):
+Productos sin precio vigente en las listas del usuario (**sin** clave `errors`; no se crea la orden y el
+carrito se conserva). En el carrito esos productos aparecen con `price: 0`:
 
 ```json
 {
-  "message": "Algunos productos del carrito no tienen precio para el cliente del pedido",
+  "message": "Algunos productos del carrito no tienen precio vigente",
   "products": [{ "id": 12, "name": "Harina 25 kg", "sku": "HAR25", "unit": "kg" }]
 }
 ```
@@ -260,7 +263,7 @@ conserva):
 ### Recurso de orden (`GET /orders`, respuesta del pago, retorno de Webpay)
 
 - **Eliminado** `branch`
-- **Nuevo** `customer`: sucursal para la que se emitió el pedido
+- **Nuevo** `customer`: sucursal a la que se despacha el pedido (quien paga y factura es `user`)
 
 ```json
 "customer": {
@@ -290,11 +293,8 @@ listas del usuario que repite el pedido.
 ## 7. Línea de crédito: `GET /users/{user}/credit-line`
 
 Sin cambios de estructura. Un cliente solo puede consultar **su propia** línea de crédito
-(`read-own-credit-lines`): la sucursal principal **no puede** ver el crédito de una secundaria antes de
-pagar (responde `403`; pendiente en
-[backend #486](https://github.com/Ideas-Digitales/socomarca-backend/issues/486)). Al pagar con crédito para una secundaria, el backend valida el crédito de la
-secundaria y puede responder `success: false` con `"Crédito insuficiente"` o
-`"Línea de crédito bloqueada"`.
+(`read-own-credit-lines`), que es la que se usa al pagar con crédito, también cuando compra para una
+sucursal.
 
 ## 8. Administración de usuarios
 
@@ -329,14 +329,8 @@ secundaria y puede responder `success: false` con `"Crédito insuficiente"` o
 
 ## 9. Limitaciones conocidas del backend 1.0.0
 
-1. No hay previsualización del total para otra sucursal (`GET /cart?customer_id=` no existe): el total
-   final y los productos sin precio se conocen recién al pagar.
-2. La principal no puede consultar el crédito de una secundaria.
-3. Reportes y exportaciones de la administración siguen basados en `orders.user_id` (quien emite);
+1. Reportes y exportaciones de la administración siguen basados en `orders.user_id` (quien emite);
    pendiente de definición.
-
-Los puntos 1 y 2 se abordarán en
-[backend #486](https://github.com/Ideas-Digitales/socomarca-backend/issues/486), después de esta entrega.
 
 ## 10. Endpoints sin cambios de comportamiento
 

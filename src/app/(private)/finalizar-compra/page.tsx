@@ -145,22 +145,12 @@ export default function FinalizarCompraPage() {
     : ownAddress;
   const addressLoading = !selectedBranch && ownAddressLoading;
   const canPay = !addressLoading && shippingAddress != null;
-  const ownCreditUnavailable =
-    creditoLoading ||
-    creditoDisponible === null ||
-    creditoBloqueado ||
-    creditoDisponible < total;
 
   const handleCustomerChange = (value: string) => {
     const id = value ? Number(value) : null;
     const branch = id != null ? branches.find((b) => b.id === id) : undefined;
 
     setCustomerId(branch ? branch.id : null);
-
-    // El crédito propio puede no alcanzar al volver a la propia sucursal
-    if (!branch && paymentMethod !== 'transbank' && ownCreditUnavailable) {
-      setPaymentMethod('transbank');
-    }
   };
 
   const handleOpenModal = () => {
@@ -379,13 +369,9 @@ export default function FinalizarCompraPage() {
                     <p className="text-red-500 text-sm mt-1">{branchesError}</p>
                   )}
                   {selectedBranch && (
-                    <div className="flex items-start gap-2 mt-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-md px-3 py-2">
-                      <InformationCircleIcon width={16} height={16} className="shrink-0 mt-0.5" />
-                      <p>
-                        El total final se calcula con los precios de {selectedBranch.name} y puede
-                        diferir del total que ves aquí.
-                      </p>
-                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      El pedido se despacha a {selectedBranch.name} y se paga y factura a tu nombre.
+                    </p>
                   )}
                 </div>
               )}
@@ -469,16 +455,9 @@ export default function FinalizarCompraPage() {
               {shipping === 0 ? 'Gratis' : formatCLP(shipping)}
             </span>
           </div>
-          <div className="flex justify-between font-bold text-lg border-t-slate-200 border-t pt-5">
-            <span>{selectedBranch ? 'Total estimado' : 'Total a pagar'}</span>
+          <div className="flex justify-between font-bold text-lg border-t-slate-200 border-t py-5">
+            <span>Total a pagar</span>
             <span>{formatCLP(total)}</span>
-          </div>
-          <div className="pb-5">
-            {selectedBranch && (
-              <p className="text-xs text-yellow-800 mt-1">
-                Se recalcula con los precios de {selectedBranch.name} al confirmar el pago.
-              </p>
-            )}
           </div>
 
           {/* Selección de método de pago */}
@@ -492,10 +471,8 @@ export default function FinalizarCompraPage() {
               const saldoDisponible = creditoDisponible ?? 0;
               const saldoInsuficiente =
                 isCreditoOption && creditoDisponible !== null && saldoDisponible < total;
-              // El crédito propio no aplica a otra sucursal: el backend valida el de la sucursal
               const optionDisabled =
                 isCreditoOption &&
-                !selectedBranch &&
                 (creditoLoading ||
                   creditoDisponible === null ||
                   creditoBloqueado ||
@@ -546,11 +523,7 @@ export default function FinalizarCompraPage() {
                           </svg>
                         </div>
                         <div>
-                          {selectedBranch ? (
-                            <p className="text-xs text-gray-500">
-                              El crédito de {selectedBranch.name} se valida al confirmar el pago.
-                            </p>
-                          ) : creditoLoading ? (
+                          {creditoLoading ? (
                             <p className="text-xs font-semibold text-gray-500">
                               Cargando saldo disponible...
                             </p>

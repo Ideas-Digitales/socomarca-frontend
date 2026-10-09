@@ -65,7 +65,7 @@ export default function RedireccionandoPago() {
 
         if (!result.ok) {
           const message: string = result.body?.message ?? 'Error al procesar el pago';
-          // Sin precio para la sucursal: no se crea la orden y el carrito se conserva
+          // Productos sin precio vigente: no se crea la orden y el carrito se conserva
           if (result.status === 422 && Array.isArray(result.body?.products)) {
             setProductsWithoutPrice({ message, products: result.body.products });
             return;
@@ -173,7 +173,7 @@ export default function RedireccionandoPago() {
             ))}
           </ul>
           <p className="text-sm text-gray-500 mb-6">
-            Tu carrito se conservó. Quita estos productos o elige otra sucursal para continuar.
+            Tu carrito se conservó. Quita estos productos para continuar.
           </p>
           <button
             onClick={() => router.push('/carro-de-compra')}
