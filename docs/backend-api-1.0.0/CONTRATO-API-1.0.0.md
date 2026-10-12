@@ -233,8 +233,7 @@ Reglas:
     cobrado es el total del carrito
   - El crédito (`random_credit`) que se consulta y descuenta es el **suyo** (el de
     `GET /users/{id}/credit-line` con su propio `id`)
-  - La nota de venta (NVV) en Random se emite para su sucursal; la sucursal del `customer` es la
-    sucursal de despacho
+  - La nota de venta (NVV) en Random usa su código de entidad y el código de sucursal del `customer`
 - Respuestas `200`, flujo Webpay y crédito: sin cambios de estructura, salvo que la orden ahora trae
   `customer` en lugar de `branch` (ver sección 6).
 
