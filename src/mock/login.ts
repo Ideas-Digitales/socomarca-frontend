@@ -27,5 +27,7 @@ export const mockResponse: LoginResponse = {
       'update-faq',
       'delete-faq',
     ],
+    branch_type: null,
+    can_order_for_branches: false,
   },
 };

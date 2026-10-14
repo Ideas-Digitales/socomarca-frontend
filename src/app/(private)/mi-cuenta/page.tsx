@@ -106,13 +106,19 @@ export default function MiCuentaPage() {
 
   /* Trae las ordenes del usuario  */
   useEffect(() => {
+    // Sin el id del usuario no se puede distinguir quién emitió cada pedido
+    const currentUserId = user?.id;
+    if (!currentUserId) return;
+
     const fetchOrders = async () => {
       setLoadingOrders(true);
 
       try {
         const res = await getUserOrders(1, 20, sort, sortDirection);
         if (res?.data) {
-          const mapped: Compra[] = res.data.map(mapOrderToCompra);
+          const mapped: Compra[] = res.data.map((order) =>
+            mapOrderToCompra(order, currentUserId)
+          );
           setCompras(mapped);
         }
       } catch (error) {
@@ -123,7 +129,7 @@ export default function MiCuentaPage() {
     };
 
     fetchOrders();
-  }, [sort, sortDirection]);
+  }, [sort, sortDirection, user?.id]);
 
   //Trae las direcciones del usuario
   useEffect(() => {

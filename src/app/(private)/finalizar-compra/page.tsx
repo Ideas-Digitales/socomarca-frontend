@@ -1,19 +1,20 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { unstable_rethrow, useRouter } from 'next/navigation';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import Image from 'next/image';
 import useStore from '@/stores/base';
 import TerminosYCondicionesContent from '@/app/components/global/TerminosYCondicionesContent';
 import { getUserData, getUserCreditLine } from '@/services/actions/user.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
-import ShippingAddressSelect from '@/app/components/user/ShippingAddressSelect';
+import ShippingAddressCard from '@/app/components/user/ShippingAddressCard';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { fetchPaymentMethods, type PaymentMethod } from '@/services/actions/payment.actions';
 import { logCreditoRaw } from '@/app/components/mi-cuenta/LineaCreditoSection';
 import useAuthStore from '@/stores/useAuthStore';
-import { fetchBranches } from '@/services/actions/branches.actions';
-import type { Branch } from '@/interfaces/branch.interface';
+import { fetchAllBranches } from '@/services/actions/branches.actions';
+import { branchTypeLabel, type Branch, type BranchType } from '@/interfaces/branch.interface';
+import { getUserAddresses, type Address } from '@/services/actions/addressees.actions';
 import { buildVatBreakdown } from '@/utils/vat';
 
 type PaymentMethodCode = string;
@@ -24,6 +25,18 @@ const FREE_SHIPPING_MINIMUM = 70000;
 const configuredShippingCost = Number(process.env.NEXT_PUBLIC_FIXED_SHIPPING_COST);
 const FIXED_SHIPPING_COST = Number.isFinite(configuredShippingCost) ? configuredShippingCost : 5990;
 
+const branchOptionLabel = (branch: Branch) =>
+  [branch.name, branch.branch_code, branchTypeLabel(branch.branch_type)]
+    .filter(Boolean)
+    .join(' · ');
+
+// Cada sucursal despacha a su dirección sincronizada desde Random
+const pickShippingAddress = (addresses: Address[]): Address | null =>
+  addresses.find((address) => address.is_synced) ??
+  addresses.find((address) => address.is_default) ??
+  addresses[0] ??
+  null;
+
 export default function FinalizarCompraPage() {
   const router = useRouter();
   const cartProducts = useStore((state) => state.cartProducts);
@@ -32,7 +45,6 @@ export default function FinalizarCompraPage() {
   const [loadingUser, setLoadingUser] = useState(true);
   const { openModal } = useStore();
   const { user } = useAuthStore();
-  const [direccionError, setDireccionError] = useState('');
   const [terminosError, setTerminosError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodCode>('transbank');
@@ -45,11 +57,18 @@ export default function FinalizarCompraPage() {
     rut: '',
     correo: '',
     telefono: '',
-    shippingAddressId: null as number | null,
   });
   const [aceptaTerminos, setAceptaTerminos] = useState(true);
+  // `null` mientras no responde GET /profile: se usa el valor de la sesión
+  const [profileCanOrderForBranches, setProfileCanOrderForBranches] = useState<boolean | null>(null);
+  const [profileBranchType, setProfileBranchType] = useState<BranchType | null>(null);
+  const [ownAddress, setOwnAddress] = useState<Address | null>(null);
+  const [ownAddressLoading, setOwnAddressLoading] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
+  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [branchesError, setBranchesError] = useState('');
+  // `null` = la propia sucursal: se compra para el usuario y no se envía customer_id
+  const [customerId, setCustomerId] = useState<number | null>(null);
   const [paymentDocumentType, setPaymentDocumentType] = useState<'invoice' | 'receipt'>('receipt');
   const [notes, setNotes] = useState('');
   const [docTypeError, setDocTypeError] = useState('');
@@ -111,6 +130,29 @@ export default function FinalizarCompraPage() {
     amount: total,
   } = buildVatBreakdown(netSubtotal, vatRate, shipping);
 
+  const canOrderForBranches = profileCanOrderForBranches ?? user.can_order_for_branches;
+  const selectedBranch = customerId != null
+    ? branches.find((branch) => branch.id === customerId) ?? null
+    : null;
+  const ownBranchLabel = [
+    formData.nombre,
+    branchTypeLabel(profileBranchType ?? user.branch_type),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const shippingAddress = selectedBranch
+    ? pickShippingAddress(selectedBranch.addresses ?? [])
+    : ownAddress;
+  const addressLoading = !selectedBranch && ownAddressLoading;
+  const canPay = !addressLoading && shippingAddress != null;
+
+  const handleCustomerChange = (value: string) => {
+    const id = value ? Number(value) : null;
+    const branch = id != null ? branches.find((b) => b.id === id) : undefined;
+
+    setCustomerId(branch ? branch.id : null);
+  };
+
   const handleOpenModal = () => {
     openModal('', {
       content: <TerminosYCondicionesContent />,
@@ -120,14 +162,8 @@ export default function FinalizarCompraPage() {
   };
 
   const goNext = () => {
-    let hasError = false;
-
-    if (!formData.shippingAddressId) {
-      setDireccionError('Debes seleccionar una dirección de envío.');
-      hasError = true;
-    } else {
-      setDireccionError('');
-    }
+    // Sin dirección la tarjeta de envío ya explica por qué no se puede pagar
+    let hasError = !canPay;
 
     if (!aceptaTerminos) {
       setTerminosError('Debes aceptar los términos y condiciones.');
@@ -145,12 +181,15 @@ export default function FinalizarCompraPage() {
 
     if (hasError) return;
 
-    if (formData.shippingAddressId !== null) {
-      localStorage.setItem('selectedAddressId', formData.shippingAddressId.toString());
+    if (shippingAddress) {
+      localStorage.setItem('selectedAddressId', shippingAddress.id.toString());
       localStorage.setItem('paymentMethod', paymentMethod);
       localStorage.setItem('paymentDocumentType', paymentDocumentType);
-      if (selectedBranchId) localStorage.setItem('branchId', selectedBranchId.toString());
+      localStorage.removeItem('branchId');
+      if (selectedBranch) localStorage.setItem('customerId', selectedBranch.id.toString());
+      else localStorage.removeItem('customerId');
       if (notes.trim()) localStorage.setItem('notes', notes.trim());
+      else localStorage.removeItem('notes');
       router.push('/redirect');
     }
   };
@@ -199,7 +238,10 @@ export default function FinalizarCompraPage() {
           correo: userData.email || '',
           telefono: userData.phone || '',
         }));
+        setProfileCanOrderForBranches(Boolean(userData.can_order_for_branches));
+        setProfileBranchType(userData.branch_type ?? null);
       } catch (error) {
+        unstable_rethrow(error);
         console.error('Error fetching user data:', error);
       } finally {
         setLoadingUser(false);
@@ -209,12 +251,27 @@ export default function FinalizarCompraPage() {
   }, []);
 
   useEffect(() => {
-    fetchBranches().then((res) => {
-      if (res.ok && res.data) {
-        setBranches(res.data.data);
-      }
-    });
+    getUserAddresses()
+      .then((addresses) => setOwnAddress(pickShippingAddress(addresses ?? [])))
+      .finally(() => setOwnAddressLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (loadingUser || !canOrderForBranches) return;
+
+    setBranchesLoading(true);
+    fetchAllBranches()
+      .then((res) => {
+        if (res.ok && res.data) {
+          setBranches(res.data);
+          setBranchesError('');
+        } else {
+          setBranches([]);
+          setBranchesError('No se pudieron cargar las sucursales. Solo puedes comprar para tu sucursal.');
+        }
+      })
+      .finally(() => setBranchesLoading(false));
+  }, [loadingUser, canOrderForBranches]);
 
   return (
     <div className="bg-[#f1f5f9] min-h-screen p-4">
@@ -279,6 +336,37 @@ export default function FinalizarCompraPage() {
                 />
               </div>
 
+              {canOrderForBranches && (
+                <div className="col-span-1 md:col-span-2">
+                  <label htmlFor="customer" className="block font-medium">Sucursal</label>
+                  <select
+                    id="customer"
+                    value={customerId ?? ''}
+                    onChange={(e) => handleCustomerChange(e.target.value)}
+                    disabled={branchesLoading}
+                    className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
+                  >
+                    <option value="">{ownBranchLabel || 'Mi sucursal'}</option>
+                    {branches.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branchOptionLabel(branch)}
+                      </option>
+                    ))}
+                  </select>
+                  {branchesLoading && (
+                    <p className="text-sm text-gray-500 mt-1">Cargando sucursales...</p>
+                  )}
+                  {branchesError && (
+                    <p className="text-red-500 text-sm mt-1">{branchesError}</p>
+                  )}
+                  {selectedBranch && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      El pedido se despacha a {selectedBranch.name} y se paga y factura a tu nombre.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="col-span-1 md:col-span-2 flex items-start gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-md px-3 py-2">
                 <InformationCircleIcon width={16} height={16} className="shrink-0 mt-0.5" />
                 <p>Si necesitas actualizar tu información personal, por favor comunícate con el soporte.</p>
@@ -289,35 +377,8 @@ export default function FinalizarCompraPage() {
               </div>
 
               <div className="col-span-1 md:col-span-2">
-                <ShippingAddressSelect
-                  selectedAddressId={formData.shippingAddressId}
-                  onChange={(id) => {
-                    setFormData({ ...formData, shippingAddressId: id });
-                    if (id) setDireccionError('');
-                  }}
-                />
-                {direccionError && (
-                  <p className="text-red-500 text-sm mt-1">{direccionError}</p>
-                )}
+                <ShippingAddressCard address={shippingAddress} loading={addressLoading} />
               </div>
-
-              {branches.length > 0 && (
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block font-medium">Sucursal</label>
-                  <select
-                    value={selectedBranchId ?? ''}
-                    onChange={(e) => setSelectedBranchId(e.target.value ? Number(e.target.value) : null)}
-                    className="w-full p-2 mt-1 rounded bg-[#EBEFF7]"
-                  >
-                    <option value="">Sucursal principal</option>
-                    {branches.map((branch) => (
-                      <option key={branch.id} value={branch.id}>
-                        {branch.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
 
               <div className="col-span-1 md:col-span-2 mt-6">
                 <p className="font-medium mb-2">Tipo de documento</p>
@@ -518,7 +579,8 @@ export default function FinalizarCompraPage() {
 
           <button
             onClick={goNext}
-            className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer"
+            disabled={!canPay}
+            className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Finalizar compra
           </button>

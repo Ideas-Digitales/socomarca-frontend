@@ -3,40 +3,47 @@
 import {
   LoginResponse,
   RestoreCredentialsResponse,
-  UpdateCredentialsResponse,
 } from '@/interfaces/user.interface';
 import { mockResponse } from '@/mock/login';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
-import { removeDots } from '@/stores/base/utils/removeDots';
 import { IS_QA_MODE, BACKEND_URL } from '@/utils/getEnv';
+
+const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
 // Traduce las respuestas de error del backend en el login a mensajes claros
 // para el usuario final. El backend suele devolver textos técnicos en inglés
 // (p. ej. "Unauthorized") que no deben mostrarse tal cual.
-const getFriendlyLoginError = (status: number): string => {
-  if (status === 429) {
+const getFriendlyLoginError = async (response: Response): Promise<string> => {
+  if (response.status === 422) {
+    const data = await response.json().catch(() => null);
+    const fieldError = data?.errors?.email?.[0] ?? data?.errors?.password?.[0];
+    if (fieldError) return fieldError;
+  }
+
+  if (response.status === 429) {
     return 'Demasiados intentos. Espera unos minutos.';
   }
 
-  if (status >= 500) {
+  if (response.status >= 500) {
     return 'Error del servidor. Inténtalo más tarde.';
   }
 
-  return 'RUT o contraseña incorrectos.';
+  return 'Email o contraseña incorrectos.';
 };
 
 export const fetchLogin = async (
-  rut: string,
-  password: string,
-  role?: string
+  email: string,
+  password: string
 ): Promise<LoginResponse> => {
+  const normalizedEmail = normalizeEmail(email);
+
   if (IS_QA_MODE) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (rut === '12.312.312-3') {
+        if (normalizedEmail === 'qa@socomarca.cl') {
           resolve(mockResponse);
         } else {
-          reject(new Error('Credenciales inválidas'));
+          reject(new Error('Email o contraseña incorrectos.'));
         }
       }, 500);
     });
@@ -44,9 +51,8 @@ export const fetchLogin = async (
 
   const { setCookie } = await cookiesManagement();
   const bodyRequest = {
-    rut: removeDots(rut),
+    email: normalizedEmail,
     password,
-    role: role || null,
   };
 
   try {
@@ -63,7 +69,7 @@ export const fetchLogin = async (
       return {
         user: null,
         error: {
-          message: getFriendlyLoginError(response.status),
+          message: await getFriendlyLoginError(response),
           status: response.status,
         },
       };
@@ -93,6 +99,8 @@ export const fetchLogin = async (
         rut: user.rut,
         roles: user.roles || [],
         permissions: user.permissions || [],
+        branch_type: user.branch_type ?? null,
+        can_order_for_branches: Boolean(user.can_order_for_branches),
       };
       setCookie(JSON.stringify(userData), 'userData');
     }
@@ -115,12 +123,11 @@ export const fetchLogin = async (
         rut: data.user.rut,
         roles: data.user.roles || [],
         permissions: data.user.permissions || [],
+        branch_type: data.user.branch_type ?? null,
+        can_order_for_branches: Boolean(data.user.can_order_for_branches),
       },
       extra: data.extra
-        ? {
-            missing_email: Boolean(data.extra.missing_email),
-            weak_password: Boolean(data.extra.weak_password),
-          }
+        ? { weak_password: Boolean(data.extra.weak_password) }
         : undefined,
     };
   } catch (error) {
@@ -131,13 +138,10 @@ export const fetchLogin = async (
   }
 };
 
-// POST /auth/restore. Two branches, discriminated by whether data.provisional_token
-// is present: no-email accounts get a provisional token scoped only to
-// PATCH /auth/credentials; accounts that already have an email skip straight to
-// "check your inbox" (data.missing_email is redundant with provisional_token's
-// presence, so callers should branch on provisionalToken alone).
+// POST /auth/restore responde 200 con el email enmascarado exista o no la cuenta,
+// para no revelar qué correos están registrados.
 export const sendRecoveryEmail = async (
-  rut: string
+  email: string
 ): Promise<RestoreCredentialsResponse> => {
   try {
     const response = await fetch(`${BACKEND_URL}/auth/restore`, {
@@ -146,7 +150,7 @@ export const sendRecoveryEmail = async (
         'Content-Type': 'application/json',
         accept: 'application/json',
       },
-      body: JSON.stringify({ rut: removeDots(rut) }),
+      body: JSON.stringify({ email: normalizeEmail(email) }),
     });
 
     const data = await response.json();
@@ -154,66 +158,20 @@ export const sendRecoveryEmail = async (
     if (!response.ok) {
       return {
         success: false,
-        message: data.message || 'No se pudo enviar el correo de recuperación',
+        message:
+          data.errors?.email?.[0] ||
+          data.message ||
+          'No se pudo enviar el correo de recuperación',
       };
     }
 
     return {
       success: true,
-      message: data.message || 'Correo de recuperación enviado',
-      provisionalToken: data.data?.provisional_token,
+      message: data.message || 'Revisa tu bandeja de entrada',
       email: data.data?.email,
     };
   } catch (error) {
     console.error('Error al enviar correo de recuperación:', error);
-    return {
-      success: false,
-      message: 'Ocurrió un error inesperado',
-    };
-  }
-};
-
-// PATCH /auth/credentials — only reachable with the provisional token returned by
-// the no-email branch of sendRecoveryEmail. On success the backend emails a temp
-// password and revokes the provisional token; it never returns the password itself.
-export const updateCredentialsAction = async (
-  provisionalToken: string,
-  email: string
-): Promise<UpdateCredentialsResponse> => {
-  try {
-    const response = await fetch(`${BACKEND_URL}/auth/credentials`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-        Authorization: `Bearer ${provisionalToken}`,
-      },
-      body: JSON.stringify({ email }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      if (response.status === 422) {
-        return {
-          success: false,
-          message: data.message || 'No se pudo actualizar el correo',
-          fieldErrors: data.errors,
-        };
-      }
-
-      return {
-        success: false,
-        message: data.message || 'No se pudo actualizar el correo',
-      };
-    }
-
-    return {
-      success: true,
-      message: data.message || 'Correo actualizado',
-    };
-  } catch (error) {
-    console.error('Error al actualizar credenciales:', error);
     return {
       success: false,
       message: 'Ocurrió un error inesperado',
@@ -231,7 +189,7 @@ export async function logoutAction() {
   }
 
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/api/auth/token`, {
+    const response = await fetch(`${BACKEND_URL}/auth/token`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${cookie}`,

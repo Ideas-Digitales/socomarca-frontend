@@ -1,3 +1,5 @@
+import type { BranchType } from './branch.interface';
+
 interface BillingAddress {
   address_line1: string;
   address_line2: string;
@@ -69,8 +71,19 @@ export interface OrderItem {
   vat_amount: string;
   /** Total de la línea con IVA */
   total: string;
+  /** Código de la lista de precios usada (`null` en pedidos antiguos) */
+  price_list_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** Sucursal para la que se emitió el pedido */
+export interface OrderCustomer {
+  id: number;
+  name: string;
+  user_code: string | null;
+  branch_code: string | null;
+  branch_type: BranchType | null;
 }
 
 export interface Order {
@@ -95,16 +108,10 @@ export interface Order {
   status: string;
   order_items: OrderItem[];
   order_meta: string; // viene como string, tipo JSON
-  branch: Branch;
+  customer?: OrderCustomer;
   notes: string | null;
   created_at: string;
   updated_at: string;
-}
-
-export interface Branch {
-  id: number | null;
-  name: string | null;
-  code: string | null;
 }
 
 export interface OrderResponse {

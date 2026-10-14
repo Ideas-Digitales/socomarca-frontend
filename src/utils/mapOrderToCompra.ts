@@ -9,11 +9,11 @@ const toNumber = (value: unknown): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-export function mapOrderToCompra(order: Order): Compra {
+export function mapOrderToCompra(order: Order, currentUserId: number): Compra {
   const suc: Sucursal = {
-    id: order.branch?.id,
-    nombre: order.branch?.name,
-    codigo: order.branch?.code,
+    id: order.customer?.id ?? null,
+    nombre: order.customer?.name ?? null,
+    codigo: order.customer?.branch_code ?? null,
   };
 
   return {
@@ -21,6 +21,8 @@ export function mapOrderToCompra(order: Order): Compra {
     numero: order.id.toString(),
     referencia: order.random_document_number,
     sucursal: suc,
+    // Ej.: la sucursal principal compró para esta secundaria
+    emitidoPor: order.user && order.user.id !== currentUserId ? order.user.name : null,
     notas: order.notes,
     hora: new Date(order.created_at).toLocaleTimeString('es-CL', {
       hour: '2-digit',

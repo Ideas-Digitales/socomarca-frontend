@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createOrderFromCart } from '@/services/actions/order.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
-import { useRouter } from 'next/navigation';
+import { unstable_rethrow, useRouter } from 'next/navigation';
 import useStore from '@/stores/base';
 
 interface CreditPaymentResult {
@@ -14,12 +14,25 @@ interface CreditPaymentResult {
   paymentMethodName: string;
 }
 
+interface ProductWithoutPrice {
+  id: number;
+  name: string;
+  sku: string;
+  unit: string;
+}
+
+interface ProductsWithoutPriceError {
+  message: string;
+  products: ProductWithoutPrice[];
+}
+
 export default function RedireccionandoPago() {
   const router = useRouter();
   const { fetchCartProducts } = useStore();
   const [creditResult, setCreditResult] = useState<CreditPaymentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [blockedCreditLine, setBlockedCreditLine] = useState(false);
+  const [productsWithoutPrice, setProductsWithoutPrice] = useState<ProductsWithoutPriceError | null>(null);
   const hasProcessed = useRef(false);
 
   useEffect(() => {
@@ -27,7 +40,7 @@ export default function RedireccionandoPago() {
     hasProcessed.current = true;
     const paymentMethod = localStorage.getItem('paymentMethod') ?? 'transbank';
     const id = localStorage.getItem('selectedAddressId');
-    const branchId = localStorage.getItem('branchId');
+    const customerId = localStorage.getItem('customerId');
     const paymentDocumentType = (localStorage.getItem('paymentDocumentType') as 'invoice' | 'receipt') || 'receipt';
     const notes = localStorage.getItem('notes') || undefined;
 
@@ -40,11 +53,11 @@ export default function RedireccionandoPago() {
 
     const process = async () => {
       try {
-        console.log('[redirect] Enviando a /orders/pay:', { address_id: shippingAddressId, payment_method: paymentMethod, branch_id: branchId || undefined, payment_document_type: paymentDocumentType, notes });
+        console.log('[redirect] Enviando a /orders/pay:', { address_id: shippingAddressId, payment_method: paymentMethod, customer_id: customerId || undefined, payment_document_type: paymentDocumentType, notes });
         const result = await createOrderFromCart({
           shippingAddressId,
           paymentMethod,
-          branchId: branchId ? Number(branchId) : undefined,
+          customerId: customerId ? Number(customerId) : undefined,
           paymentDocumentType,
           notes,
         });
@@ -52,6 +65,17 @@ export default function RedireccionandoPago() {
 
         if (!result.ok) {
           const message: string = result.body?.message ?? 'Error al procesar el pago';
+          // Productos sin precio vigente: no se crea la orden y el carrito se conserva
+          if (result.status === 422 && Array.isArray(result.body?.products)) {
+            setProductsWithoutPrice({ message, products: result.body.products });
+            return;
+          }
+          const fieldError: string | undefined =
+            result.body?.errors?.customer_id?.[0] ?? result.body?.errors?.address_id?.[0];
+          if (result.status === 422 && fieldError) {
+            setError(fieldError);
+            return;
+          }
           if (/línea de crédito.*bloqueada/i.test(message)) {
             setBlockedCreditLine(true);
           } else {
@@ -63,6 +87,7 @@ export default function RedireccionandoPago() {
         const json = result.body;
         localStorage.removeItem('paymentMethod');
         localStorage.removeItem('selectedAddressId');
+        localStorage.removeItem('customerId');
         localStorage.removeItem('branchId');
         localStorage.removeItem('paymentDocumentType');
         localStorage.removeItem('notes');
@@ -93,6 +118,7 @@ export default function RedireccionandoPago() {
           });
         }
       } catch (err) {
+        unstable_rethrow(err);
         setError(err instanceof Error ? err.message : 'Error al procesar el pago');
       }
     };
@@ -118,6 +144,42 @@ export default function RedireccionandoPago() {
             className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded mb-2"
           >
             Ver mis pedidos
+          </button>
+          <button
+            onClick={() => router.push('/finalizar-compra')}
+            className="w-full border border-gray-300 text-gray-700 py-2 rounded"
+          >
+            Volver a finalizar compra
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (productsWithoutPrice) {
+    return (
+      <div className="flex flex-col items-center bg-[#f1f5f9] text-center p-6">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+          <h2 className="text-xl font-bold mb-2 text-red-600">No se pudo crear el pedido</h2>
+          <p className="text-gray-600 mb-4">{productsWithoutPrice.message}</p>
+          <ul className="space-y-2 mb-4 text-left">
+            {productsWithoutPrice.products.map((product) => (
+              <li key={product.id} className="bg-[#edf2f7] px-4 py-2 rounded text-sm">
+                <p className="font-semibold text-gray-800">{product.name}</p>
+                <p className="text-gray-600">
+                  SKU {product.sku} · Unidad {product.unit}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="text-sm text-gray-500 mb-6">
+            Tu carrito se conservó. Quita estos productos para continuar.
+          </p>
+          <button
+            onClick={() => router.push('/carro-de-compra')}
+            className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded mb-2"
+          >
+            Volver al carrito
           </button>
           <button
             onClick={() => router.push('/finalizar-compra')}

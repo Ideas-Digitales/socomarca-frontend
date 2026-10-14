@@ -1,8 +1,11 @@
 'use server';
 
+import { unstable_rethrow } from 'next/navigation';
 import { cookiesManagement } from '@/stores/base/utils/cookiesManagement';
+import { expireSessionOnUnauthorized } from '@/stores/base/utils/expireSessionOnUnauthorized';
 import { BACKEND_URL } from '@/utils/getEnv';
 import { SearchUsersRequest } from '@/interfaces/user.interface';
+import type { BranchType } from '@/interfaces/branch.interface';
 
 export interface ApiAddress {
   id: number;
@@ -16,6 +19,7 @@ export interface ApiAddress {
   municipality_name: string;
   region_name: string;
   alias: string | null;
+  is_synced: boolean;
 }
 
 export interface ApiUser {
@@ -25,6 +29,9 @@ export interface ApiUser {
   email: string;
   phone: string;
   is_active: boolean;
+  branch_type: BranchType | null;
+  /** Puede cambiar durante la sesión: este es el valor vigente */
+  can_order_for_branches: boolean;
   billing_address: ApiAddress;
   default_shipping_address: ApiAddress;
 }
@@ -68,13 +75,16 @@ export async function getUserData() {
       },
     });
 
+    await expireSessionOnUnauthorized(res);
+
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    const data = await res.json();
+    const data: ApiUser = await res.json();
     return data;
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Error fetching user data:', error);
     throw new Error('Failed to fetch user data');
   }
@@ -155,6 +165,11 @@ export async function searchUsersAction(
       requestBody.page = searchRequest.page;
     }
 
+    // Una lista vacía no filtra por rol
+    if (searchRequest.roles.length > 0) {
+      requestBody.roles = searchRequest.roles;
+    }
+
     // Agregar ordenamiento si está presente
     if (searchRequest.sort_by && searchRequest.sort_order) {
       // Buscar si ya existe un filtro con sort
@@ -183,6 +198,8 @@ export async function searchUsersAction(
       body: JSON.stringify(requestBody),
     });
 
+    await expireSessionOnUnauthorized(response);
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -194,6 +211,7 @@ export async function searchUsersAction(
       data,
     };
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Error searching users:', error);
     return {
       success: false,
@@ -278,14 +296,29 @@ export interface CreateUserRequest {
   roles: string[];
 }
 
-export async function updateUserAction(
-  userId: number,
-  userData: UpdateUserRequest
-): Promise<{
+/** Errores de validación del backend (422), por campo */
+export type UserFieldErrors = Record<string, string[]>;
+
+export interface UserMutationResult {
   success: boolean;
   data?: any;
   error?: string;
-}> {
+  fieldErrors?: UserFieldErrors;
+}
+
+async function toUserMutationError(response: Response): Promise<UserMutationResult> {
+  const errorData = await response.json().catch(() => ({}));
+  return {
+    success: false,
+    error: errorData.message || `HTTP error! status: ${response.status}`,
+    fieldErrors: response.status === 422 ? errorData.errors : undefined,
+  };
+}
+
+export async function updateUserAction(
+  userId: number,
+  userData: UpdateUserRequest
+): Promise<UserMutationResult> {
   try {
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
@@ -304,11 +337,10 @@ export async function updateUserAction(
       body: JSON.stringify(userData),
     });
 
+    await expireSessionOnUnauthorized(response);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      return toUserMutationError(response);
     }
 
     const data = await response.json();
@@ -318,6 +350,7 @@ export async function updateUserAction(
       data,
     };
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Error updating user:', error);
     return {
       success: false,
@@ -329,11 +362,7 @@ export async function updateUserAction(
 export async function patchUserAction(
   userId: number,
   userData: PatchUserRequest
-): Promise<{
-  success: boolean;
-  data?: any;
-  error?: string;
-}> {
+): Promise<UserMutationResult> {
   try {
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
@@ -352,11 +381,10 @@ export async function patchUserAction(
       body: JSON.stringify(userData),
     });
 
+    await expireSessionOnUnauthorized(response);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      return toUserMutationError(response);
     }
 
     const data = await response.json();
@@ -366,6 +394,7 @@ export async function patchUserAction(
       data,
     };
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Error patching user:', error);
     return {
       success: false,
@@ -427,11 +456,9 @@ export async function changePasswordAction(
   }
 }
 
-export async function createUserAction(userData: CreateUserRequest): Promise<{
-  success: boolean;
-  data?: any;
-  error?: string;
-}> {
+export async function createUserAction(
+  userData: CreateUserRequest
+): Promise<UserMutationResult> {
   try {
     const { getCookie } = await cookiesManagement();
     const token = getCookie('token');
@@ -450,11 +477,10 @@ export async function createUserAction(userData: CreateUserRequest): Promise<{
       body: JSON.stringify(userData),
     });
 
+    await expireSessionOnUnauthorized(response);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      return toUserMutationError(response);
     }
 
     const data = await response.json();
@@ -464,6 +490,7 @@ export async function createUserAction(userData: CreateUserRequest): Promise<{
       data,
     };
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Error creating user:', error);
     return {
       success: false,

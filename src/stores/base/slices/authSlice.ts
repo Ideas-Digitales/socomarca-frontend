@@ -1,6 +1,17 @@
 import { StateCreator } from 'zustand';
-import { AuthSlice, StoreState } from '../types';
+import { AuthSlice, StoreState, User } from '../types';
 import { fetchLogin, logoutAction } from '@/services/actions/auth.actions';
+
+const emptyUser: User = {
+  id: 0,
+  name: '',
+  email: '',
+  rut: '',
+  roles: [],
+  permissions: [],
+  branch_type: null,
+  can_order_for_branches: false,
+};
 
 // Función para obtener datos de autenticación desde la API interna
 const getAuthData = async (): Promise<any | null> => {
@@ -24,14 +35,7 @@ export const createAuthSlice: StateCreator<
 > = (set, get) => ({
   // Estados iniciales de autenticación
   isLoggedIn: false,
-  user: {
-    id: 0,
-    name: '',
-    email: '',
-    rut: '',
-    roles: [],
-    permissions: [],
-  },
+  user: emptyUser,
   token: '',
   isInitialized: false,
   isLoading: false, // Agregado este estado faltante
@@ -59,6 +63,8 @@ export const createAuthSlice: StateCreator<
             rut: user.rut || '',
             roles: user.roles || [user.role] || [],
             permissions: user.permissions || [],
+            branch_type: user.branch_type ?? null,
+            can_order_for_branches: Boolean(user.can_order_for_branches),
           },
         });
 
@@ -70,14 +76,7 @@ export const createAuthSlice: StateCreator<
         set({
           isLoggedIn: false,
           isInitialized: true,
-          user: {
-            id: 0,
-            name: '',
-            email: '',
-            rut: '',
-            roles: [],
-            permissions: [],
-          },
+          user: emptyUser,
           token: '',
         });
       }
@@ -86,14 +85,7 @@ export const createAuthSlice: StateCreator<
       set({
         isLoggedIn: false,
         isInitialized: true,
-        user: {
-          id: 0,
-          name: '',
-          email: '',
-          rut: '',
-          roles: [],
-          permissions: [],
-        },
+        user: emptyUser,
         token: '',
       });
     }
@@ -101,18 +93,16 @@ export const createAuthSlice: StateCreator<
 
   // Función de login
   login: async ({
-    rut,
+    email,
     password,
-    role,
   }: {
-    rut: string;
+    email: string;
     password: string;
-    role?: string;
   }) => {
     set({ isLoading: true });
 
     try {
-      const response = await fetchLogin(rut, password, role);
+      const response = await fetchLogin(email, password);
 
       if (!response.user) {
         set({ isLoading: false });
@@ -121,17 +111,20 @@ export const createAuthSlice: StateCreator<
           error: response.error?.message || 'Credenciales inválidas',
         };
       } // Actualizar el estado del store
+      const user: User = {
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        rut: response.user.rut,
+        roles: response.user.roles || [], // Manejar posible null
+        permissions: response.user.permissions || [], // Manejar posible null
+        branch_type: response.user.branch_type,
+        can_order_for_branches: response.user.can_order_for_branches,
+      };
       set({
         isLoggedIn: true,
         // No seteamos isLoading: false aquí para mantener el loader hasta la redirección
-        user: {
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          rut: response.user.rut,
-          roles: response.user.roles || [], // Manejar posible null
-          permissions: response.user.permissions || [], // Manejar posible null
-        },
+        user,
       });
 
       // Limpiar sessionStorage al iniciar sesión para que el modal se muestre
@@ -144,14 +137,7 @@ export const createAuthSlice: StateCreator<
 
       return {
         success: true,
-        user: {
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          rut: response.user.rut,
-          roles: response.user.roles || [],
-          permissions: response.user.permissions || [],
-        },
+        user,
         extra: response.extra,
       };
     } catch (error: any) {
@@ -160,14 +146,7 @@ export const createAuthSlice: StateCreator<
       set({
         isLoggedIn: false,
         isLoading: false,
-        user: {
-          id: 0,
-          name: '',
-          email: '',
-          rut: '',
-          roles: [],
-          permissions: [],
-        },
+        user: emptyUser,
         token: '',
       });
 
@@ -202,7 +181,7 @@ export const createAuthSlice: StateCreator<
     set({
       isLoggedIn: false,
       isInitialized: true,
-      user: { id: 0, name: '', email: '', rut: '', roles: [], permissions: [] },
+      user: emptyUser,
       token: '',
       isLoading: false,
     });

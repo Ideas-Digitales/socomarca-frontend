@@ -1,3 +1,5 @@
+import type { BranchType } from './branch.interface';
+
 export interface User {
   id: number;
   name: string;
@@ -5,12 +7,15 @@ export interface User {
   rut: string;
   roles: string[] | null;
   permissions: string[] | null;
+  /** `null` para usuarios internos (administración) */
+  branch_type: BranchType | null;
+  /** Sucursal principal con al menos una secundaria activa */
+  can_order_for_branches: boolean;
 }
 
 export interface LoginResponse {
   user: User | null;
   extra?: {
-    missing_email: boolean;
     weak_password: boolean;
   };
   error?: {
@@ -19,21 +24,11 @@ export interface LoginResponse {
   };
 }
 
-// POST /auth/restore — discriminated by whether the account has an email on file.
-// no-email branch: { data: { provisional_token } }; has-email branch: { data: { email } }.
 export interface RestoreCredentialsResponse {
   success: boolean;
   message: string;
-  provisionalToken?: string;
+  /** Email solicitado, enmascarado */
   email?: string;
-}
-
-export interface UpdateCredentialsResponse {
-  success: boolean;
-  message: string;
-  fieldErrors?: {
-    email?: string[];
-  };
 }
 
 export interface ApiUser {
@@ -44,6 +39,9 @@ export interface ApiUser {
   rut: string | null;
   business_name: string | null;
   is_active: boolean;
+  /** Proviene de Random ERP: solo se puede activar o desactivar */
+  is_synced: boolean;
+  branch_type: BranchType | null;
   last_login: string | null;
   roles: string[];
   created_at: string;
@@ -97,6 +95,9 @@ export function transformApiUserToUser(apiUser: ApiUser): {
   rut: string;
   business_name: string;
   phone: string;
+  is_active: boolean;
+  is_synced: boolean;
+  branch_type: BranchType | null;
 } {
   // La API puede devolver estos campos en null (ej: cuentas sin correo registrado)
   const email = apiUser.email ?? '';
@@ -121,5 +122,8 @@ export function transformApiUserToUser(apiUser: ApiUser): {
     rut: apiUser.rut ?? '',
     business_name: apiUser.business_name ?? '',
     phone: apiUser.phone ?? '',
+    is_active: apiUser.is_active,
+    is_synced: Boolean(apiUser.is_synced),
+    branch_type: apiUser.branch_type ?? null,
   };
 }
