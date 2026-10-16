@@ -57,7 +57,7 @@
     },
     {
       "name": "Orders",
-      "description": "List the user's orders and check out the cart, paying with Webpay or the Random ERP credit line."
+      "description": "List the user's orders, check out the cart, and cancel an order that is waiting for an invoice."
     },
     {
       "name": "Payment methods",
@@ -6056,7 +6056,7 @@
     "/users/{user}/credit-line": {
       "get": {
         "operationId": "users.credit-lines",
-        "description": "Credit line of the user's Random ERP branch (`user_code` + `branch_code`), with the fields returned\nby Random ERP: `CRSD` is the credit limit and `CRSDVU` the used amount, so the available credit is\n`CRSD - CRSDVU`. Users with `read-all-credit-lines` can see any user's credit line; users with\n`read-own-credit-lines` only their own.\n\nAfter a credit payment the credit line is `blocked` until the pending payment is processed: the\nresponse is then the locally stored state, which already includes that order in `CRSDVU`, and\nRandom ERP is not queried. Otherwise (`unblocked`) the data comes from Random ERP.\n\nRandom ERP errors respond `{message, detail}`: 404 when Random ERP has no credit line for the\nbranch, 401/403 when the authentication with Random ERP fails and 500 otherwise.",
+        "description": "Credit line of the user's Random ERP branch (`user_code` + `branch_code`). `CRSD` is the granted\nlimit (`CRTO` from `/web32/entidades`) and `CRSDVU` the used amount from\n`/gestion/credito/resumen`, so the available credit is `CRSD - CRSDVU`. The summary endpoint's\nown `CRSD` is not used. A summary 404 means the branch has no matching movements: usage is zero\nand the granted limit is still returned. Users with `read-all-credit-lines` can see any user's\ncredit line; users with `read-own-credit-lines` only their own.\n\nAfter a credit payment the credit line is `blocked` until the pending payment is processed: the\nresponse is then the locally stored state, which already includes that order in `CRSDVU`, and\nRandom ERP is not queried. Otherwise (`unblocked`) the data comes from Random ERP.\n\nRandom ERP errors respond `{message, detail}`: 404 when the branch has no granted credit in the\nentity master, 401/403 when the authentication with Random ERP fails and 500 otherwise.",
         "summary": "Show the credit line of a user",
         "tags": [
           "Credit lines"
@@ -6123,14 +6123,8 @@
               }
             }
           },
-          "401": {
-            "$ref": "#/components/responses/AuthenticationException"
-          },
-          "403": {
-            "$ref": "#/components/responses/AuthorizationException"
-          },
           "404": {
-            "description": "The user does not exist, or Random ERP has no credit line for its branch",
+            "description": "The user does not exist, or Random ERP has no granted credit for its branch",
             "content": {
               "application/json": {
                 "schema": {
@@ -6167,6 +6161,12 @@
                 }
               }
             }
+          },
+          "403": {
+            "$ref": "#/components/responses/AuthorizationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           },
           "500": {
             "description": "Random ERP failed or returned an invalid credit line",
@@ -10898,6 +10898,107 @@
           }
         }
       }
+    },
+    "/orders/cancel": {
+      "post": {
+        "operationId": "orders.cancel",
+        "description": "Deletes the Random ERP sales note (NVV) of an order that is still waiting for an invoice\n(FCV): it has not been invoiced, charged or dispatched. The order and its credit payment\nare set to `canceled`, and the credit line is unblocked when this payment blocked it.\n\nRequires both `read-all-orders` and `cancel-orders`.\n\nRequires one of the `read-all-orders` or `cancel-orders` permissions.",
+        "summary": "Cancel an order waiting for an invoice",
+        "tags": [
+          "Orders"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The order was canceled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OrderResource"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "La orden fue cancelada."
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "description": "The order number is missing or the order is not waiting for an invoice (FCV)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Errors overview."
+                    },
+                    "errors": {
+                      "type": "object",
+                      "description": "A detailed description of each field that failed validation.",
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user lacks `read-all-orders` or `cancel-orders`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Random ERP rejected the deletion; the order, the payment and the credit line were not changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -12620,6 +12721,16 @@
             "type": "string",
             "description": "Payment status: `pending` while the Webpay transaction is open, the Transbank status once\ncommitted (`AUTHORIZED`, `FAILED`...), `failed` when the buyer canceled the Webpay payment,\n`refunded` after a Webpay refund, and `AUTHORIZED` or `FAILED` for credit payments."
           },
+          "status": {
+            "type": "string",
+            "description": "Settlement status. `canceled` is a credit payment canceled before Random ERP issued the invoice.",
+            "enum": [
+              "processing",
+              "completed",
+              "failed",
+              "canceled"
+            ]
+          },
           "token": {
             "type": "string",
             "description": "Webpay transaction token; a generated identifier for credit payments."
@@ -12644,6 +12755,7 @@
           "auth_code",
           "amount",
           "response_status",
+          "status",
           "token",
           "paid_at",
           "payment_method"
@@ -14068,6 +14180,20 @@
           "token"
         ],
         "title": "WebpayTransactionResource"
+      },
+      "CancelOrderRequest": {
+        "type": "object",
+        "properties": {
+          "order_number": {
+            "type": "integer",
+            "description": "Purchase order number (`orders.id`).",
+            "example": 1234
+          }
+        },
+        "required": [
+          "order_number"
+        ],
+        "title": "CancelOrderRequest"
       }
     },
     "responses": {
