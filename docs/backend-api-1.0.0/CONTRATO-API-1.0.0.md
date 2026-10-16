@@ -289,11 +289,47 @@ parámetros no cambian (`sort` admite `id` | `created_at`, `sort_direction` admi
 Permite repetir pedidos emitidos por el usuario o para él. Los precios del carrito se recalculan con las
 listas del usuario que repite el pedido.
 
+### `POST /orders/cancel`
+
+Cancela una orden que sigue en espera de factura (FCV): no está facturada, cobrada ni despachada. Elimina
+la nota de venta (NVV) en Random, deja la orden y su pago a crédito en `canceled` y desbloquea la línea
+de crédito si ese pago la había bloqueado.
+
+Requiere **ambos** permisos `read-all-orders` y `cancel-orders` (`admin` y `superadmin`).
+
+```json
+{ "order_number": 1234 }
+```
+
+`order_number` es `orders.id`, el número de orden de compra.
+
+Respuesta `200`: `data` es la orden (`status: "canceled"`) y `message` es el texto a mostrar.
+
+```json
+{ "message": "La orden fue cancelada." }
+```
+
+`PaymentResource` ahora incluye `status`: `processing` | `completed` | `failed` | `canceled`. `canceled`
+es un pago a crédito cancelado antes de que Random emitiera la factura.
+
+Errores:
+
+| Código | Cuerpo | Cuándo |
+|---|---|---|
+| `422` | `message` y `errors.order_number` | Número vacío o inválido, orden inexistente, o orden que no está en espera de facturación |
+| `403` | `{ "message": "You do not have permission." }` | Falta `read-all-orders` o `cancel-orders` |
+| `500` | Texto de la API | Random rechazó el borrado; la orden, el pago y la línea de crédito no cambian |
+
 ## 7. Línea de crédito: `GET /users/{user}/credit-line`
 
-Sin cambios de estructura. Un cliente solo puede consultar **su propia** línea de crédito
-(`read-own-credit-lines`), que es la que se usa al pagar con crédito, también cuando compra para una
-sucursal.
+La estructura de la respuesta no cambia. `CRSD` es el límite otorgado (`CRTO` de `/web32/entidades`) y
+`CRSDVU` el uso de `/gestion/credito/resumen`; el `CRSD` de ese resumen no se usa. Si el resumen responde
+404, la sucursal no tiene movimientos y el uso queda en cero, pero el límite otorgado se sigue
+devolviendo. Un 404 de este endpoint ahora significa que la sucursal no tiene crédito otorgado en el
+maestro de entidades.
+
+Un cliente solo puede consultar **su propia** línea de crédito (`read-own-credit-lines`), que es la que
+se usa al pagar con crédito, también cuando compra para una sucursal.
 
 ## 8. Administración de usuarios
 
