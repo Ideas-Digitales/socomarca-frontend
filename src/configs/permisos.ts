@@ -28,6 +28,12 @@ export const PERMISOS = {
     DELETE: 'delete-client',
   },
   
+  // Permisos para cancelar órdenes en espera de factura
+  ORDERS: {
+    READ_ALL: 'read-all-orders',
+    CANCEL: 'cancel-orders',
+  },
+
   // Permisos para reportes
   REPORTS: {
     SALES: 'read-sales-report',
