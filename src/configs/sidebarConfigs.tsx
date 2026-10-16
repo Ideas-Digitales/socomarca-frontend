@@ -2,6 +2,11 @@
 
 import { SidebarConfig } from '@/interfaces/sidebar.interface';
 import ModalLogout from '@/app/components/mi-cuenta/ModalLogout';
+import {
+  CANCEL_ORDER_MENU_LABEL,
+  CANCEL_ORDER_PATH,
+  showsCancelOrderMenu,
+} from '@/utils/cancelOrder';
 
 export const createLogoutModal = (
   onLogout: () => Promise<void>,
@@ -74,6 +79,15 @@ export const getSidebarConfig = (
       label: 'Clientes',
       url: '/admin/clientes',
     },
+    ...(showsCancelOrderMenu(userRole)
+      ? [
+          {
+            id: 'cancelar-orden',
+            label: CANCEL_ORDER_MENU_LABEL,
+            url: CANCEL_ORDER_PATH,
+          },
+        ]
+      : []),
     {
       id: 'info-sitio',
       label: 'Información del sitio',
