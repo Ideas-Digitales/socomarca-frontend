@@ -1,8 +1,14 @@
 "use server";
 
+import { unstable_rethrow } from "next/navigation";
 import { cookiesManagement } from "@/stores/base/utils/cookiesManagement";
 import { expireSessionOnUnauthorized } from "@/stores/base/utils/expireSessionOnUnauthorized";
 import { BACKEND_URL } from "@/utils/getEnv";
+import {
+  buildCancelOrderBody,
+  parseCancelOrderResponse,
+  type CancelOrderResult,
+} from "@/utils/cancelOrder";
 
 import type { OrderResponse } from "@/interfaces/order.interface";
 
@@ -58,6 +64,54 @@ export async function createOrderFromCart({
     status: res.status,
     body: json,
   };
+}
+
+/**
+ * Cancela una orden en espera de factura (FCV).
+ * El texto de error es el que devuelve la API.
+ */
+export async function cancelOrder(orderNumber: string): Promise<CancelOrderResult> {
+  try {
+    const { getCookie } = await cookiesManagement();
+    const token = getCookie("token");
+
+    if (!token) {
+      return { ok: false, status: 401, message: "Unauthorized: No token found" };
+    }
+
+    const res = await fetch(`${BACKEND_URL}/orders/cancel`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(buildCancelOrderBody(orderNumber)),
+    });
+
+    await expireSessionOnUnauthorized(res);
+
+    const raw = await res.text();
+    let body: unknown = null;
+
+    if (raw.trim() !== "") {
+      try {
+        body = JSON.parse(raw);
+      } catch {
+        body = raw;
+      }
+    }
+
+    return parseCancelOrderResponse(res.status, body);
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error("Error al cancelar la orden:", error);
+    return {
+      ok: false,
+      status: 0,
+      message: error instanceof Error ? error.message : "Error desconocido",
+    };
+  }
 }
 
 
