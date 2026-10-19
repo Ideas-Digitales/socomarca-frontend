@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import ContactForm, { emptyContactDraft } from "@/app/components/contacts/ContactForm";
 import LoadingSpinner from "@/app/components/global/LoadingSpinner";
+import { useContactBranches } from "@/hooks/useContactBranches";
 import {
   createContact,
   getContacts,
   updateContact,
   type Contact,
 } from "@/services/actions/contacts.actions";
-import { contactFieldErrors, contactPayload, type ContactDraft } from "@/utils/contact";
+import { contactFieldErrors, contactOwnershipLabel, contactPayload, type ContactDraft } from "@/utils/contact";
 
 function draftFromContact(contact: Contact): ContactDraft {
   return {
@@ -17,20 +18,22 @@ function draftFromContact(contact: Contact): ContactDraft {
     name: contact.name,
     email: contact.email ?? "",
     phone: contact.phone ?? "",
-    branchCode: contact.branch_code ?? "",
+    branchUserId: contact.user_id,
     authorized: contact.authorized,
     address: contact.address ?? "",
   };
 }
 
-export default function ContactosSection({ branchCode }: { branchCode?: string | null }) {
+export default function ContactosSection() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
-  const [draft, setDraft] = useState<ContactDraft>(emptyContactDraft(branchCode ?? ""));
+  const [draft, setDraft] = useState<ContactDraft>(emptyContactDraft());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const { options: branches, ownUserId } = useContactBranches();
+  const includeBranch = branches !== null;
 
   const load = async () => {
     const data = await getContacts();
@@ -44,7 +47,7 @@ export default function ContactosSection({ branchCode }: { branchCode?: string |
 
   const openCreate = () => {
     setEditingId("new");
-    setDraft(emptyContactDraft(branchCode ?? ""));
+    setDraft(emptyContactDraft(branches?.[0]?.id ?? null));
     setErrors({});
     setFormError("");
   };
@@ -63,7 +66,7 @@ export default function ContactosSection({ branchCode }: { branchCode?: string |
     if (Object.keys(fieldErrors).length > 0) return;
 
     setSaving(true);
-    const payload = contactPayload(draft);
+    const payload = contactPayload(draft, includeBranch);
     const result =
       editingId === "new"
         ? await createContact(payload)
@@ -73,7 +76,7 @@ export default function ContactosSection({ branchCode }: { branchCode?: string |
     if (!result.ok) {
       const apiErrors: Record<string, string> = {};
       for (const [field, messages] of Object.entries(result.errors ?? {})) {
-        const key = field === "branch_code" ? "branchCode" : field;
+        const key = field === "user_id" ? "branchUserId" : field;
         apiErrors[key] = messages[0];
       }
       setErrors(apiErrors);
@@ -119,6 +122,7 @@ export default function ContactosSection({ branchCode }: { branchCode?: string |
             errors={errors}
             onChange={setDraft}
             rutReadOnly={editingId !== "new"}
+            branches={branches}
           />
           {formError && <p className="text-red-500 text-sm">{formError}</p>}
           <div className="flex gap-2">
@@ -159,6 +163,7 @@ export default function ContactosSection({ branchCode }: { branchCode?: string |
               </div>
               <p className="text-sm text-gray-600">
                 RUT {contact.rut}
+                {` · ${contactOwnershipLabel(contact, ownUserId)}`}
                 {contact.email ? ` · ${contact.email}` : ""}
                 {contact.phone ? ` · ${contact.phone}` : ""}
               </p>

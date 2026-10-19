@@ -2,12 +2,20 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import ContactForm, { emptyContactDraft } from "@/app/components/contacts/ContactForm";
+import { useContactBranches } from "@/hooks/useContactBranches";
 import {
   createContact,
   getContacts,
   type Contact,
 } from "@/services/actions/contacts.actions";
-import { contactFieldErrors, contactPayload, type ContactDraft } from "@/utils/contact";
+import {
+  canCheckoutWithContact,
+  contactCheckoutLabel,
+  contactFieldErrors,
+  contactOwnershipLabel,
+  contactPayload,
+  type ContactDraft,
+} from "@/utils/contact";
 
 export type ContactMode = "none" | "existing" | "create";
 
@@ -23,17 +31,19 @@ const optionClass = (active: boolean) =>
       : "border-slate-200 bg-white hover:border-slate-300"
   }`;
 
-const CheckoutContactSection = forwardRef<
-  CheckoutContactHandle,
-  { branchCode?: string | null }
->(function CheckoutContactSection({ branchCode }, ref) {
+const CheckoutContactSection = forwardRef<CheckoutContactHandle>(function CheckoutContactSection(_props, ref) {
   const [mode, setMode] = useState<ContactMode>("none");
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [contactId, setContactId] = useState<number | null>(null);
-  const [draft, setDraft] = useState<ContactDraft>(emptyContactDraft(branchCode ?? ""));
+  const [draft, setDraft] = useState<ContactDraft>({
+    ...emptyContactDraft(),
+    authorized: true,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
+  const { options: branches, ownUserId } = useContactBranches();
+  const selectedContact = contacts.find((contact) => contact.id === contactId) ?? null;
 
   useEffect(() => {
     getContacts().then((data) => {
@@ -43,12 +53,10 @@ const CheckoutContactSection = forwardRef<
   }, []);
 
   useEffect(() => {
-    if (branchCode) {
-      setDraft((current) =>
-        current.branchCode ? current : { ...current, branchCode }
-      );
-    }
-  }, [branchCode]);
+    const id = branches?.[0]?.id ?? null;
+    if (!id) return;
+    setDraft((current) => (current.branchUserId ? current : { ...current, branchUserId: id }));
+  }, [branches]);
 
   useImperativeHandle(ref, () => ({
     async resolveContactId() {
@@ -58,11 +66,21 @@ const CheckoutContactSection = forwardRef<
       if (mode === "none") return null;
 
       if (mode === "existing") {
-        if (!contactId) {
+        const selected = contacts.find((contact) => contact.id === contactId);
+        if (!selected) {
           setFormError("Selecciona un contacto o continúa sin uno.");
           return undefined;
         }
-        return contactId;
+        if (!canCheckoutWithContact(selected)) {
+          setFormError("Ese contacto no está autorizado para la compra.");
+          return undefined;
+        }
+        return selected.id;
+      }
+
+      if (!draft.authorized) {
+        setFormError("Solo puedes comprar con un contacto autorizado.");
+        return undefined;
       }
 
       const fieldErrors = contactFieldErrors(draft);
@@ -71,11 +89,15 @@ const CheckoutContactSection = forwardRef<
         return undefined;
       }
 
-      const result = await createContact(contactPayload(draft));
-      if (!result.ok || !result.contact) {
+      const result = await createContact(contactPayload(draft, branches !== null));
+      if (!result.ok || !result.contact || !canCheckoutWithContact(result.contact)) {
+        if (result.contact && !canCheckoutWithContact(result.contact)) {
+          setFormError("Solo puedes comprar con un contacto autorizado.");
+          return undefined;
+        }
         const apiErrors: Record<string, string> = {};
         for (const [field, messages] of Object.entries(result.errors ?? {})) {
-          const key = field === "branch_code" ? "branchCode" : field;
+          const key = field === "user_id" ? "branchUserId" : field;
           apiErrors[key] = messages[0];
         }
         setErrors(apiErrors);
@@ -133,20 +155,34 @@ const CheckoutContactSection = forwardRef<
           >
             <option value="">Selecciona un contacto</option>
             {contacts.map((contact) => (
-              <option key={contact.id} value={contact.id}>
-                {contact.name} · {contact.rut}
+              <option
+                key={contact.id}
+                value={contact.id}
+                disabled={!canCheckoutWithContact(contact)}
+              >
+                {contactCheckoutLabel(contact, ownUserId)}
               </option>
             ))}
           </select>
+          {selectedContact && (
+            <p className="text-sm text-gray-600 mt-1">
+              {contactOwnershipLabel(selectedContact, ownUserId)}
+            </p>
+          )}
           {!loading && contacts.length === 0 && (
             <p className="text-sm text-gray-500 mt-1">No hay contactos. Puedes crear uno.</p>
+          )}
+          {!loading && contacts.some((contact) => !contact.authorized) && (
+            <p className="text-sm text-gray-500 mt-1">
+              Los contactos no autorizados no se pueden usar en la compra.
+            </p>
           )}
         </div>
       )}
 
       {mode === "create" && (
         <div className="mt-4">
-          <ContactForm draft={draft} errors={errors} onChange={setDraft} />
+          <ContactForm draft={draft} errors={errors} onChange={setDraft} branches={branches} />
         </div>
       )}
 
