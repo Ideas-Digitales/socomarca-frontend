@@ -2542,7 +2542,7 @@
         "/contacts": {
             "get": {
                 "operationId": "contacts.index",
-                "description": "Lists the contacts stored in Compra R\u00e1pida for the authenticated user's Random ERP entity.\nUsers with `read-all-contacts` get every contact. Random ERP is not queried.\n\nAllowed with the `read-own-contacts` or `read-all-contacts` permission.",
+                "description": "Lists the contacts stored in Compra R\u00e1pida. A secondary branch sees only its own contacts.\nA primary branch also sees the contacts of the secondary branches of its entity. Users with\n`read-all-contacts` get every contact. Random ERP is not queried.\n\nAllowed with the `read-own-contacts` or `read-all-contacts` permission.",
                 "summary": "List contacts",
                 "tags": [
                     "Contacts"
@@ -2579,7 +2579,7 @@
             },
             "post": {
                 "operationId": "contacts.store",
-                "description": "Saves the contact in Compra R\u00e1pida and creates or updates it in Random ERP in this same\nrequest, so it can be used to check out immediately. It belongs to the authenticated user's\nentity (`user_code`).\n\nAllowed with the `create-contacts` permission. Responds 201 with the created contact.\nIf Random ERP rejects the contact, nothing is saved.",
+                "description": "Saves the contact in Compra R\u00e1pida and creates or updates it in Random ERP in this same\nrequest, so it can be used to check out immediately. `user_id` is optional: when omitted, the\ncontact belongs to the authenticated user. A primary branch may assign it to one of its\nsecondary branches. The branch is not sent to Random ERP.\n\nAllowed with the `create-contacts` permission. Responds 201 with the created contact.\nIf Random ERP rejects the contact, nothing is saved.",
                 "summary": "Create a contact",
                 "tags": [
                     "Contacts"
@@ -2665,7 +2665,7 @@
         "/contacts/{contact}": {
             "get": {
                 "operationId": "contacts.show",
-                "description": "Users can see the contacts of their entity (`read-own-contacts`), or any contact with\n`read-all-contacts`.",
+                "description": "A secondary branch can see its own contacts. A primary branch can also see the contacts of\nits secondary branches. `read-all-contacts` sees any contact.",
                 "summary": "Show a contact",
                 "tags": [
                     "Contacts"
@@ -2713,7 +2713,7 @@
             },
             "put": {
                 "operationId": "contacts.update",
-                "description": "Updates the contact in Compra R\u00e1pida and in Random ERP in this same request. `PUT` requires\nevery field below; `PATCH` updates only the fields sent. The RUT cannot change.\n\nAllowed with the `update-contacts` permission, on the contacts of the user's entity, or on any\ncontact when the user also has `read-all-contacts`. If Random ERP rejects the change, the\nlocal contact is left as it was.",
+                "description": "Updates the contact in Compra R\u00e1pida and in Random ERP in this same request. `PUT` requires\nevery field below; `PATCH` updates only the fields sent. The RUT cannot change.\n\nAllowed with the `update-contacts` permission, on the contacts the user can see, or on any\ncontact when the user also has `read-all-contacts`. A primary branch can update the contacts\nof its secondary branches. If Random ERP rejects the change, the local contact is left as it was.",
                 "summary": "Update a contact",
                 "tags": [
                     "Contacts"
@@ -11596,11 +11596,13 @@
                         "example": "+5215656780748",
                         "maxLength": 30
                     },
-                    "branch_code": {
-                        "type": "string",
-                        "description": "Random ERP branch code of the contact (`SUTRABCON`), 3 characters at most.",
-                        "example": "L01",
-                        "maxLength": 3
+                    "user_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Branch user the contact belongs to. When omitted, the contact belongs to the\nauthenticated user. A primary branch may send its own id or the id of one of its\nsecondary branches.",
+                        "example": 42
                     },
                     "authorized": {
                         "type": "boolean",
@@ -11618,7 +11620,6 @@
                     "name",
                     "email",
                     "phone",
-                    "branch_code",
                     "authorized",
                     "address"
                 ],
@@ -11651,11 +11652,13 @@
                         "example": "+5215656780748",
                         "maxLength": 30
                     },
-                    "branch_code": {
-                        "type": "string",
-                        "description": "Random ERP branch code of the contact (`SUTRABCON`), 3 characters at most.",
-                        "example": "L01",
-                        "maxLength": 3
+                    "user_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Branch user the contact belongs to. When omitted, the contact keeps its branch.\nA primary branch may send its own id or the id of one of its secondary branches.",
+                        "example": 42
                     },
                     "authorized": {
                         "type": "boolean",
@@ -11672,7 +11675,6 @@
                     "name",
                     "email",
                     "phone",
-                    "branch_code",
                     "authorized",
                     "address"
                 ],
@@ -12304,7 +12306,10 @@
                         ]
                     },
                     "fax": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "position": {
                         "type": [
@@ -12313,17 +12318,56 @@
                         ]
                     },
                     "area": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
-                    "branch_code": {
+                    "user_id": {
                         "type": "string",
-                        "description": "Random ERP branch code (`SUTRABCON`)."
+                        "description": "Branch user this contact belongs to."
+                    },
+                    "branch": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "description": "Branch of the contact. `branch_type` `P` is the primary branch and `S` is a secondary\nbranch. The buyer compares `user_id` with their own id to tell their contacts from\nthose of a secondary branch.",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "branch_code": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "branch_type": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "branch_code",
+                            "branch_type"
+                        ]
                     },
                     "authorized": {
                         "type": "boolean"
                     },
                     "address": {
-                        "type": "string",
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "description": "Address (`DIRECON`), 50 characters at most when written from this API."
                     },
                     "created_at": {
@@ -12351,7 +12395,8 @@
                     "fax",
                     "position",
                     "area",
-                    "branch_code",
+                    "user_id",
+                    "branch",
                     "authorized",
                     "address",
                     "created_at",
@@ -12776,6 +12821,18 @@
                     },
                     "customer_id": {
                         "type": "integer"
+                    },
+                    "contact_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "contact_rut": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -12792,7 +12849,9 @@
                     "random_document_number",
                     "vat",
                     "total",
-                    "customer_id"
+                    "customer_id",
+                    "contact_id",
+                    "contact_rut"
                 ],
                 "title": "Order"
             },
@@ -12960,7 +13019,10 @@
                         ]
                     },
                     "contact_id": {
-                        "type": "string",
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
                         "description": "Contact chosen at checkout. `null` on orders placed before contacts existed."
                     },
                     "contact_rut": {
@@ -13101,7 +13163,7 @@
                             "integer",
                             "null"
                         ],
-                        "description": "Optional contact person of the authenticated user's Random ERP entity. When present, its\nRUT is sent to Random ERP as `rutContacto` on the sales note. Omit it to check out without\na contact."
+                        "description": "Optional contact person of a branch the authenticated user manages. It must be authorized.\nWhen present, its RUT is sent to Random ERP as `rutContacto` on the sales note. Omit it to\ncheck out without a contact."
                     },
                     "payment_method": {
                         "type": "string",
@@ -13663,6 +13725,13 @@
                             null
                         ]
                     },
+                    "branch_code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Random ERP branch code (SUEN) of the authenticated user."
+                    },
                     "can_order_for_branches": {
                         "type": "boolean",
                         "description": "Whether the user can place orders for other branches (`GET /branches`): a primary branch with\nat least one active secondary branch. Same value as in the login response."
@@ -13704,6 +13773,7 @@
                     "phone",
                     "is_active",
                     "branch_type",
+                    "branch_code",
                     "can_order_for_branches",
                     "billing_address",
                     "default_shipping_address",
