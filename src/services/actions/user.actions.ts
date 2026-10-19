@@ -30,6 +30,8 @@ export interface ApiUser {
   phone: string;
   is_active: boolean;
   branch_type: BranchType | null;
+  /** Código de sucursal de Random (SUEN) */
+  branch_code?: string | null;
   /** Puede cambiar durante la sesión: este es el valor vigente */
   can_order_for_branches: boolean;
   billing_address: ApiAddress;

@@ -1,16 +1,17 @@
 "use client";
 
 import RutInput, { formatRut } from "@/app/components/global/RutInputVisualIndicators";
+import type { ContactBranchOption } from "@/hooks/useContactBranches";
 import type { ContactDraft } from "@/utils/contact";
 
 const inputClass = "w-full p-2 mt-1 rounded bg-[#EBEFF7]";
 
-export const emptyContactDraft = (branchCode = ""): ContactDraft => ({
+export const emptyContactDraft = (branchUserId: number | null = null): ContactDraft => ({
   rut: "",
   name: "",
   email: "",
   phone: "",
-  branchCode,
+  branchUserId,
   authorized: false,
   address: "",
 });
@@ -20,11 +21,14 @@ export default function ContactForm({
   errors,
   onChange,
   rutReadOnly = false,
+  branches = null,
 }: {
   draft: ContactDraft;
   errors: Record<string, string>;
   onChange: (draft: ContactDraft) => void;
   rutReadOnly?: boolean;
+  /** `null` oculta la lista: la sucursal la asigna el backend. */
+  branches?: ContactBranchOption[] | null;
 }) {
   const set = (patch: Partial<ContactDraft>) => onChange({ ...draft, ...patch });
 
@@ -78,16 +82,23 @@ export default function ContactForm({
         {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
       </div>
 
-      <div>
-        <label className="block font-medium text-sm">Código de sucursal</label>
-        <input
-          value={draft.branchCode}
-          onChange={(e) => set({ branchCode: e.target.value.slice(0, 3) })}
-          maxLength={3}
-          className={inputClass}
-        />
-        {errors.branchCode && <p className="text-red-500 text-sm mt-1">{errors.branchCode}</p>}
-      </div>
+      {branches && branches.length > 0 && (
+        <div className="md:col-span-2">
+          <label className="block font-medium text-sm">Sucursal</label>
+          <select
+            value={draft.branchUserId ?? ""}
+            onChange={(e) => set({ branchUserId: e.target.value ? Number(e.target.value) : null })}
+            className={inputClass}
+          >
+            {branches.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.label}
+              </option>
+            ))}
+          </select>
+          {errors.branchUserId && <p className="text-red-500 text-sm mt-1">{errors.branchUserId}</p>}
+        </div>
+      )}
 
       <div>
         <label className="block font-medium text-sm">Dirección</label>

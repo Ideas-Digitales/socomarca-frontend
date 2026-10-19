@@ -3,7 +3,8 @@ export interface ContactDraft {
   name: string;
   email: string;
   phone: string;
-  branchCode: string;
+  /** Usuario de la sucursal. `null` hasta que la principal elige una. */
+  branchUserId: number | null;
   authorized: boolean;
   address: string;
 }
@@ -51,7 +52,6 @@ export function contactFieldErrors(draft: ContactDraft): Record<string, string> 
   const name = draft.name.trim();
   const email = draft.email.trim();
   const phone = draft.phone.trim();
-  const branchCode = draft.branchCode.trim();
   const address = draft.address.trim();
 
   if (!draft.rut.trim()) errors.rut = 'Ingresa el RUT.';
@@ -67,25 +67,77 @@ export function contactFieldErrors(draft: ContactDraft): Record<string, string> 
   if (!phone) errors.phone = 'Ingresa el teléfono.';
   else if (phone.length > 30) errors.phone = 'El teléfono admite hasta 30 caracteres.';
 
-  if (!branchCode) errors.branchCode = 'Ingresa el código de sucursal.';
-  else if (branchCode.length > 3) errors.branchCode = 'El código de sucursal admite hasta 3 caracteres.';
-
   if (!address) errors.address = 'Ingresa la dirección.';
   else if (address.length > 50) errors.address = 'La dirección admite hasta 50 caracteres.';
 
   return errors;
 }
 
-export function contactPayload(draft: ContactDraft) {
-  return {
+/**
+ * `includeBranchUser` solo cuando la sucursal principal elige sucursal.
+ * Si se omite, el contacto queda en el usuario autenticado.
+ */
+export function contactPayload(draft: ContactDraft, includeBranchUser = false) {
+  const payload: {
+    rut: string;
+    name: string;
+    email: string;
+    phone: string;
+    authorized: boolean;
+    address: string;
+    user_id?: number;
+  } = {
     rut: normalizeContactRut(draft.rut),
     name: draft.name.trim(),
     email: draft.email.trim(),
     phone: draft.phone.trim(),
-    branch_code: draft.branchCode.trim(),
     authorized: draft.authorized,
     address: draft.address.trim(),
   };
+
+  if (includeBranchUser && draft.branchUserId) payload.user_id = draft.branchUserId;
+
+  return payload;
+}
+
+export function isOwnContact(
+  contact: { user_id: number },
+  currentUserId: number | null | undefined,
+): boolean {
+  return currentUserId != null && contact.user_id === currentUserId;
+}
+
+/** «Mi sucursal» cuando el contacto es del usuario que compra; si no, el nombre de la secundaria. */
+export function contactOwnershipLabel(
+  contact: { user_id: number; branch?: { name: string | null } | null },
+  currentUserId: number | null | undefined,
+): string {
+  if (isOwnContact(contact, currentUserId)) return "Mi sucursal";
+
+  const name = contact.branch?.name?.trim();
+
+  return name || "Otra sucursal";
+}
+
+export function contactCheckoutLabel(
+  contact: {
+    name: string;
+    rut: string;
+    user_id: number;
+    authorized: boolean;
+    branch?: { name: string | null } | null;
+  },
+  currentUserId: number | null | undefined,
+): string {
+  const branch = contactOwnershipLabel(contact, currentUserId);
+  const status = contact.authorized ? "" : " · No autorizado";
+
+  return `${contact.name} · ${contact.rut} · ${branch}${status}`;
+}
+
+/** Solo un contacto autorizado puede acompañar la compra. */
+export function canCheckoutWithContact(contact: { authorized: boolean }): boolean {
+  return contact.authorized;
 }
 
 /** Cuerpo de `POST /orders/pay`. Omite `contact_id` cuando no hay contacto. */

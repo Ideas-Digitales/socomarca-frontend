@@ -14,7 +14,13 @@ export interface Contact {
   fax: string | null;
   position: string | null;
   area: string | null;
-  branch_code: string | null;
+  user_id: number;
+  branch: {
+    id: number;
+    name: string;
+    branch_code: string | null;
+    branch_type: string | null;
+  } | null;
   authorized: boolean;
   address: string | null;
 }
@@ -24,7 +30,8 @@ export interface ContactPayload {
   name: string;
   email: string;
   phone: string;
-  branch_code: string;
+  /** Solo lo envía la sucursal principal cuando elige sucursal. */
+  user_id?: number;
   authorized: boolean;
   address: string;
 }
