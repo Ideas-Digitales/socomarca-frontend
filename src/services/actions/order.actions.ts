@@ -11,6 +11,7 @@ import {
 } from "@/utils/cancelOrder";
 
 import type { OrderResponse } from "@/interfaces/order.interface";
+import { payOrderBody } from "@/utils/contact";
 
 export async function createOrderFromCart({
   shippingAddressId,
@@ -18,6 +19,7 @@ export async function createOrderFromCart({
   customerId,
   paymentDocumentType,
   notes,
+  contactId,
 }: {
   shippingAddressId: number;
   paymentMethod: string;
@@ -25,6 +27,8 @@ export async function createOrderFromCart({
   customerId?: number;
   paymentDocumentType: 'invoice' | 'receipt';
   notes?: string;
+  /** Contacto de la entidad. Se omite cuando la compra no lleva contacto. */
+  contactId?: number | null;
 }) {
   const { getCookie } = await cookiesManagement();
   const token = getCookie("token");
@@ -39,14 +43,14 @@ export async function createOrderFromCart({
     Accept: "application/json",
   };
 
-  const body: Record<string, unknown> = {
-    address_id: shippingAddressId,
-    payment_method: paymentMethod,
-    payment_document_type: paymentDocumentType,
-  };
-
-  if (customerId) body.customer_id = customerId;
-  if (notes) body.notes = notes;
+  const body = payOrderBody({
+    shippingAddressId,
+    paymentMethod,
+    customerId,
+    paymentDocumentType,
+    notes,
+    contactId,
+  });
 
   const res = await fetch(`${BACKEND_URL}/orders/pay`, {
     method: "POST",

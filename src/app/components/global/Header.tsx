@@ -118,6 +118,7 @@ export default function Header({ carro }: Props) {
     { name: 'Datos de Facturación', href: '/mi-cuenta?section=datos', disabled: isAdminUser() },
     { name: 'Favoritos', href: '/mi-cuenta?section=favoritos', disabled: isAdminUser() },
     { name: 'Direcciones', href: '/mi-cuenta?section=direcciones', disabled: isAdminUser() },
+    { name: 'Contactos', href: '/mi-cuenta?section=contactos', disabled: isAdminUser() },
     { name: 'Mis Compras', href: '/mi-cuenta?section=compras', disabled: isAdminUser() },
     { name: 'Carrito', href: '/carro-de-compra', disabled: isAdminUser() },
     { name: 'Guía de compra', href: '/guia-de-compra', disabled: false },
