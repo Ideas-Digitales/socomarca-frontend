@@ -9,11 +9,13 @@ import {
   MapPinIcon,
   ShoppingBagIcon,
   UserIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 
 const items = [
   { key: 'datos', label: 'Datos de Facturación', icon: UserIcon },
   { key: 'direcciones', label: 'Direcciones', icon: MapPinIcon },
+  { key: 'contactos', label: 'Contactos', icon: UsersIcon },
   { key: 'favoritos', label: 'Mis favoritos', icon: HeartIcon },
   { key: 'compras', label: 'Mis compras', icon: ShoppingBagIcon },
   { key: 'linea-credito', label: 'Línea de Crédito', icon: CreditCardIcon },

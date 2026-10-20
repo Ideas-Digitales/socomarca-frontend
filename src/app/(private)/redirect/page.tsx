@@ -43,6 +43,7 @@ export default function RedireccionandoPago() {
     const customerId = localStorage.getItem('customerId');
     const paymentDocumentType = (localStorage.getItem('paymentDocumentType') as 'invoice' | 'receipt') || 'receipt';
     const notes = localStorage.getItem('notes') || undefined;
+    const contactId = localStorage.getItem('contactId');
 
     if (!id) {
       setError('No se encontró una dirección de envío seleccionada');
@@ -53,13 +54,14 @@ export default function RedireccionandoPago() {
 
     const process = async () => {
       try {
-        console.log('[redirect] Enviando a /orders/pay:', { address_id: shippingAddressId, payment_method: paymentMethod, customer_id: customerId || undefined, payment_document_type: paymentDocumentType, notes });
+        console.log('[redirect] Enviando a /orders/pay:', { address_id: shippingAddressId, payment_method: paymentMethod, customer_id: customerId || undefined, payment_document_type: paymentDocumentType, notes, contact_id: contactId || undefined });
         const result = await createOrderFromCart({
           shippingAddressId,
           paymentMethod,
           customerId: customerId ? Number(customerId) : undefined,
           paymentDocumentType,
           notes,
+          contactId: contactId ? Number(contactId) : null,
         });
         console.log('[redirect] Respuesta:', result);
 
@@ -71,7 +73,9 @@ export default function RedireccionandoPago() {
             return;
           }
           const fieldError: string | undefined =
-            result.body?.errors?.customer_id?.[0] ?? result.body?.errors?.address_id?.[0];
+            result.body?.errors?.customer_id?.[0]
+            ?? result.body?.errors?.address_id?.[0]
+            ?? result.body?.errors?.contact_id?.[0];
           if (result.status === 422 && fieldError) {
             setError(fieldError);
             return;
@@ -91,6 +95,7 @@ export default function RedireccionandoPago() {
         localStorage.removeItem('branchId');
         localStorage.removeItem('paymentDocumentType');
         localStorage.removeItem('notes');
+        localStorage.removeItem('contactId');
         await fetchCartProducts();
 
         if (paymentMethod === 'transbank') {

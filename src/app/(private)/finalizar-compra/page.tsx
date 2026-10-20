@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { unstable_rethrow, useRouter } from 'next/navigation';
 import RutInput from '@/app/components/global/RutInputVisualIndicators';
 import Image from 'next/image';
@@ -16,6 +16,9 @@ import { fetchAllBranches } from '@/services/actions/branches.actions';
 import { branchTypeLabel, type Branch, type BranchType } from '@/interfaces/branch.interface';
 import { getUserAddresses, type Address } from '@/services/actions/addressees.actions';
 import { buildVatBreakdown } from '@/utils/vat';
+import CheckoutContactSection, {
+  type CheckoutContactHandle,
+} from '@/app/components/contacts/CheckoutContactSection';
 
 type PaymentMethodCode = string;
 
@@ -72,6 +75,8 @@ export default function FinalizarCompraPage() {
   const [paymentDocumentType, setPaymentDocumentType] = useState<'invoice' | 'receipt'>('receipt');
   const [notes, setNotes] = useState('');
   const [docTypeError, setDocTypeError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const contactRef = useRef<CheckoutContactHandle>(null);
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAceptaTerminos(e.target.checked);
@@ -161,9 +166,9 @@ export default function FinalizarCompraPage() {
     });
   };
 
-  const goNext = () => {
+  const goNext = async () => {
     // Sin dirección la tarjeta de envío ya explica por qué no se puede pagar
-    let hasError = !canPay;
+    let hasError = !canPay || loadingUser;
 
     if (!aceptaTerminos) {
       setTerminosError('Debes aceptar los términos y condiciones.');
@@ -181,17 +186,24 @@ export default function FinalizarCompraPage() {
 
     if (hasError) return;
 
-    if (shippingAddress) {
-      localStorage.setItem('selectedAddressId', shippingAddress.id.toString());
-      localStorage.setItem('paymentMethod', paymentMethod);
-      localStorage.setItem('paymentDocumentType', paymentDocumentType);
-      localStorage.removeItem('branchId');
-      if (selectedBranch) localStorage.setItem('customerId', selectedBranch.id.toString());
-      else localStorage.removeItem('customerId');
-      if (notes.trim()) localStorage.setItem('notes', notes.trim());
-      else localStorage.removeItem('notes');
-      router.push('/redirect');
+    setSubmitting(true);
+    const contactId = await contactRef.current?.resolveContactId();
+    if (contactId === undefined || !shippingAddress) {
+      setSubmitting(false);
+      return;
     }
+
+    localStorage.setItem('selectedAddressId', shippingAddress.id.toString());
+    localStorage.setItem('paymentMethod', paymentMethod);
+    localStorage.setItem('paymentDocumentType', paymentDocumentType);
+    localStorage.removeItem('branchId');
+    if (selectedBranch) localStorage.setItem('customerId', selectedBranch.id.toString());
+    else localStorage.removeItem('customerId');
+    if (notes.trim()) localStorage.setItem('notes', notes.trim());
+    else localStorage.removeItem('notes');
+    if (contactId) localStorage.setItem('contactId', contactId.toString());
+    else localStorage.removeItem('contactId');
+    router.push('/redirect');
   };
 
   useEffect(() => {
@@ -419,6 +431,8 @@ export default function FinalizarCompraPage() {
                 )}
               </div>
 
+              <CheckoutContactSection ref={contactRef} />
+
               <div className="col-span-1 md:col-span-2">
                 <label className="block font-medium">Notas del pedido</label>
                 <textarea
@@ -579,10 +593,10 @@ export default function FinalizarCompraPage() {
 
           <button
             onClick={goNext}
-            disabled={!canPay}
+            disabled={!canPay || submitting}
             className="w-full bg-lime-500 hover:bg-lime-600 text-white py-2 rounded cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Finalizar compra
+            {submitting ? 'Guardando...' : 'Finalizar compra'}
           </button>
         </aside>
       </div>

@@ -24,12 +24,14 @@ import {
 } from "@/services/actions/addressees.actions";
 import LoadingSpinner from "@/app/components/global/LoadingSpinner";
 import DireccionesSection from "@/app/components/mi-cuenta/DireccionesSection";
+import ContactosSection from "@/app/components/mi-cuenta/ContactosSection";
 import CambiarContraseñaSection from "@/app/components/mi-cuenta/CambiarContraseñaSection";
 import LineaCreditoSection from "@/app/components/mi-cuenta/LineaCreditoSection";
 
 const SECCIONES_VALIDAS = [
   "datos",
   "direcciones",
+  "contactos",
   "favoritos",
   "detalle-lista",
   "compras",
@@ -222,6 +224,11 @@ export default function MiCuentaPage() {
                   pedido={pedidoSeleccionado}
                   setSection={setSelected}
                 />
+              </div>
+            )}
+            {selected === "contactos" && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <ContactosSection />
               </div>
             )}
             {selected === "direcciones" && (
