@@ -19,6 +19,11 @@ import { buildVatBreakdown } from '@/utils/vat';
 import CheckoutContactSection, {
   type CheckoutContactHandle,
 } from '@/app/components/contacts/CheckoutContactSection';
+import {
+  DEFAULT_PAYMENT_DOCUMENT_TYPE,
+  PAYMENT_DOCUMENT_OPTIONS,
+  type PaymentDocumentType,
+} from '@/utils/paymentDocument';
 
 type PaymentMethodCode = string;
 
@@ -72,7 +77,9 @@ export default function FinalizarCompraPage() {
   const [branchesError, setBranchesError] = useState('');
   // `null` = la propia sucursal: se compra para el usuario y no se envía customer_id
   const [customerId, setCustomerId] = useState<number | null>(null);
-  const [paymentDocumentType, setPaymentDocumentType] = useState<'invoice' | 'receipt'>('receipt');
+  const [paymentDocumentType, setPaymentDocumentType] = useState<PaymentDocumentType>(
+    DEFAULT_PAYMENT_DOCUMENT_TYPE
+  );
   const [notes, setNotes] = useState('');
   const [docTypeError, setDocTypeError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -395,36 +402,26 @@ export default function FinalizarCompraPage() {
               <div className="col-span-1 md:col-span-2 mt-6">
                 <p className="font-medium mb-2">Tipo de documento</p>
                 <div className="flex gap-4">
-                  <label className={`flex items-center gap-2 p-3 rounded border cursor-pointer ${
-                    paymentDocumentType === 'receipt'
-                      ? 'border-lime-500 bg-[#f0fdf4]'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="paymentDocumentType"
-                      value="receipt"
-                      checked={paymentDocumentType === 'receipt'}
-                      onChange={() => { setPaymentDocumentType('receipt'); setDocTypeError(''); }}
-                      className="shrink-0"
-                    />
-                    <span className="text-sm font-medium">Boleta</span>
-                  </label>
-                  <label className={`flex items-center gap-2 p-3 rounded border cursor-pointer ${
-                    paymentDocumentType === 'invoice'
-                      ? 'border-lime-500 bg-[#f0fdf4]'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="paymentDocumentType"
-                      value="invoice"
-                      checked={paymentDocumentType === 'invoice'}
-                      onChange={() => { setPaymentDocumentType('invoice'); setDocTypeError(''); }}
-                      className="shrink-0"
-                    />
-                    <span className="text-sm font-medium">Factura</span>
-                  </label>
+                  {PAYMENT_DOCUMENT_OPTIONS.map((option) => (
+                    <label
+                      key={option.value}
+                      className={`flex items-center gap-2 p-3 rounded border cursor-pointer ${
+                        paymentDocumentType === option.value
+                          ? 'border-lime-500 bg-[#f0fdf4]'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentDocumentType"
+                        value={option.value}
+                        checked={paymentDocumentType === option.value}
+                        onChange={() => { setPaymentDocumentType(option.value); setDocTypeError(''); }}
+                        className="shrink-0"
+                      />
+                      <span className="text-sm font-medium">{option.label}</span>
+                    </label>
+                  ))}
                 </div>
                 {docTypeError && (
                   <p className="text-red-500 text-sm mt-1">{docTypeError}</p>
