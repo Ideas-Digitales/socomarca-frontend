@@ -20,7 +20,8 @@ describe("tipo de documento del checkout", () => {
     );
   });
 
-  it("deja Boleta seleccionada por defecto", () => {
-    assert.equal(DEFAULT_PAYMENT_DOCUMENT_TYPE, "receipt");
+  it("deja Factura seleccionada por defecto", () => {
+    assert.equal(DEFAULT_PAYMENT_DOCUMENT_TYPE, "invoice");
+    assert.equal(DEFAULT_PAYMENT_DOCUMENT_TYPE, PAYMENT_DOCUMENT_OPTIONS[0].value);
   });
 });

@@ -5,6 +5,10 @@ import { createOrderFromCart } from '@/services/actions/order.actions';
 import LoadingSpinner from '@/app/components/global/LoadingSpinner';
 import { unstable_rethrow, useRouter } from 'next/navigation';
 import useStore from '@/stores/base';
+import {
+  DEFAULT_PAYMENT_DOCUMENT_TYPE,
+  type PaymentDocumentType,
+} from '@/utils/paymentDocument';
 
 interface CreditPaymentResult {
   orderId: number;
@@ -41,7 +45,8 @@ export default function RedireccionandoPago() {
     const paymentMethod = localStorage.getItem('paymentMethod') ?? 'transbank';
     const id = localStorage.getItem('selectedAddressId');
     const customerId = localStorage.getItem('customerId');
-    const paymentDocumentType = (localStorage.getItem('paymentDocumentType') as 'invoice' | 'receipt') || 'receipt';
+    const paymentDocumentType =
+      (localStorage.getItem('paymentDocumentType') as PaymentDocumentType) || DEFAULT_PAYMENT_DOCUMENT_TYPE;
     const notes = localStorage.getItem('notes') || undefined;
     const contactId = localStorage.getItem('contactId');
 

@@ -5,5 +5,6 @@ export const PAYMENT_DOCUMENT_OPTIONS = [
 
 export type PaymentDocumentType = (typeof PAYMENT_DOCUMENT_OPTIONS)[number]['value'];
 
-/** Boleta sigue siendo la opción marcada al entrar al checkout. */
-export const DEFAULT_PAYMENT_DOCUMENT_TYPE: PaymentDocumentType = 'receipt';
+/** La primera opción del catálogo queda marcada al entrar al checkout. */
+export const DEFAULT_PAYMENT_DOCUMENT_TYPE: PaymentDocumentType =
+  PAYMENT_DOCUMENT_OPTIONS[0].value;
