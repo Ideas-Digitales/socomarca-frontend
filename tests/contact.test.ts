@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   contactFieldErrors,
   canCheckoutWithContact,
+  contactCheckoutBranchLabel,
   contactCheckoutLabel,
   contactOwnershipLabel,
   contactPayload,
@@ -71,7 +72,7 @@ describe("contacto en el checkout", () => {
     rut: "11111111-1",
     user_id: 20,
     authorized: true,
-    branch: { name: "Local Norte", branch_type: "S" },
+    branch: { name: "Local Norte", branch_code: "L01", branch_type: "S" },
   };
 
   it("distingue el contacto propio del de una sucursal secundaria", () => {
@@ -79,12 +80,24 @@ describe("contacto en el checkout", () => {
     assert.equal(isOwnContact(contact, 8), false);
     assert.equal(contactOwnershipLabel(contact, 20), "Mi sucursal");
     assert.equal(contactOwnershipLabel(contact, 8), "Local Norte");
+    assert.equal(contactCheckoutBranchLabel(contact, 20), "Mi sucursal");
+    assert.equal(contactCheckoutBranchLabel(contact, 8), "L01");
     assert.equal(
       contactCheckoutLabel(contact, 20),
       "Ana Pérez · 11111111-1 · Mi sucursal",
     );
     assert.equal(
       contactCheckoutLabel(contact, 8),
+      "Ana Pérez · 11111111-1 · L01",
+    );
+  });
+
+  it("usa el nombre de la sucursal si el contacto no tiene código", () => {
+    const withoutCode = { ...contact, branch: { name: "Local Norte", branch_code: null } };
+
+    assert.equal(contactCheckoutBranchLabel(withoutCode, 8), "Local Norte");
+    assert.equal(
+      contactCheckoutLabel(withoutCode, 8),
       "Ana Pérez · 11111111-1 · Local Norte",
     );
   });

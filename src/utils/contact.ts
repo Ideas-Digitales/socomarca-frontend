@@ -107,6 +107,11 @@ export function isOwnContact(
   return currentUserId != null && contact.user_id === currentUserId;
 }
 
+type ContactBranch = {
+  name: string | null;
+  branch_code?: string | null;
+} | null;
+
 /** «Mi sucursal» cuando el contacto es del usuario que compra; si no, el nombre de la secundaria. */
 export function contactOwnershipLabel(
   contact: { user_id: number; branch?: { name: string | null } | null },
@@ -119,17 +124,35 @@ export function contactOwnershipLabel(
   return name || "Otra sucursal";
 }
 
+/**
+ * En el checkout de la sucursal principal, el contacto de otra sucursal se identifica
+ * por su código. El contacto propio sigue como «Mi sucursal».
+ */
+export function contactCheckoutBranchLabel(
+  contact: { user_id: number; branch?: ContactBranch },
+  currentUserId: number | null | undefined,
+): string {
+  if (isOwnContact(contact, currentUserId)) return "Mi sucursal";
+
+  const code = contact.branch?.branch_code?.trim();
+  if (code) return code;
+
+  const name = contact.branch?.name?.trim();
+
+  return name || "Otra sucursal";
+}
+
 export function contactCheckoutLabel(
   contact: {
     name: string;
     rut: string;
     user_id: number;
     authorized: boolean;
-    branch?: { name: string | null } | null;
+    branch?: ContactBranch;
   },
   currentUserId: number | null | undefined,
 ): string {
-  const branch = contactOwnershipLabel(contact, currentUserId);
+  const branch = contactCheckoutBranchLabel(contact, currentUserId);
   const status = contact.authorized ? "" : " · No autorizado";
 
   return `${contact.name} · ${contact.rut} · ${branch}${status}`;
