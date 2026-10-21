@@ -10,9 +10,9 @@ import {
 } from "@/services/actions/contacts.actions";
 import {
   canCheckoutWithContact,
+  contactCheckoutBranchLabel,
   contactCheckoutLabel,
   contactFieldErrors,
-  contactOwnershipLabel,
   contactPayload,
   type ContactDraft,
 } from "@/utils/contact";
@@ -166,7 +166,7 @@ const CheckoutContactSection = forwardRef<CheckoutContactHandle>(function Checko
           </select>
           {selectedContact && (
             <p className="text-sm text-gray-600 mt-1">
-              {contactOwnershipLabel(selectedContact, ownUserId)}
+              {contactCheckoutBranchLabel(selectedContact, ownUserId)}
             </p>
           )}
           {!loading && contacts.length === 0 && (
