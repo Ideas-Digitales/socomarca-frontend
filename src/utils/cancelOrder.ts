@@ -58,51 +58,56 @@ export function buildCancelOrderBody(raw: string): {
   return { order_number: trimmed };
 }
 
-/** Código y estado del pago, lo mínimo para saber si el cliente puede cancelar. */
-export interface OrderPaymentRef {
-  code: string;
-  status: string;
-}
+/**
+ * Segundos que faltan hasta `cancelable_until`. Cero cuando esa fecha ya pasó.
+ * Null si no hay fecha o no se puede leer.
+ */
+export function cancellationSecondsLeft(
+  cancelableUntil: string | null,
+  nowMs: number
+): number | null {
+  if (cancelableUntil == null || cancelableUntil.trim() === '') return null;
 
-export interface OwnOrderCancelInput {
-  emitidoPor: string | null;
-  estado: string;
-  pagos: OrderPaymentRef[];
+  const deadline = Date.parse(cancelableUntil);
+
+  if (Number.isNaN(deadline)) return null;
+
+  return Math.max(0, Math.floor((deadline - nowMs) / 1000));
 }
 
 /**
- * Conserva `payment_method.code` y `status` de `GET /orders`.
- * Un pago sin esos datos no sirve para mostrar la acción.
+ * Tiempo visible del plazo. La fecha manda; `secondsRemaining` solo cubre
+ * el primer instante si la fecha no viene o no se puede leer.
  */
-export function mapOrderPayments(
-  payments: ReadonlyArray<{
-    status?: string | null;
-    payment_method?: { code?: string | null } | null;
-  }> | null | undefined
-): OrderPaymentRef[] {
-  if (!payments) return [];
+export function visibleCancellationSeconds(
+  cancelableUntil: string | null,
+  secondsRemaining: number | null,
+  nowMs: number
+): number | null {
+  const fromDeadline = cancellationSecondsLeft(cancelableUntil, nowMs);
 
-  return payments.flatMap((payment) => {
-    const code = payment.payment_method?.code;
-    const status = payment.status;
+  if (fromDeadline !== null) return fromDeadline;
 
-    if (!code || !status) return [];
+  if (secondsRemaining == null || !Number.isFinite(secondsRemaining)) return null;
 
-    return [{ code, status }];
-  });
+  return Math.max(0, Math.floor(secondsRemaining));
 }
 
-/**
- * El cliente solo cancela un pedido que él realizó, que no está cancelado
- * y que sigue a crédito (`random_credit`) en `processing`.
- */
-export function canCancelOwnOrder(order: OwnOrderCancelInput): boolean {
-  if (order.emitidoPor) return false;
-  if (order.estado === 'canceled') return false;
+/** El botón se muestra mientras quede al menos un segundo. */
+export function canCancelOwnOrder(secondsRemaining: number | null): boolean {
+  return secondsRemaining != null && secondsRemaining > 0;
+}
 
-  return order.pagos.some(
-    (pago) => pago.code === 'random_credit' && pago.status === 'processing'
-  );
+/** Texto corto junto al botón. `seconds` ya viene redondeado hacia abajo. */
+export function formatCancellationRemaining(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+
+  if (minutes <= 0) return `Quedan ${rest} s`;
+
+  if (rest === 0) return `Quedan ${minutes} min`;
+
+  return `Quedan ${minutes} min ${rest} s`;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

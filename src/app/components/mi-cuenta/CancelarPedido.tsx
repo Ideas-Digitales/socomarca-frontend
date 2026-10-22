@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { cancelOrder } from "@/services/actions/order.actions";
-import { canCancelOwnOrder, type OrderPaymentRef } from "@/utils/cancelOrder";
+import {
+  canCancelOwnOrder,
+  formatCancellationRemaining,
+  visibleCancellationSeconds,
+} from "@/utils/cancelOrder";
 
 interface CancelarPedidoProps {
   compra: {
     numero: string;
-    emitidoPor: string | null;
-    estado: string;
-    pagos: OrderPaymentRef[];
+    cancelableUntil: string | null;
+    cancelSecondsRemaining: number | null;
   };
   onCanceled: (numero: string) => Promise<void> | void;
   /** En el detalle el botón ocupa el ancho del resumen. En el listado va en la fila de acciones. */
@@ -27,8 +30,24 @@ export default function CancelarPedido({
   const [fieldErrors, setFieldErrors] = useState<string[]>([]);
   const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
-  const canCancel = canCancelOwnOrder(compra);
+  useEffect(() => {
+    if (!compra.cancelableUntil) return;
+
+    const tick = () => setNowMs(Date.now());
+    tick();
+    const id = window.setInterval(tick, 1000);
+
+    return () => window.clearInterval(id);
+  }, [compra.cancelableUntil]);
+
+  const secondsLeft = visibleCancellationSeconds(
+    compra.cancelableUntil,
+    compra.cancelSecondsRemaining,
+    nowMs
+  );
+  const canCancel = canCancelOwnOrder(secondsLeft);
   const hasFeedback = Boolean(successMessage || formError || fieldErrors.length > 0);
 
   const clearFeedback = () => {
@@ -78,6 +97,16 @@ export default function CancelarPedido({
       {isSubmitting ? "Cancelando..." : "Cancelar pedido"}
     </button>
   ) : null;
+
+  const remaining =
+    canCancel && secondsLeft != null ? (
+      <p
+        className={`text-sm text-gray-500 ${fullWidth ? "" : "self-center"}`}
+        data-cy="cancel-own-order-remaining"
+      >
+        {formatCancellationRemaining(secondsLeft)}
+      </p>
+    ) : null;
 
   const feedback = hasFeedback ? (
     <div className={fullWidth ? undefined : "basis-full"}>
@@ -158,6 +187,7 @@ export default function CancelarPedido({
     return (
       <div className="mt-3 space-y-3">
         {button}
+        {remaining}
         {feedback}
         {modal}
       </div>
@@ -167,6 +197,7 @@ export default function CancelarPedido({
   return (
     <>
       {button}
+      {remaining}
       {feedback}
       {modal}
     </>

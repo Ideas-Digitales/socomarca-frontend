@@ -291,17 +291,37 @@ listas del usuario que repite el pedido.
 
 ### `POST /orders/cancel`
 
-Cancela una orden que sigue en espera de factura (FCV): no está facturada, cobrada ni despachada. Elimina
-la nota de venta (NVV) en Random, deja la orden y su pago a crédito en `canceled` y desbloquea la línea
-de crédito si ese pago la había bloqueado.
+Cancela una orden que sigue en espera de boleta (BLV) o factura (FCV): no está documentada, cobrada ni
+despachada. Elimina la nota de venta (NVV) en Random, deja la orden y su pago a crédito en `canceled` y
+desbloquea la línea de crédito si ese pago la había bloqueado.
 
-Requiere **ambos** permisos `read-all-orders` y `cancel-orders` (`admin` y `superadmin`).
+Quién puede cancelar:
+
+- El usuario que realizó el pedido (`order.user.id`), hasta `cancelable_until`. El plazo empieza cuando
+  se autoriza el pago a crédito y dura `ORDER_CANCELLATION_WINDOW_MINUTES` (60 por defecto).
+- Admin y superadmin, con **ambos** permisos `read-all-orders` y `cancel-orders`, pueden cancelar
+  cualquier pedido y no tienen ese límite de tiempo.
+
+La sucursal para la que se compró no puede cancelar. Si A compró para B, B recibe 403.
 
 ```json
 { "order_number": 1234 }
 ```
 
 `order_number` es `orders.id`, el número de orden de compra.
+
+`GET /orders` incluye en cada orden, siempre, estos campos (pueden ser `null`):
+
+```json
+{
+  "cancelable_until": "2026-10-22T13:00:00+00:00",
+  "cancel_seconds_remaining": 3540
+}
+```
+
+`cancelable_until` es la fecha límite en ISO 8601. `cancel_seconds_remaining` son los segundos que
+quedaban al armar la respuesta; `0` significa que el plazo del comprador ya venció. Van en `null` cuando
+ese usuario no puede cancelar la orden.
 
 Respuesta `200`: `data` es la orden (`status: "canceled"`) y `message` es el texto a mostrar.
 
@@ -316,8 +336,8 @@ Errores:
 
 | Código | Cuerpo | Cuándo |
 |---|---|---|
-| `422` | `message` y `errors.order_number` | Número vacío o inválido, orden inexistente, o orden que no está en espera de facturación |
-| `403` | `{ "message": "You do not have permission." }` | Falta `read-all-orders` o `cancel-orders` |
+| `422` | `message` y `errors.order_number` | Número vacío o inválido, orden inexistente, orden que no está en espera de facturación, o plazo del comprador vencido (`La orden ya no se puede cancelar porque venció el plazo.`) |
+| `403` | `{ "message": "This action is unauthorized." }` | El usuario no realizó ese pedido |
 | `500` | Texto de la API | Random rechazó el borrado; la orden, el pago y la línea de crédito no cambian |
 
 ## 7. Línea de crédito: `GET /users/{user}/credit-line`

@@ -5631,7 +5631,7 @@
         "/orders/cancel": {
             "post": {
                 "operationId": "orders.cancel",
-                "description": "Deletes the Random ERP sales note (NVV) of an order that is still waiting for an invoice\n(FCV) or a receipt (BLV): it has not been documented, charged or dispatched. The order and\nits credit payment are set to `canceled`, and the credit line is unblocked when this\npayment blocked it.\n\nRequires both `read-all-orders` and `cancel-orders`.\n\nRequires one of the `read-all-orders` or `cancel-orders` permissions.",
+                "description": "Deletes the Random ERP sales note (NVV) of an order that is still waiting for an invoice\n(FCV) or a receipt (BLV): it has not been documented, charged or dispatched. The order and\nits credit payment are set to `canceled`, and the credit line is unblocked when this\npayment blocked it.\n\nThe buyer can cancel an order they placed until `cancelable_until`. Canceling someone else's\norder, or canceling after that window, requires both `read-all-orders` and `cancel-orders`.\nThe branch an order was placed for cannot cancel it.",
                 "summary": "Cancel an order waiting for an invoice or a receipt",
                 "tags": [
                     "Orders"
@@ -5677,7 +5677,7 @@
                         "$ref": "#/components/responses/AuthenticationException"
                     },
                     "422": {
-                        "description": "The order number is missing or the order is not waiting for a Random document (invoice or receipt)",
+                        "description": "The order number is missing, the order is not waiting for a Random document (invoice or receipt), or the buyer's cancellation window has elapsed",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -5707,7 +5707,7 @@
                         }
                     },
                     "403": {
-                        "description": "The user lacks `read-all-orders` or `cancel-orders`",
+                        "description": "The user cannot cancel this order. The response message is `This action is unauthorized.`",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -13096,6 +13096,21 @@
                             "null"
                         ]
                     },
+                    "cancelable_until": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time",
+                        "description": "Moment until which the buyer can cancel this order, ISO 8601. Null when the authenticated user cannot cancel it."
+                    },
+                    "cancel_seconds_remaining": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Seconds left in that window when the response was built. Zero once the window has elapsed. Null when the authenticated user cannot cancel it."
+                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -13127,6 +13142,8 @@
                     "contact_rut",
                     "random_document_number",
                     "notes",
+                    "cancelable_until",
+                    "cancel_seconds_remaining",
                     "created_at",
                     "updated_at"
                 ],

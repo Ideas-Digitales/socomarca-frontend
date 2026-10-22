@@ -111,7 +111,12 @@ export default function MiCuentaPage() {
     (list: Compra[]) =>
       list.map((compra) =>
         canceledOrderIds.current.has(compra.numero)
-          ? { ...compra, estado: "canceled" }
+          ? {
+              ...compra,
+              estado: "canceled",
+              cancelableUntil: null,
+              cancelSecondsRemaining: null,
+            }
           : compra
       ),
     []
@@ -156,7 +161,14 @@ export default function MiCuentaPage() {
     canceledOrderIds.current.add(numero);
     setCompras((prev) => stampCanceled(prev));
     setPedidoSeleccionado((current) =>
-      current?.numero === numero ? { ...current, estado: "canceled" } : current
+      current?.numero === numero
+        ? {
+            ...current,
+            estado: "canceled",
+            cancelableUntil: null,
+            cancelSecondsRemaining: null,
+          }
+        : current
     );
     await loadOrders(true);
   };
