@@ -6,7 +6,6 @@ import { addOrderToCart } from "@/services/actions/cart.actions";
 import useStore from "@/stores/base";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { DEFAULT_IMAGE } from "@/utils/assets";
-import type { OrderPaymentRef } from "@/utils/cancelOrder";
 import CancelarPedido from "./CancelarPedido";
 
 // Tipos de datos que recibe el componente:
@@ -33,8 +32,10 @@ export interface Compra {
   envio: number; // Costo de despacho
   total: number; // Monto efectivamente cobrado (productos + IVA + despacho)
   estado: string; // Estado de la compra (pending, processing, completed, etc.)
-  /** Código y estado de cada pago. Sirve para mostrar "Cancelar pedido". */
-  pagos: OrderPaymentRef[];
+  /** Fecha límite del comprador. Null si este usuario no puede cancelar. */
+  cancelableUntil: string | null;
+  /** Segundos informados por la API al cargar el listado. */
+  cancelSecondsRemaining: number | null;
   productos: ProductoCompra[]; // Lista de productos comprados
   sucursal: Sucursal;
   emitidoPor: string | null; // Nombre de quien emitió el pedido, si no fue el usuario actual

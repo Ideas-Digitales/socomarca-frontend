@@ -8,9 +8,11 @@ import {
   buildCancelOrderBody,
   canAccessCancelOrder,
   canCancelOwnOrder,
-  mapOrderPayments,
+  cancellationSecondsLeft,
+  formatCancellationRemaining,
   parseCancelOrderResponse,
   showsCancelOrderMenu,
+  visibleCancellationSeconds,
 } from '../src/utils/cancelOrder.ts';
 
 const bothPermissions = [PERMISOS.ORDERS.READ_ALL, PERMISOS.ORDERS.CANCEL];
@@ -122,85 +124,42 @@ describe('POST /orders/cancel', () => {
 });
 
 describe('cancelar un pedido propio desde Mis compras', () => {
-  it('un pedido propio a crédito en processing se puede cancelar', () => {
+  const now = Date.parse('2026-10-22T12:00:00.000Z');
+  const until = '2026-10-22T13:00:00.000Z';
+
+  it('un plazo con segundos restantes ofrece cancelar', () => {
+    const left = visibleCancellationSeconds(until, 3600, now);
+
+    assert.equal(left, 3600);
+    assert.equal(canCancelOwnOrder(left), true);
+    assert.equal(formatCancellationRemaining(left ?? 0), 'Quedan 60 min');
+  });
+
+  it('null o cero no ofrecen cancelar', () => {
+    assert.equal(canCancelOwnOrder(null), false);
+    assert.equal(canCancelOwnOrder(0), false);
+    assert.equal(visibleCancellationSeconds(null, null, now), null);
+    assert.equal(visibleCancellationSeconds(null, 0, now), 0);
+  });
+
+  it('al llegar cancelable_until el botón deja de mostrarse', () => {
+    const deadline = Date.parse(until);
+    const left = cancellationSecondsLeft(until, deadline);
+
+    assert.equal(left, 0);
+    assert.equal(canCancelOwnOrder(left), false);
     assert.equal(
-      canCancelOwnOrder({
-        emitidoPor: null,
-        estado: 'completed',
-        pagos: mapOrderPayments([
-          {
-            status: 'processing',
-            payment_method: { code: 'random_credit' },
-          },
-        ]),
-      }),
-      true
+      visibleCancellationSeconds(until, 3600, deadline + 1000),
+      0
     );
   });
 
-  it('basta un pago a crédito en processing entre otros pagos', () => {
-    assert.equal(
-      canCancelOwnOrder({
-        emitidoPor: null,
-        estado: 'completed',
-        pagos: [
-          { code: 'webpay', status: 'failed' },
-          { code: 'random_credit', status: 'processing' },
-        ],
-      }),
-      true
-    );
-  });
+  it('cuenta desde la fecha y no desde el valor inicial ya vencido', () => {
+    const later = Date.parse('2026-10-22T12:30:00.000Z');
 
-  it('un pedido emitido por otra sucursal no se puede cancelar', () => {
-    assert.equal(
-      canCancelOwnOrder({
-        emitidoPor: 'Sucursal Norte',
-        estado: 'completed',
-        pagos: [{ code: 'random_credit', status: 'processing' }],
-      }),
-      false
-    );
-  });
-
-  it('un pedido cancelado, uno Webpay y un crédito ya cobrado no muestran la acción', () => {
-    const hidden = [
-      {
-        emitidoPor: null,
-        estado: 'canceled',
-        pagos: [{ code: 'random_credit', status: 'processing' }],
-      },
-      {
-        emitidoPor: null,
-        estado: 'completed',
-        pagos: [{ code: 'webpay', status: 'completed' }],
-      },
-      {
-        emitidoPor: null,
-        estado: 'completed',
-        pagos: [{ code: 'random_credit', status: 'completed' }],
-      },
-    ];
-
-    for (const order of hidden) {
-      assert.equal(canCancelOwnOrder(order), false);
-    }
-  });
-
-  it('se queda con el código y el estado del pago', () => {
-    assert.deepEqual(
-      mapOrderPayments([
-        {
-          status: 'processing',
-          payment_method: { code: 'random_credit' },
-        },
-      ]),
-      [{ code: 'random_credit', status: 'processing' }]
-    );
-    assert.deepEqual(mapOrderPayments(undefined), []);
-    assert.deepEqual(
-      mapOrderPayments([{ status: 'processing', payment_method: null }]),
-      []
-    );
+    assert.equal(visibleCancellationSeconds(until, 3600, later), 1800);
+    assert.equal(formatCancellationRemaining(1800), 'Quedan 30 min');
+    assert.equal(formatCancellationRemaining(90), 'Quedan 1 min 30 s');
+    assert.equal(formatCancellationRemaining(12), 'Quedan 12 s');
   });
 });
