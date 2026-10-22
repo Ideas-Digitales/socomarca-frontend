@@ -7,8 +7,12 @@ import {
   CANCEL_ORDER_PERMISSIONS,
   buildCancelOrderBody,
   canAccessCancelOrder,
+  canCancelOwnOrder,
+  cancellationSecondsLeft,
+  formatCancellationRemaining,
   parseCancelOrderResponse,
   showsCancelOrderMenu,
+  visibleCancellationSeconds,
 } from '../src/utils/cancelOrder.ts';
 
 const bothPermissions = [PERMISOS.ORDERS.READ_ALL, PERMISOS.ORDERS.CANCEL];
@@ -116,5 +120,46 @@ describe('POST /orders/cancel', () => {
 
     assert.equal(result.ok, false);
     assert.equal(result.message, 'Random ERP rejected the deletion');
+  });
+});
+
+describe('cancelar un pedido propio desde Mis compras', () => {
+  const now = Date.parse('2026-10-22T12:00:00.000Z');
+  const until = '2026-10-22T13:00:00.000Z';
+
+  it('un plazo con segundos restantes ofrece cancelar', () => {
+    const left = visibleCancellationSeconds(until, 3600, now);
+
+    assert.equal(left, 3600);
+    assert.equal(canCancelOwnOrder(left), true);
+    assert.equal(formatCancellationRemaining(left ?? 0), 'Quedan 60 min');
+  });
+
+  it('null o cero no ofrecen cancelar', () => {
+    assert.equal(canCancelOwnOrder(null), false);
+    assert.equal(canCancelOwnOrder(0), false);
+    assert.equal(visibleCancellationSeconds(null, null, now), null);
+    assert.equal(visibleCancellationSeconds(null, 0, now), 0);
+  });
+
+  it('al llegar cancelable_until el botón deja de mostrarse', () => {
+    const deadline = Date.parse(until);
+    const left = cancellationSecondsLeft(until, deadline);
+
+    assert.equal(left, 0);
+    assert.equal(canCancelOwnOrder(left), false);
+    assert.equal(
+      visibleCancellationSeconds(until, 3600, deadline + 1000),
+      0
+    );
+  });
+
+  it('cuenta desde la fecha y no desde el valor inicial ya vencido', () => {
+    const later = Date.parse('2026-10-22T12:30:00.000Z');
+
+    assert.equal(visibleCancellationSeconds(until, 3600, later), 1800);
+    assert.equal(formatCancellationRemaining(1800), 'Quedan 30 min');
+    assert.equal(formatCancellationRemaining(90), 'Quedan 1 min 30 s');
+    assert.equal(formatCancellationRemaining(12), 'Quedan 12 s');
   });
 });

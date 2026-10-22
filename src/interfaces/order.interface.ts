@@ -110,6 +110,10 @@ export interface Order {
   order_meta: string; // viene como string, tipo JSON
   customer?: OrderCustomer;
   notes: string | null;
+  /** Fecha límite para que el comprador cancele. Null si este usuario no puede. */
+  cancelable_until: string | null;
+  /** Segundos que quedaban al armar la respuesta. Cero si el plazo venció. */
+  cancel_seconds_remaining: number | null;
   created_at: string;
   updated_at: string;
 }

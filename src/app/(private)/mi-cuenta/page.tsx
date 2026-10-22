@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "@/app/components/mi-cuenta/Sidebar";
 import { useRouter } from "next/navigation";
 import FavoritosSection from "@/app/components/mi-cuenta/FavoritosSection";
@@ -55,6 +55,7 @@ export default function MiCuentaPage() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [sort, setSort] = useState<string>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const canceledOrderIds = useRef(new Set<string>());
 
   /* Estados para seccion de direcciones del usuario */
   const [direcciones, setDirecciones] = useState<Address[]>([]);
@@ -106,32 +107,71 @@ export default function MiCuentaPage() {
     router.replace(`?${currentParams.toString()}`, { scroll: false });
   };
 
-  /* Trae las ordenes del usuario  */
-  useEffect(() => {
-    // Sin el id del usuario no se puede distinguir quién emitió cada pedido
-    const currentUserId = user?.id;
-    if (!currentUserId) return;
+  const stampCanceled = useCallback(
+    (list: Compra[]) =>
+      list.map((compra) =>
+        canceledOrderIds.current.has(compra.numero)
+          ? {
+              ...compra,
+              estado: "canceled",
+              cancelableUntil: null,
+              cancelSecondsRemaining: null,
+            }
+          : compra
+      ),
+    []
+  );
 
-    const fetchOrders = async () => {
-      setLoadingOrders(true);
+  /* Trae las ordenes del usuario. Sin el id no se distingue quién emitió cada pedido. */
+  const loadOrders = useCallback(
+    async (silent = false) => {
+      const currentUserId = user?.id;
+      if (!currentUserId) return;
+
+      if (!silent) setLoadingOrders(true);
 
       try {
         const res = await getUserOrders(1, 20, sort, sortDirection);
         if (res?.data) {
-          const mapped: Compra[] = res.data.map((order) =>
-            mapOrderToCompra(order, currentUserId)
+          const mapped = stampCanceled(
+            res.data.map((order) => mapOrderToCompra(order, currentUserId))
           );
           setCompras(mapped);
+          setPedidoSeleccionado((current) => {
+            if (!current) return current;
+            return (
+              mapped.find((compra) => compra.numero === current.numero) ?? current
+            );
+          });
         }
       } catch (error) {
         console.error("Error al cargar las órdenes:", error);
       } finally {
-        setLoadingOrders(false);
+        if (!silent) setLoadingOrders(false);
       }
-    };
+    },
+    [sort, sortDirection, stampCanceled, user?.id]
+  );
 
-    fetchOrders();
-  }, [sort, sortDirection, user?.id]);
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
+  const handlePedidoCancelado = async (numero: string) => {
+    canceledOrderIds.current.add(numero);
+    setCompras((prev) => stampCanceled(prev));
+    setPedidoSeleccionado((current) =>
+      current?.numero === numero
+        ? {
+            ...current,
+            estado: "canceled",
+            cancelableUntil: null,
+            cancelSecondsRemaining: null,
+          }
+        : current
+    );
+    await loadOrders(true);
+  };
 
   //Trae las direcciones del usuario
   useEffect(() => {
@@ -223,6 +263,7 @@ export default function MiCuentaPage() {
                 <DetalleCompra
                   pedido={pedidoSeleccionado}
                   setSection={setSelected}
+                  onPedidoCancelado={handlePedidoCancelado}
                 />
               </div>
             )}
@@ -260,6 +301,7 @@ export default function MiCuentaPage() {
                     setSort(newSort);
                     setSortDirection(newDirection);
                   }}
+                  onPedidoCancelado={handlePedidoCancelado}
                 />
               </div>
             )}

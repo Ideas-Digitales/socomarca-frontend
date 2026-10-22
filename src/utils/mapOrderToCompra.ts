@@ -35,6 +35,8 @@ export function mapOrderToCompra(order: Order, currentUserId: number): Compra {
     // `amount` es lo que se cobró: productos + IVA + despacho
     total: toNumber(order.amount),
     estado: order.status,
+    cancelableUntil: order.cancelable_until,
+    cancelSecondsRemaining: order.cancel_seconds_remaining,
     productos: order.order_items.map((item): ProductoCompra => ({
       nombre: item.product.name,
       marca: `Marca ${item.product.brand_id}`,

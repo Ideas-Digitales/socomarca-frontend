@@ -6,6 +6,7 @@ import { addOrderToCart } from "@/services/actions/cart.actions";
 import useStore from "@/stores/base";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { DEFAULT_IMAGE } from "@/utils/assets";
+import CancelarPedido from "./CancelarPedido";
 
 // Tipos de datos que recibe el componente:
 
@@ -31,6 +32,10 @@ export interface Compra {
   envio: number; // Costo de despacho
   total: number; // Monto efectivamente cobrado (productos + IVA + despacho)
   estado: string; // Estado de la compra (pending, processing, completed, etc.)
+  /** Fecha límite del comprador. Null si este usuario no puede cancelar. */
+  cancelableUntil: string | null;
+  /** Segundos informados por la API al cargar el listado. */
+  cancelSecondsRemaining: number | null;
   productos: ProductoCompra[]; // Lista de productos comprados
   sucursal: Sucursal;
   emitidoPor: string | null; // Nombre de quien emitió el pedido, si no fue el usuario actual
@@ -62,6 +67,7 @@ export default function ComprasSection({
   sort,
   sortDirection,
   onSortChange,
+  onPedidoCancelado,
 }: {
   compras: Compra[];
   busqueda: string;
@@ -73,6 +79,7 @@ export default function ComprasSection({
   sort: string;
   sortDirection: "asc" | "desc";
   onSortChange: (sort: string, direction: "asc" | "desc") => void;
+  onPedidoCancelado: (numero: string) => Promise<void> | void;
 }) {
   // Filtra las compras que contienen el número buscado
   const comprasFiltradas = compras.filter((c) =>
@@ -141,9 +148,9 @@ export default function ComprasSection({
           </div>
         ) : comprasFiltradas.length > 0 ? (
           // ✅ Si hay compras, se muestran
-          comprasFiltradas.map((c, idx) => (
+          comprasFiltradas.map((c) => (
             <div
-              key={idx}
+              key={c.numero}
               className="bg-white p-4 rounded border-slate-200 border"
             >
               {/* Cabecera con fecha y total */}
@@ -184,7 +191,7 @@ export default function ComprasSection({
               </div>
 
               {/* Acciones: Ver detalle o repetir pedido */}
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => {
                     setPedidoSeleccionado(c); // Guarda el pedido para detalle
@@ -224,6 +231,11 @@ export default function ComprasSection({
                     "Repetir Pedido"
                   )}
                 </button>
+
+                <CancelarPedido
+                  compra={c}
+                  onCanceled={onPedidoCancelado}
+                />
               </div>
             </div>
           ))

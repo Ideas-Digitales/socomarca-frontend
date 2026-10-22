@@ -58,6 +58,58 @@ export function buildCancelOrderBody(raw: string): {
   return { order_number: trimmed };
 }
 
+/**
+ * Segundos que faltan hasta `cancelable_until`. Cero cuando esa fecha ya pasó.
+ * Null si no hay fecha o no se puede leer.
+ */
+export function cancellationSecondsLeft(
+  cancelableUntil: string | null,
+  nowMs: number
+): number | null {
+  if (cancelableUntil == null || cancelableUntil.trim() === '') return null;
+
+  const deadline = Date.parse(cancelableUntil);
+
+  if (Number.isNaN(deadline)) return null;
+
+  return Math.max(0, Math.floor((deadline - nowMs) / 1000));
+}
+
+/**
+ * Tiempo visible del plazo. La fecha manda; `secondsRemaining` solo cubre
+ * el primer instante si la fecha no viene o no se puede leer.
+ */
+export function visibleCancellationSeconds(
+  cancelableUntil: string | null,
+  secondsRemaining: number | null,
+  nowMs: number
+): number | null {
+  const fromDeadline = cancellationSecondsLeft(cancelableUntil, nowMs);
+
+  if (fromDeadline !== null) return fromDeadline;
+
+  if (secondsRemaining == null || !Number.isFinite(secondsRemaining)) return null;
+
+  return Math.max(0, Math.floor(secondsRemaining));
+}
+
+/** El botón se muestra mientras quede al menos un segundo. */
+export function canCancelOwnOrder(secondsRemaining: number | null): boolean {
+  return secondsRemaining != null && secondsRemaining > 0;
+}
+
+/** Texto corto junto al botón. `seconds` ya viene redondeado hacia abajo. */
+export function formatCancellationRemaining(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+
+  if (minutes <= 0) return `Quedan ${rest} s`;
+
+  if (rest === 0) return `Quedan ${minutes} min`;
+
+  return `Quedan ${minutes} min ${rest} s`;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
