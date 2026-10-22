@@ -86,6 +86,14 @@ export interface OrderCustomer {
   branch_type: BranchType | null;
 }
 
+/** Pago de la orden. Solo hacen falta el estado y el código del medio para cancelar. */
+export interface OrderPayment {
+  status: string;
+  payment_method: {
+    code: string;
+  } | null;
+}
+
 export interface Order {
   id: number;
   random_document_number: string | null;
@@ -110,6 +118,7 @@ export interface Order {
   order_meta: string; // viene como string, tipo JSON
   customer?: OrderCustomer;
   notes: string | null;
+  payments?: OrderPayment[];
   created_at: string;
   updated_at: string;
 }

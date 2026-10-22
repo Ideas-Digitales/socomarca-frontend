@@ -58,6 +58,53 @@ export function buildCancelOrderBody(raw: string): {
   return { order_number: trimmed };
 }
 
+/** Código y estado del pago, lo mínimo para saber si el cliente puede cancelar. */
+export interface OrderPaymentRef {
+  code: string;
+  status: string;
+}
+
+export interface OwnOrderCancelInput {
+  emitidoPor: string | null;
+  estado: string;
+  pagos: OrderPaymentRef[];
+}
+
+/**
+ * Conserva `payment_method.code` y `status` de `GET /orders`.
+ * Un pago sin esos datos no sirve para mostrar la acción.
+ */
+export function mapOrderPayments(
+  payments: ReadonlyArray<{
+    status?: string | null;
+    payment_method?: { code?: string | null } | null;
+  }> | null | undefined
+): OrderPaymentRef[] {
+  if (!payments) return [];
+
+  return payments.flatMap((payment) => {
+    const code = payment.payment_method?.code;
+    const status = payment.status;
+
+    if (!code || !status) return [];
+
+    return [{ code, status }];
+  });
+}
+
+/**
+ * El cliente solo cancela un pedido que él realizó, que no está cancelado
+ * y que sigue a crédito (`random_credit`) en `processing`.
+ */
+export function canCancelOwnOrder(order: OwnOrderCancelInput): boolean {
+  if (order.emitidoPor) return false;
+  if (order.estado === 'canceled') return false;
+
+  return order.pagos.some(
+    (pago) => pago.code === 'random_credit' && pago.status === 'processing'
+  );
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
