@@ -6,13 +6,16 @@ import Pagination from "../global/Pagination";
 import { addOrderToCart } from "@/services/actions/cart.actions";
 import useStore from "@/stores/base";
 import OrderStatusBadge from "./OrderStatusBadge";
+import CancelarPedido from "./CancelarPedido";
 
 export default function DetalleCompra({
   pedido,
   setSection,
+  onPedidoCancelado,
 }: {
   pedido: Compra;
   setSection: (v: string) => void;
+  onPedidoCancelado: (numero: string) => Promise<void> | void;
 }) {
   const router = useRouter();
   const { paginatedItems, productPaginationMeta, changePage } = usePagination(
@@ -144,6 +147,11 @@ export default function DetalleCompra({
           >
             Continuar con la compra
           </button>
+          <CancelarPedido
+            compra={pedido}
+            onCanceled={onPedidoCancelado}
+            fullWidth
+          />
         </div>
       </div>
     </div>

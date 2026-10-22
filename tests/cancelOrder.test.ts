@@ -7,6 +7,8 @@ import {
   CANCEL_ORDER_PERMISSIONS,
   buildCancelOrderBody,
   canAccessCancelOrder,
+  canCancelOwnOrder,
+  mapOrderPayments,
   parseCancelOrderResponse,
   showsCancelOrderMenu,
 } from '../src/utils/cancelOrder.ts';
@@ -116,5 +118,89 @@ describe('POST /orders/cancel', () => {
 
     assert.equal(result.ok, false);
     assert.equal(result.message, 'Random ERP rejected the deletion');
+  });
+});
+
+describe('cancelar un pedido propio desde Mis compras', () => {
+  it('un pedido propio a crédito en processing se puede cancelar', () => {
+    assert.equal(
+      canCancelOwnOrder({
+        emitidoPor: null,
+        estado: 'completed',
+        pagos: mapOrderPayments([
+          {
+            status: 'processing',
+            payment_method: { code: 'random_credit' },
+          },
+        ]),
+      }),
+      true
+    );
+  });
+
+  it('basta un pago a crédito en processing entre otros pagos', () => {
+    assert.equal(
+      canCancelOwnOrder({
+        emitidoPor: null,
+        estado: 'completed',
+        pagos: [
+          { code: 'webpay', status: 'failed' },
+          { code: 'random_credit', status: 'processing' },
+        ],
+      }),
+      true
+    );
+  });
+
+  it('un pedido emitido por otra sucursal no se puede cancelar', () => {
+    assert.equal(
+      canCancelOwnOrder({
+        emitidoPor: 'Sucursal Norte',
+        estado: 'completed',
+        pagos: [{ code: 'random_credit', status: 'processing' }],
+      }),
+      false
+    );
+  });
+
+  it('un pedido cancelado, uno Webpay y un crédito ya cobrado no muestran la acción', () => {
+    const hidden = [
+      {
+        emitidoPor: null,
+        estado: 'canceled',
+        pagos: [{ code: 'random_credit', status: 'processing' }],
+      },
+      {
+        emitidoPor: null,
+        estado: 'completed',
+        pagos: [{ code: 'webpay', status: 'completed' }],
+      },
+      {
+        emitidoPor: null,
+        estado: 'completed',
+        pagos: [{ code: 'random_credit', status: 'completed' }],
+      },
+    ];
+
+    for (const order of hidden) {
+      assert.equal(canCancelOwnOrder(order), false);
+    }
+  });
+
+  it('se queda con el código y el estado del pago', () => {
+    assert.deepEqual(
+      mapOrderPayments([
+        {
+          status: 'processing',
+          payment_method: { code: 'random_credit' },
+        },
+      ]),
+      [{ code: 'random_credit', status: 'processing' }]
+    );
+    assert.deepEqual(mapOrderPayments(undefined), []);
+    assert.deepEqual(
+      mapOrderPayments([{ status: 'processing', payment_method: null }]),
+      []
+    );
   });
 });

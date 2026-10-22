@@ -1,5 +1,6 @@
 import type { Order } from '@/interfaces/order.interface'
 import type { Compra, ProductoCompra, Sucursal } from '@/app/components/mi-cuenta/ComprasSection'
+import { mapOrderPayments } from '@/utils/cancelOrder'
 import { DEFAULT_IMAGE } from '@/utils/assets'
 
 /** Los montos de la orden llegan como string desde el backend. */
@@ -35,6 +36,7 @@ export function mapOrderToCompra(order: Order, currentUserId: number): Compra {
     // `amount` es lo que se cobró: productos + IVA + despacho
     total: toNumber(order.amount),
     estado: order.status,
+    pagos: mapOrderPayments(order.payments),
     productos: order.order_items.map((item): ProductoCompra => ({
       nombre: item.product.name,
       marca: `Marca ${item.product.brand_id}`,
