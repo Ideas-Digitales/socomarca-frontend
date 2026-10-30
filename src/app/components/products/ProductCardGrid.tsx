@@ -1,6 +1,7 @@
 'use client';
 
 import { Product } from '@/interfaces/product.interface';
+import { MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAddToCart } from '@/hooks/useAddToCart';
 import {
@@ -56,12 +57,24 @@ export default function ProductCardGrid({ product, onExpand }: Props) {
             className={isOutOfStock ? 'grayscale opacity-60' : ''}
           />
         </button>
-        {/* Badge de sin stock */}
-        {isOutOfStock && (
-          <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-sm">
-            Agotado
-          </span>
-        )}
+        {/* Botón de vista ampliada y badge de sin stock */}
+        <div className="absolute top-2 left-2 flex flex-col items-start gap-1.5">
+          <button
+            type="button"
+            onClick={onExpand}
+            aria-label={`Ver detalle de ${product.name}`}
+            title="Ver detalle"
+            data-cy="product-quick-view-btn"
+            className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-slate-100 p-[6px] text-[#475569] hover:text-lime-600 cursor-pointer"
+          >
+            <MagnifyingGlassPlusIcon width={16} height={16} />
+          </button>
+          {isOutOfStock && (
+            <span className="bg-red-600 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-sm">
+              Agotado
+            </span>
+          )}
+        </div>
         {/* Botón de favorito */}
         <div className="absolute top-2 right-2">
           <FavoriteButton
