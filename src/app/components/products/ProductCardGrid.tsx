@@ -1,9 +1,8 @@
 'use client';
 
 import { Product } from '@/interfaces/product.interface';
-import { useEffect, useState } from 'react';
 import { useFavorites } from '@/hooks/useFavorites';
-import useStore from '@/stores/base';
+import { useAddToCart } from '@/hooks/useAddToCart';
 import {
   QuantitySelector,
   FavoriteButton,
@@ -13,110 +12,28 @@ import {
 
 interface Props {
   product: Product;
+  onExpand: () => void;
 }
 
-export default function ProductCardGrid({ product }: Props) {
+export default function ProductCardGrid({ product, onExpand }: Props) {
   const { toggleFavorite, isFavorite } = useFavorites();
-  const { addProductToCartOptimistic, isQaMode } = useStore();
-  const [quantity, setQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOptimisticUpdate, setIsOptimisticUpdate] = useState(false);
-
-  useEffect(() => {
-    if (isOptimisticUpdate && !isLoading) {
-      const timer = setTimeout(() => {
-        setIsOptimisticUpdate(false);
-      }, 1500);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isOptimisticUpdate, isLoading]);
+  const {
+    quantity,
+    maxQuantity,
+    isLoading,
+    isOptimisticUpdate,
+    isOutOfStock,
+    decreaseQuantity,
+    increaseQuantity,
+    handleQuantityChange,
+    addToCart,
+  } = useAddToCart(product);
 
   const handleSetFavorite = async () => {
     await toggleFavorite(product.id, product);
   };
 
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
-    }
-  };
-
-  const increaseQuantity = () => {
-    const maxAllowed = Math.min(product.stock, 999);
-    if (quantity >= maxAllowed) {
-      return;
-    }
-    setQuantity(quantity + 1);
-  };
-
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    if (value === '') {
-      setQuantity(0);
-      return;
-    }
-
-    const numericValue = parseInt(value, 10);
-
-    if (isNaN(numericValue)) {
-      return;
-    }
-
-    const maxAllowed = Math.min(product.stock, 999);
-
-    if (numericValue > maxAllowed || numericValue < 0) {
-      setQuantity(maxAllowed);
-    } else {
-      setQuantity(numericValue);
-    }
-  };
-
-  const addToCart = async () => {
-    if (quantity <= 0 || isOutOfStock) return;
-
-    setIsLoading(true);
-
-    if (isQaMode) {
-      // En modo QA, simular el estado de éxito para los tests
-      setIsOptimisticUpdate(true);
-      setTimeout(() => {
-        setQuantity(1);
-        setIsLoading(false);
-      }, 500);
-      return;
-    }
-
-    try {
-      // Establecer estado optimista inmediatamente
-      setIsOptimisticUpdate(true);
-
-      const response = await addProductToCartOptimistic(
-        product.id,
-        quantity,
-        product.unit,
-        product
-      );
-
-      if (response.ok) {
-        setQuantity(1);
-        // El estado isOptimisticUpdate se mantendrá true hasta que el useEffect lo resetee
-      } else {
-        // Si falla, quitar el estado optimista inmediatamente
-        setIsOptimisticUpdate(false);
-        console.error('Error adding product to cart');
-      }
-    } catch (error) {
-      console.error('Error al agregar producto:', error);
-      setIsOptimisticUpdate(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const isProductFavorite = isFavorite(product.id);
-  const isOutOfStock = product.stock <= 0;
 
   return (
     <div
@@ -126,12 +43,19 @@ export default function ProductCardGrid({ product }: Props) {
     >
       {/* Imagen del producto */}
       <div className="flex items-center justify-center h-[100px] w-full relative">
-        <ProductImage
-          src={product.image}
-          alt={product.name}
-          variant="grid"
-          className={isOutOfStock ? 'grayscale opacity-60' : ''}
-        />
+        <button
+          type="button"
+          onClick={onExpand}
+          aria-label={`Ver ${product.name}`}
+          className="w-full cursor-pointer"
+        >
+          <ProductImage
+            src={product.image}
+            alt={product.name}
+            variant="grid"
+            className={isOutOfStock ? 'grayscale opacity-60' : ''}
+          />
+        </button>
         {/* Badge de sin stock */}
         {isOutOfStock && (
           <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-sm">
@@ -154,13 +78,15 @@ export default function ProductCardGrid({ product }: Props) {
         <span className="text-[#64748B] text-xs font-medium">
           {product.brand?.name}
         </span>
-        <span
+        <button
+          type="button"
           data-cy="product-name"
-          className="text-sm font-medium text-center leading-tight min-h-[34px] line-clamp-2"
+          onClick={onExpand}
+          className="text-sm font-medium text-center leading-tight min-h-[34px] line-clamp-2 cursor-pointer hover:text-lime-600"
           title={product.name}
         >
           {product.name}
-        </span>
+        </button>
         <span data-cy="product-price" className="text-lime-500 font-bold text-center text-lg mt-1">
           {product.price !== null && product.price !== undefined
             ? product.price.toLocaleString('es-CL', {
@@ -189,7 +115,7 @@ export default function ProductCardGrid({ product }: Props) {
         <div className="flex items-center justify-center gap-1">
           <QuantitySelector
             quantity={quantity}
-            maxQuantity={Math.min(product.stock, 999)}
+            maxQuantity={maxQuantity}
             onDecrease={decreaseQuantity}
             onIncrease={increaseQuantity}
             onChange={handleQuantityChange}

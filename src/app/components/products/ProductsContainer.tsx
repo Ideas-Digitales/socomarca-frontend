@@ -2,6 +2,7 @@
 
 import ProductCard from './ProductCard';
 import ProductCardGrid from './ProductCardGrid';
+import ProductQuickView from './ProductQuickView';
 import CategoryFilterDesktop from './CategoryFilterDesktop';
 import CartProductsDesktop from './CartProductsDesktop';
 import Pagination from '../global/Pagination';
@@ -10,6 +11,7 @@ import {
   ViewColumnsIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { useCallback, useEffect, useState } from 'react';
 import CartsProductsMobile from './CartsProductsMobile';
 import useStore from '@/stores/base';
 
@@ -30,6 +32,13 @@ export default function ProductsContainer() {
   } = useStore();
 
   const filtersActive = hasActiveFilters();
+  const [quickViewIndex, setQuickViewIndex] = useState<number | null>(null);
+  const closeQuickView = useCallback(() => setQuickViewIndex(null), []);
+
+  // Al cambiar de página, filtros o vista, se cierra la vista ampliada
+  useEffect(() => {
+    setQuickViewIndex(null);
+  }, [filteredProducts, viewMode]);
 
   const handlePageChange = (pageNumber: number) => {
     setProductPage(pageNumber);
@@ -110,8 +119,19 @@ export default function ProductsContainer() {
               viewMode === 'list' ? (
                 <ProductCard key={index} product={product} />
               ) : (
-                <ProductCardGrid key={index} product={product} />
+                <ProductCardGrid
+                  key={index}
+                  product={product}
+                  onExpand={() => setQuickViewIndex(index)}
+                />
               )
+            )}
+            {viewMode === 'grid' && quickViewIndex !== null && filteredProducts[quickViewIndex] && (
+              <ProductQuickView
+                key={quickViewIndex}
+                product={filteredProducts[quickViewIndex]}
+                onClose={closeQuickView}
+              />
             )}
           </div>
         )}
