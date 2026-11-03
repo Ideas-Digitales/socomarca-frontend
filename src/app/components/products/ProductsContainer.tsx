@@ -117,7 +117,11 @@ export default function ProductsContainer() {
           >
             {filteredProducts.map((product, index) =>
               viewMode === 'list' ? (
-                <ProductCard key={index} product={product} />
+                <ProductCard
+                  key={index}
+                  product={product}
+                  onExpand={() => setQuickViewIndex(index)}
+                />
               ) : (
                 <ProductCardGrid
                   key={index}
@@ -126,7 +130,7 @@ export default function ProductsContainer() {
                 />
               )
             )}
-            {viewMode === 'grid' && quickViewIndex !== null && filteredProducts[quickViewIndex] && (
+            {quickViewIndex !== null && filteredProducts[quickViewIndex] && (
               <ProductQuickView
                 key={quickViewIndex}
                 product={filteredProducts[quickViewIndex]}

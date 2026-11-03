@@ -14,6 +14,8 @@ interface ProductInfoProps {
     brand?: number;
     name?: number;
   };
+  /** Si se entrega, el nombre se vuelve un botón (p. ej. para abrir la vista ampliada). */
+  onNameClick?: () => void;
 }
 
 export default function ProductInfo({
@@ -24,7 +26,8 @@ export default function ProductInfo({
   sku,
   unit,
   variant = 'list',
-  truncateLength = {}
+  truncateLength = {},
+  onNameClick,
 }: ProductInfoProps) {
   const {
     brand: brandTruncateLength = variant === 'cart' ? 10 : 30,
@@ -119,13 +122,25 @@ export default function ProductInfo({
       <span className={`text-[#64748B] ${variant === 'list' ? 'text-[12px]' : 'text-xs'} font-medium ${textAlignment}`}>
         {brandInfo.text}
       </span>
-      <span
-        data-cy="product-name"
-        className={`${variant === 'list' ? 'text-[12px] line-clamp-2' : 'text-sm'} font-medium ${textAlignment} leading-tight ${variant === 'list' ? 'max-w-full' : ''}`}
-        title={nameInfo.showTooltip ? nameInfo.fullText : undefined}
-      >
-        {nameInfo.text}
-      </span>
+      {onNameClick ? (
+        <button
+          type="button"
+          data-cy="product-name"
+          onClick={onNameClick}
+          className={`${variant === 'list' ? 'text-[12px] line-clamp-2' : 'text-sm'} font-medium ${textAlignment} leading-tight ${variant === 'list' ? 'max-w-full' : ''} cursor-pointer hover:text-lime-600`}
+          title={nameInfo.showTooltip ? nameInfo.fullText : undefined}
+        >
+          {nameInfo.text}
+        </button>
+      ) : (
+        <span
+          data-cy="product-name"
+          className={`${variant === 'list' ? 'text-[12px] line-clamp-2' : 'text-sm'} font-medium ${textAlignment} leading-tight ${variant === 'list' ? 'max-w-full' : ''}`}
+          title={nameInfo.showTooltip ? nameInfo.fullText : undefined}
+        >
+          {nameInfo.text}
+        </span>
+      )}
       <span data-cy="product-price" className={`text-lime-500 font-bold ${textAlignment} text-lg mt-1`}>
         {price != null ? formatCurrency(price) : '-'}
       </span>

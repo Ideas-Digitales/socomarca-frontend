@@ -59,7 +59,7 @@ export const createProductsSlice: StateCreator<
       return;
     }
 
-    const perPage = currentMeta.per_page || 9;
+    const perPage = currentMeta.per_page || 21;
     const lastPage = Math.max(1, Math.ceil(filteredProducts.length / perPage));
 
     const updatedMeta: PaginationMeta = {
@@ -106,7 +106,7 @@ export const createProductsSlice: StateCreator<
       const searchParams = {
         ...terms,
         page: terms.page || 1,
-        size: terms.size || 9,
+        size: terms.size || 21,
         // El cliente ve precios con IVA incluido
         vat: true,
       };
@@ -162,7 +162,7 @@ export const createProductsSlice: StateCreator<
     }
   },
 
-  fetchProducts: async (page = 1, size = 9) => {
+  fetchProducts: async (page = 1, size = 21) => {
     try {
       set({ isLoadingProducts: true });
 

@@ -23,7 +23,7 @@ export const createPaginationSlice: StateCreator<
       fetchProducts,
       setSearchTerm
     } = get();
-    const size = productPaginationMeta?.per_page || 9;
+    const size = productPaginationMeta?.per_page || 21;
 
     if (searchTerm || isFiltered) {
       const searchParams: SearchWithPaginationProps = {
