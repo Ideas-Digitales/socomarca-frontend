@@ -176,7 +176,7 @@ export const fetchGetProducts = async ({
       }
 
       const response = await fetch(
-        `${BACKEND_URL}/products/?page=${page}&size=${size}${
+        `${BACKEND_URL}/products/?page=${page}&per_page=${size}${
           vat ? '&vat=true' : ''
         }`,
         {
@@ -401,7 +401,7 @@ export const fetchSearchProductsByFilters = async (
 
       // Construir query parameters
       const page = filters.page || 1;
-      const per_page = filters.size || 20;
+      const per_page = filters.size || 21;
       const queryParams = new URLSearchParams({
         page: page.toString(),
         per_page: per_page.toString(),

@@ -128,7 +128,7 @@ export default function PrivatePage() {
   const buildActiveFilterParams = (): SearchWithPaginationProps => {
     const searchParams: SearchWithPaginationProps = {
       page: 1,
-      size: productPaginationMeta?.per_page || 9,
+      size: productPaginationMeta?.per_page || 21,
       min: selectedMinPrice,
       max: selectedMaxPrice,
     };
@@ -184,7 +184,7 @@ export default function PrivatePage() {
       return;
     }
 
-    await fetchProducts(1, productPaginationMeta?.per_page || 9);
+    await fetchProducts(1, productPaginationMeta?.per_page || 21);
   };
 
   const handleOpenFilter = () => {

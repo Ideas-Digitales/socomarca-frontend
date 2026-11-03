@@ -393,7 +393,7 @@ export const createFiltersSlice: StateCreator<
 
       const searchParams: SearchWithPaginationProps = {
         page: 1,
-        size: productPaginationMeta?.per_page || 9,
+        size: productPaginationMeta?.per_page || 21,
         // El rango viene del slider, que ya trabaja con precios con IVA: el
         // backend lo traduce a neto al recibir `vat: true`.
         min: selectedMinPrice,
