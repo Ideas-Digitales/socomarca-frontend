@@ -17,6 +17,7 @@ export default function CarroDeCompraPage() {
     // Estados
     idProductoAEliminar,
     setIdProductoAEliminar,
+    isRemoving,
     
     // Datos
     cartProducts,
@@ -107,7 +108,10 @@ export default function CarroDeCompraPage() {
             {/* Modal de confirmación */}
             <DeleteConfirmationModal
               isOpen={idProductoAEliminar !== null}
-              onCancel={() => setIdProductoAEliminar(null)}
+              isRemoving={isRemoving}
+              onCancel={() => {
+                if (!isRemoving) setIdProductoAEliminar(null);
+              }}
               onConfirm={() =>
                 idProductoAEliminar &&
                 handleProductRemoval(

@@ -19,6 +19,7 @@ export const useCartPage = () => {
   } = useStore();
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [idProductoAEliminar, setIdProductoAEliminar] = useState<{
     productId: number;
     unit: string;
@@ -93,6 +94,8 @@ export const useCartPage = () => {
 
   /** Eliminar producto en el servidor y ajustar paginación */
   const handleProductRemoval = useCallback(async (productId: number, unit: string) => {
+    if (isRemoving) return;
+
     const product = cartProducts?.find(
       (p) => p.id === productId && p.unit === unit
     );
@@ -102,28 +105,31 @@ export const useCartPage = () => {
       return;
     }
 
-    const response = await removeProductFromCart(product, product.quantity);
+    setIsRemoving(true);
+    try {
+      const response = await removeProductFromCart(product, product.quantity);
 
-    if (!response.ok) {
-      console.error('Error al eliminar producto del carrito');
+      if (!response.ok) {
+        console.error('Error al eliminar producto del carrito');
+        return;
+      }
+
+      // Ajustar página si queda vacía después de eliminar
+      const remainingProducts = cartProducts?.filter(
+        (p) => p.id !== productId || p.unit !== unit
+      ) || [];
+      const totalPagesAfterRemoval = Math.ceil(remainingProducts.length / ITEMS_PER_PAGE);
+
+      if (currentPage > totalPagesAfterRemoval && totalPagesAfterRemoval > 0) {
+        setCurrentPage(totalPagesAfterRemoval);
+      } else if (remainingProducts.length === 0) {
+        setCurrentPage(1);
+      }
+    } finally {
+      setIsRemoving(false);
       setIdProductoAEliminar(null);
-      return;
     }
-
-    // Ajustar página si queda vacía después de eliminar
-    const remainingProducts = cartProducts?.filter(
-      (p) => p.id !== productId || p.unit !== unit
-    ) || [];
-    const totalPagesAfterRemoval = Math.ceil(remainingProducts.length / ITEMS_PER_PAGE);
-
-    if (currentPage > totalPagesAfterRemoval && totalPagesAfterRemoval > 0) {
-      setCurrentPage(totalPagesAfterRemoval);
-    } else if (remainingProducts.length === 0) {
-      setCurrentPage(1);
-    }
-
-    setIdProductoAEliminar(null);
-  }, [cartProducts, currentPage, removeProductFromCart]);
+  }, [cartProducts, currentPage, isRemoving, removeProductFromCart]);
 
   /** Verificar si el carrito está vacío */
   const isCartEmpty = useMemo(() => {
@@ -135,6 +141,7 @@ export const useCartPage = () => {
     currentPage,
     idProductoAEliminar,
     setIdProductoAEliminar,
+    isRemoving,
     
     // Datos calculados
     cartProducts: cartProducts || [],

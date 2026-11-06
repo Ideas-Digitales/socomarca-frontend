@@ -239,14 +239,16 @@ export const OrderSummary = ({
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
+  isRemoving?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export const DeleteConfirmationModal = ({ 
-  isOpen, 
-  onCancel, 
-  onConfirm 
+export const DeleteConfirmationModal = ({
+  isOpen,
+  isRemoving = false,
+  onCancel,
+  onConfirm,
 }: DeleteConfirmationModalProps) => {
   if (!isOpen) return null;
 
@@ -260,15 +262,17 @@ export const DeleteConfirmationModal = ({
         <div className="flex justify-end gap-2">
           <button
             onClick={onCancel}
-            className={CART_PAGE_STYLES.button.secondary}
+            disabled={isRemoving}
+            className={`${CART_PAGE_STYLES.button.secondary} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className={CART_PAGE_STYLES.button.danger}
+            disabled={isRemoving}
+            className={`${CART_PAGE_STYLES.button.danger} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            Eliminar
+            {isRemoving ? 'Eliminando...' : 'Eliminar'}
           </button>
         </div>
       </div>
