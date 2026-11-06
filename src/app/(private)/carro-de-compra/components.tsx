@@ -143,23 +143,17 @@ export const CartTable = ({ products }: CartTableProps) => (
 
 interface CartMobileListProps {
   products: CartItem[];
-  onDecrement: (productId: number, unit: string) => void;
-  onIncrement: (productId: number, unit: string) => void;
   onSetProductToDelete: (productId: number, unit: string) => void;
 }
 
-export const CartMobileList = ({ 
-  products, 
-  onDecrement, 
-  onIncrement, 
-  onSetProductToDelete 
+export const CartMobileList = ({
+  products,
+  onSetProductToDelete,
 }: CartMobileListProps) => (
   <div className={`lg:hidden flex flex-col gap-4 max-h-[${CART_PAGE_CONFIG.MAX_HEIGHT_DESKTOP}] overflow-y-auto`}>
     {products.map((product) => (
       <CarroCompraCardMobile
         key={`${product.id}-${product.unit}`}
-        decrementProductInCart={onDecrement}
-        incrementProductInCart={onIncrement}
         p={product}
         setIdProductoAEliminar={onSetProductToDelete}
       />
@@ -245,14 +239,16 @@ export const OrderSummary = ({
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
+  isRemoving?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export const DeleteConfirmationModal = ({ 
-  isOpen, 
-  onCancel, 
-  onConfirm 
+export const DeleteConfirmationModal = ({
+  isOpen,
+  isRemoving = false,
+  onCancel,
+  onConfirm,
 }: DeleteConfirmationModalProps) => {
   if (!isOpen) return null;
 
@@ -266,15 +262,17 @@ export const DeleteConfirmationModal = ({
         <div className="flex justify-end gap-2">
           <button
             onClick={onCancel}
-            className={CART_PAGE_STYLES.button.secondary}
+            disabled={isRemoving}
+            className={`${CART_PAGE_STYLES.button.secondary} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className={CART_PAGE_STYLES.button.danger}
+            disabled={isRemoving}
+            className={`${CART_PAGE_STYLES.button.danger} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            Eliminar
+            {isRemoving ? 'Eliminando...' : 'Eliminar'}
           </button>
         </div>
       </div>
