@@ -1,7 +1,7 @@
 /**
  * Custom hook para manejar la lógica de la página del carrito de compras
  */
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import useStore from '@/stores/base';
 import { buildVatBreakdown } from '@/utils/vat';
@@ -20,6 +20,9 @@ export const useCartPage = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isRemoving, setIsRemoving] = useState(false);
+  // Guard síncrono: el state del closure puede quedar stale si llegan dos taps
+  // antes del re-render que deshabilita el botón.
+  const removingRef = useRef(false);
   const [idProductoAEliminar, setIdProductoAEliminar] = useState<{
     productId: number;
     unit: string;
@@ -94,7 +97,7 @@ export const useCartPage = () => {
 
   /** Eliminar producto en el servidor y ajustar paginación */
   const handleProductRemoval = useCallback(async (productId: number, unit: string) => {
-    if (isRemoving) return;
+    if (removingRef.current) return;
 
     const product = cartProducts?.find(
       (p) => p.id === productId && p.unit === unit
@@ -105,6 +108,7 @@ export const useCartPage = () => {
       return;
     }
 
+    removingRef.current = true;
     setIsRemoving(true);
     try {
       const response = await removeProductFromCart(product, product.quantity);
@@ -126,10 +130,11 @@ export const useCartPage = () => {
         setCurrentPage(1);
       }
     } finally {
+      removingRef.current = false;
       setIsRemoving(false);
       setIdProductoAEliminar(null);
     }
-  }, [cartProducts, currentPage, isRemoving, removeProductFromCart]);
+  }, [cartProducts, currentPage, removeProductFromCart]);
 
   /** Verificar si el carrito está vacío */
   const isCartEmpty = useMemo(() => {
