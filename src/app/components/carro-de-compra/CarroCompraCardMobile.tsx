@@ -1,32 +1,24 @@
-import { ProductToBuy } from '@/interfaces/product.interface';
+import { CartItem } from '@/interfaces/product.interface';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { useState, useEffect } from 'react';
-import { DEFAULT_IMAGE } from '@/utils/assets';
-import useStore from '@/stores/base';
-import { addVat } from '@/utils/vat';
+import { useCartItem } from '@/hooks/useCartItem';
 
 interface Props {
-  p: ProductToBuy;
-  decrementProductInCart: (id: number, unit: string) => void;
-  incrementProductInCart: (id: number, unit: string) => void;
+  p: CartItem;
   setIdProductoAEliminar: (id: number, unit: string) => void;
 }
 
 export default function CarroCompraCardMobile({
   p,
-  decrementProductInCart,
-  incrementProductInCart,
   setIdProductoAEliminar,
 }: Props) {
-  const vatRate = useStore((state) => state.vatRate);
-  const [backgroundImage, setBackgroundImage] = useState(`url(${p.image})`);
-  useEffect(() => {
-    const img = new Image();
-    img.src = p.image;
-    img.onerror = () => {
-      setBackgroundImage(`url(${DEFAULT_IMAGE})`);
-    };
-  }, [p.image]);
+  const {
+    isLoading,
+    backgroundImage,
+    totalPrice,
+    decreaseQuantity,
+    increaseQuantity,
+  } = useCartItem(p);
+
   return (
     <div
       data-cy="cart-item"
@@ -42,6 +34,7 @@ export default function CarroCompraCardMobile({
         onClick={() => setIdProductoAEliminar(p.id, p.unit)}
         className="absolute top-2 right-2 text-red-500"
         title="Eliminar producto"
+        disabled={isLoading}
       >
         <TrashIcon className="w-5 h-5" />
       </button>
@@ -51,38 +44,29 @@ export default function CarroCompraCardMobile({
           backgroundImage,
         }}
       />
-      {/* <img
-        src={p.image}
-        alt={p.name}
-        className="w-16 h-20 object-contain rounded"
-        onError={(e) => {
-          const target = e.currentTarget;
-          target.onerror = null;
-          target.src = 'assets/global/logo_default.png';
-          target.classList.add('grayscale', 'opacity-50');
-        }}
-      /> */}
 
       <div className="flex-1 pr-6">
         <p className="text-xs text-slate-400">{p.brand?.name}</p>
         <p data-cy="cart-item-name" className="text-sm font-semibold text-black">{p.name}</p>
         <p data-cy="cart-item-price" className="text-sm font-bold text-gray-700 mt-1">
-          ${addVat(p.price * p.quantity, vatRate).toLocaleString('es-CL')}
+          {totalPrice}
         </p>
 
         <div className="flex items-center gap-2 mt-2">
           <button
             data-cy="decrease-quantity-btn"
-            onClick={() => decrementProductInCart(p.id, p.unit)}
-            className="px-2 py-1 bg-gray-200 rounded"
+            onClick={decreaseQuantity}
+            disabled={isLoading || p.quantity <= 1}
+            className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
           >
             −
           </button>
           <span data-cy="cart-item-quantity" className="w-6 text-center">{p.quantity}</span>
           <button
             data-cy="increase-quantity-btn"
-            onClick={() => incrementProductInCart(p.id, p.unit)}
-            className="px-2 py-1 bg-gray-200 rounded"
+            onClick={increaseQuantity}
+            disabled={isLoading || p.quantity >= p.stock}
+            className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
           >
             +
           </button>

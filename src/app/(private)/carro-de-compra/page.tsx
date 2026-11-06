@@ -17,6 +17,7 @@ export default function CarroDeCompraPage() {
     // Estados
     idProductoAEliminar,
     setIdProductoAEliminar,
+    isRemoving,
     
     // Datos
     cartProducts,
@@ -36,8 +37,6 @@ export default function CarroDeCompraPage() {
     // Handlers
     handlePageChange,
     handleProductRemoval,
-    decrementProductInCart,
-    incrementProductInCart,
   } = useCartPage();
 
   return (
@@ -69,8 +68,6 @@ export default function CarroDeCompraPage() {
               {/* Layout para móviles */}
               <CartMobileList
                 products={paginationData.paginatedProducts}
-                onDecrement={decrementProductInCart}
-                onIncrement={incrementProductInCart}
                 onSetProductToDelete={(productId, unit) =>
                   setIdProductoAEliminar({ productId, unit })
                 }
@@ -111,7 +108,10 @@ export default function CarroDeCompraPage() {
             {/* Modal de confirmación */}
             <DeleteConfirmationModal
               isOpen={idProductoAEliminar !== null}
-              onCancel={() => setIdProductoAEliminar(null)}
+              isRemoving={isRemoving}
+              onCancel={() => {
+                if (!isRemoving) setIdProductoAEliminar(null);
+              }}
               onConfirm={() =>
                 idProductoAEliminar &&
                 handleProductRemoval(

@@ -1,7 +1,7 @@
 /**
  * Custom hook para manejar la lógica de la página del carrito de compras
  */
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import useStore from '@/stores/base';
 import { buildVatBreakdown } from '@/utils/vat';
@@ -12,15 +12,17 @@ export const useCartPage = () => {
   const router = useRouter();
   const {
     cartProducts,
-    removeAllQuantityByProductId,
-    decrementProductInCart,
-    incrementProductInCart,
+    removeProductFromCart,
     isCartLoading,
     vatRate,
     fetchVatRate,
   } = useStore();
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [isRemoving, setIsRemoving] = useState(false);
+  // Guard síncrono: el state del closure puede quedar stale si llegan dos taps
+  // antes del re-render que deshabilita el botón.
+  const removingRef = useRef(false);
   const [idProductoAEliminar, setIdProductoAEliminar] = useState<{
     productId: number;
     unit: string;
@@ -93,24 +95,46 @@ export const useCartPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  /** Eliminar producto y ajustar paginación */
-  const handleProductRemoval = useCallback((productId: number, unit: string) => {
-    removeAllQuantityByProductId(productId, unit);
+  /** Eliminar producto en el servidor y ajustar paginación */
+  const handleProductRemoval = useCallback(async (productId: number, unit: string) => {
+    if (removingRef.current) return;
 
-    // Ajustar página si queda vacía después de eliminar
-    const remainingProducts = cartProducts?.filter(
-      (p) => p.id !== productId || p.unit !== unit
-    ) || [];
-    const totalPagesAfterRemoval = Math.ceil(remainingProducts.length / ITEMS_PER_PAGE);
+    const product = cartProducts?.find(
+      (p) => p.id === productId && p.unit === unit
+    );
 
-    if (currentPage > totalPagesAfterRemoval && totalPagesAfterRemoval > 0) {
-      setCurrentPage(totalPagesAfterRemoval);
-    } else if (remainingProducts.length === 0) {
-      setCurrentPage(1);
+    if (!product) {
+      setIdProductoAEliminar(null);
+      return;
     }
 
-    setIdProductoAEliminar(null);
-  }, [cartProducts, currentPage, removeAllQuantityByProductId]);
+    removingRef.current = true;
+    setIsRemoving(true);
+    try {
+      const response = await removeProductFromCart(product, product.quantity);
+
+      if (!response.ok) {
+        console.error('Error al eliminar producto del carrito');
+        return;
+      }
+
+      // Ajustar página si queda vacía después de eliminar
+      const remainingProducts = cartProducts?.filter(
+        (p) => p.id !== productId || p.unit !== unit
+      ) || [];
+      const totalPagesAfterRemoval = Math.ceil(remainingProducts.length / ITEMS_PER_PAGE);
+
+      if (currentPage > totalPagesAfterRemoval && totalPagesAfterRemoval > 0) {
+        setCurrentPage(totalPagesAfterRemoval);
+      } else if (remainingProducts.length === 0) {
+        setCurrentPage(1);
+      }
+    } finally {
+      removingRef.current = false;
+      setIsRemoving(false);
+      setIdProductoAEliminar(null);
+    }
+  }, [cartProducts, currentPage, removeProductFromCart]);
 
   /** Verificar si el carrito está vacío */
   const isCartEmpty = useMemo(() => {
@@ -122,6 +146,7 @@ export const useCartPage = () => {
     currentPage,
     idProductoAEliminar,
     setIdProductoAEliminar,
+    isRemoving,
     
     // Datos calculados
     cartProducts: cartProducts || [],
@@ -141,9 +166,5 @@ export const useCartPage = () => {
     // Funciones de manejo
     handlePageChange,
     handleProductRemoval,
-    
-    // Funciones del store
-    decrementProductInCart,
-    incrementProductInCart,
   };
 };
