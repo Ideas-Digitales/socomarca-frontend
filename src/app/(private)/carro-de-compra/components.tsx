@@ -143,23 +143,17 @@ export const CartTable = ({ products }: CartTableProps) => (
 
 interface CartMobileListProps {
   products: CartItem[];
-  onDecrement: (productId: number, unit: string) => void;
-  onIncrement: (productId: number, unit: string) => void;
   onSetProductToDelete: (productId: number, unit: string) => void;
 }
 
-export const CartMobileList = ({ 
-  products, 
-  onDecrement, 
-  onIncrement, 
-  onSetProductToDelete 
+export const CartMobileList = ({
+  products,
+  onSetProductToDelete,
 }: CartMobileListProps) => (
   <div className={`lg:hidden flex flex-col gap-4 max-h-[${CART_PAGE_CONFIG.MAX_HEIGHT_DESKTOP}] overflow-y-auto`}>
     {products.map((product) => (
       <CarroCompraCardMobile
         key={`${product.id}-${product.unit}`}
-        decrementProductInCart={onDecrement}
-        incrementProductInCart={onIncrement}
         p={product}
         setIdProductoAEliminar={onSetProductToDelete}
       />

@@ -36,8 +36,6 @@ export default function CarroDeCompraPage() {
     // Handlers
     handlePageChange,
     handleProductRemoval,
-    decrementProductInCart,
-    incrementProductInCart,
   } = useCartPage();
 
   return (
@@ -69,8 +67,6 @@ export default function CarroDeCompraPage() {
               {/* Layout para móviles */}
               <CartMobileList
                 products={paginationData.paginatedProducts}
-                onDecrement={decrementProductInCart}
-                onIncrement={incrementProductInCart}
                 onSetProductToDelete={(productId, unit) =>
                   setIdProductoAEliminar({ productId, unit })
                 }

@@ -12,9 +12,7 @@ export const useCartPage = () => {
   const router = useRouter();
   const {
     cartProducts,
-    removeAllQuantityByProductId,
-    decrementProductInCart,
-    incrementProductInCart,
+    removeProductFromCart,
     isCartLoading,
     vatRate,
     fetchVatRate,
@@ -93,9 +91,24 @@ export const useCartPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  /** Eliminar producto y ajustar paginación */
-  const handleProductRemoval = useCallback((productId: number, unit: string) => {
-    removeAllQuantityByProductId(productId, unit);
+  /** Eliminar producto en el servidor y ajustar paginación */
+  const handleProductRemoval = useCallback(async (productId: number, unit: string) => {
+    const product = cartProducts?.find(
+      (p) => p.id === productId && p.unit === unit
+    );
+
+    if (!product) {
+      setIdProductoAEliminar(null);
+      return;
+    }
+
+    const response = await removeProductFromCart(product, product.quantity);
+
+    if (!response.ok) {
+      console.error('Error al eliminar producto del carrito');
+      setIdProductoAEliminar(null);
+      return;
+    }
 
     // Ajustar página si queda vacía después de eliminar
     const remainingProducts = cartProducts?.filter(
@@ -110,7 +123,7 @@ export const useCartPage = () => {
     }
 
     setIdProductoAEliminar(null);
-  }, [cartProducts, currentPage, removeAllQuantityByProductId]);
+  }, [cartProducts, currentPage, removeProductFromCart]);
 
   /** Verificar si el carrito está vacío */
   const isCartEmpty = useMemo(() => {
@@ -141,9 +154,5 @@ export const useCartPage = () => {
     // Funciones de manejo
     handlePageChange,
     handleProductRemoval,
-    
-    // Funciones del store
-    decrementProductInCart,
-    incrementProductInCart,
   };
 };
